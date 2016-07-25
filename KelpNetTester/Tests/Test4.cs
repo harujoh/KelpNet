@@ -41,7 +41,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            nn.Optimizer = new MomentumSGD(nn);
+            nn.SetOptimizer(new MomentumSGD());
 
             //三世代学習
             for (int epoch = 0; epoch < 3; epoch++)

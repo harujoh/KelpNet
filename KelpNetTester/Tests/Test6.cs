@@ -50,7 +50,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            nn.Optimizer = new Adam(nn);
+            nn.SetOptimizer(new Adam());
 
             //三世代学習
             for (int epoch = 1; epoch < 3; epoch++)

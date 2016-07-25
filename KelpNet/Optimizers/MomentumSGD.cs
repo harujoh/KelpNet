@@ -10,26 +10,13 @@ namespace KelpNet.Optimizers
         private NdArray[] vW;
         private NdArray[] vb;
 
-        public MomentumSGD(FunctionStack fs, double learningRate = 0.01, double momentum = 0.9)
+        public MomentumSGD(double learningRate = 0.01, double momentum = 0.9)
         {
-            this.vW = new NdArray[fs.OptimizableFunctions.Count];
-            this.vb = new NdArray[fs.OptimizableFunctions.Count];
-
-            for (int i = 0; i < fs.OptimizableFunctions.Count; i++)
-            {
-                this.vW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
-
-                if (fs.OptimizableFunctions[i].b != null)
-                {
-                    this.vb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
-                }
-            }
-
             this.LearningRate = learningRate;
             this.momentum = momentum;
         }
 
-        protected override void Update(OptimizableFunction[] optimizableFunctions)
+        protected override void DoUpdate(OptimizableFunction[] optimizableFunctions)
         {
             for (int i = 0; i < optimizableFunctions.Length; i++)
             {
@@ -50,6 +37,22 @@ namespace KelpNet.Optimizers
 
                         optimizableFunctions[i].b.Data[j] += vb[i].Data[j];
                     }
+                }
+            }
+        }
+
+        public override void Initialize(FunctionStack fs)
+        {
+            this.vW = new NdArray[fs.OptimizableFunctions.Count];
+            this.vb = new NdArray[fs.OptimizableFunctions.Count];
+
+            for (int i = 0; i < fs.OptimizableFunctions.Count; i++)
+            {
+                this.vW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
+
+                if (fs.OptimizableFunctions[i].b != null)
+                {
+                    this.vb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
                 }
             }
         }

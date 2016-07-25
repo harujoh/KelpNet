@@ -23,7 +23,13 @@ namespace KelpNet
         private int batchCount = 0;
 
         //Optimizerをココで保持する。デフォルトはSGD
-        public Optimizer Optimizer = new SGD();
+        private Optimizer optimizer = new SGD();
+
+        public void SetOptimizer(Optimizer optimizer)
+        {
+            this.optimizer = optimizer;
+            this.optimizer.Initialize(this);
+        }
 
         //コンストラクタ
         public FunctionStack(params Function[] functions)
@@ -141,7 +147,7 @@ namespace KelpNet
             }
 
             //宣言されているOptimizerの更新を実行
-            Optimizer.Update(this.OptimizableFunctions);
+            optimizer.Update(this.OptimizableFunctions);
 
             //傾きをリセット
             this.ZeroGrads();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using KelpNet.Functions;
 
 namespace KelpNet.Optimizers
@@ -26,35 +27,17 @@ namespace KelpNet.Optimizers
         private NdArray[] mb;
         private NdArray[] vb;
 
-        public Adam(FunctionStack fs, double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double eps = 1e-8)
+        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double eps = 1e-8)
         {
-            this.mW = new NdArray[fs.OptimizableFunctions.Count];
-            this.vW = new NdArray[fs.OptimizableFunctions.Count];
-
-            this.mb = new NdArray[fs.OptimizableFunctions.Count];
-            this.vb = new NdArray[fs.OptimizableFunctions.Count];
-
-            for (int i = 0; i < fs.OptimizableFunctions.Count; i++)
-            {
-                this.mW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
-                this.vW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
-
-                if (fs.OptimizableFunctions[i].b != null)
-                {
-                    this.mb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
-                    this.vb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
-                }
-            }
-
             this.alpha = alpha;
             this.beta1 = beta1;
             this.beta2 = beta2;
             this.eps = eps;
         }
 
-        protected override void Update(OptimizableFunction[] optimizableFunctions)
+        protected override void DoUpdate(List<OptimizableFunction> optimizableFunctions)
         {
-            for (int i = 0; i < optimizableFunctions.Length; i++)
+            for (int i = 0; i < optimizableFunctions.Count; i++)
             {
                 for (int j = 0; j < optimizableFunctions[i].W.Length; j++)
                 {
@@ -77,6 +60,27 @@ namespace KelpNet.Optimizers
 
                         optimizableFunctions[i].b.Data[j] -= lr * mb[i].Data[j] / (Math.Sqrt(vb[i].Data[j]) + this.eps);
                     }
+                }
+            }
+        }
+
+        public override void Initialize(FunctionStack fs)
+        {
+            this.mW = new NdArray[fs.OptimizableFunctions.Count];
+            this.vW = new NdArray[fs.OptimizableFunctions.Count];
+
+            this.mb = new NdArray[fs.OptimizableFunctions.Count];
+            this.vb = new NdArray[fs.OptimizableFunctions.Count];
+
+            for (int i = 0; i < fs.OptimizableFunctions.Count; i++)
+            {
+                this.mW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
+                this.vW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
+
+                if (fs.OptimizableFunctions[i].b != null)
+                {
+                    this.mb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
+                    this.vb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
                 }
             }
         }

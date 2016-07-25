@@ -1,4 +1,5 @@
-﻿using KelpNet.Functions;
+﻿using System.Collections.Generic;
+using KelpNet.Functions;
 
 namespace KelpNet.Optimizers
 {
@@ -11,7 +12,7 @@ namespace KelpNet.Optimizers
             this.LearningRate = learningRate;
         }
 
-        protected override void Update(OptimizableFunction[] optimizableFunctions)
+        protected override void DoUpdate(List<OptimizableFunction> optimizableFunctions)
         {
             foreach (var optimizableFunction in optimizableFunctions)
             {
@@ -28,6 +29,11 @@ namespace KelpNet.Optimizers
                     }
                 }
             }
+        }
+
+        public override void Initialize(FunctionStack fs)
+        {
+            //特に初期化処理は行わない
         }
     }
 }

@@ -41,7 +41,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            nn.Optimizer = new MomentumSGD(nn);
+            nn.SetOptimizer(new MomentumSGD());
 
 
             //訓練ループ
