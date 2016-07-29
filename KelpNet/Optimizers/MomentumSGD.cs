@@ -1,4 +1,5 @@
-﻿using KelpNet.Functions;
+﻿using System.Collections.Generic;
+using KelpNet.Functions;
 
 namespace KelpNet.Optimizers
 {
@@ -16,9 +17,9 @@ namespace KelpNet.Optimizers
             this.momentum = momentum;
         }
 
-        protected override void DoUpdate(OptimizableFunction[] optimizableFunctions)
+        protected override void DoUpdate(List<OptimizableFunction> optimizableFunctions)
         {
-            for (int i = 0; i < optimizableFunctions.Length; i++)
+            for (int i = 0; i < optimizableFunctions.Count; i++)
             {
                 for (int j = 0; j < optimizableFunctions[i].W.Length; j++)
                 {
