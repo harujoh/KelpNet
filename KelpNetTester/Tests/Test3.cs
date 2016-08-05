@@ -31,9 +31,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(1, 4, initialW: new[] { -0.71211463, 0.41366148, -0.17114599, 0.5517922 }),
+                new Linear(1, 4),
                 new Tanh(),
-                new Linear(4, 1, initialW: new[] { 0.07171941, 0.03772444, -0.40549865, 0.63940221 })
+                new Linear(4, 1)
             );
 
             //optimizerの宣言を省略するとデフォルトのSGD(0.1)が使用される
