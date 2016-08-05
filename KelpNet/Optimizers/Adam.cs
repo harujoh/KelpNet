@@ -21,11 +21,8 @@ namespace KelpNet.Optimizers
             }
         }
 
-        private NdArray[] mW;
-        private NdArray[] vW;
-
-        private NdArray[] mb;
-        private NdArray[] vb;
+        private NdArray[][] m;
+        private NdArray[][] v;
 
         public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double eps = 1e-8)
         {
@@ -39,26 +36,16 @@ namespace KelpNet.Optimizers
         {
             for (int i = 0; i < optimizableFunctions.Count; i++)
             {
-                for (int j = 0; j < optimizableFunctions[i].W.Length; j++)
+                for (int j = 0; j < optimizableFunctions[i].Parameters.Count; j++)
                 {
-                    double gradW = optimizableFunctions[i].gW.Data[j];
-
-                    mW[i].Data[j] += (1 - this.beta1) * (gradW - mW[i].Data[j]);
-                    vW[i].Data[j] += (1 - this.beta2) * (gradW * gradW - vW[i].Data[j]);
-
-                    optimizableFunctions[i].W.Data[j] -= lr * mW[i].Data[j] / (Math.Sqrt(vW[i].Data[j]) + this.eps);
-                }
-
-                if (optimizableFunctions[i].b != null)
-                {
-                    for (int j = 0; j < optimizableFunctions[i].b.Length; j++)
+                    for (int k = 0; k < optimizableFunctions[i].Parameters[j].Length; k++)
                     {
-                        double gradb = optimizableFunctions[i].gb.Data[j];
+                        double grad = optimizableFunctions[i].Parameters[j].Grad.Data[k];
 
-                        mb[i].Data[j] += (1 - this.beta1) * (gradb - mb[i].Data[j]);
-                        vb[i].Data[j] += (1 - this.beta2) * (gradb * gradb - vb[i].Data[j]);
+                        m[i][j].Data[k] += (1 - this.beta1) * (grad - m[i][j].Data[k]);
+                        v[i][j].Data[k] += (1 - this.beta2) * (grad * grad - v[i][j].Data[k]);
 
-                        optimizableFunctions[i].b.Data[j] -= lr * mb[i].Data[j] / (Math.Sqrt(vb[i].Data[j]) + this.eps);
+                        optimizableFunctions[i].Parameters[j].Param.Data[k] -= lr * m[i][j].Data[k] / (Math.Sqrt(v[i][j].Data[k]) + this.eps);
                     }
                 }
             }
@@ -66,21 +53,18 @@ namespace KelpNet.Optimizers
 
         public override void Initialize(FunctionStack fs)
         {
-            this.mW = new NdArray[fs.OptimizableFunctions.Count];
-            this.vW = new NdArray[fs.OptimizableFunctions.Count];
-
-            this.mb = new NdArray[fs.OptimizableFunctions.Count];
-            this.vb = new NdArray[fs.OptimizableFunctions.Count];
+            this.m = new NdArray[fs.OptimizableFunctions.Count][];
+            this.v = new NdArray[fs.OptimizableFunctions.Count][];
 
             for (int i = 0; i < fs.OptimizableFunctions.Count; i++)
             {
-                this.mW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
-                this.vW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
+                this.m[i] = new NdArray[fs.OptimizableFunctions[i].Parameters.Count];
+                this.v[i] = new NdArray[fs.OptimizableFunctions[i].Parameters.Count];
 
-                if (fs.OptimizableFunctions[i].b != null)
+                for (int j = 0; j < fs.OptimizableFunctions[i].Parameters.Count; j++)
                 {
-                    this.mb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
-                    this.vb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
+                    this.m[i][j] = NdArray.ZerosLike(fs.OptimizableFunctions[i].Parameters[j].Param);
+                    this.v[i][j] = NdArray.ZerosLike(fs.OptimizableFunctions[i].Parameters[j].Param);
                 }
             }
         }

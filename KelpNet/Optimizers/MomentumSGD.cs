@@ -8,8 +8,7 @@ namespace KelpNet.Optimizers
         private double LearningRate;
         private double momentum;
 
-        private NdArray[] vW;
-        private NdArray[] vb;
+        private NdArray[][] v;
 
         public MomentumSGD(double learningRate = 0.01, double momentum = 0.9)
         {
@@ -21,22 +20,14 @@ namespace KelpNet.Optimizers
         {
             for (int i = 0; i < optimizableFunctions.Count; i++)
             {
-                for (int j = 0; j < optimizableFunctions[i].W.Length; j++)
+                for (int j = 0; j < optimizableFunctions[i].Parameters.Count; j++)
                 {
-                    vW[i].Data[j] *= this.momentum;
-                    vW[i].Data[j] -= this.LearningRate * optimizableFunctions[i].gW.Data[j];
-
-                    optimizableFunctions[i].W.Data[j] += vW[i].Data[j];
-                }
-
-                if (optimizableFunctions[i].b != null)
-                {
-                    for (int j = 0; j < optimizableFunctions[i].b.Length; j++)
+                    for (int k = 0; k < optimizableFunctions[i].Parameters[j].Length; k++)
                     {
-                        vb[i].Data[j] *= this.momentum;
-                        vb[i].Data[j] -= this.LearningRate * optimizableFunctions[i].gb.Data[j];
+                        v[i][j].Data[k] *= this.momentum;
+                        v[i][j].Data[k] -= this.LearningRate*optimizableFunctions[i].Parameters[j].Grad.Data[k];
 
-                        optimizableFunctions[i].b.Data[j] += vb[i].Data[j];
+                        optimizableFunctions[i].Parameters[j].Param.Data[k] += v[i][j].Data[k];
                     }
                 }
             }
@@ -44,16 +35,15 @@ namespace KelpNet.Optimizers
 
         public override void Initialize(FunctionStack fs)
         {
-            this.vW = new NdArray[fs.OptimizableFunctions.Count];
-            this.vb = new NdArray[fs.OptimizableFunctions.Count];
+            this.v = new NdArray[fs.OptimizableFunctions.Count][];
 
             for (int i = 0; i < fs.OptimizableFunctions.Count; i++)
             {
-                this.vW[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].W);
+                this.v[i] = new NdArray[fs.OptimizableFunctions[i].Parameters.Count];
 
-                if (fs.OptimizableFunctions[i].b != null)
+                for (int j = 0; j < fs.OptimizableFunctions[i].Parameters.Count; j++)
                 {
-                    this.vb[i] = NdArray.ZerosLike(fs.OptimizableFunctions[i].b);
+                    this.v[i][j] = NdArray.ZerosLike(fs.OptimizableFunctions[i].Parameters[j].Param);
                 }
             }
         }

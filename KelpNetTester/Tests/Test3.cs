@@ -25,15 +25,15 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < N; i++)
             {
                 //Sin波を一周期分用意
-                trainData[i] = new[] { -1.0 + 2.0 * i / (N - 1) };
-                trainLabel[i] = new[] { Math.Sin(Math.PI* trainData[i][0]) };
+                trainData[i] = new[] { -Math.PI + Math.PI * 2.0 * i / (N - 1) };
+                trainLabel[i] = new[] { Math.Sin(trainData[i][0]) };
             }
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(1, 4),
+                new Linear(1, 4, initialW: new[] { -0.71211463, 0.41366148, -0.17114599, 0.5517922 }),
                 new Tanh(),
-                new Linear(4, 1)
+                new Linear(4, 1, initialW: new[] { 0.07171941, 0.03772444, -0.40549865, 0.63940221 })
             );
 
             //optimizerの宣言を省略するとデフォルトのSGD(0.1)が使用される
@@ -52,12 +52,12 @@ namespace KelpNetTester.Tests
                 {
                     //ネットワークは訓練を実行すると戻り値に誤差が返ってくる
                     loss += nn.Train(trainData[j], trainLabel[j], LossFunctions.MeanSquaredError);
+
+                    //今回は逐次更新
+                    nn.Update();
                 }
 
-                Console.WriteLine("loss:"+loss/N);
-
-                //訓練後に毎回更新を実行しなければ、ミニバッチとして更新できる
-                nn.Update();
+                Console.WriteLine("loss:" + loss / N);
             }
 
             //訓練結果を表示
@@ -67,7 +67,6 @@ namespace KelpNetTester.Tests
             {
                 Console.WriteLine(val[0] + ":" + nn.Predict(NdArray.FromArray(val)).Data[0]);
             }
-
         }
     }
 }

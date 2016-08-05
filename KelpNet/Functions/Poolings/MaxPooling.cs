@@ -17,8 +17,6 @@ namespace KelpNet.Functions.Poolings
 
         public override NdArray Forward(NdArray input)
         {
-            PrevInput = new NdArray(input);
-
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Empty(input.Shape[0], outputSize, outputSize);
             result.Fill(double.MinValue);
@@ -47,12 +45,10 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            PrevOutput = new NdArray(result);
-
             return result;
         }
 
-        public override NdArray Backward(NdArray gy)
+        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
         {
             NdArray result = NdArray.ZerosLike(PrevInput);
             gy.Shape = PrevOutput.Shape;
@@ -64,7 +60,7 @@ namespace KelpNet.Functions.Poolings
                     for (int x = 0; x < gy.Shape[2]; x++)
                     {
                         //前回の入力値と出力値を比較して、同じ値のものを見つける
-                        this.setresult(i, y, x, gy.Data[gy.GetIndex(i, y, x)], ref result);
+                        this.setresult(i, y, x, gy.Data[gy.GetIndex(i, y, x)], PrevInput, PrevOutput, ref result);
                     }
                 }
             }
@@ -74,7 +70,7 @@ namespace KelpNet.Functions.Poolings
 
         //同じ値を複数持つ場合、左上優先にして処理を打ち切る
         //他のライブラリの実装では乱数を取って同じ値の中からどれかを選ぶ物が多い
-        void setresult(int i, int y, int x, double data, ref NdArray result)
+        void setresult(int i, int y, int x, double data, NdArray PrevInput, NdArray PrevOutput, ref NdArray result)
         {
             for (int dy = 0; dy < this._kSize; dy++)
             {

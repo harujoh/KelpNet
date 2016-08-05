@@ -1,15 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace KelpNet.Functions
 {
     //重みと傾きがあるものを扱うクラス
     public abstract class OptimizableFunction : Function
     {
-        public NdArray W;
-        public NdArray b;
+        public class Parameter
+        {
+            public NdArray Param;
+            public NdArray Grad;
+            public int Length
+            {
+                get
+                {
+                    return Param.Length;
+                }
+            }
 
-        public NdArray gW;
-        public NdArray gb;
+            public Parameter(NdArray param, NdArray grad)
+            {
+                this.Param = param;
+                this.Grad = grad;
+            }
+        }
+
+        public List<Parameter> Parameters = new List<Parameter>();
 
         public int OutputCount;
         public int InputCount;

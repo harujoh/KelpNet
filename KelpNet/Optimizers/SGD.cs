@@ -16,16 +16,11 @@ namespace KelpNet.Optimizers
         {
             foreach (var optimizableFunction in optimizableFunctions)
             {
-                for (int i = 0; i < optimizableFunction.W.Length; i++)
+                foreach (OptimizableFunction.Parameter parameter in optimizableFunction.Parameters)
                 {
-                    optimizableFunction.W.Data[i] -= this.LearningRate * optimizableFunction.gW.Data[i];
-                }
-
-                if (optimizableFunction.b != null)
-                {
-                    for (int i = 0; i < optimizableFunction.b.Length; i++)
+                    for (int j = 0; j < parameter.Length; j++)
                     {
-                        optimizableFunction.b.Data[i] -= this.LearningRate*optimizableFunction.gb.Data[i];
+                        parameter.Param.Data[j] -= this.LearningRate * parameter.Grad.Data[j];
                     }
                 }
             }

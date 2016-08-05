@@ -12,15 +12,15 @@ namespace KelpNet
     {
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
-        
+
         //重みと傾きを持つものはココにOptimizableFunctionクラスとして保管される
         public readonly List<OptimizableFunction> OptimizableFunctions = new List<OptimizableFunction>();
-        
+
         //学習用の関数を除く関数がココにPredictableFunctionとして保管される（現在はDropoutを実行しないために用意）
         public readonly List<IPredictableFunction> PredictableFunctions = new List<IPredictableFunction>();
 
         //Updateを行わずに実行されたTrainの回数をカウントし、バッチ更新時に使用する
-        private int batchCount = 0;
+        private int BatchCount = 0;
 
         //Optimizerをココで保持する。デフォルトはSGD
         private Optimizer optimizer = new SGD();
@@ -66,15 +66,13 @@ namespace KelpNet
         public void ZeroGrads()
         {
             //バッチカウントもリセット
-            batchCount = 0;
+            this.BatchCount = 0;
 
             foreach (var function in this.OptimizableFunctions)
             {
-                function.gW.Fill(0);
-
-                if (function.b != null)
+                foreach (OptimizableFunction.Parameter functionParam in function.Parameters)
                 {
-                    function.gb.Fill(0);
+                    functionParam.Grad.Fill(0);
                 }
             }
         }
@@ -89,6 +87,7 @@ namespace KelpNet
         public NdArray Predict(NdArray input)
         {
             NdArray forwardResult = this.PredictableFunctions[0].Predict(input);
+
             for (int i = 1; i < this.PredictableFunctions.Count; i++)
             {
                 forwardResult = this.PredictableFunctions[i].Predict(forwardResult);
@@ -101,29 +100,87 @@ namespace KelpNet
         public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
         public double Train(Array input, Array teach, LossFunction lossFunction)
         {
+            //全層の『入力』と『出力』を全て保存するため＋１
+            NdArray[] InputData = new NdArray[this.Functions.Count + 1];
+
             //forwardを実行
-            NdArray forwardResult = this.Functions[0].Forward(NdArray.FromArray(input));
+            InputData[0] = NdArray.FromArray(input);
+            InputData[1] = this.Functions[0].Forward(NdArray.FromArray(input));
+
             for (int i = 1; i < this.Functions.Count; i++)
             {
-                forwardResult = this.Functions[i].Forward(forwardResult);
+                //出力を次層の入力として保存する
+                InputData[i + 1] = this.Functions[i].Forward(InputData[i]);
             }
 
             //戻り値の誤差用
             double loss;
 
             //デリゲートで入力されたロス関数を実行
-            NdArray backwardResult = lossFunction(forwardResult, NdArray.FromArray(teach), out loss);
+            NdArray backwardResult = lossFunction(InputData[this.Functions.Count], NdArray.FromArray(teach), out loss);
 
             //backwardを実行
             for (int i = this.Functions.Count - 1; i >= 0; i--)
             {
-                backwardResult = this.Functions[i].Backward(backwardResult);
+                backwardResult = this.Functions[i].Backward(backwardResult, InputData[i], InputData[i + 1]);
             }
-            
+
             //実行回数をカウント
-            batchCount++;
+            this.BatchCount++;
 
             return loss;
+        }
+        
+        //並列処理で早くなりそうな名前だが、並列実行が層単位となるため、遅い
+        public double BatchTrain(Array[] input, Array[] teach, LossFunction lossFunction, int batchCount = -1, int startOffset = 0, bool shuffle = false)
+        {
+            //todo 範囲チェック
+            if (batchCount == -1)
+            {
+                batchCount = input.Length;
+            }
+
+            //全層の『入力』と『出力』を全て保存するため＋１
+            NdArray[][] InputData = new NdArray[this.Functions.Count + 1][];
+            NdArray[] backwardResult = new NdArray[batchCount];
+
+            for (int i = 0; i < batchCount; i++)
+            {
+                InputData[0][i] = NdArray.FromArray(input[startOffset + i]);
+            }
+
+            InputData[1] = this.Functions[0].BatchForward(InputData[0]);
+
+            for (int j = 1; j < this.Functions.Count; j++)
+            {
+                InputData[j + 1] = this.Functions[j].BatchForward(InputData[j]);
+            }
+
+            //戻り値の誤差用
+            double sumLoss = 0;
+
+            //for (int i = 0; i < batchCount; i++)
+            Parallel.For(0, backwardResult.Length, i =>
+            {
+                double loss;
+                //デリゲートで入力されたロス関数を実行
+                backwardResult[i] = lossFunction(InputData[i][this.Functions.Count], NdArray.FromArray(teach[startOffset + i]), out loss);
+                sumLoss += loss;
+            });
+
+            //backwardを実行
+            for (int i = this.Functions.Count - 1; i >= 0; i--)
+            {
+                backwardResult = this.Functions[i].BatchBackward(backwardResult, InputData[i], InputData[i + 1]);
+            }
+
+            //実行回数をカウント
+            this.BatchCount = batchCount;
+
+            //Updateもまとめて実行
+            this.Update();
+
+            return sumLoss / batchCount;
         }
 
         //重みの更新処理
@@ -132,16 +189,11 @@ namespace KelpNet
             //更新実行前にバッチカウントを使って各Functionの傾きを補正
             foreach (OptimizableFunction optimizableFunction in this.OptimizableFunctions)
             {
-                for (int j = 0; j < optimizableFunction.gW.Length; j++)
+                foreach (OptimizableFunction.Parameter optimizableFunctionParameter in optimizableFunction.Parameters)
                 {
-                    optimizableFunction.gW.Data[j] /= this.batchCount;
-                }
-
-                if (optimizableFunction.gb != null)
-                {
-                    for (int j = 0; j < optimizableFunction.gb.Length; j++)
+                    for (int k = 0; k < optimizableFunctionParameter.Length; k++)
                     {
-                        optimizableFunction.gb.Data[j] /= this.batchCount;
+                        optimizableFunctionParameter.Grad.Data[k] /= this.BatchCount;
                     }
                 }
             }

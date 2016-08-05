@@ -4,6 +4,12 @@ namespace KelpNet.Functions.Connections
 {
     public class Convolution2D : OptimizableFunction, IPredictableFunction
     {
+        public NdArray W;
+        public NdArray b;
+
+        public NdArray gW;
+        public NdArray gb;
+
         private int _kSize;
         private int _stride;
         private int _pad;
@@ -27,19 +33,19 @@ namespace KelpNet.Functions.Connections
                 Buffer.BlockCopy(initialW, 0, W.Data, 0, sizeof(double) * initialW.Length);
             }
 
+            Parameters.Add(new Parameter(this.W, this.gW));
+
             if (!noBias)
             {
-                this.b = NdArray.Empty(outputChannels);
+                this.b = NdArray.Zeros(outputChannels);
                 this.gb = NdArray.ZerosLike(b);
 
-                if (initialb == null)
+                if (initialb != null)
                 {
-                    InitWeight(b);
+                    Buffer.BlockCopy(initialb, 0, b.Data, 0, sizeof (double)*initialb.Length);
                 }
-                else
-                {
-                    Buffer.BlockCopy(initialb, 0, b.Data, 0, sizeof(double) * initialb.Length);
-                }
+
+                Parameters.Add(new Parameter(this.b, this.gb));
             }
 
             this.OutputCount = outputChannels;
@@ -48,8 +54,6 @@ namespace KelpNet.Functions.Connections
 
         public override NdArray Forward(NdArray input)
         {
-            PrevInput = new NdArray(input);
-
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
 
             NdArray result = NdArray.Zeros(OutputCount, outputSize, outputSize);
@@ -89,7 +93,7 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        public override NdArray Backward(NdArray gy)
+        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
         {
             NdArray gx = NdArray.EmptyLike(PrevInput);
 
@@ -112,7 +116,7 @@ namespace KelpNet.Functions.Connections
                                         prevIndexX >= 0 && prevIndexX < PrevInput.Shape[2])
                                     {
                                         this.gW.Data[gW.GetIndex(j, i, dy, dx)] +=
-                                                this.PrevInput.Get(i, prevIndexY, prevIndexX) * gy.Get(j, y, x);
+                                                PrevInput.Get(i, prevIndexY, prevIndexX) * gy.Get(j, y, x);
                                     }
                                 }
                             }

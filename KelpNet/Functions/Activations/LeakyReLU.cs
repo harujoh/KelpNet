@@ -11,17 +11,17 @@
 
         public override NdArray Forward(NdArray x)
         {
-            PrevOutput = new NdArray(x);
+            NdArray y = new NdArray(x);
 
             for (int i = 0; i < x.Length; i++)
             {
-                if (PrevOutput.Data[i] < 0) PrevOutput.Data[i] *= this.slope;
+                if (y.Data[i] < 0) y.Data[i] *= this.slope;
             }
 
-            return PrevOutput;
+            return y;
         }
 
-        public override NdArray Backward(NdArray gy)
+        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
         {
             NdArray result = new NdArray(gy);
 

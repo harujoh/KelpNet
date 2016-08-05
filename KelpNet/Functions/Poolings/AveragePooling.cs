@@ -17,8 +17,6 @@ namespace KelpNet.Functions.Poolings
 
         public override NdArray Forward(NdArray input)
         {
-            PrevInput = new NdArray(input);
-
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);
 
@@ -48,12 +46,10 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            PrevOutput = new NdArray(result);
-
             return result;
         }
 
-        public override NdArray Backward(NdArray gy)
+        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
         {
             NdArray result = NdArray.EmptyLike(PrevInput);
             gy.Shape = PrevOutput.Shape;

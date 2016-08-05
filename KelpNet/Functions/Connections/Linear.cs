@@ -4,10 +4,17 @@ namespace KelpNet.Functions.Connections
 {
     public class Linear : OptimizableFunction, IPredictableFunction
     {
+        public NdArray W;
+        public NdArray b;
+
+        public NdArray gW;
+        public NdArray gb;
+
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null)
         {
             this.W = NdArray.Empty(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(W);
+            Parameters.Add(new Parameter(this.W, this.gW));
 
             if (initialW == null)
             {
@@ -16,22 +23,20 @@ namespace KelpNet.Functions.Connections
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                Buffer.BlockCopy(initialW, 0, W.Data, 0, sizeof (double)*initialW.Length);
+                Buffer.BlockCopy(initialW, 0, W.Data, 0, sizeof(double) * initialW.Length);
             }
 
             if (!noBias)
             {
-                this.b = NdArray.Empty(outputCount);
+                this.b = NdArray.Zeros(outputCount);
                 this.gb = NdArray.ZerosLike(b);
 
-                if (initialb == null)
-                {
-                    InitWeight(b);
-                }
-                else
+                if (initialb != null)
                 {
                     Buffer.BlockCopy(initialb, 0, b.Data, 0, sizeof (double)*initialb.Length);
                 }
+
+                Parameters .Add(new Parameter(this.b, this.gb));
             }
 
             this.OutputCount = outputCount;
@@ -40,8 +45,6 @@ namespace KelpNet.Functions.Connections
 
         public override NdArray Forward(NdArray x)
         {
-            this.PrevInput = new NdArray(x);
-
             NdArray output = NdArray.Empty(1, this.OutputCount);
             NdArray bias = this.b != null ? b : NdArray.Zeros(OutputCount);
 
@@ -58,13 +61,13 @@ namespace KelpNet.Functions.Connections
             return output;
         }
 
-        public override NdArray Backward(NdArray gy)
+        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
         {
-            for (int i = 0; i < this.PrevInput.Length; i++)
+            for (int i = 0; i < PrevInput.Length; i++)
             {
                 for (int j = 0; j < gy.Length; j++)
                 {
-                    this.gW.Data[gW.GetIndex(j, i)] += this.PrevInput.Data[i] * gy.Data[j];
+                    this.gW.Data[gW.GetIndex(j, i)] += PrevInput.Data[i] * gy.Data[j];
                 }
             }
 

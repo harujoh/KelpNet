@@ -6,17 +6,17 @@ namespace KelpNet.Functions.Activations
     {
         public override NdArray Forward(NdArray x)
         {
-            PrevOutput = NdArray.EmptyLike(x);
+            NdArray y = NdArray.EmptyLike(x);
 
             for (int i = 0; i < x.Length; i++)
             {
-                PrevOutput.Data[i] = 1 / (1 + Math.Exp(-x.Data[i]));
+                y.Data[i] = 1 / (1 + Math.Exp(-x.Data[i]));
             }
 
-            return PrevOutput;
+            return y;
         }
 
-        public override NdArray Backward(NdArray gy)
+        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
         {
             NdArray result = NdArray.EmptyLike(gy);
 
