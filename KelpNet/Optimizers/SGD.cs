@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using KelpNet.Functions;
+using System.Threading.Tasks;
 
 namespace KelpNet.Optimizers
 {
@@ -12,18 +12,18 @@ namespace KelpNet.Optimizers
             this.LearningRate = learningRate;
         }
 
-        protected override void DoUpdate(List<Function> optimizableFunctions)
+        protected override void DoUpdate(List<Function> functions)
         {
-            foreach (var optimizableFunction in optimizableFunctions)
+            Parallel.ForEach(functions, function =>
             {
-                foreach (Function.Parameter parameter in optimizableFunction.Parameters)
+                foreach (Function.Parameter parameter in function.Parameters)
                 {
                     for (int j = 0; j < parameter.Length; j++)
                     {
-                        parameter.Param.Data[j] -= this.LearningRate * parameter.Grad.Data[j];
+                        parameter.Param.Data[j] -= this.LearningRate*parameter.Grad.Data[j];
                     }
                 }
-            }
+            });
         }
 
         public override void Initialize(FunctionStack fs)

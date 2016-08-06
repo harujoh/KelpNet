@@ -61,9 +61,9 @@ namespace KelpNetTester.Tests
                 List<double> totalLoss = new List<double>();
 
                 //何回バッチを実行するか
-                for (int i = 0; i < TrainDataCount; i++)
+                for (int i = 1; i < TrainDataCount+1; i++)
                 {
-                    Console.WriteLine("\nbatch count " + (i + 1) + "/" + TrainDataCount);
+                    Console.WriteLine("\nbatch count " + i + "/" + TrainDataCount);
 
                     //バッチごとの誤差を集計
                     List<double> sumLoss = new List<double>();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using KelpNet.Functions;
 
 namespace KelpNet.Optimizers
@@ -16,21 +17,22 @@ namespace KelpNet.Optimizers
             this.momentum = momentum;
         }
 
-        protected override void DoUpdate(List<Function> optimizableFunctions)
+        protected override void DoUpdate(List<Function> functions)
         {
-            for (int i = 0; i < optimizableFunctions.Count; i++)
+            //for (int i = 0; i < functions.Count; i++)
+            Parallel.For(0, functions.Count, i =>
             {
-                for (int j = 0; j < optimizableFunctions[i].Parameters.Count; j++)
+                for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
-                    for (int k = 0; k < optimizableFunctions[i].Parameters[j].Length; k++)
+                    for (int k = 0; k < functions[i].Parameters[j].Length; k++)
                     {
                         v[i][j].Data[k] *= this.momentum;
-                        v[i][j].Data[k] -= this.LearningRate*optimizableFunctions[i].Parameters[j].Grad.Data[k];
+                        v[i][j].Data[k] -= this.LearningRate*functions[i].Parameters[j].Grad.Data[k];
 
-                        optimizableFunctions[i].Parameters[j].Param.Data[k] += v[i][j].Data[k];
+                        functions[i].Parameters[j].Param.Data[k] += v[i][j].Data[k];
                     }
                 }
-            }
+            });
         }
 
         public override void Initialize(FunctionStack fs)

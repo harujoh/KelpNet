@@ -10,14 +10,14 @@ namespace KelpNet
         protected double t = 1;
 
         //更新回数のカウントを取りつつ更新処理を呼び出す
-        public void Update(List<Function> optimizableFunctions)
+        public void Update(List<Function> functions)
         {
-            this.DoUpdate(optimizableFunctions);
+            this.DoUpdate(functions);
             this.t++;
         }
 
         //カウントを取るために呼び変えしている
-        protected abstract void DoUpdate(List<Function> optimizableFunctions);
+        protected abstract void DoUpdate(List<Function> functions);
 
         //ネットワークの大きさをOptimizerに保存
         public abstract void Initialize(FunctionStack fs);

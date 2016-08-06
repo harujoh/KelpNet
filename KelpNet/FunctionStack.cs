@@ -58,8 +58,8 @@ namespace KelpNet
             //バッチカウントもリセット
             this.BatchCount = 0;
 
-            foreach (Function function in this.Functions)
-            {
+            foreach (var function in this.Functions)
+            {                
                 for (int j = 0; j < function.Parameters.Count; j++)
                 {
                     function.Parameters[j].Grad.Fill(0);
@@ -76,11 +76,11 @@ namespace KelpNet
         //予想を実行する
         public NdArray Predict(NdArray input)
         {
-            NdArray forwardResult = this.PredictableFunctions[0].Predict(input);
+            NdArray forwardResult = input;
 
-            for (int i = 1; i < this.PredictableFunctions.Count; i++)
+            foreach (IPredictableFunction predictableFunction in this.PredictableFunctions)
             {
-                forwardResult = this.PredictableFunctions[i].Predict(forwardResult);
+                forwardResult = predictableFunction.Predict(forwardResult);
             }
 
             return forwardResult;
@@ -174,13 +174,13 @@ namespace KelpNet
         public void Update()
         {
             //更新実行前にバッチカウントを使って各Functionの傾きを補正
-            foreach (Function optimizableFunction in this.Functions)
+            foreach (var function in this.Functions)
             {
-                foreach (Function.Parameter optimizableFunctionParameter in optimizableFunction.Parameters)
+                foreach (Function.Parameter functionParameter in function.Parameters)
                 {
-                    for (int k = 0; k < optimizableFunctionParameter.Length; k++)
+                    for (int k = 0; k < functionParameter.Length; k++)
                     {
-                        optimizableFunctionParameter.Grad.Data[k] /= this.BatchCount;
+                        functionParameter.Grad.Data[k] /= this.BatchCount;
                     }
                 }
             }

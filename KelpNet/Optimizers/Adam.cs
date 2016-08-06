@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using KelpNet.Functions;
 
 namespace KelpNet.Optimizers
@@ -32,23 +33,24 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(List<Function> optimizableFunctions)
+        protected override void DoUpdate(List<Function> functions)
         {
-            for (int i = 0; i < optimizableFunctions.Count; i++)
+            Parallel.For(0, functions.Count, i =>
             {
-                for (int j = 0; j < optimizableFunctions[i].Parameters.Count; j++)
+                for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
-                    for (int k = 0; k < optimizableFunctions[i].Parameters[j].Length; k++)
+                    for (int k = 0; k < functions[i].Parameters[j].Length; k++)
                     {
-                        double grad = optimizableFunctions[i].Parameters[j].Grad.Data[k];
+                        double grad = functions[i].Parameters[j].Grad.Data[k];
 
-                        m[i][j].Data[k] += (1 - this.beta1) * (grad - m[i][j].Data[k]);
-                        v[i][j].Data[k] += (1 - this.beta2) * (grad * grad - v[i][j].Data[k]);
+                        m[i][j].Data[k] += (1 - this.beta1)*(grad - m[i][j].Data[k]);
+                        v[i][j].Data[k] += (1 - this.beta2)*(grad*grad - v[i][j].Data[k]);
 
-                        optimizableFunctions[i].Parameters[j].Param.Data[k] -= lr * m[i][j].Data[k] / (Math.Sqrt(v[i][j].Data[k]) + this.eps);
+                        functions[i].Parameters[j].Param.Data[k] -= lr*m[i][j].Data[k]/
+                                                                    (Math.Sqrt(v[i][j].Data[k]) + this.eps);
                     }
                 }
-            }
+            });
         }
 
         public override void Initialize(FunctionStack fs)
