@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
-    public class Convolution2D : OptimizableFunction, IPredictableFunction
+    public class Convolution2D : Function, IPredictableFunction
     {
         public NdArray W;
         public NdArray b;

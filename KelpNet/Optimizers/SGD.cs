@@ -12,11 +12,11 @@ namespace KelpNet.Optimizers
             this.LearningRate = learningRate;
         }
 
-        protected override void DoUpdate(List<OptimizableFunction> optimizableFunctions)
+        protected override void DoUpdate(List<Function> optimizableFunctions)
         {
             foreach (var optimizableFunction in optimizableFunctions)
             {
-                foreach (OptimizableFunction.Parameter parameter in optimizableFunction.Parameters)
+                foreach (Function.Parameter parameter in optimizableFunction.Parameters)
                 {
                     for (int j = 0; j < parameter.Length; j++)
                     {

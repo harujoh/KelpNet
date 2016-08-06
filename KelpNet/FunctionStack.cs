@@ -13,9 +13,6 @@ namespace KelpNet
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
 
-        //重みと傾きを持つものはココにOptimizableFunctionクラスとして保管される
-        public readonly List<OptimizableFunction> OptimizableFunctions = new List<OptimizableFunction>();
-
         //学習用の関数を除く関数がココにPredictableFunctionとして保管される（現在はDropoutを実行しないために用意）
         public readonly List<IPredictableFunction> PredictableFunctions = new List<IPredictableFunction>();
 
@@ -47,13 +44,6 @@ namespace KelpNet
             //全関数リストへ追加
             this.Functions.Add(function);
 
-            //学習対象関数のリストへ追加
-            var optimizableFunction = function as OptimizableFunction;
-            if (optimizableFunction != null)
-            {
-                this.OptimizableFunctions.Add(optimizableFunction);
-            }
-
             //予測処理実行用のリストへ追加
             var PredictableFunction = function as IPredictableFunction;
             if (PredictableFunction != null)
@@ -68,11 +58,11 @@ namespace KelpNet
             //バッチカウントもリセット
             this.BatchCount = 0;
 
-            foreach (var function in this.OptimizableFunctions)
+            foreach (Function function in this.Functions)
             {
-                foreach (OptimizableFunction.Parameter functionParam in function.Parameters)
+                for (int j = 0; j < function.Parameters.Count; j++)
                 {
-                    functionParam.Grad.Fill(0);
+                    function.Parameters[j].Grad.Fill(0);
                 }
             }
         }
@@ -105,9 +95,8 @@ namespace KelpNet
 
             //forwardを実行
             InputData[0] = NdArray.FromArray(input);
-            InputData[1] = this.Functions[0].Forward(NdArray.FromArray(input));
 
-            for (int i = 1; i < this.Functions.Count; i++)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
                 //出力を次層の入力として保存する
                 InputData[i + 1] = this.Functions[i].Forward(InputData[i]);
@@ -149,9 +138,7 @@ namespace KelpNet
                 InputData[0][i] = NdArray.FromArray(input[startOffset + i]);
             }
 
-            InputData[1] = this.Functions[0].BatchForward(InputData[0]);
-
-            for (int j = 1; j < this.Functions.Count; j++)
+            for (int j = 0; j < this.Functions.Count; j++)
             {
                 InputData[j + 1] = this.Functions[j].BatchForward(InputData[j]);
             }
@@ -187,9 +174,9 @@ namespace KelpNet
         public void Update()
         {
             //更新実行前にバッチカウントを使って各Functionの傾きを補正
-            foreach (OptimizableFunction optimizableFunction in this.OptimizableFunctions)
+            foreach (Function optimizableFunction in this.Functions)
             {
-                foreach (OptimizableFunction.Parameter optimizableFunctionParameter in optimizableFunction.Parameters)
+                foreach (Function.Parameter optimizableFunctionParameter in optimizableFunction.Parameters)
                 {
                     for (int k = 0; k < optimizableFunctionParameter.Length; k++)
                     {
@@ -199,7 +186,7 @@ namespace KelpNet
             }
 
             //宣言されているOptimizerの更新を実行
-            optimizer.Update(this.OptimizableFunctions);
+            optimizer.Update(this.Functions);
 
             //傾きをリセット
             this.ZeroGrads();

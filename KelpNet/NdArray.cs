@@ -31,22 +31,63 @@ namespace KelpNet
 
         public static NdArray EmptyLike(NdArray baseArray)
         {
-            return new NdArray(new double[baseArray.Shape.Aggregate(1, (current, val) => current * val)], baseArray.Shape);
+            return new NdArray(new double[GetArrayLength(baseArray.Shape)], baseArray.Shape);
         }
 
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            return new NdArray(Enumerable.Repeat(0.0, baseArray.Shape.Aggregate(1, (current, val) => current * val)).ToArray(), baseArray.Shape);
+            int length = GetArrayLength(baseArray.Shape);
+            double[] resutlArray = new double[length]; 
+
+            for (int i = 0; i < length; i++)
+            {
+                resutlArray[i] = 0;
+            }
+
+            return new NdArray(resutlArray, baseArray.Shape);
         }
 
         public static NdArray Empty(params int[] shape)
         {
-            return new NdArray(new double[shape.Aggregate(1, (current, val) => current * val)], shape);
+            return new NdArray(new double[GetArrayLength(shape)], shape);
+        }
+
+        public static NdArray Ones(params int[] shape)
+        {
+            int length = GetArrayLength(shape);
+            double[] resutlArray = new double[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                resutlArray[i] = 1;
+            }
+
+            return new NdArray(resutlArray, shape);
         }
 
         public static NdArray Zeros(params int[] shape)
         {
-            return new NdArray(Enumerable.Repeat(0.0, shape.Aggregate(1, (current, val) => current * val)).ToArray(), shape);
+            int length = GetArrayLength(shape);
+            double[] resutlArray = new double[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                resutlArray[i] = 0;
+            }
+
+            return new NdArray(resutlArray, shape);
+        }
+
+        static int GetArrayLength(params int[] shapes)
+        {
+            int result = 1;
+
+            foreach (int shape in shapes)
+            {
+                result *= shape;
+            }
+
+            return result;
         }
 
         public static NdArray FromArray(Array data)
@@ -56,15 +97,8 @@ namespace KelpNet
 
             if (data.Rank == 1)
             {
-                if (data.GetType().GetElementType() != typeof(double))
-                {
-                    resultData = new double[data.Length];
-                    data.CopyTo(resultData, 0);
-                }
-                else
-                {
-                    resultData = (double[])data;
-                }
+                resultData = new double[data.Length];
+                data.CopyTo(resultData, 0);
 
                 resultShape = new[] { data.Length };
             }
@@ -117,7 +151,10 @@ namespace KelpNet
 
         public void Fill(double val)
         {
-            this.Data = Enumerable.Repeat(val, this.Length).ToArray();
+            for (int i = 0; i < this.Data.Length; i++)
+            {
+                this.Data[i] = val;
+            }
         }
 
         //N次元のIndexから１次元のIndexを取得する

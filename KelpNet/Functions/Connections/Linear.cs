@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
-    public class Linear : OptimizableFunction, IPredictableFunction
+    public class Linear : Function, IPredictableFunction
     {
         public NdArray W;
         public NdArray b;

@@ -32,7 +32,7 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(List<OptimizableFunction> optimizableFunctions)
+        protected override void DoUpdate(List<Function> optimizableFunctions)
         {
             for (int i = 0; i < optimizableFunctions.Count; i++)
             {
@@ -53,18 +53,18 @@ namespace KelpNet.Optimizers
 
         public override void Initialize(FunctionStack fs)
         {
-            this.m = new NdArray[fs.OptimizableFunctions.Count][];
-            this.v = new NdArray[fs.OptimizableFunctions.Count][];
+            this.m = new NdArray[fs.Functions.Count][];
+            this.v = new NdArray[fs.Functions.Count][];
 
-            for (int i = 0; i < fs.OptimizableFunctions.Count; i++)
+            for (int i = 0; i < fs.Functions.Count; i++)
             {
-                this.m[i] = new NdArray[fs.OptimizableFunctions[i].Parameters.Count];
-                this.v[i] = new NdArray[fs.OptimizableFunctions[i].Parameters.Count];
+                this.m[i] = new NdArray[fs.Functions[i].Parameters.Count];
+                this.v[i] = new NdArray[fs.Functions[i].Parameters.Count];
 
-                for (int j = 0; j < fs.OptimizableFunctions[i].Parameters.Count; j++)
+                for (int j = 0; j < fs.Functions[i].Parameters.Count; j++)
                 {
-                    this.m[i][j] = NdArray.ZerosLike(fs.OptimizableFunctions[i].Parameters[j].Param);
-                    this.v[i][j] = NdArray.ZerosLike(fs.OptimizableFunctions[i].Parameters[j].Param);
+                    this.m[i][j] = NdArray.ZerosLike(fs.Functions[i].Parameters[j].Param);
+                    this.v[i][j] = NdArray.ZerosLike(fs.Functions[i].Parameters[j].Param);
                 }
             }
         }
