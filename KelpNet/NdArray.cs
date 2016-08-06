@@ -25,7 +25,7 @@ namespace KelpNet
             this.Shape = new int[ndArray.Shape.Length];
             Array.Copy(ndArray.Shape, this.Shape, this.Shape.Length);
 
-            this.Data = new double[this.Shape.Aggregate(1, (current, val) => current * val)];
+            this.Data = new double[GetArrayLength(this.Shape)];
             Array.Copy(ndArray.Data, this.Data, this.Data.Length);
         }
 
@@ -47,14 +47,9 @@ namespace KelpNet
             return new NdArray(resutlArray, baseArray.Shape);
         }
 
-        public static NdArray Empty(params int[] shape)
+        public static NdArray OnesLike(NdArray baseArray)
         {
-            return new NdArray(new double[GetArrayLength(shape)], shape);
-        }
-
-        public static NdArray Ones(params int[] shape)
-        {
-            int length = GetArrayLength(shape);
+            int length = GetArrayLength(baseArray.Shape);
             double[] resutlArray = new double[length];
 
             for (int i = 0; i < length; i++)
@@ -62,7 +57,12 @@ namespace KelpNet
                 resutlArray[i] = 1;
             }
 
-            return new NdArray(resutlArray, shape);
+            return new NdArray(resutlArray, baseArray.Shape);
+        }
+
+        public static NdArray Empty(params int[] shape)
+        {
+            return new NdArray(new double[GetArrayLength(shape)], shape);
         }
 
         public static NdArray Zeros(params int[] shape)
@@ -73,6 +73,19 @@ namespace KelpNet
             for (int i = 0; i < length; i++)
             {
                 resutlArray[i] = 0;
+            }
+
+            return new NdArray(resutlArray, shape);
+        }
+
+        public static NdArray Ones(params int[] shape)
+        {
+            int length = GetArrayLength(shape);
+            double[] resutlArray = new double[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                resutlArray[i] = 1;
             }
 
             return new NdArray(resutlArray, shape);
