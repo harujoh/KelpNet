@@ -19,7 +19,7 @@ namespace KelpNetTester.Tests
         const int BatchDataCount = 128;
 
         //一世代あたりの訓練回数
-        const int TrainDataCount = 50000; // = 60000 / 20
+        const int TrainDataCount = 50000;
 
         //性能評価時のデータ数
         const int TestDataCount = 100;
@@ -81,7 +81,7 @@ namespace KelpNetTester.Tests
                 new Linear(N, N), // L14
                 new BatchNormalization(N),
                 new ReLU(),
-                new Linear(N, 10)    // L15
+                new Linear(N, 10) // L15
             );
 
             //この構成では学習が進まない
@@ -114,7 +114,7 @@ namespace KelpNetTester.Tests
             //    new ReLU(),
             //    new Linear(N, N), // L14
             //    new ReLU(),
-            //    new Linear(N, 10)    // L15
+            //    new Linear(N, 10) // L15
             //);
 
 

@@ -22,8 +22,6 @@ namespace KelpNet.Functions.Normalization
 
         private double[] Mean;
         private double[] Variance;
-        //private NdArray Mean;
-        //private NdArray Variance;
 
 
         private readonly int ChannelSize;
