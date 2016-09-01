@@ -53,6 +53,7 @@
     <Compile Include="Tests\Test2.cs" />
     <Compile Include="Tests\Test4.cs" />
     <Compile Include="Tests\Test1.cs" />
+    <Compile Include="Tests\Test7.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">

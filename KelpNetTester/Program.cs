@@ -13,9 +13,10 @@ namespace KelpNetTester
             //Test4.Run();
             //Test5.Run();
             //Test6.Run();
+            //Test7.Run();
 
             Console.WriteLine("Test Done...");
-            //Console.Read();
+            Console.Read();
         }
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Functions\Connections\Convolution2D.cs" />
     <Compile Include="Functions\Connections\Linear.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
+    <Compile Include="Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="Loss\MeanSquaredError.cs" />
     <Compile Include="Loss\SoftmaxCrossEntropy.cs" />
     <Compile Include="Functions\Poolings\AveragePooling.cs" />

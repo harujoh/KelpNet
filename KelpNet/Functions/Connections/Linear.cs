@@ -61,13 +61,13 @@ namespace KelpNet.Functions.Connections
             return output;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            for (int i = 0; i < PrevInput.Length; i++)
+            for (int i = 0; i < prevInput.Length; i++)
             {
                 for (int j = 0; j < gy.Length; j++)
                 {
-                    this.gW.Data[gW.GetIndex(j, i)] += PrevInput.Data[i] * gy.Data[j];
+                    this.gW.Data[gW.GetIndex(j, i)] += prevInput.Data[i] * gy.Data[j];
                 }
             }
 

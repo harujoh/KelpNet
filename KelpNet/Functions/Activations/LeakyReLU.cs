@@ -21,13 +21,13 @@
             return y;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray result = new NdArray(gy);
 
             for (int i = 0; i < gy.Length; i++)
             {
-                if (PrevOutput.Data[i] < 0) PrevOutput.Data[i] *= this.slope;
+                if (prevOutput.Data[i] < 0) prevOutput.Data[i] *= this.slope;
             }
 
             return result;

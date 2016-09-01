@@ -49,10 +49,10 @@ namespace KelpNet.Functions.Poolings
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray result = NdArray.EmptyLike(PrevInput);
-            gy.Shape = PrevOutput.Shape;
+            NdArray result = NdArray.EmptyLike(prevInput);
+            gy.Shape = prevOutput.Shape;
             double m = this._kSize * this._kSize;
 
             for (int i = 0; i < result.Shape[0]; i++)

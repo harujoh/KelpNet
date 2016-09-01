@@ -33,7 +33,7 @@ namespace KelpNet
 
 
         public abstract NdArray Forward(NdArray x);
-        public abstract NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput);
+        public abstract NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput);
 
         public virtual NdArray[] BatchForward(NdArray[] x)
         {
@@ -47,13 +47,13 @@ namespace KelpNet
             return y;
         }
 
-        public virtual NdArray[] BatchBackward(NdArray[] gy, NdArray[] PrevInput, NdArray[] PrevOutput)
+        public virtual NdArray[] BatchBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
             NdArray[] gx = new NdArray[gy.Length];
 
             Parallel.For(0, gy.Length, i =>
             {
-                gx[i] = Backward(gy[i], PrevInput[i], PrevOutput[i]);
+                gx[i] = Backward(gy[i], prevInput[i], prevOutput[i]);
             });
 
             return gx;

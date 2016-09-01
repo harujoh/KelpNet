@@ -3,7 +3,6 @@ using KelpNet;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
-using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {

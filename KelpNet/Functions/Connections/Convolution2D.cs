@@ -93,13 +93,13 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray gx = NdArray.EmptyLike(PrevInput);
+            NdArray gx = NdArray.EmptyLike(prevInput);
 
             for (int j = 0; j < gy.Shape[0]; j++)
             {
-                for (int i = 0; i < PrevInput.Shape[0]; i++)
+                for (int i = 0; i < prevInput.Shape[0]; i++)
                 {
                     for (int y = 0; y < gy.Shape[1]; y++)
                     {
@@ -112,11 +112,11 @@ namespace KelpNet.Functions.Connections
                                     int prevIndexY = y * this._stride + dy - this._pad;
                                     int prevIndexX = x * this._stride + dx - this._pad;
 
-                                    if (prevIndexY >= 0 && prevIndexY < PrevInput.Shape[1] &&
-                                        prevIndexX >= 0 && prevIndexX < PrevInput.Shape[2])
+                                    if (prevIndexY >= 0 && prevIndexY < prevInput.Shape[1] &&
+                                        prevIndexX >= 0 && prevIndexX < prevInput.Shape[2])
                                     {
                                         this.gW.Data[gW.GetIndex(j, i, dy, dx)] +=
-                                                PrevInput.Get(i, prevIndexY, prevIndexX) * gy.Get(j, y, x);
+                                                prevInput.Get(i, prevIndexY, prevIndexX) * gy.Get(j, y, x);
                                     }
                                 }
                             }

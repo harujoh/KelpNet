@@ -25,7 +25,7 @@
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray PrevInput, NdArray PrevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray result = NdArray.EmptyLike(gy);
 
