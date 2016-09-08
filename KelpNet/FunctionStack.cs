@@ -163,7 +163,9 @@ namespace KelpNet
             //backwardを実行
             for (int i = this.Functions.Count - 1; i >= 0; i--)
             {
-                backwardResult = this.Functions[i].Backward(backwardResult, InputData[i], InputData[i + 1]);
+                this.Functions[i].PrevInput[0] = InputData[i];
+                this.Functions[i].PrevOutput[0] = InputData[i + 1];
+                backwardResult = this.Functions[i].Backward(backwardResult);
             }
 
             //実行回数をカウント
@@ -225,6 +227,13 @@ namespace KelpNet
                 sumLoss.Add(loss);
             }
 
+            //入出力を設定
+            for (int i=0;i< this.Functions.Count;i++)
+            {
+                this.Functions[i].PrevInput = InputData[i];
+                this.Functions[i].PrevOutput = InputData[i+1];
+            }
+
             //backwardを実行
             for (int i = this.FunctionPares.Count - 1; i >= 0; i--)
             {
@@ -232,7 +241,7 @@ namespace KelpNet
                 {
                     for (int j = this.FunctionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
                     {
-                        backwardResult[k] = this.FunctionPares[i].SoloFunctions[j].Backward(backwardResult[k], InputData[functionCount - this.FunctionPares[i].SoloFunctions.Count + j][k], InputData[functionCount - this.FunctionPares[i].SoloFunctions.Count + j + 1][k], k);
+                        backwardResult[k] = this.FunctionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
                     }
                 });
 
@@ -240,7 +249,7 @@ namespace KelpNet
 
                 for (int j = this.FunctionPares[i].BatchFunctions.Count - 1; j >= 0; j--)
                 {
-                    backwardResult = this.FunctionPares[i].BatchFunctions[j].BatchBackward(backwardResult, InputData[functionCount - this.FunctionPares[i].BatchFunctions.Count + j], InputData[functionCount - this.FunctionPares[i].BatchFunctions.Count + j + 1]);
+                    backwardResult = this.FunctionPares[i].BatchFunctions[j].BatchBackward(backwardResult);
                     functionCount--;
                 }
             }

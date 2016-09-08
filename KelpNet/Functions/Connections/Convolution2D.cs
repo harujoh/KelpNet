@@ -93,13 +93,13 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchID = 0)
+        public override NdArray Backward(NdArray gy, int batchID = 0)
         {
-            NdArray gx = NdArray.EmptyLike(prevInput);
+            NdArray gx = NdArray.EmptyLike(PrevInput[batchID]);
 
             for (int j = 0; j < gy.Shape[0]; j++)
             {
-                for (int i = 0; i < prevInput.Shape[0]; i++)
+                for (int i = 0; i < PrevInput[batchID].Shape[0]; i++)
                 {
                     for (int y = 0; y < gy.Shape[1]; y++)
                     {
@@ -112,11 +112,11 @@ namespace KelpNet.Functions.Connections
                                     int prevIndexY = y * this._stride + dy - this._pad;
                                     int prevIndexX = x * this._stride + dx - this._pad;
 
-                                    if (prevIndexY >= 0 && prevIndexY < prevInput.Shape[1] &&
-                                        prevIndexX >= 0 && prevIndexX < prevInput.Shape[2])
+                                    if (prevIndexY >= 0 && prevIndexY < PrevInput[batchID].Shape[1] &&
+                                        prevIndexX >= 0 && prevIndexX < PrevInput[batchID].Shape[2])
                                     {
                                         this.gW.Data[gW.GetIndex(j, i, dy, dx)] +=
-                                                prevInput.Get(i, prevIndexY, prevIndexX) * gy.Get(j, y, x);
+                                                PrevInput[batchID].Get(i, prevIndexY, prevIndexX) * gy.Get(j, y, x);
                                     }
                                 }
                             }

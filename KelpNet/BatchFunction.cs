@@ -3,6 +3,6 @@
     public interface IBatchFunction
     {
         NdArray[] BatchForward(NdArray[] x);
-        NdArray[] BatchBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput);
+        NdArray[] BatchBackward(NdArray[] gy);
     }
 }

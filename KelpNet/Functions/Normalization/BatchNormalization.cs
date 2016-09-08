@@ -184,11 +184,11 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchID = 0)
+        public override NdArray Backward(NdArray gy, int batchID = 0)
         {
             NdArray gx = NdArray.EmptyLike(gy);
 
-            var m = prevInput.Length;
+            var m = PrevInput[batchID].Length;
 
             this.gBeta.Fill(0);
             this.gGamma.Fill(0);
@@ -226,7 +226,7 @@ namespace KelpNet.Functions.Normalization
             return gx;
         }
 
-        public NdArray[] BatchBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
+        public NdArray[] BatchBackward(NdArray[] gy)
         {
             NdArray[] gx = new NdArray[gy.Length];
             for (int i = 0; i < gy.Length; i++)
@@ -234,7 +234,7 @@ namespace KelpNet.Functions.Normalization
                 gx[i] = NdArray.Empty(this.ChannelSize);
             }
 
-            var m = prevInput.Length;
+            var m = PrevInput.Length;
 
             this.gBeta.Fill(0);
             this.gGamma.Fill(0);

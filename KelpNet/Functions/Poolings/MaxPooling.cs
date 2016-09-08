@@ -48,10 +48,10 @@ namespace KelpNet.Functions.Poolings
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchId=0)
+        public override NdArray Backward(NdArray gy, int batchId=0)
         {
-            NdArray result = NdArray.ZerosLike(prevInput);
-            gy.Shape = prevOutput.Shape;
+            NdArray result = NdArray.ZerosLike(PrevInput[batchId]);
+            gy.Shape = PrevOutput[batchId].Shape;
 
             for (int i = 0; i < result.Shape[0]; i++)
             {
@@ -60,7 +60,7 @@ namespace KelpNet.Functions.Poolings
                     for (int x = 0; x < gy.Shape[2]; x++)
                     {
                         //前回の入力値と出力値を比較して、同じ値のものを見つける
-                        this.setresult(i, y, x, gy.Data[gy.GetIndex(i, y, x)], prevInput, prevOutput, ref result);
+                        this.setresult(i, y, x, gy.Data[gy.GetIndex(i, y, x)], PrevInput[batchId], PrevOutput[batchId], ref result);
                     }
                 }
             }
