@@ -9,7 +9,7 @@
             this.slope = slope;
         }
 
-        public override NdArray Forward(NdArray x, int batchID = 0)
+        protected override NdArray ForwardSingle(NdArray x, int batchID = 0)
         {
             NdArray y = new NdArray(x);
 

@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Poolings
             this._pad = pad;
         }
 
-        public override NdArray Forward(NdArray input,int batchID = 0)
+        protected override NdArray ForwardSingle(NdArray input,int batchID = 0)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);

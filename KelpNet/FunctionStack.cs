@@ -163,8 +163,6 @@ namespace KelpNet
             //backwardを実行
             for (int i = this.Functions.Count - 1; i >= 0; i--)
             {
-                this.Functions[i].PrevInput[0] = InputData[i];
-                this.Functions[i].PrevOutput[0] = InputData[i + 1];
                 backwardResult = this.Functions[i].Backward(backwardResult);
             }
 
@@ -178,6 +176,13 @@ namespace KelpNet
         public List<double> BatchTrain(Array[] input, Array[] teach, LossFunction lossFunction)
         {
             int batchCount = input.Length;
+
+            //入出力を初期化
+            foreach (Function function in this.Functions)
+            {
+                function.PrevInput = new NdArray[batchCount];
+                function.PrevOutput = new NdArray[batchCount];
+            }
 
             //全層の『入力』と『出力』を全て保存するため＋１
             NdArray[][] InputData = new NdArray[this.Functions.Count + 1][];
@@ -225,13 +230,6 @@ namespace KelpNet
                 backwardResult[i] = lossFunction(InputData[functionCount][i], NdArray.FromArray(teach[i]), out loss);
 
                 sumLoss.Add(loss);
-            }
-
-            //入出力を設定
-            for (int i=0;i< this.Functions.Count;i++)
-            {
-                this.Functions[i].PrevInput = InputData[i];
-                this.Functions[i].PrevOutput = InputData[i+1];
             }
 
             //backwardを実行

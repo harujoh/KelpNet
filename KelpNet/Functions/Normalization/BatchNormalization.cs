@@ -58,7 +58,7 @@ namespace KelpNet.Functions.Normalization
             this.ChannelSize = channelSize;
         }
 
-        public override NdArray Forward(NdArray x, int batchID = 0)
+        protected override NdArray ForwardSingle(NdArray x, int batchID = 0)
         {
             NdArray y = NdArray.EmptyLike(x);
 
@@ -285,7 +285,7 @@ namespace KelpNet.Functions.Normalization
         {
             this.IsTrain = false;
 
-            var result = this.Forward(input);
+            var result = this.ForwardSingle(input);
 
             //フラグをリセット
             this.IsTrain = this.InputIsTrain;

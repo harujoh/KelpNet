@@ -6,7 +6,7 @@
     {
         public virtual NdArray Predict(NdArray input)
         {
-            return Forward(input);
+            return ForwardSingle(input);
         }
     }
 }

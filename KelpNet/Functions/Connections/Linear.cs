@@ -43,7 +43,7 @@ namespace KelpNet.Functions.Connections
             this.InputCount = inputCount;
         }
 
-        public override NdArray Forward(NdArray x,int batchID=0)
+        protected override NdArray ForwardSingle(NdArray x,int batchID=0)
         {
             NdArray output = NdArray.Empty(1, this.OutputCount);
             NdArray bias = this.b != null ? b : NdArray.Zeros(OutputCount);

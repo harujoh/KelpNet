@@ -34,8 +34,17 @@ namespace KelpNet
         public NdArray[] PrevInput = new NdArray[1];
         public NdArray[] PrevOutput = new NdArray[1];
 
-        public abstract NdArray Forward(NdArray x, int batchId=0);
+        protected abstract NdArray ForwardSingle(NdArray x, int batchId=0);
         public abstract NdArray Backward(NdArray gy, int batchId=0);
+
+        public NdArray Forward(NdArray x, int batchId = 0)
+        {
+            //参照コピーにすることでメモリを節約
+            this.PrevInput[batchId] = x;
+            this.PrevOutput[batchId] = this.ForwardSingle(x, batchId);
+
+            return this.PrevOutput[batchId];
+        }
 
         //初期値が入力されなかった場合、この関数で初期化を行う
         protected void InitWeight(NdArray array, double masterScale = 1.0)
