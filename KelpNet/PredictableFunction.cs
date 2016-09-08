@@ -2,8 +2,11 @@
 {
     //予測処理用のインターフェース
     //コレを持つFunctionだけが予測処理時に呼ばれるようにする
-    public interface IPredictableFunction
+    public abstract class PredictableFunction : Function
     {
-        NdArray Predict(NdArray input);
+        public virtual NdArray Predict(NdArray input)
+        {
+            return Forward(input);
+        }
     }
 }

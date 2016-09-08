@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
-    public class Convolution2D : Function, IPredictableFunction
+    public class Convolution2D : PredictableFunction
     {
         public NdArray W;
         public NdArray b;
@@ -52,7 +52,7 @@ namespace KelpNet.Functions.Connections
             this.InputCount = inputChannels;
         }
 
-        public override NdArray Forward(NdArray input)
+        public override NdArray Forward(NdArray input, int batchID = 0)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
 
@@ -93,7 +93,7 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchID = 0)
         {
             NdArray gx = NdArray.EmptyLike(prevInput);
 
@@ -169,11 +169,6 @@ namespace KelpNet.Functions.Connections
             }
 
             return gx;
-        }
-
-        public NdArray Predict(NdArray input)
-        {
-            return Forward(input);
         }
     }
 }

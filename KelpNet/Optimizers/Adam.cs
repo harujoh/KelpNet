@@ -43,10 +43,10 @@ namespace KelpNet.Optimizers
                     {
                         double grad = functions[i].Parameters[j].Grad.Data[k];
 
-                        m[i][j].Data[k] += (1 - this.beta1)*(grad - m[i][j].Data[k]);
-                        v[i][j].Data[k] += (1 - this.beta2)*(grad*grad - v[i][j].Data[k]);
+                        m[i][j].Data[k] += (1 - this.beta1) * (grad - m[i][j].Data[k]);
+                        v[i][j].Data[k] += (1 - this.beta2) * (grad * grad - v[i][j].Data[k]);
 
-                        functions[i].Parameters[j].Param.Data[k] -= lr*m[i][j].Data[k]/
+                        functions[i].Parameters[j].Param.Data[k] -= lr * m[i][j].Data[k] /
                                                                     (Math.Sqrt(v[i][j].Data[k]) + this.eps);
                     }
                 }

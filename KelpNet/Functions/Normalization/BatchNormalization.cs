@@ -3,7 +3,7 @@
 namespace KelpNet.Functions.Normalization
 {
     //Chainerより移植　finetuningは未実装
-    public class BatchNormalization : Function, IPredictableFunction
+    public class BatchNormalization : PredictableFunction, IBatchFunction
     {
         private bool IsTrain = true;
         private bool InputIsTrain = true;
@@ -58,7 +58,7 @@ namespace KelpNet.Functions.Normalization
             this.ChannelSize = channelSize;
         }
 
-        public override NdArray Forward(NdArray x)
+        public override NdArray Forward(NdArray x, int batchID = 0)
         {
             NdArray y = NdArray.EmptyLike(x);
 
@@ -91,7 +91,7 @@ namespace KelpNet.Functions.Normalization
             return y;
         }
 
-        public override NdArray[] BatchForward(NdArray[] x)
+        public NdArray[] BatchForward(NdArray[] x)
         {
             NdArray[] y = new NdArray[x.Length];
 
@@ -184,7 +184,7 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchID = 0)
         {
             NdArray gx = NdArray.EmptyLike(gy);
 
@@ -226,7 +226,7 @@ namespace KelpNet.Functions.Normalization
             return gx;
         }
 
-        public override NdArray[] BatchBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
+        public NdArray[] BatchBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
             NdArray[] gx = new NdArray[gy.Length];
             for (int i = 0; i < gy.Length; i++)
@@ -281,7 +281,7 @@ namespace KelpNet.Functions.Normalization
             return gx;
         }
 
-        public NdArray Predict(NdArray input)
+        public override NdArray Predict(NdArray input)
         {
             this.IsTrain = false;
 

@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Poolings
 {
-    public class MaxPooling : Function, IPredictableFunction
+    public class MaxPooling : PredictableFunction
     {
         private int _kSize;
         private int _stride;
@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Poolings
             this._pad = pad;
         }
 
-        public override NdArray Forward(NdArray input)
+        public override NdArray Forward(NdArray input,int batchId=0)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Empty(input.Shape[0], outputSize, outputSize);
@@ -48,7 +48,7 @@ namespace KelpNet.Functions.Poolings
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchId=0)
         {
             NdArray result = NdArray.ZerosLike(prevInput);
             gy.Shape = prevOutput.Shape;
@@ -90,11 +90,6 @@ namespace KelpNet.Functions.Poolings
                     }
                 }
             }
-        }
-
-        public NdArray Predict(NdArray input)
-        {
-            return Forward(input);
         }
     }
 }

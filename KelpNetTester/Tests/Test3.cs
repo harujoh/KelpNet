@@ -12,12 +12,14 @@ namespace KelpNetTester.Tests
     //課題として挑戦してみると良いかもしれない
     class Test3
     {
+        //学習回数
+        const int EPOCH = 1000;
+
+        //一周期の分割数
+        const int N = 50;
+
         public static void Run()
         {
-            //学習回数
-            const int EPOCH = 1000;
-
-            const int N = 50;
             double[][] trainData = new double[N][];
             double[][] trainLabel = new double[N][];
 

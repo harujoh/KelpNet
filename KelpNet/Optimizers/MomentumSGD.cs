@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using KelpNet.Functions;
 
 namespace KelpNet.Optimizers
 {
@@ -19,7 +18,6 @@ namespace KelpNet.Optimizers
 
         protected override void DoUpdate(List<Function> functions)
         {
-            //for (int i = 0; i < functions.Count; i++)
             Parallel.For(0, functions.Count, i =>
             {
                 for (int j = 0; j < functions[i].Parameters.Count; j++)

@@ -1,6 +1,6 @@
 ﻿namespace KelpNet.Functions.Activations
 {
-    public class LeakyReLU : Function, IPredictableFunction
+    public class LeakyReLU : PredictableFunction
     {
         private readonly double slope;
 
@@ -9,7 +9,7 @@
             this.slope = slope;
         }
 
-        public override NdArray Forward(NdArray x)
+        public override NdArray Forward(NdArray x, int batchID = 0)
         {
             NdArray y = new NdArray(x);
 
@@ -21,7 +21,7 @@
             return y;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchID = 0)
         {
             NdArray result = new NdArray(gy);
 
@@ -31,11 +31,6 @@
             }
 
             return result;
-        }
-
-        public NdArray Predict(NdArray input)
-        {
-            return Forward(input);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using KelpNet;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
@@ -15,13 +14,13 @@ namespace KelpNetTester.Tests
     {
         //ミニバッチの数
         //ミニバッチにC#標準のParallelを使用しているため、大きくし過ぎると遅くなるので注意
-        const int BatchDataCount = 20;
+        const int BATCH_DATA_COUNT = 20;
 
         //一世代あたりの訓練回数
-        const int TrainDataCount = 3000; // = 60000 / 20
+        const int TRAIN_DATA_COUNT = 3000; // = 60000 / 20
 
         //性能評価時のデータ数
-        const int TestDataCount = 100;
+        const int TEST_DATA_COUNT = 100;
 
 
         public static void Run()
@@ -52,23 +51,16 @@ namespace KelpNetTester.Tests
                 List<double> totalLoss = new List<double>();
 
                 //何回バッチを実行するか
-                for (int i = 1; i < TrainDataCount+1; i++)
+                for (int i = 1; i < TRAIN_DATA_COUNT+1; i++)
                 {
-                    Console.WriteLine("\nbatch count " + i + "/" + TrainDataCount);
-
-                    //バッチごとの誤差を集計
-                    List<double> sumLoss = new List<double>();
+                    Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    var datasetX = mnistData.GetRandomXSet(BatchDataCount);
+                    var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    Parallel.For(0, BatchDataCount, j =>
-                    {
-                        var loss = nn.Train(datasetX.Data[j], datasetX.Label[j], LossFunctions.SoftmaxCrossEntropy);
-                        totalLoss.Add(loss);
-                        sumLoss.Add(loss);
-                    });
+                    var sumLoss = nn.BatchTrain(datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
+                    totalLoss.AddRange(sumLoss);
 
                     //バッチ更新
                     nn.Update();
@@ -83,7 +75,7 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("Testing...");
                         
                         //テストデータからランダムにデータを取得
-                        var datasetY = mnistData.GetRandomYSet(TestDataCount);
+                        var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
                         var accuracy = nn.Accuracy(datasetY.Data, datasetY.Label);

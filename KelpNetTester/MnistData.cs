@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KelpNet;
 using MNISTLoader;
 
 namespace KelpNetTester
@@ -8,7 +9,6 @@ namespace KelpNetTester
     class MnistData
     {
         readonly MnistDataLoader mnistDataLoader = new MnistDataLoader();
-        readonly Random rnd = new Random();
 
         private double[][,,] X;
         private byte[][] Tx;
@@ -41,7 +41,6 @@ namespace KelpNetTester
                 Buffer.BlockCopy(this.mnistDataLoader.TeachData[i].Select(val => val / 255.0).ToArray(), 0, Y[i], 0, sizeof(double) * Y[i].Length);
                 Ty[i] = new[] { this.mnistDataLoader.TeachLabel[i] };
             }
-
         }
 
         public MnistDataSet GetRandomYSet(int dataCount)
@@ -51,7 +50,7 @@ namespace KelpNetTester
 
             for (int j = 0; j < dataCount; j++)
             {
-                int index = rnd.Next(Y.Length);
+                int index = Mother.Dice.Next(Y.Length);
 
                 listY.Add(Y[index]);
                 listTy.Add(Ty[index]);
@@ -67,7 +66,7 @@ namespace KelpNetTester
 
             for (int j = 0; j < dataCount; j++)
             {
-                int index = rnd.Next(X.Length);
+                int index = Mother.Dice.Next(X.Length);
 
                 listX.Add(X[index]);
                 listTx.Add(Tx[index]);

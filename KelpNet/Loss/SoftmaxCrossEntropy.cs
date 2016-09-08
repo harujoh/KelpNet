@@ -5,7 +5,7 @@ namespace KelpNet.Loss
 {
     public partial class LossFunctions
     {
-        static public NdArray SoftmaxCrossEntropy(NdArray input, NdArray teachSignal, out double loss)
+        public static NdArray SoftmaxCrossEntropy(NdArray input, NdArray teachSignal, out double loss)
         {
             int maxIndex = (int)Math.Max(teachSignal.Data.Max(), 0.0);
 

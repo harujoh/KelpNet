@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
-    public class Linear : Function, IPredictableFunction
+    public class Linear : PredictableFunction
     {
         public NdArray W;
         public NdArray b;
@@ -43,7 +43,7 @@ namespace KelpNet.Functions.Connections
             this.InputCount = inputCount;
         }
 
-        public override NdArray Forward(NdArray x)
+        public override NdArray Forward(NdArray x,int batchID=0)
         {
             NdArray output = NdArray.Empty(1, this.OutputCount);
             NdArray bias = this.b != null ? b : NdArray.Zeros(OutputCount);
@@ -61,7 +61,7 @@ namespace KelpNet.Functions.Connections
             return output;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchID = 0)
         {
             for (int i = 0; i < prevInput.Length; i++)
             {
@@ -90,11 +90,6 @@ namespace KelpNet.Functions.Connections
             }
 
             return gx;
-        }
-
-        public NdArray Predict(NdArray input)
-        {
-            return Forward(input);
         }
     }
 }

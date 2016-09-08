@@ -53,6 +53,7 @@
     <Compile Include="Functions\Connections\Linear.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
+    <Compile Include="BatchFunction.cs" />
     <Compile Include="Loss\MeanSquaredError.cs" />
     <Compile Include="Loss\SoftmaxCrossEntropy.cs" />
     <Compile Include="Functions\Poolings\AveragePooling.cs" />
@@ -63,7 +64,7 @@
     <Compile Include="Optimizers\Adam.cs" />
     <Compile Include="Optimizers\MomentumSGD.cs" />
     <Compile Include="Optimizers\SGD.cs" />
-    <Compile Include="IPredictableFunction.cs" />
+    <Compile Include="PredictableFunction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

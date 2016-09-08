@@ -16,14 +16,16 @@ namespace KelpNetTester.Tests
     {
         //ミニバッチの数
         //ミニバッチにC#標準のParallelを使用しているため、大きくし過ぎると遅くなるので注意
-        const int BatchDataCount = 128;
+        const int BATCH_DATA_COUNT = 128;
 
         //一世代あたりの訓練回数
-        const int TrainDataCount = 50000;
+        const int TRAIN_DATA_COUNT = 50000;
 
         //性能評価時のデータ数
-        const int TestDataCount = 100;
+        const int TEST_DATA_COUNT = 100;
 
+        //中間層の数
+        const int N = 30; //参考先リンクと同様の1000でも動作するがCPUでは遅いので
 
         public static void Run()
         {
@@ -31,11 +33,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("MNIST Data Loading...");
             MnistData mnistData = new MnistData();
 
-
             Console.WriteLine("Training Start...");
-
-            //中間層の数
-            const int N = 30; //参考先リンクと同様の1000でも動作するがCPUでは遅いので
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
@@ -90,33 +88,13 @@ namespace KelpNetTester.Tests
             //    new ReLU(),
             //    new Linear(N, N), // L2
             //    new ReLU(),
-            //    new Linear(N, N), // L3
-            //    new ReLU(),
-            //    new Linear(N, N), // L4
-            //    new ReLU(),
-            //    new Linear(N, N), // L5
-            //    new ReLU(),
-            //    new Linear(N, N), // L6
-            //    new ReLU(),
-            //    new Linear(N, N), // L7
-            //    new ReLU(),
-            //    new Linear(N, N), // L8
-            //    new ReLU(),
-            //    new Linear(N, N), // L9
-            //    new ReLU(),
-            //    new Linear(N, N), // L10
-            //    new ReLU(),
-            //    new Linear(N, N), // L11
-            //    new ReLU(),
-            //    new Linear(N, N), // L12
-            //    new ReLU(),
-            //    new Linear(N, N), // L13
-            //    new ReLU(),
+            //
+            //    (中略)
+            //
             //    new Linear(N, N), // L14
             //    new ReLU(),
             //    new Linear(N, 10) // L15
             //);
-
 
             //optimizerを宣言
             nn.SetOptimizer(new MomentumSGD(0.1, 0.9));
@@ -130,15 +108,15 @@ namespace KelpNetTester.Tests
                 List<double> totalLoss = new List<double>();
 
                 //何回バッチを実行するか
-                for (int i = 1; i < TrainDataCount + 1; i++)
+                for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
-                    Console.WriteLine("\nbatch count " + i + "/" + TrainDataCount);
+                    Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    var datasetX = mnistData.GetRandomXSet(BatchDataCount);
+                    var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
-                    //バッチ学習を並列実行する
-                    var sumLoss = nn.BatchTrain(datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy, BatchDataCount);
+                    //バッチで学習を実行（バッチ学習ではない場合、バッチノーマライゼーションの効果がなくなる）
+                    var sumLoss = nn.BatchTrain(datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
                     totalLoss.AddRange(sumLoss);
 
                     //バッチ更新
@@ -154,7 +132,7 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("Testing...");
 
                         //テストデータからランダムにデータを取得
-                        var datasetY = mnistData.GetRandomYSet(TestDataCount);
+                        var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
                         var accuracy = nn.Accuracy(datasetY.Data, datasetY.Label);

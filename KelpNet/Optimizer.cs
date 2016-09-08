@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using KelpNet.Functions;
 
 namespace KelpNet
 {

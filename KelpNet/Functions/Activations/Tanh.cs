@@ -2,9 +2,9 @@
 
 namespace KelpNet.Functions.Activations
 {
-    public class Tanh : Function, IPredictableFunction
+    public class Tanh : PredictableFunction
     {
-        public override NdArray Forward(NdArray x)
+        public override NdArray Forward(NdArray x, int batchID = 0)
         {
             NdArray y = NdArray.EmptyLike(x);
 
@@ -16,7 +16,7 @@ namespace KelpNet.Functions.Activations
             return y;
         }
 
-        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        public override NdArray Backward(NdArray gy, NdArray prevInput, NdArray prevOutput, int batchID = 0)
         {
             NdArray result = NdArray.EmptyLike(gy);
 
@@ -26,11 +26,6 @@ namespace KelpNet.Functions.Activations
             }
 
             return result;
-        }
-
-        public NdArray Predict(NdArray input)
-        {
-            return Forward(input);
         }
     }
 }
