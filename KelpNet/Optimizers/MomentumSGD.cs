@@ -24,10 +24,10 @@ namespace KelpNet.Optimizers
                 {
                     for (int k = 0; k < functions[i].Parameters[j].Length; k++)
                     {
-                        v[i][j].Data[k] *= this.momentum;
-                        v[i][j].Data[k] -= this.LearningRate*functions[i].Parameters[j].Grad.Data[k];
+                        this.v[i][j].Data[k] *= this.momentum;
+                        this.v[i][j].Data[k] -= this.LearningRate*functions[i].Parameters[j].Grad.Data[k];
 
-                        functions[i].Parameters[j].Param.Data[k] += v[i][j].Data[k];
+                        functions[i].Parameters[j].Param.Data[k] += this.v[i][j].Data[k];
                     }
                 }
             });

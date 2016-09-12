@@ -21,16 +21,16 @@ namespace KelpNet.Functions.Connections
             this._pad = pad;
 
             this.W = NdArray.Empty(outputChannels, inputChannels, kSize, kSize);
-            this.gW = NdArray.ZerosLike(W);
+            this.gW = NdArray.ZerosLike(this.W);
 
             if (initialW == null)
             {
-                InitWeight(W);
+                InitWeight(this.W);
             }
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                Buffer.BlockCopy(initialW, 0, W.Data, 0, sizeof(double) * initialW.Length);
+                Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
             Parameters.Add(new Parameter(this.W, this.gW));
@@ -38,18 +38,18 @@ namespace KelpNet.Functions.Connections
             if (!noBias)
             {
                 this.b = NdArray.Zeros(outputChannels);
-                this.gb = NdArray.ZerosLike(b);
+                this.gb = NdArray.ZerosLike(this.b);
 
                 if (initialb != null)
                 {
-                    Buffer.BlockCopy(initialb, 0, b.Data, 0, sizeof (double)*initialb.Length);
+                    Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof (double)*initialb.Length);
                 }
 
                 Parameters.Add(new Parameter(this.b, this.gb));
             }
 
-            this.OutputCount = outputChannels;
-            this.InputCount = inputChannels;
+            OutputCount = outputChannels;
+            InputCount = inputChannels;
         }
 
         protected override NdArray ForwardSingle(NdArray input)
@@ -58,7 +58,7 @@ namespace KelpNet.Functions.Connections
 
             NdArray result = NdArray.Zeros(OutputCount, outputSize, outputSize);
 
-            NdArray bias = this.b != null ? b : NdArray.Zeros(OutputCount, InputCount);
+            NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount, InputCount);
 
             for (int i = 0; i < OutputCount; i++)
             {
@@ -79,7 +79,7 @@ namespace KelpNet.Functions.Connections
                                         inputIndexX >= 0 && inputIndexX < input.Shape[2]
                                         )
                                     {
-                                        result.Data[result.GetIndex(i, y, x)] += input.Get(j, inputIndexY, inputIndexX) * W.Get(i, j, dy, dx);
+                                        result.Data[result.GetIndex(i, y, x)] += input.Get(j, inputIndexY, inputIndexX) *this.W.Get(i, j, dy, dx);
                                     }
                                 }
                             }
@@ -115,7 +115,7 @@ namespace KelpNet.Functions.Connections
                                     if (prevIndexY >= 0 && prevIndexY < prevInput.Shape[1] &&
                                         prevIndexX >= 0 && prevIndexX < prevInput.Shape[2])
                                     {
-                                        this.gW.Data[gW.GetIndex(j, i, dy, dx)] +=
+                                        this.gW.Data[this.gW.GetIndex(j, i, dy, dx)] +=
                                                 prevInput.Get(i, prevIndexY, prevIndexX) * gy.Get(j, y, x);
                                     }
                                 }
@@ -144,7 +144,7 @@ namespace KelpNet.Functions.Connections
                                         outputIndexX >= 0 && outputIndexX < gx.Shape[2]
                                         )
                                     {
-                                        gx.Data[gx.GetIndex(i, outputIndexY, outputIndexX)] += W.Get(j, i, dy, dx) *
+                                        gx.Data[gx.GetIndex(i, outputIndexY, outputIndexX)] += this.W.Get(j, i, dy, dx) *
                                                                                                gy.Data[gy.GetIndex(j, y, x)];
                                     }
                                 }
@@ -162,7 +162,7 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int k = 0; k < gy.Shape[2]; k++)
                         {
-                            gb.Data[i] += gy.Get(i, j, k);
+                            this.gb.Data[i] += gy.Get(i, j, k);
                         }
                     }
                 }

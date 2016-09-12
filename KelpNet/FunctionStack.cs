@@ -197,6 +197,7 @@ namespace KelpNet
                 InputData[i] = new NdArray[batchCount];
             }
 
+            //最初のデータを保存
             for (int i = 0; i < batchCount; i++)
             {
                 InputData[0][i] = NdArray.FromArray(input[i]);
@@ -207,6 +208,7 @@ namespace KelpNet
             //forwardを実行
             foreach (FunctionPare functionPare in this.FunctionPares)
             {
+                //まずバッチ専用関数を処理
                 foreach (IBatchFunction batchFunction in functionPare.BatchFunctions)
                 {
                     InputData[functionCount + 1] = batchFunction.BatchForward(InputData[functionCount]);
@@ -214,6 +216,7 @@ namespace KelpNet
                     functionCount++;
                 }
 
+                //その後、その他の関数を処理
                 Parallel.For(0, batchCount, k =>
                 {
                     for (int j = 0; j < functionPare.SoloFunctions.Count; j++)
@@ -241,6 +244,7 @@ namespace KelpNet
             //backwardを実行
             for (int i = this.FunctionPares.Count - 1; i >= 0; i--)
             {
+                //バックワードは逆にその他の関数から処理
                 Parallel.For(0, batchCount, k =>
                 {
                     for (int j = this.FunctionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
@@ -251,6 +255,7 @@ namespace KelpNet
 
                 functionCount -= this.FunctionPares[i].SoloFunctions.Count;
 
+                //その後、バッチ関数を処理
                 for (int j = this.FunctionPares[i].BatchFunctions.Count - 1; j >= 0; j--)
                 {
                     backwardResult = this.FunctionPares[i].BatchFunctions[j].BatchBackward(backwardResult, InputData[i], InputData[i + 1]);

@@ -13,42 +13,42 @@ namespace KelpNet.Functions.Connections
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null)
         {
             this.W = NdArray.Empty(outputCount, inputCount);
-            this.gW = NdArray.ZerosLike(W);
+            this.gW = NdArray.ZerosLike(this.W);
             Parameters.Add(new Parameter(this.W, this.gW));
 
             if (initialW == null)
             {
-                InitWeight(W);
+                InitWeight(this.W);
             }
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                Buffer.BlockCopy(initialW, 0, W.Data, 0, sizeof(double) * initialW.Length);
+                Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
             if (!noBias)
             {
                 this.b = NdArray.Zeros(outputCount);
-                this.gb = NdArray.ZerosLike(b);
+                this.gb = NdArray.ZerosLike(this.b);
 
                 if (initialb != null)
                 {
-                    Buffer.BlockCopy(initialb, 0, b.Data, 0, sizeof (double)*initialb.Length);
+                    Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof (double)*initialb.Length);
                 }
 
-                Parameters .Add(new Parameter(this.b, this.gb));
+                Parameters.Add(new Parameter(this.b, this.gb));
             }
 
-            this.OutputCount = outputCount;
-            this.InputCount = inputCount;
+            OutputCount = outputCount;
+            InputCount = inputCount;
         }
 
         protected override NdArray ForwardSingle(NdArray x)
         {
-            NdArray output = NdArray.Empty(1, this.OutputCount);
-            NdArray bias = this.b != null ? b : NdArray.Zeros(OutputCount);
+            NdArray output = NdArray.Empty(1, OutputCount);
+            NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount);
 
-            for (int i = 0; i < this.OutputCount; i++)
+            for (int i = 0; i < OutputCount; i++)
             {
                 for (int j = 0; j < this.W.Shape[1]; j++)
                 {
@@ -67,11 +67,11 @@ namespace KelpNet.Functions.Connections
             {
                 for (int j = 0; j < gy.Length; j++)
                 {
-                    this.gW.Data[gW.GetIndex(j, i)] += prevInput.Data[i] * gy.Data[j];
+                    this.gW.Data[this.gW.GetIndex(j, i)] += prevInput.Data[i] * gy.Data[j];
                 }
             }
 
-            NdArray gx = NdArray.Empty(1, this.InputCount);
+            NdArray gx = NdArray.Empty(1, InputCount);
 
             for (int i = 0; i < this.W.Shape[0]; i++)
             {
@@ -85,7 +85,7 @@ namespace KelpNet.Functions.Connections
             {
                 for (int j = 0; j < gy.Length; j++)
                 {
-                    gb.Data[j] += gy.Data[j];
+                    this.gb.Data[j] += gy.Data[j];
                 }
             }
 

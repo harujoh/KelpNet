@@ -19,27 +19,27 @@ namespace KelpNetTester
         public MnistData()
         {
             //トレーニングデータ
-            X = new double[this.mnistDataLoader.TrainData.Length][,,];
+            this.X = new double[this.mnistDataLoader.TrainData.Length][,,];
             //トレーニングデータラベル
-            Tx = new byte[this.mnistDataLoader.TrainData.Length][];
+            this.Tx = new byte[this.mnistDataLoader.TrainData.Length][];
 
             for (int i = 0; i < this.mnistDataLoader.TrainData.Length; i++)
             {
-                X[i] = new double[1, 28, 28];
-                Buffer.BlockCopy(this.mnistDataLoader.TrainData[i].Select(val => val / 255.0).ToArray(), 0, X[i], 0, sizeof(double) * X[i].Length);
-                Tx[i] = new[] { this.mnistDataLoader.TrainLabel[i] };
+                this.X[i] = new double[1, 28, 28];
+                Buffer.BlockCopy(this.mnistDataLoader.TrainData[i].Select(val => val / 255.0).ToArray(), 0, this.X[i], 0, sizeof(double) *this.X[i].Length);
+                this.Tx[i] = new[] { this.mnistDataLoader.TrainLabel[i] };
             }
 
             //教師データ
-            Y = new double[this.mnistDataLoader.TeachData.Length][,,];
+            this.Y = new double[this.mnistDataLoader.TeachData.Length][,,];
             //教師データラベル
-            Ty = new byte[this.mnistDataLoader.TeachData.Length][];
+            this.Ty = new byte[this.mnistDataLoader.TeachData.Length][];
 
             for (int i = 0; i < this.mnistDataLoader.TeachData.Length; i++)
             {
-                Y[i] = new double[1, 28, 28];
-                Buffer.BlockCopy(this.mnistDataLoader.TeachData[i].Select(val => val / 255.0).ToArray(), 0, Y[i], 0, sizeof(double) * Y[i].Length);
-                Ty[i] = new[] { this.mnistDataLoader.TeachLabel[i] };
+                this.Y[i] = new double[1, 28, 28];
+                Buffer.BlockCopy(this.mnistDataLoader.TeachData[i].Select(val => val / 255.0).ToArray(), 0, this.Y[i], 0, sizeof(double) *this.Y[i].Length);
+                this.Ty[i] = new[] { this.mnistDataLoader.TeachLabel[i] };
             }
         }
 
@@ -50,10 +50,10 @@ namespace KelpNetTester
 
             for (int j = 0; j < dataCount; j++)
             {
-                int index = Mother.Dice.Next(Y.Length);
+                int index = Mother.Dice.Next(this.Y.Length);
 
-                listY.Add(Y[index]);
-                listTy.Add(Ty[index]);
+                listY.Add(this.Y[index]);
+                listTy.Add(this.Ty[index]);
             }
 
             return new MnistDataSet(listY.ToArray(),listTy.ToArray());
@@ -66,10 +66,10 @@ namespace KelpNetTester
 
             for (int j = 0; j < dataCount; j++)
             {
-                int index = Mother.Dice.Next(X.Length);
+                int index = Mother.Dice.Next(this.X.Length);
 
-                listX.Add(X[index]);
-                listTx.Add(Tx[index]);
+                listX.Add(this.X[index]);
+                listTx.Add(this.Tx[index]);
             }
 
             return new MnistDataSet(listX.ToArray(), listTx.ToArray());

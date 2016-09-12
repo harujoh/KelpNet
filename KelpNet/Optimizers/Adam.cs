@@ -16,8 +16,8 @@ namespace KelpNet.Optimizers
         {
             get
             {
-                double fix1 = 1 - Math.Pow(this.beta1, this.t);
-                double fix2 = 1 - Math.Pow(this.beta2, this.t);
+                double fix1 = 1 - Math.Pow(this.beta1, t);
+                double fix2 = 1 - Math.Pow(this.beta2, t);
                 return this.alpha * Math.Sqrt(fix2) / fix1;
             }
         }
@@ -43,11 +43,11 @@ namespace KelpNet.Optimizers
                     {
                         double grad = functions[i].Parameters[j].Grad.Data[k];
 
-                        m[i][j].Data[k] += (1 - this.beta1) * (grad - m[i][j].Data[k]);
-                        v[i][j].Data[k] += (1 - this.beta2) * (grad * grad - v[i][j].Data[k]);
+                        this.m[i][j].Data[k] += (1 - this.beta1) * (grad - this.m[i][j].Data[k]);
+                        this.v[i][j].Data[k] += (1 - this.beta2) * (grad * grad - this.v[i][j].Data[k]);
 
-                        functions[i].Parameters[j].Param.Data[k] -= lr * m[i][j].Data[k] /
-                                                                    (Math.Sqrt(v[i][j].Data[k]) + this.eps);
+                        functions[i].Parameters[j].Param.Data[k] -= this.lr *this.m[i][j].Data[k] /
+                                                                    (Math.Sqrt(this.v[i][j].Data[k]) + this.eps);
                     }
                 }
             });

@@ -12,11 +12,11 @@
         {
             string trainLabelPath = "data/train-labels.idx1-ubyte";
             MnistLabelLoader trainLabelLoader = MnistLabelLoader.Load(trainLabelPath);
-            TrainLabel = trainLabelLoader.labelList;
+            this.TrainLabel = trainLabelLoader.labelList;
 
             string trainImagePath = "data/train-images.idx3-ubyte";
             MnistImageLoader trainImageLoader = MnistImageLoader.Load(trainImagePath);
-            TrainData = trainImageLoader.bitmapList.ToArray();
+            this.TrainData = trainImageLoader.bitmapList.ToArray();
 
 
             string teachLabelPath = "data/t10k-labels.idx1-ubyte";
