@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Activations
 {
-    public class Sigmoid : PredictableFunction
+    public class Sigmoid : NeedPreviousDataFunction
     {
         protected override NdArray ForwardSingle(NdArray x)
         {

@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
-    public class Convolution2D : PredictableFunction
+    public class Convolution2D : NeedPreviousDataFunction
     {
         public NdArray W;
         public NdArray b;

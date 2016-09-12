@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Poolings
 {
-    public class MaxPooling : PredictableFunction
+    public class MaxPooling : NeedPreviousDataFunction
     {
         private int _kSize;
         private int _stride;

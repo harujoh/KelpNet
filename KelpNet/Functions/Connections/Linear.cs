@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
-    public class Linear : PredictableFunction
+    public class Linear : NeedPreviousDataFunction
     {
         public NdArray W;
         public NdArray b;

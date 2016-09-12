@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Poolings
 {
-    public class AveragePooling : PredictableFunction
+    public class AveragePooling : NeedPreviousDataFunction
     {
         private int _kSize;
         private int _stride;

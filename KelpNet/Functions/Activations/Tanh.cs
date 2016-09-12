@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Activations
 {
-    public class Tanh : PredictableFunction
+    public class Tanh : NeedPreviousDataFunction
     {
         protected override NdArray ForwardSingle(NdArray x)
         {

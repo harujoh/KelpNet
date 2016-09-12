@@ -53,7 +53,9 @@
     <Compile Include="Functions\Connections\Linear.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
-    <Compile Include="BatchFunction.cs" />
+    <Compile Include="IBatchFunction.cs" />
+    <Compile Include="IBatchable.cs" />
+    <Compile Include="NeedPreviousDataFunction.cs" />
     <Compile Include="Loss\MeanSquaredError.cs" />
     <Compile Include="Loss\SoftmaxCrossEntropy.cs" />
     <Compile Include="Functions\Poolings\AveragePooling.cs" />

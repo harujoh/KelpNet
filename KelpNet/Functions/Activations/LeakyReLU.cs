@@ -1,6 +1,6 @@
 ﻿namespace KelpNet.Functions.Activations
 {
-    public class LeakyReLU : PredictableFunction
+    public class LeakyReLU : NeedPreviousDataFunction
     {
         private readonly double _slope;
 

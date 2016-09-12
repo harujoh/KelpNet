@@ -2,7 +2,7 @@
 
 namespace KelpNet.Functions.Activations
 {
-    public class ReLU : PredictableFunction
+    public class ReLU : NeedPreviousDataFunction
     {
         protected override NdArray ForwardSingle(NdArray x)
         {

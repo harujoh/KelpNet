@@ -1,6 +1,6 @@
 ﻿namespace KelpNet.Functions.Noise
 {
-    public class Dropout:Function
+    public class Dropout : Function,IBatchable
     {
         private readonly double dropoutRatio;
         private double[] mask;
@@ -10,22 +10,34 @@
             this.dropoutRatio = dropoutRatio;
         }
 
-        protected override NdArray ForwardSingle(NdArray x)
+        public override NdArray Forward(NdArray x, int batchID = -1)
         {
             NdArray result = NdArray.EmptyLike(x);
-            double scale = 1.0 / (1.0 - this.dropoutRatio);
-            this.mask = new double[x.Length];
 
-            for (int i = 0; i < this.mask.Length; i++)
+            if (this.mask == null || batchID == -1)
             {
-                this.mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
-                result.Data[i] = x.Data[i] * this.mask[i];
+                double scale = 1.0 / (1.0 - this.dropoutRatio);
+
+                this.mask = new double[x.Length];
+
+                for (int i = 0; i < this.mask.Length; i++)
+                {
+                    this.mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
+                    result.Data[i] = x.Data[i]*this.mask[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < this.mask.Length; i++)
+                {
+                    result.Data[i] = x.Data[i] * this.mask[i];
+                }
             }
 
             return result;
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        public override NdArray Backward(NdArray gy, int batchID = 0)
         {
             NdArray result = NdArray.EmptyLike(gy);
 
@@ -35,6 +47,11 @@
             }
 
             return result;
+        }
+
+        public void InitBatch(int batchCount)
+        {
+            this.mask = null;
         }
     }
 }

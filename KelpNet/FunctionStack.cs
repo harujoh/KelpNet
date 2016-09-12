@@ -183,7 +183,11 @@ namespace KelpNet
             //入出力を初期化
             foreach (Function function in this.Functions)
             {
-                function.InitBatch(batchCount);
+                var needPreviousDataFunction = function as IBatchable;
+                if (needPreviousDataFunction != null)
+                {
+                    needPreviousDataFunction.InitBatch(batchCount);
+                }
             }
 
             //全層の『入力』と『出力』を全て保存するため＋１
