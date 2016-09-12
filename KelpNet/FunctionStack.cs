@@ -9,6 +9,9 @@ namespace KelpNet
     //層を積み上げるこのライブラリのメインとなるクラス
     public class FunctionStack
     {
+        //ロス関数のデリゲート宣言
+        public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
+
         //ファンクションペア（非バッチ処理をまとめ、極力複数層に渡った並列処理を実現する
         public class FunctionPare
         {
@@ -138,7 +141,7 @@ namespace KelpNet
         }
 
         //訓練を実施する　引数のデリゲートにロス関数を入力する
-        public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
+        //public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
         public double Train(Array input, Array teach, LossFunction lossFunction)
         {
             //全層の『入力』と『出力』を全て保存するため＋１
@@ -180,8 +183,7 @@ namespace KelpNet
             //入出力を初期化
             foreach (Function function in this.Functions)
             {
-                function.PrevInput = new NdArray[batchCount];
-                function.PrevOutput = new NdArray[batchCount];
+                function.InitBatch(batchCount);
             }
 
             //全層の『入力』と『出力』を全て保存するため＋１
@@ -247,7 +249,7 @@ namespace KelpNet
 
                 for (int j = this.FunctionPares[i].BatchFunctions.Count - 1; j >= 0; j--)
                 {
-                    backwardResult = this.FunctionPares[i].BatchFunctions[j].BatchBackward(backwardResult);
+                    backwardResult = this.FunctionPares[i].BatchFunctions[j].BatchBackward(backwardResult, InputData[i], InputData[i + 1]);
                     functionCount--;
                 }
             }

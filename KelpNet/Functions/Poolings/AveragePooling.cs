@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Poolings
             this._pad = pad;
         }
 
-        protected override NdArray ForwardSingle(NdArray input,int batchID = 0)
+        protected override NdArray ForwardSingle(NdArray input)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);
@@ -49,10 +49,10 @@ namespace KelpNet.Functions.Poolings
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, int batchID = 0)
+        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray result = NdArray.EmptyLike(PrevInput[batchID]);
-            gy.Shape = PrevOutput[batchID].Shape;
+            NdArray result = NdArray.EmptyLike(prevInput);
+            gy.Shape = prevOutput.Shape;
             double m = this._kSize * this._kSize;
 
             for (int i = 0; i < result.Shape[0]; i++)

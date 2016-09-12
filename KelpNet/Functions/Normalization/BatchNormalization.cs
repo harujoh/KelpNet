@@ -5,24 +5,23 @@ namespace KelpNet.Functions.Normalization
     //Chainerより移植　finetuningは未実装
     public class BatchNormalization : PredictableFunction, IBatchFunction
     {
-        private bool IsTrain = true;
-        private bool InputIsTrain = true;
-        private NdArray Gamma;
-        private NdArray gGamma;
-        private NdArray Beta;
-        private NdArray gBeta;
+        private bool IsTrain;
+        private readonly bool InputIsTrain;
+        private readonly NdArray Gamma;
+        private readonly NdArray gGamma;
+        private readonly NdArray Beta;
+        private readonly NdArray gBeta;
         private readonly double Decay;
         private readonly double Eps;
         private readonly NdArray AvgMean;
         private readonly NdArray AvgVar;
-        private NdArray gMean;
-        private NdArray gVariance;
+        private readonly NdArray gMean;
+        private readonly NdArray gVariance;
         private double[] Std;
         private double[][] Xhat;
 
         private double[] Mean;
         private double[] Variance;
-
 
         private readonly int ChannelSize;
 
@@ -58,7 +57,7 @@ namespace KelpNet.Functions.Normalization
             this.ChannelSize = channelSize;
         }
 
-        protected override NdArray ForwardSingle(NdArray x, int batchID = 0)
+        protected override NdArray ForwardSingle(NdArray x)
         {
             NdArray y = NdArray.EmptyLike(x);
 
@@ -81,7 +80,11 @@ namespace KelpNet.Functions.Normalization
             }
 
             //結果を計算
-            this.Xhat = new [] {new double[this.ChannelSize] };
+            this.Xhat = new[]
+            {
+                new double[this.ChannelSize]
+            };
+
             for (int i = 0; i < x.Length; i++)
             {
                 this.Xhat[0][i] = (x.Data[i] - this.Mean[i]) / this.Std[i];
@@ -184,11 +187,9 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        public override NdArray Backward(NdArray gy, int batchID = 0)
+        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray gx = NdArray.EmptyLike(gy);
-
-            var m = PrevInput[batchID].Length;
 
             this.gBeta.Fill(0);
             this.gGamma.Fill(0);
@@ -206,9 +207,7 @@ namespace KelpNet.Functions.Normalization
                 {
                     var gs = this.Gamma.Data[i] / this.Std[i];
                     this.gMean.Data[i] = -gs * this.gBeta.Data[i];
-
                     this.gVariance.Data[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
-
                     gx.Data[i] = gs * gy.Data[i];
                 }
             }
@@ -217,8 +216,7 @@ namespace KelpNet.Functions.Normalization
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     var gs = this.Gamma.Data[i] / this.Std[i];
-
-                    var val = (this.Xhat[0][i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
+                    var val = this.Xhat[0][i] * this.gGamma.Data[i] + this.gBeta.Data[i];
                     gx.Data[i] = gs * (gy.Data[i] - val);
                 }
             }
@@ -226,15 +224,13 @@ namespace KelpNet.Functions.Normalization
             return gx;
         }
 
-        public NdArray[] BatchBackward(NdArray[] gy)
+        public NdArray[] BatchBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
             NdArray[] gx = new NdArray[gy.Length];
             for (int i = 0; i < gy.Length; i++)
             {
                 gx[i] = NdArray.Empty(this.ChannelSize);
             }
-
-            var m = PrevInput.Length;
 
             this.gBeta.Fill(0);
             this.gGamma.Fill(0);
@@ -255,8 +251,7 @@ namespace KelpNet.Functions.Normalization
                 {
                     var gs = this.Gamma.Data[i] / this.Std[i];
                     this.gMean.Data[i] = -gs * this.gBeta.Data[i];
-
-                    this.gVariance.Data[i] = -0.5 *this.Gamma.Data[i] / this.AvgVar.Data[i] *this.gGamma.Data[i];
+                    this.gVariance.Data[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
 
                     for (int j = 0; j < gy.Length; j++)
                     {
@@ -266,6 +261,8 @@ namespace KelpNet.Functions.Normalization
             }
             else
             {
+                var m = gy.Length;
+
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     var gs = this.Gamma.Data[i] / this.Std[i];
@@ -273,6 +270,7 @@ namespace KelpNet.Functions.Normalization
                     for (int j = 0; j < gy.Length; j++)
                     {
                         var val = (this.Xhat[j][i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
+
                         gx[j].Data[i] = gs * (gy[j].Data[i] - val);
                     }
                 }

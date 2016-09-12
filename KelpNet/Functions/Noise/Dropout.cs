@@ -10,7 +10,7 @@
             this.dropoutRatio = dropoutRatio;
         }
 
-        protected override NdArray ForwardSingle(NdArray x, int batchID = 0)
+        protected override NdArray ForwardSingle(NdArray x)
         {
             NdArray result = NdArray.EmptyLike(x);
             double scale = 1.0 / (1.0 - this.dropoutRatio);
@@ -25,7 +25,7 @@
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, int batchID = 0)
+        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray result = NdArray.EmptyLike(gy);
 
