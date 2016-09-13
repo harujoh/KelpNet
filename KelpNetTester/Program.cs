@@ -7,13 +7,13 @@ namespace KelpNetTester
     {
         static void Main(string[] args)
         {
-            Test1.Run();
+            //Test1.Run();
             //Test2.Run();
             //Test3.Run();
             //Test4.Run();
             //Test5.Run();
             //Test6.Run();
-            //Test7.Run();
+            Test7.Run();
 
             Console.WriteLine("Test Done...");
             Console.Read();

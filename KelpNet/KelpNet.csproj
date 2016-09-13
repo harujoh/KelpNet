@@ -63,8 +63,11 @@
     <Compile Include="Mother.cs" />
     <Compile Include="NdArray.cs" />
     <Compile Include="Optimizer.cs" />
+    <Compile Include="Optimizers\AdaDelta.cs" />
+    <Compile Include="Optimizers\AdaGrad.cs" />
     <Compile Include="Optimizers\Adam.cs" />
     <Compile Include="Optimizers\MomentumSGD.cs" />
+    <Compile Include="Optimizers\RMSprop.cs" />
     <Compile Include="Optimizers\SGD.cs" />
     <Compile Include="PredictableFunction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
