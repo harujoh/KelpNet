@@ -4,7 +4,7 @@ namespace KelpNet.Loss
 {
     public partial class LossFunctions
     {
-        static public NdArray MeanSquaredError(NdArray input, NdArray teachSignal, out double loss)
+        public static NdArray MeanSquaredError(NdArray input, NdArray teachSignal, out double loss)
         {
             loss = 0;
 

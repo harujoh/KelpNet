@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace KelpNet.Optimizers
 {
@@ -12,7 +11,7 @@ namespace KelpNet.Optimizers
             this.LearningRate = learningRate;
         }
 
-        protected override void DoUpdate(List<Function> functions)
+        protected override void DoUpdate(Function[] functions)
         {
             Parallel.ForEach(functions, function =>
             {
@@ -26,7 +25,7 @@ namespace KelpNet.Optimizers
             });
         }
 
-        public override void Initialize(FunctionStack fs)
+        protected override void Initialize(Function[] functions)
         {
             //特に初期化処理は行わない
         }

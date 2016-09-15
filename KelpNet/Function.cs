@@ -34,6 +34,15 @@ namespace KelpNet
         public abstract NdArray Forward(NdArray x, int batchId = 0);
         public abstract NdArray Backward(NdArray gy, int batchId = 0);
 
+        public virtual void ResetState()
+        {
+        }
+
+        //バッチ実行前に初期化が必要な関数に使用
+        public virtual void InitBatch(int batchCount)
+        {            
+        }
+
         //初期値が入力されなかった場合、この関数で初期化を行う
         protected void InitWeight(NdArray array, double masterScale = 1.0)
         {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KelpNet.Optimizers
@@ -17,9 +16,9 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(List<Function> functions)
+        protected override void DoUpdate(Function[] functions)
         {
-            Parallel.For(0, functions.Count, i =>
+            Parallel.For(0, functions.Length, i =>
             {
                 for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
@@ -35,17 +34,17 @@ namespace KelpNet.Optimizers
             });
         }
 
-        public override void Initialize(FunctionStack fs)
+        protected override void Initialize(Function[] functions)
         {
-            this.h = new NdArray[fs.Functions.Count][];
+            this.h = new NdArray[functions.Length][];
 
-            for (int i = 0; i < fs.Functions.Count; i++)
+            for (int i = 0; i < functions.Length; i++)
             {
-                this.h[i] = new NdArray[fs.Functions[i].Parameters.Count];
+                this.h[i] = new NdArray[functions[i].Parameters.Count];
 
-                for (int j = 0; j < fs.Functions[i].Parameters.Count; j++)
+                for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
-                    this.h[i][j] = NdArray.ZerosLike(fs.Functions[i].Parameters[j].Param);
+                    this.h[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
                 }
             }
         }

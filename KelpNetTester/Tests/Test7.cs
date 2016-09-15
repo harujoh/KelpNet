@@ -11,7 +11,7 @@ using KelpNet.Optimizers;
 namespace KelpNetTester.Tests
 {
     //バッチノーマライゼーションを使った15層MLPによるMNIST（手書き文字）の学習
-    //参考：　http://takatakamanbou.hatenablog.com/entry/2015/12/20/233232
+    //参考： http://takatakamanbou.hatenablog.com/entry/2015/12/20/233232
     class Test7
     {
         //ミニバッチの数

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KelpNet.Optimizers;
+using KelpNet.Interface;
 
 namespace KelpNet
 {
@@ -26,13 +26,13 @@ namespace KelpNet
         public readonly List<Function> Functions = new List<Function>();
 
         //学習用の関数を除く関数がココにPredictableFunctionとして保管される（現在はDropoutを実行しないために用意）
-        public readonly List<PredictableFunction> PredictableFunctions = new List<PredictableFunction>();
+        public readonly List<IPredictableFunction> PredictableFunctions = new List<IPredictableFunction>();
 
         //Updateを行わずに実行されたTrainの回数をカウントし、バッチ更新時に使用する
         private int _batchCount = 0;
 
-        //Optimizerをココで保持する。デフォルトはSGD
-        private Optimizer _optimizer = new SGD();
+        //Optimizerをココで保持する
+        private Optimizer _optimizer;
 
         //コンストラクタ
         public FunctionStack(params Function[] functions)
@@ -66,7 +66,7 @@ namespace KelpNet
         public void SetOptimizer(Optimizer optimizer)
         {
             this._optimizer = optimizer;
-            this._optimizer.Initialize(this);
+            this._optimizer.SetFunctions(this.Functions.ToArray());
         }
 
         //シングルタスク用の層を積み上げる
@@ -76,7 +76,7 @@ namespace KelpNet
             this.Functions.Add(function);
 
             //予測処理実行用のリストへ追加
-            var predictableFunction = function as PredictableFunction;
+            var predictableFunction = function as IPredictableFunction;
             if (predictableFunction != null)
             {
                 this.PredictableFunctions.Add(predictableFunction);
@@ -121,6 +121,14 @@ namespace KelpNet
             }
         }
 
+        public void ResetState()
+        {
+            foreach (var function in this.Functions)
+            {
+                function.ResetState();
+            }
+        }
+
         //予想を実行する（外部からの使用を想定してArrayが引数
         public NdArray Predict(Array input)
         {
@@ -132,7 +140,7 @@ namespace KelpNet
         {
             NdArray forwardResult = input;
 
-            foreach (PredictableFunction predictableFunction in this.PredictableFunctions)
+            foreach (IPredictableFunction predictableFunction in this.PredictableFunctions)
             {
                 forwardResult = predictableFunction.Predict(forwardResult);
             }
@@ -183,11 +191,7 @@ namespace KelpNet
             //入出力を初期化
             foreach (Function function in this.Functions)
             {
-                var needPreviousDataFunction = function as IBatchable;
-                if (needPreviousDataFunction != null)
-                {
-                    needPreviousDataFunction.InitBatch(batchCount);
-                }
+                function.InitBatch(batchCount);
             }
 
             //全層の『入力』と『出力』を全て保存するため＋１
@@ -217,6 +221,15 @@ namespace KelpNet
                 }
 
                 //その後、その他の関数を処理
+#if DEBUG
+                for (int k = 0; k < batchCount; k++)
+                {
+                    for (int j = 0; j < functionPare.SoloFunctions.Count; j++)
+                    {
+                        InputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(InputData[functionCount + j][k], k);
+                    }
+                }
+#else
                 Parallel.For(0, batchCount, k =>
                 {
                     for (int j = 0; j < functionPare.SoloFunctions.Count; j++)
@@ -224,7 +237,7 @@ namespace KelpNet
                         InputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(InputData[functionCount + j][k], k);
                     }
                 });
-
+#endif
                 functionCount += functionPare.SoloFunctions.Count;
             }
 
@@ -245,6 +258,15 @@ namespace KelpNet
             for (int i = this.FunctionPares.Count - 1; i >= 0; i--)
             {
                 //バックワードは逆にその他の関数から処理
+#if DEBUG
+                for (int k = 0; k < batchCount; k++)
+                {
+                    for (int j = this.FunctionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
+                    {
+                        backwardResult[k] = this.FunctionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
+                    }
+                }
+#else
                 Parallel.For(0, batchCount, k =>
                 {
                     for (int j = this.FunctionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
@@ -252,6 +274,7 @@ namespace KelpNet
                         backwardResult[k] = this.FunctionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
                     }
                 });
+#endif
 
                 functionCount -= this.FunctionPares[i].SoloFunctions.Count;
 
@@ -285,7 +308,7 @@ namespace KelpNet
             }
 
             //宣言されているOptimizerの更新を実行
-            this._optimizer.Update(this.Functions);
+            this._optimizer.Update();
 
             //傾きをリセット
             this.ClearGrads();

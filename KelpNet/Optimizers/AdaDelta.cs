@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KelpNet.Optimizers
@@ -18,9 +17,9 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(List<Function> functions)
+        protected override void DoUpdate(Function[] functions)
         {
-            Parallel.For(0, functions.Count, i =>
+            Parallel.For(0, functions.Length, i =>
             {
                 for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
@@ -41,20 +40,20 @@ namespace KelpNet.Optimizers
             });
         }
 
-        public override void Initialize(FunctionStack fs)
+        protected override void Initialize(Function[] functions)
         {
-            this.msg = new NdArray[fs.Functions.Count][];
-            this.msdx = new NdArray[fs.Functions.Count][];
+            this.msg = new NdArray[functions.Length][];
+            this.msdx = new NdArray[functions.Length][];
 
-            for (int i = 0; i < fs.Functions.Count; i++)
+            for (int i = 0; i < functions.Length; i++)
             {
-                this.msg[i] = new NdArray[fs.Functions[i].Parameters.Count];
-                this.msdx[i] = new NdArray[fs.Functions[i].Parameters.Count];
+                this.msg[i] = new NdArray[functions[i].Parameters.Count];
+                this.msdx[i] = new NdArray[functions[i].Parameters.Count];
 
-                for (int j = 0; j < fs.Functions[i].Parameters.Count; j++)
+                for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
-                    this.msg[i][j] = NdArray.ZerosLike(fs.Functions[i].Parameters[j].Param);
-                    this.msdx[i][j] = NdArray.ZerosLike(fs.Functions[i].Parameters[j].Param);
+                    this.msg[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
+                    this.msdx[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
                 }
             }
         }

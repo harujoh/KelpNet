@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using KelpNet.Functions;
 
 namespace KelpNet.Optimizers
 {
@@ -16,8 +14,8 @@ namespace KelpNet.Optimizers
         {
             get
             {
-                double fix1 = 1 - Math.Pow(this.beta1, t);
-                double fix2 = 1 - Math.Pow(this.beta2, t);
+                double fix1 = 1 - Math.Pow(this.beta1, UpdateCount);
+                double fix2 = 1 - Math.Pow(this.beta2, UpdateCount);
                 return this.alpha * Math.Sqrt(fix2) / fix1;
             }
         }
@@ -33,9 +31,9 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(List<Function> functions)
+        protected override void DoUpdate(Function[] functions)
         {
-            Parallel.For(0, functions.Count, i =>
+            Parallel.For(0, functions.Length, i =>
             {
                 for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
@@ -53,20 +51,20 @@ namespace KelpNet.Optimizers
             });
         }
 
-        public override void Initialize(FunctionStack fs)
+        protected override void Initialize(Function[] functions)
         {
-            this.m = new NdArray[fs.Functions.Count][];
-            this.v = new NdArray[fs.Functions.Count][];
+            this.m = new NdArray[functions.Length][];
+            this.v = new NdArray[functions.Length][];
 
-            for (int i = 0; i < fs.Functions.Count; i++)
+            for (int i = 0; i < functions.Length; i++)
             {
-                this.m[i] = new NdArray[fs.Functions[i].Parameters.Count];
-                this.v[i] = new NdArray[fs.Functions[i].Parameters.Count];
+                this.m[i] = new NdArray[functions[i].Parameters.Count];
+                this.v[i] = new NdArray[functions[i].Parameters.Count];
 
-                for (int j = 0; j < fs.Functions[i].Parameters.Count; j++)
+                for (int j = 0; j < functions[i].Parameters.Count; j++)
                 {
-                    this.m[i][j] = NdArray.ZerosLike(fs.Functions[i].Parameters[j].Param);
-                    this.v[i][j] = NdArray.ZerosLike(fs.Functions[i].Parameters[j].Param);
+                    this.m[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
+                    this.v[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
                 }
             }
         }

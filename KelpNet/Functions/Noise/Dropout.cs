@@ -1,6 +1,6 @@
 ﻿namespace KelpNet.Functions.Noise
 {
-    public class Dropout : Function,IBatchable
+    public class Dropout : Function
     {
         private readonly double dropoutRatio;
         private double[] mask;
@@ -49,7 +49,7 @@
             return result;
         }
 
-        public void InitBatch(int batchCount)
+        public override void InitBatch(int batchCount)
         {
             this.mask = null;
         }

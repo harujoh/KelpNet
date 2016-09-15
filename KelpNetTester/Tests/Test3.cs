@@ -3,6 +3,7 @@ using KelpNet;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
+using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
@@ -37,9 +38,8 @@ namespace KelpNetTester.Tests
                 new Linear(4, 1)
             );
 
-            //optimizerの宣言を省略するとデフォルトのSGD(0.1)が使用される
-            //nn.SetOptimizer(new SGD(0.1));
-
+            //optimizerの宣言
+            nn.SetOptimizer(new SGD());
 
             //訓練ループ
             for (int i = 0; i < EPOCH; i++)
