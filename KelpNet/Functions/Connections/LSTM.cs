@@ -188,7 +188,6 @@ namespace KelpNet.Functions.Connections
 
         public override void ResetState()
         {
-            this.cParam = null;
             this.hParam = new NdArray[1];
         }
 
