@@ -4,7 +4,7 @@ namespace KelpNet.Functions.Activations
 {
     public class Tanh : NeedPreviousDataFunction
     {
-        public Tanh(string name = "") : base(name)
+        public Tanh(string name = "Tanh") : base(name)
         {
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using KelpNet.Functions.Connections;
 using KelpNet.Interface;
 
 namespace KelpNet.Functions.Normalization
@@ -27,7 +26,7 @@ namespace KelpNet.Functions.Normalization
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "") : base(name)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "BatchNorm") : base(name)
         {
             this.Gamma = NdArray.Ones(channelSize);
             this.Beta = NdArray.Zeros(channelSize);

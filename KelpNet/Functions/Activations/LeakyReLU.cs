@@ -4,7 +4,7 @@
     {
         private readonly double _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "") : base(name)
+        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU") : base(name)
         {
             this._slope = slope;
         }

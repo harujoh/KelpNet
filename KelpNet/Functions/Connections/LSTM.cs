@@ -23,7 +23,7 @@ namespace KelpNet.Functions.Connections
         private NdArray[][] gxPrev = new NdArray[1][];
         private NdArray[] gcPrev = new NdArray[1];
 
-        public LSTM(int inSize, int outSize, string name = "") : base(name)
+        public LSTM(int inSize, int outSize, string name = "LSTM") : base(name)
         {
 #if DEBUG
             for (int i = 0; i < 4; i++)

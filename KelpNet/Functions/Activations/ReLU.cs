@@ -4,7 +4,7 @@ namespace KelpNet.Functions.Activations
 {
     public class ReLU : NeedPreviousDataFunction
     {
-        public ReLU(string name="") : base(name)
+        public ReLU(string name= "ReLU") : base(name)
         {
         }
 

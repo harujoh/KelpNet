@@ -4,7 +4,7 @@ namespace KelpNet.Functions.Activations
 {
     public class Sigmoid : NeedPreviousDataFunction
     {
-        public Sigmoid(string name = "") : base(name)
+        public Sigmoid(string name = "Sigmoid") : base(name)
         {
         }
 

@@ -5,7 +5,7 @@
         private readonly double dropoutRatio;
         private double[] mask;
 
-        public Dropout(double dropoutRatio = 0.5, string name = "") : base(name)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout") : base(name)
         {
             this.dropoutRatio = dropoutRatio;
         }

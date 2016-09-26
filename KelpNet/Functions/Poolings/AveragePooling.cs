@@ -8,7 +8,7 @@ namespace KelpNet.Functions.Poolings
         private int _stride;
         private int _pad;
 
-        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "") : base(name)
+        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling") : base(name)
         {
             this._kSize = ksize;
             this._stride = stride;

@@ -1,6 +1,5 @@
 ﻿using System;
 using KelpNet;
-using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Optimizers;
 
@@ -137,8 +136,6 @@ namespace KelpNetTester.Tests
 
             Console.WriteLine("\nl1 b");
             Console.WriteLine(l1.b);
-
-            new ReLU("test");
         }
     }
 }

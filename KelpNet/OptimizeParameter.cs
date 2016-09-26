@@ -17,7 +17,7 @@
             }
         }
 
-        public OptimizeParameter(NdArray param, NdArray grad, string name = "")
+        public OptimizeParameter(NdArray param, NdArray grad, string name)
         {
             this.Param = param;
             this.Grad = grad;
