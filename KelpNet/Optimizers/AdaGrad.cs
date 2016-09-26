@@ -5,7 +5,7 @@ namespace KelpNet.Optimizers
 {
     public class AdaGrad : Optimizer
     {
-        private NdArray[][] h;
+        private NdArray[] h;
 
         private double lr;
         private double eps;
@@ -16,36 +16,28 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(Function[] functions)
+        protected override void DoUpdate()
         {
-            Parallel.For(0, functions.Length, i =>
+            Parallel.For(0, this.Parameters.Count, i =>
             {
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
+                for (int k = 0; k < Parameters[i].Length; k++)
                 {
-                    for (int k = 0; k < functions[i].Parameters[j].Length; k++)
-                    {
-                        var grad = functions[i].Parameters[j].Grad.Data[k];
+                    var grad = Parameters[i].Grad.Data[k];
 
-                        this.h[i][j].Data[k] += grad * grad;
+                    this.h[i].Data[k] += grad * grad;
 
-                        functions[i].Parameters[j].Param.Data[k] -= this.lr * grad / (Math.Sqrt(this.h[i][j].Data[k]) + this.eps);
-                    }
+                    Parameters[i].Param.Data[k] -= this.lr * grad / (Math.Sqrt(this.h[i].Data[k]) + this.eps);
                 }
             });
         }
 
-        protected override void Initialize(Function[] functions)
+        protected override void Initialize()
         {
-            this.h = new NdArray[functions.Length][];
+            this.h = new NdArray[this.Parameters.Count];
 
-            for (int i = 0; i < functions.Length; i++)
+            for (int i = 0; i < h.Length; i++)
             {
-                this.h[i] = new NdArray[functions[i].Parameters.Count];
-
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
-                {
-                    this.h[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
-                }
+                this.h[i] = NdArray.ZerosLike(Parameters[i].Param);
             }
         }
     }

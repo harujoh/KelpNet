@@ -51,6 +51,7 @@
     <Compile Include="Functions\Activations\Tanh.cs" />
     <Compile Include="Functions\Connections\Convolution2D.cs" />
     <Compile Include="Functions\Connections\Linear.cs" />
+    <Compile Include="Functions\Connections\LSTM.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="Interface\IBatchFunction.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="Functions\Poolings\MaxPooling.cs" />
     <Compile Include="Mother.cs" />
     <Compile Include="NdArray.cs" />
+    <Compile Include="OptimizeParameter.cs" />
     <Compile Include="Optimizer.cs" />
     <Compile Include="Optimizers\AdaDelta.cs" />
     <Compile Include="Optimizers\AdaGrad.cs" />

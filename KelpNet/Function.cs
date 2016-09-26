@@ -6,33 +6,35 @@ namespace KelpNet
     //FunctionStackに積み上げるFunctionの基底クラス
     public abstract class Function
     {
-        public struct Parameter
-        {
-            public NdArray Param;
-            public NdArray Grad;
+        public string Name;
 
-            public int Length
-            {
-                get
-                {
-                    return this.Param.Length;
-                }
-            }
-
-            public Parameter(NdArray param, NdArray grad)
-            {
-                this.Param = param;
-                this.Grad = grad;
-            }
-        }
-        
-        public List<Parameter> Parameters = new List<Parameter>();
+        public List<OptimizeParameter> Parameters = new List<OptimizeParameter>();
 
         public int OutputCount;
         public int InputCount;
 
-        public abstract NdArray Forward(NdArray x, int batchId = 0);
-        public abstract NdArray Backward(NdArray gy, int batchId = 0);
+        protected abstract NdArray ForwardSingle(NdArray x, int batchId = 0);
+        protected abstract NdArray BackwardSingle(NdArray gy, int batchId = 0);
+
+        protected Function(string name)
+        {
+            this.Name = name;
+        }
+
+        public NdArray Forward(NdArray x, int batchId = 0)
+        {
+            return this.ForwardSingle(x, batchId);
+        }
+
+        public NdArray Backward(NdArray gy, int batchId = 0)
+        {
+            foreach (OptimizeParameter parameter in this.Parameters)
+            {
+                parameter.TrainCount++;
+            }
+
+            return this.BackwardSingle(gy, batchId);
+        }
 
         public virtual void ResetState()
         {
@@ -74,5 +76,9 @@ namespace KelpNet
             return result;
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 }

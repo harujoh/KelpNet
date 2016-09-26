@@ -5,12 +5,12 @@
         private readonly double dropoutRatio;
         private double[] mask;
 
-        public Dropout(double dropoutRatio = 0.5)
+        public Dropout(double dropoutRatio = 0.5, string name = "") : base(name)
         {
             this.dropoutRatio = dropoutRatio;
         }
 
-        public override NdArray Forward(NdArray x, int batchID = -1)
+        protected override NdArray ForwardSingle(NdArray x, int batchID = -1)
         {
             NdArray result = NdArray.EmptyLike(x);
 
@@ -23,7 +23,7 @@
                 for (int i = 0; i < this.mask.Length; i++)
                 {
                     this.mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
-                    result.Data[i] = x.Data[i]*this.mask[i];
+                    result.Data[i] = x.Data[i] * this.mask[i];
                 }
             }
             else
@@ -37,7 +37,7 @@
             return result;
         }
 
-        public override NdArray Backward(NdArray gy, int batchID = 0)
+        protected override NdArray BackwardSingle(NdArray gy, int batchID = 0)
         {
             NdArray result = NdArray.EmptyLike(gy);
 

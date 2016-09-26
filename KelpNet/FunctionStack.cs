@@ -20,19 +20,18 @@ namespace KelpNet
         }
 
         //バッチ実行用に保管
-        public readonly List<FunctionPare> FunctionPares = new List<FunctionPare>();
+        private readonly List<FunctionPare> _functionPares = new List<FunctionPare>();
 
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
 
         //学習用の関数を除く関数がココにPredictableFunctionとして保管される（現在はDropoutを実行しないために用意）
-        public readonly List<IPredictableFunction> PredictableFunctions = new List<IPredictableFunction>();
-
-        //Updateを行わずに実行されたTrainの回数をカウントし、バッチ更新時に使用する
-        private int _batchCount = 0;
+        private readonly List<IPredictableFunction> _predictableFunctions = new List<IPredictableFunction>();
 
         //Optimizerをココで保持する
         private Optimizer _optimizer;
+
+        public List<OptimizeParameter> Parameters = new List<OptimizeParameter>();
 
         //コンストラクタ
         public FunctionStack(params Function[] functions)
@@ -45,17 +44,20 @@ namespace KelpNet
             if (batchFunction == null)
             {
                 //最初が通常の層だったら事前にペアを追加
-                this.FunctionPares.Add(new FunctionPare());
+                this._functionPares.Add(new FunctionPare());
             }
 
             //入力された関数を振り分ける
             foreach (Function function in functions)
             {
-                //シングルタスク用
+                //逐次実行タスク用
                 this.StackSingleTaskFunction(function);
 
-                //バッチタスク用
+                //バッチ実行タスク用
                 this.StackBatchTaskFunction(function, isPreFuncBatch);
+
+                //パラメーターを保持
+                this.Parameters.AddRange(function.Parameters);
 
                 //フラグを設定
                 isPreFuncBatch = batchFunction != null;
@@ -66,7 +68,7 @@ namespace KelpNet
         public void SetOptimizer(Optimizer optimizer)
         {
             this._optimizer = optimizer;
-            this._optimizer.SetFunctions(this.Functions.ToArray());
+            this._optimizer.SetParameters(this.Parameters);
         }
 
         //シングルタスク用の層を積み上げる
@@ -79,7 +81,7 @@ namespace KelpNet
             var predictableFunction = function as IPredictableFunction;
             if (predictableFunction != null)
             {
-                this.PredictableFunctions.Add(predictableFunction);
+                this._predictableFunctions.Add(predictableFunction);
             }
         }
 
@@ -93,30 +95,27 @@ namespace KelpNet
                 //バッチ関数が連続していないかチェック
                 if (!preFuncIsBatch)
                 {
-                    this.FunctionPares.Add(new FunctionPare());
+                    this._functionPares.Add(new FunctionPare());
                 }
 
                 //ペアにバッチ関数を追加
-                this.FunctionPares[this.FunctionPares.Count - 1].BatchFunctions.Add(batchFunction);
+                this._functionPares[this._functionPares.Count - 1].BatchFunctions.Add(batchFunction);
             }
             else
             {
                 //ペアに関数を追加
-                this.FunctionPares[this.FunctionPares.Count - 1].SoloFunctions.Add(function);
+                this._functionPares[this._functionPares.Count - 1].SoloFunctions.Add(function);
             }
         }
 
         //傾きの初期化
         public void ClearGrads()
         {
-            //バッチカウントもリセット
-            this._batchCount = 0;
-
             foreach (var function in this.Functions)
             {
                 for (int j = 0; j < function.Parameters.Count; j++)
                 {
-                    function.Parameters[j].Grad.Fill(0);
+                    function.Parameters[j].ClearGrad();
                 }
             }
         }
@@ -140,7 +139,13 @@ namespace KelpNet
         {
             NdArray forwardResult = input;
 
-            foreach (IPredictableFunction predictableFunction in this.PredictableFunctions)
+            //入出力を初期化
+            foreach (Function function in this.Functions)
+            {
+                function.InitBatch(1);
+            }
+
+            foreach (IPredictableFunction predictableFunction in this._predictableFunctions)
             {
                 forwardResult = predictableFunction.Predict(forwardResult);
             }
@@ -153,23 +158,23 @@ namespace KelpNet
         public double Train(Array input, Array teach, LossFunction lossFunction)
         {
             //全層の『入力』と『出力』を全て保存するため＋１
-            NdArray[] InputData = new NdArray[this.Functions.Count + 1];
+            NdArray[] inputData = new NdArray[this.Functions.Count + 1];
 
             //入力値を保存
-            InputData[0] = NdArray.FromArray(input);
+            inputData[0] = NdArray.FromArray(input);
 
             //forwardを実行
             for (int i = 0; i < this.Functions.Count; i++)
             {
                 //出力を次層の入力として保存する
-                InputData[i + 1] = this.Functions[i].Forward(InputData[i]);
+                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
             }
 
             //戻り値の誤差用
             double loss;
 
             //デリゲートで入力されたロス関数を実行
-            NdArray backwardResult = lossFunction(InputData[this.Functions.Count], NdArray.FromArray(teach), out loss);
+            NdArray backwardResult = lossFunction(inputData[this.Functions.Count], NdArray.FromArray(teach), out loss);
 
             //backwardを実行
             for (int i = this.Functions.Count - 1; i >= 0; i--)
@@ -177,45 +182,36 @@ namespace KelpNet
                 backwardResult = this.Functions[i].Backward(backwardResult);
             }
 
-            //実行回数をカウント
-            this._batchCount++;
-
             return loss;
         }
 
-        //バッチで学習処理を行う
-        public List<double> BatchTrain(Array[] input, Array[] teach, LossFunction lossFunction)
+
+        public NdArray[] BatchForward(Array[] input, Array[] teach, LossFunction lossFunction, out List<double> sumLoss)
         {
             int batchCount = input.Length;
 
-            //入出力を初期化
-            foreach (Function function in this.Functions)
-            {
-                function.InitBatch(batchCount);
-            }
-
             //全層の『入力』と『出力』を全て保存するため＋１
-            NdArray[][] InputData = new NdArray[this.Functions.Count + 1][];
+            NdArray[][] inputData = new NdArray[this.Functions.Count + 1][];
             for (int i = 0; i < this.Functions.Count + 1; i++)
             {
-                InputData[i] = new NdArray[batchCount];
+                inputData[i] = new NdArray[batchCount];
             }
 
             //最初のデータを保存
             for (int i = 0; i < batchCount; i++)
             {
-                InputData[0][i] = NdArray.FromArray(input[i]);
+                inputData[0][i] = NdArray.FromArray(input[i]);
             }
 
             int functionCount = 0;
 
             //forwardを実行
-            foreach (FunctionPare functionPare in this.FunctionPares)
+            foreach (FunctionPare functionPare in this._functionPares)
             {
                 //まずバッチ専用関数を処理
                 foreach (IBatchFunction batchFunction in functionPare.BatchFunctions)
                 {
-                    InputData[functionCount + 1] = batchFunction.BatchForward(InputData[functionCount]);
+                    inputData[functionCount + 1] = batchFunction.BatchForward(inputData[functionCount]);
 
                     functionCount++;
                 }
@@ -226,7 +222,7 @@ namespace KelpNet
                 {
                     for (int j = 0; j < functionPare.SoloFunctions.Count; j++)
                     {
-                        InputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(InputData[functionCount + j][k], k);
+                        inputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(inputData[functionCount + j][k], k);
                     }
                 }
 #else
@@ -234,7 +230,7 @@ namespace KelpNet
                 {
                     for (int j = 0; j < functionPare.SoloFunctions.Count; j++)
                     {
-                        InputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(InputData[functionCount + j][k], k);
+                        inputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(inputData[functionCount + j][k], k);
                     }
                 });
 #endif
@@ -242,52 +238,66 @@ namespace KelpNet
             }
 
             //戻り値の誤差用
-            List<double> sumLoss = new List<double>();
+            sumLoss = new List<double>();
 
             NdArray[] backwardResult = new NdArray[batchCount];
             for (int i = 0; i < backwardResult.Length; i++)
             {
                 double loss;
                 //デリゲートで入力されたロス関数を実行
-                backwardResult[i] = lossFunction(InputData[functionCount][i], NdArray.FromArray(teach[i]), out loss);
+                backwardResult[i] = lossFunction(inputData[functionCount][i], NdArray.FromArray(teach[i]), out loss);
 
                 sumLoss.Add(loss);
             }
 
+            return backwardResult;
+        }
+
+        public void BatchBackward(NdArray[] backwardResult)
+        {
             //backwardを実行
-            for (int i = this.FunctionPares.Count - 1; i >= 0; i--)
+            for (int i = this._functionPares.Count - 1; i >= 0; i--)
             {
                 //バックワードは逆にその他の関数から処理
 #if DEBUG
-                for (int k = 0; k < batchCount; k++)
+                for (int k = 0; k < backwardResult.Length; k++)
                 {
-                    for (int j = this.FunctionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
+                    for (int j = this._functionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
                     {
-                        backwardResult[k] = this.FunctionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
+                        backwardResult[k] = this._functionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
                     }
                 }
 #else
-                Parallel.For(0, batchCount, k =>
+                Parallel.For(0, backwardResult.Length, k =>
                 {
-                    for (int j = this.FunctionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
+                    for (int j = this._functionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
                     {
-                        backwardResult[k] = this.FunctionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
+                        backwardResult[k] = this._functionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
                     }
                 });
 #endif
 
-                functionCount -= this.FunctionPares[i].SoloFunctions.Count;
-
                 //その後、バッチ関数を処理
-                for (int j = this.FunctionPares[i].BatchFunctions.Count - 1; j >= 0; j--)
+                for (int j = this._functionPares[i].BatchFunctions.Count - 1; j >= 0; j--)
                 {
-                    backwardResult = this.FunctionPares[i].BatchFunctions[j].BatchBackward(backwardResult, InputData[i], InputData[i + 1]);
-                    functionCount--;
+                    backwardResult = this._functionPares[i].BatchFunctions[j].BatchBackward(backwardResult);
                 }
             }
+        }
 
-            //実行回数をカウント
-            this._batchCount += batchCount;
+        //バッチで学習処理を行う
+        public List<double> BatchTrain(Array[] input, Array[] teach, LossFunction lossFunction)
+        {
+            List<double> sumLoss;
+
+            //入出力を初期化
+            foreach (Function function in this.Functions)
+            {
+                function.InitBatch(input.Length);
+            }
+
+            var backwardResult = this.BatchForward(input, teach, lossFunction, out sumLoss);
+            this.BatchBackward(backwardResult);
 
             return sumLoss;
         }
@@ -298,11 +308,11 @@ namespace KelpNet
             //更新実行前にバッチカウントを使って各Functionの傾きを補正
             foreach (var function in this.Functions)
             {
-                foreach (Function.Parameter functionParameter in function.Parameters)
+                foreach (OptimizeParameter functionParameter in function.Parameters)
                 {
                     for (int k = 0; k < functionParameter.Length; k++)
                     {
-                        functionParameter.Grad.Data[k] /= this._batchCount;
+                        functionParameter.Grad.Data[k] /= functionParameter.TrainCount;
                     }
                 }
             }

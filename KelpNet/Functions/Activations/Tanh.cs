@@ -4,7 +4,11 @@ namespace KelpNet.Functions.Activations
 {
     public class Tanh : NeedPreviousDataFunction
     {
-        protected override NdArray ForwardSingle(NdArray x)
+        public Tanh(string name = "") : base(name)
+        {
+        }
+
+        protected override NdArray NeedPreviousForward(NdArray x)
         {
             NdArray y = NdArray.EmptyLike(x);
 
@@ -16,7 +20,7 @@ namespace KelpNet.Functions.Activations
             return y;
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray result = NdArray.EmptyLike(gy);
 

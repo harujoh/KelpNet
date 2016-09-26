@@ -8,14 +8,14 @@ namespace KelpNet.Functions.Poolings
         private int _stride;
         private int _pad;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0,string name=""):base(name)
         {
             this._kSize = ksize;
             this._stride = stride;
             this._pad = pad;
         }
 
-        protected override NdArray ForwardSingle(NdArray input)
+        protected override NdArray NeedPreviousForward(NdArray input)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Empty(input.Shape[0], outputSize, outputSize);
@@ -48,10 +48,10 @@ namespace KelpNet.Functions.Poolings
             return result;
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray result = NdArray.ZerosLike(prevInput);
-            gy.Shape = prevOutput.Shape;
+            NdArray result = NdArray.ZerosLike(prevInput);            
+            gy.Shape = (int[])prevOutput.Shape.Clone();
 
             for (int i = 0; i < result.Shape[0]; i++)
             {

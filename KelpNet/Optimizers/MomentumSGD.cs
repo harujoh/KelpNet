@@ -7,7 +7,7 @@ namespace KelpNet.Optimizers
         private double LearningRate;
         private double momentum;
 
-        private NdArray[][] v;
+        private NdArray[] v;
 
         public MomentumSGD(double learningRate = 0.01, double momentum = 0.9)
         {
@@ -15,35 +15,27 @@ namespace KelpNet.Optimizers
             this.momentum = momentum;
         }
 
-        protected override void DoUpdate(Function[] functions)
+        protected override void DoUpdate()
         {
-            Parallel.For(0, functions.Length, i =>
+            Parallel.For(0, Parameters.Count, i =>
             {
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
+                for (int k = 0; k < Parameters[i].Length; k++)
                 {
-                    for (int k = 0; k < functions[i].Parameters[j].Length; k++)
-                    {
-                        this.v[i][j].Data[k] *= this.momentum;
-                        this.v[i][j].Data[k] -= this.LearningRate*functions[i].Parameters[j].Grad.Data[k];
+                    this.v[i].Data[k] *= this.momentum;
+                    this.v[i].Data[k] -= this.LearningRate*Parameters[i].Grad.Data[k];
 
-                        functions[i].Parameters[j].Param.Data[k] += this.v[i][j].Data[k];
-                    }
+                    Parameters[i].Param.Data[k] += this.v[i].Data[k];
                 }
             });
         }
 
-        protected override void Initialize(Function[] functions)
+        protected override void Initialize()
         {
-            this.v = new NdArray[functions.Length][];
+            this.v = new NdArray[Parameters.Count];
 
-            for (int i = 0; i < functions.Length; i++)
+            for (int i = 0; i < v.Length; i++)
             {
-                this.v[i] = new NdArray[functions[i].Parameters.Count];
-
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
-                {
-                    this.v[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
-                }
+                this.v[i] = NdArray.ZerosLike(Parameters[i].Param);
             }
         }
     }

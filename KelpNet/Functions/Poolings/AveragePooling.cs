@@ -8,14 +8,14 @@ namespace KelpNet.Functions.Poolings
         private int _stride;
         private int _pad;
 
-        public AveragePooling(int ksize, int stride = 1, int pad = 0)
+        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "") : base(name)
         {
             this._kSize = ksize;
             this._stride = stride;
             this._pad = pad;
         }
 
-        protected override NdArray ForwardSingle(NdArray input)
+        protected override NdArray NeedPreviousForward(NdArray input)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);
@@ -49,10 +49,11 @@ namespace KelpNet.Functions.Poolings
             return result;
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray result = NdArray.EmptyLike(prevInput);
-            gy.Shape = prevOutput.Shape;
+            gy.Shape = (int[])prevOutput.Shape.Clone();
+
             double m = this._kSize * this._kSize;
 
             for (int i = 0; i < result.Shape[0]; i++)
@@ -71,8 +72,7 @@ namespace KelpNet.Functions.Poolings
                                 if (outputIndexY >= 0 && outputIndexY < result.Shape[1] &&
                                     outputIndexX >= 0 && outputIndexX < result.Shape[2])
                                 {
-                                    var index = gy.GetIndex(i, y, x);
-                                    result.Data[result.GetIndex(i, outputIndexY, outputIndexX)] = gy.Data[index] / m;
+                                    result.Data[result.GetIndex(i, outputIndexY, outputIndexX)] = gy.Data[gy.GetIndex(i, y, x)] / m;
                                 }
                             }
                         }

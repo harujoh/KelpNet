@@ -5,6 +5,7 @@ namespace KelpNetTester
 {
     class Program
     {
+        //実行したいテストのコメントを外して下さい
         static void Main(string[] args)
         {
             Test1.Run();

@@ -35,9 +35,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(2, 2),
-                new ReLU(),
-                new Linear(2, 1)
+                new Linear(2, 2, name: "l1 Linear"),
+                new ReLU(name: "l1 ReLU"),
+                new Linear(2, 1, name: "l2 Linear")
             );
 
             //optimizerを宣言(今回はAdam)

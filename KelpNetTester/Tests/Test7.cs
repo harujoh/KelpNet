@@ -37,49 +37,49 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(28 * 28, N), // L1
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L2
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L3
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L4
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L5
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L6
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L7
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L8
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L9
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L10
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L11
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L12
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L13
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, N), // L14
-                new BatchNormalization(N),
-                new ReLU(),
-                new Linear(N, 10) // L15
+                new Linear(28 * 28, N, name: "l1 Linear"), // L1
+                new BatchNormalization(N, name: "l1 BatchNorm"),
+                new ReLU(name: "l1 ReLU"),
+                new Linear(N, N, name: "l2 Linear"), // L2
+                new BatchNormalization(N, name: "l2 BatchNorm"),
+                new ReLU(name: "l2 ReLU"),
+                new Linear(N, N, name: "l3 Linear"), // L3
+                new BatchNormalization(N, name: "l3 BatchNorm"),
+                new ReLU(name: "l3 ReLU"),
+                new Linear(N, N, name: "l4 Linear"), // L4
+                new BatchNormalization(N, name: "l4 BatchNorm"),
+                new ReLU(name: "l4 ReLU"),
+                new Linear(N, N, name: "l5 Linear"), // L5
+                new BatchNormalization(N, name: "l5 BatchNorm"),
+                new ReLU(name: "l5 ReLU"),
+                new Linear(N, N, name: "l6 Linear"), // L6
+                new BatchNormalization(N, name: "l6 BatchNorm"),
+                new ReLU(name: "l6 ReLU"),
+                new Linear(N, N, name: "l7 Linear"), // L7
+                new BatchNormalization(N, name: "l7 BatchNorm"),
+                new ReLU(name: "l7 ReLU"),
+                new Linear(N, N, name: "l8 Linear"), // L8
+                new BatchNormalization(N, name: "l8 BatchNorm"),
+                new ReLU(name: "l8 ReLU"),
+                new Linear(N, N, name: "l9 Linear"), // L9
+                new BatchNormalization(N, name: "l9 BatchNorm"),
+                new ReLU(name: "l9 ReLU"),
+                new Linear(N, N, name: "l10 Linear"), // L10
+                new BatchNormalization(N, name: "l10 BatchNorm"),
+                new ReLU(name: "l10 ReLU"),
+                new Linear(N, N, name: "l11 Linear"), // L11
+                new BatchNormalization(N, name: "l11 BatchNorm"),
+                new ReLU(name: "l11 ReLU"),
+                new Linear(N, N, name: "l12 Linear"), // L12
+                new BatchNormalization(N, name: "l12 BatchNorm"),
+                new ReLU(name: "l12 ReLU"),
+                new Linear(N, N, name: "l13 Linear"), // L13
+                new BatchNormalization(N, name: "l13 BatchNorm"),
+                new ReLU(name: "l13 ReLU"),
+                new Linear(N, N, name: "l14 Linear"), // L14
+                new BatchNormalization(N, name: "l14 BatchNorm"),
+                new ReLU(name: "l14 ReLU"),
+                new Linear(N, 10, name: "l15 Linear") // L15
             );
 
             //この構成では学習が進まない

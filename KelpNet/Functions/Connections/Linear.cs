@@ -10,11 +10,11 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "") : base(name)
         {
             this.W = NdArray.Empty(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
-            Parameters.Add(new Parameter(this.W, this.gW));
+            Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W" ));
 
             if (initialW == null)
             {
@@ -33,17 +33,17 @@ namespace KelpNet.Functions.Connections
 
                 if (initialb != null)
                 {
-                    Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof (double)*initialb.Length);
+                    Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
                 }
 
-                Parameters.Add(new Parameter(this.b, this.gb));
+                Parameters.Add(new OptimizeParameter(this.b, this.gb, this.Name + " b"));
             }
 
             OutputCount = outputCount;
             InputCount = inputCount;
         }
 
-        protected override NdArray ForwardSingle(NdArray x)
+        protected override NdArray NeedPreviousForward(NdArray x)
         {
             NdArray output = NdArray.Empty(1, OutputCount);
             NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount);
@@ -61,7 +61,7 @@ namespace KelpNet.Functions.Connections
             return output;
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             for (int i = 0; i < prevInput.Length; i++)
             {

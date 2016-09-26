@@ -249,10 +249,12 @@ namespace KelpNet
             for (int i = 0; i < this.Length; i++)
             {
                 string[] divStr;
-                double doubleVal;
-                if (isExponential && double.TryParse(this.Data[i].ToString(), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out doubleVal))
+                //何故この判定をしたのか思い出せない、さしあたって不具合が出たため一旦削除
+                //double doubleVal;
+                //if (isExponential && double.TryParse(this.Data[i].ToString(), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out doubleVal))
+                if (isExponential)
                 {
-                    divStr = doubleVal.ToString("0.00000000e+00").Split('.');
+                    divStr = this.Data[i].ToString("0.00000000e+00").Split('.');
                 }
                 else
                 {

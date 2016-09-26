@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using KelpNet;
 using KelpNet.Functions.Activations;
@@ -27,29 +28,31 @@ namespace KelpNetTester.Tests
 
         public static void Run()
         {
+            Stopwatch sw = new Stopwatch();
+
             //MNISTのデータを用意する
             Console.WriteLine("MNIST Data Loading...");
             MnistData mnistData = new MnistData();
 
-
-            Console.WriteLine("Training Start...");
-
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Convolution2D(1, 32, 5, pad: 2),
-                new ReLU(),
-                new MaxPooling(2, 2),
-                new Convolution2D(32, 64, 5, pad: 2),
-                new ReLU(),
-                new MaxPooling(2, 2),
-                new Linear(7 * 7 * 64, 1024),
-                new Dropout(),
-                new ReLU(),
-                new Linear(1024, 10)
+                new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D"),
+                new ReLU(name: "l1 ReLU"),
+                new MaxPooling(2, 2, name: "l1 MaxPooling"),
+                new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D"),
+                new ReLU(name: "l2 ReLU"),
+                new MaxPooling(2, 2, name: "l2 MaxPooling"),
+                new Linear(7 * 7 * 64, 1024, name: "l3 Linear"),
+                new Dropout(name: "l3 DropOut"),
+                new ReLU(name: "l3 ReLU"),
+                new Linear(1024, 10, name: "l4 Linear")
             );
 
             //optimizerを宣言
             nn.SetOptimizer(new Adam());
+
+
+            Console.WriteLine("Training Start...");
 
             //三世代学習
             for (int epoch = 1; epoch < 3; epoch++)
@@ -62,6 +65,8 @@ namespace KelpNetTester.Tests
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT+1; i++)
                 {
+                    sw.Restart();
+
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
@@ -77,6 +82,9 @@ namespace KelpNetTester.Tests
                     //結果出力
                     Console.WriteLine("total loss " + totalLoss.Average());
                     Console.WriteLine("local loss " + sumLoss.Average());
+
+                    sw.Stop();
+                    Console.WriteLine("time" + sw.Elapsed.TotalMilliseconds);
 
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)

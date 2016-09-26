@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Functions.Connections;
 using KelpNet.Interface;
 
 namespace KelpNet.Functions.Normalization
@@ -26,7 +27,7 @@ namespace KelpNet.Functions.Normalization
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "") : base(name)
         {
             this.Gamma = NdArray.Ones(channelSize);
             this.Beta = NdArray.Zeros(channelSize);
@@ -35,8 +36,8 @@ namespace KelpNet.Functions.Normalization
             this.gBeta = NdArray.ZerosLike(this.Beta);
 
             //学習対象のParameterを登録
-            Parameters.Add(new Parameter(this.Gamma, this.gGamma));
-            Parameters.Add(new Parameter(this.Beta, this.gBeta));
+            Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, this.Name + " Gamma"));
+            Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, this.Name + " Beta"));
 
             this.IsTrain = isTrain;
             this.InputIsTrain = isTrain;
@@ -48,8 +49,8 @@ namespace KelpNet.Functions.Normalization
             {
                 this.gMean = NdArray.Zeros(channelSize);
                 this.gVariance = NdArray.Zeros(channelSize);
-                Parameters.Add(new Parameter(this.AvgMean, this.gMean));
-                Parameters.Add(new Parameter(this.AvgVar, this.gVariance));
+                Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, this.Name + " Mean"));
+                Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, this.Name + " Variance"));
             }
 
             this.Decay = decay;
@@ -58,7 +59,7 @@ namespace KelpNet.Functions.Normalization
             this.ChannelSize = channelSize;
         }
 
-        protected override NdArray ForwardSingle(NdArray x)
+        protected override NdArray NeedPreviousForward(NdArray x)
         {
             NdArray y = NdArray.EmptyLike(x);
 
@@ -188,7 +189,7 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray gx = NdArray.EmptyLike(gy);
 
@@ -225,7 +226,7 @@ namespace KelpNet.Functions.Normalization
             return gx;
         }
 
-        public NdArray[] BatchBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
+        public NdArray[] BatchBackward(NdArray[] gy)
         {
             NdArray[] gx = new NdArray[gy.Length];
             for (int i = 0; i < gy.Length; i++)
@@ -277,6 +278,11 @@ namespace KelpNet.Functions.Normalization
                 }
             }
 
+            for (int i = 0; i < Parameters.Count; i++)
+            {
+                Parameters[i].TrainCount += gy.Length;
+            }
+
             return gx;
         }
 
@@ -284,7 +290,7 @@ namespace KelpNet.Functions.Normalization
         {
             this.IsTrain = false;
 
-            var result = this.ForwardSingle(input);
+            var result = this.NeedPreviousForward(input);
 
             //フラグをリセット
             this.IsTrain = this.InputIsTrain;

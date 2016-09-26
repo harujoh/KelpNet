@@ -1,40 +1,51 @@
-﻿using KelpNet.Interface;
+﻿using System.Collections.Generic;
+using KelpNet.Interface;
 
 namespace KelpNet.Functions
 {
     //前回の入出力を自動的に扱うクラステンプレート
     public abstract class NeedPreviousDataFunction : Function, IPredictableFunction
     {
-        private NdArray[] _prevInput = new NdArray[1];
-        private NdArray[] _prevOutput = new NdArray[1];
+        //後入れ先出しリスト
+        private Stack<NdArray>[] _prevInput = {new Stack<NdArray>() };
+        private Stack<NdArray>[] _prevOutput = { new Stack<NdArray>() };
 
-        protected abstract NdArray ForwardSingle(NdArray x);
-        protected abstract NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput);
+        protected abstract NdArray NeedPreviousForward(NdArray x);
+        protected abstract NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput);
 
-        public override NdArray Forward(NdArray x, int batchId = 0)
+        protected NeedPreviousDataFunction(string name):base(name)
         {
-            //参照コピーにすることでメモリを節約
-            this._prevInput[batchId] = x;
-            this._prevOutput[batchId] = this.ForwardSingle(x);
-
-            return this._prevOutput[batchId];
         }
 
-        public override NdArray Backward(NdArray gy, int batchId = 0)
+        protected override NdArray ForwardSingle(NdArray x, int batchId = 0)
         {
-            return this.BackwardSingle(gy, this._prevInput[batchId], this._prevOutput[batchId]);
+            this._prevInput[batchId].Push(new NdArray(x));
+            this._prevOutput[batchId].Push(new NdArray(this.NeedPreviousForward(x)));
+
+            return this._prevOutput[batchId].Peek();
+        }
+
+        protected override NdArray BackwardSingle(NdArray gy, int batchId = 0)
+        {
+            return this.NeedPreviousBackward(gy, this._prevInput[batchId].Pop(), this._prevOutput[batchId].Pop());
         }
 
         //バッチ処理用の初期化関数
         public override void InitBatch(int batchCount)
         {
-            this._prevInput = new NdArray[batchCount];
-            this._prevOutput = new NdArray[batchCount];
+            this._prevInput = new Stack<NdArray>[batchCount];
+            this._prevOutput = new Stack<NdArray>[batchCount];
+
+            for (int i = 0; i < batchCount; i++)
+            {
+                this._prevInput[i] = new Stack<NdArray>();
+                this._prevOutput[i] = new Stack<NdArray>();
+            }
         }
 
         public virtual NdArray Predict(NdArray input)
         {
-            return this.Forward(input);
+            return this.ForwardSingle(input);
         }
     }
 }

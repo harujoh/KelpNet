@@ -4,12 +4,12 @@
     {
         private readonly double _slope;
 
-        public LeakyReLU(double slope = 0.2)
+        public LeakyReLU(double slope = 0.2, string name = "") : base(name)
         {
             this._slope = slope;
         }
 
-        protected override NdArray ForwardSingle(NdArray x)
+        protected override NdArray NeedPreviousForward(NdArray x)
         {
             NdArray y = new NdArray(x);
 
@@ -21,7 +21,7 @@
             return y;
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray result = new NdArray(gy);
 

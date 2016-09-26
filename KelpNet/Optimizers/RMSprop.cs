@@ -5,7 +5,7 @@ namespace KelpNet.Optimizers
 {
     public class RMSprop : Optimizer
     {
-        private NdArray[][] ms;
+        private NdArray[] ms;
 
         private double lr;
         private double alpha;
@@ -18,36 +18,28 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(Function[] functions)
+        protected override void DoUpdate()
         {
-            Parallel.For(0, functions.Length, i =>
+            Parallel.For(0, Parameters.Count, i =>
             {
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
+                for (int k = 0; k < Parameters[i].Length; k++)
                 {
-                    for (int k = 0; k < functions[i].Parameters[j].Length; k++)
-                    {
-                        var grad = functions[i].Parameters[j].Grad.Data[k];
-                        this.ms[i][j].Data[k] *= this.alpha;
-                        this.ms[i][j].Data[k] += (1 - this.alpha) * grad * grad;
+                    var grad = Parameters[i].Grad.Data[k];
+                    this.ms[i].Data[k] *= this.alpha;
+                    this.ms[i].Data[k] += (1 - this.alpha) * grad * grad;
 
-                        functions[i].Parameters[j].Param.Data[k] -= this.lr * grad / (Math.Sqrt(this.ms[i][j].Data[k]) + this.eps);
-                    }
+                    Parameters[i].Param.Data[k] -= this.lr * grad / (Math.Sqrt(this.ms[i].Data[k]) + this.eps);
                 }
             });
         }
 
-        protected override void Initialize(Function[] functions)
+        protected override void Initialize()
         {
-            this.ms = new NdArray[functions.Length][];
+            this.ms = new NdArray[Parameters.Count];
 
-            for (int i = 0; i < functions.Length; i++)
+            for (int i = 0; i < ms.Length; i++)
             {
-                this.ms[i] = new NdArray[functions[i].Parameters.Count];
-
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
-                {
-                    this.ms[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
-                }
+                this.ms[i] = NdArray.ZerosLike(Parameters[i].Param);
             }
         }
     }

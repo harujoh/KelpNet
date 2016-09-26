@@ -14,7 +14,7 @@ namespace KelpNet.Functions.Connections
         private int _stride;
         private int _pad;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = ""):base(name)
         {
             this._kSize = kSize;
             this._stride = stride;
@@ -33,7 +33,7 @@ namespace KelpNet.Functions.Connections
                 Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
-            Parameters.Add(new Parameter(this.W, this.gW));
+            Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W" ));
 
             if (!noBias)
             {
@@ -45,14 +45,14 @@ namespace KelpNet.Functions.Connections
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof (double)*initialb.Length);
                 }
 
-                Parameters.Add(new Parameter(this.b, this.gb));
+                Parameters.Add(new OptimizeParameter(this.b, this.gb, this.Name + " b"));
             }
 
             OutputCount = outputChannels;
             InputCount = inputChannels;
         }
 
-        protected override NdArray ForwardSingle(NdArray input)
+        protected override NdArray NeedPreviousForward(NdArray input)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
 
@@ -93,7 +93,7 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        protected override NdArray BackwardSingle(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             NdArray gx = NdArray.EmptyLike(prevInput);
 

@@ -20,8 +20,8 @@ namespace KelpNet.Optimizers
             }
         }
 
-        private NdArray[][] m;
-        private NdArray[][] v;
+        private NdArray[] m;
+        private NdArray[] v;
 
         public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double eps = 1e-8)
         {
@@ -31,41 +31,31 @@ namespace KelpNet.Optimizers
             this.eps = eps;
         }
 
-        protected override void DoUpdate(Function[] functions)
+        protected override void DoUpdate()
         {
-            Parallel.For(0, functions.Length, i =>
+            Parallel.For(0, Parameters.Count, i =>
             {
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
+                for (int k = 0; k < Parameters[i].Length; k++)
                 {
-                    for (int k = 0; k < functions[i].Parameters[j].Length; k++)
-                    {
-                        double grad = functions[i].Parameters[j].Grad.Data[k];
+                    double grad = Parameters[i].Grad.Data[k];
 
-                        this.m[i][j].Data[k] += (1 - this.beta1) * (grad - this.m[i][j].Data[k]);
-                        this.v[i][j].Data[k] += (1 - this.beta2) * (grad * grad - this.v[i][j].Data[k]);
+                    this.m[i].Data[k] += (1 - this.beta1) * (grad - this.m[i].Data[k]);
+                    this.v[i].Data[k] += (1 - this.beta2) * (grad * grad - this.v[i].Data[k]);
 
-                        functions[i].Parameters[j].Param.Data[k] -= this.lr *this.m[i][j].Data[k] /
-                                                                    (Math.Sqrt(this.v[i][j].Data[k]) + this.eps);
-                    }
+                    Parameters[i].Param.Data[k] -= this.lr *this.m[i].Data[k] / (Math.Sqrt(this.v[i].Data[k]) + this.eps);
                 }
             });
         }
 
-        protected override void Initialize(Function[] functions)
+        protected override void Initialize()
         {
-            this.m = new NdArray[functions.Length][];
-            this.v = new NdArray[functions.Length][];
+            this.m = new NdArray[Parameters.Count];
+            this.v = new NdArray[Parameters.Count];
 
-            for (int i = 0; i < functions.Length; i++)
+            for (int i = 0; i < Parameters.Count; i++)
             {
-                this.m[i] = new NdArray[functions[i].Parameters.Count];
-                this.v[i] = new NdArray[functions[i].Parameters.Count];
-
-                for (int j = 0; j < functions[i].Parameters.Count; j++)
-                {
-                    this.m[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
-                    this.v[i][j] = NdArray.ZerosLike(functions[i].Parameters[j].Param);
-                }
+                this.m[i] = NdArray.ZerosLike(Parameters[i].Param);
+                this.v[i] = NdArray.ZerosLike(Parameters[i].Param);
             }
         }
     }

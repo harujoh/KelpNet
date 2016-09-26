@@ -6,26 +6,23 @@ namespace KelpNet.Optimizers
     {
         public double LearningRate;
 
-        public SGD(double learningRate=0.1)
+        public SGD(double learningRate = 0.1)
         {
             this.LearningRate = learningRate;
         }
 
-        protected override void DoUpdate(Function[] functions)
+        protected override void DoUpdate()
         {
-            Parallel.ForEach(functions, function =>
+            Parallel.ForEach(Parameters, parameter =>
             {
-                foreach (Function.Parameter parameter in function.Parameters)
+                for (int j = 0; j < parameter.Length; j++)
                 {
-                    for (int j = 0; j < parameter.Length; j++)
-                    {
-                        parameter.Param.Data[j] -= this.LearningRate*parameter.Grad.Data[j];
-                    }
+                    parameter.Param.Data[j] -= this.LearningRate * parameter.Grad.Data[j];
                 }
             });
         }
 
-        protected override void Initialize(Function[] functions)
+        protected override void Initialize()
         {
             //特に初期化処理は行わない
         }

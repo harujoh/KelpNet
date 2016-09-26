@@ -35,9 +35,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(2, 2),
-                new Sigmoid(),
-                new Linear(2, 2)
+                new Linear(2, 2, name: "l1 Linear"),
+                new Sigmoid(name: "l1 Sigmoid"),
+                new Linear(2, 2, name: "l2 Linear")
             );
 
             //optimizerを宣言
