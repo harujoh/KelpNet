@@ -20,7 +20,7 @@ namespace KelpNet.Functions
         protected override NdArray ForwardSingle(NdArray x, int batchId = 0)
         {
             this._prevInput[batchId].Push(new NdArray(x));
-            this._prevOutput[batchId].Push(new NdArray(this.NeedPreviousForward(x)));
+            this._prevOutput[batchId].Push(new NdArray(this.NeedPreviousForward(this._prevInput[batchId].Peek())));
 
             return this._prevOutput[batchId].Peek();
         }
@@ -43,9 +43,9 @@ namespace KelpNet.Functions
             }
         }
 
-        public virtual NdArray Predict(NdArray input)
+        public virtual NdArray Predict(NdArray input,int batchID)
         {
-            return this.ForwardSingle(input);
+            return this.ForwardSingle(input, batchID);
         }
     }
 }

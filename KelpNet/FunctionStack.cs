@@ -129,25 +129,19 @@ namespace KelpNet
         }
 
         //予想を実行する（外部からの使用を想定してArrayが引数
-        public NdArray Predict(Array input)
+        public NdArray Predict(Array input, int batchID = 0)
         {
-            return this.Predict(NdArray.FromArray(input));
+            return this.Predict(NdArray.FromArray(input),batchID);
         }
 
         //予想を実行する
-        public NdArray Predict(NdArray input)
+        public NdArray Predict(NdArray input,int batchID=0)
         {
             NdArray forwardResult = input;
 
-            //入出力を初期化
-            foreach (Function function in this.Functions)
-            {
-                function.InitBatch(1);
-            }
-
             foreach (IPredictableFunction predictableFunction in this._predictableFunctions)
             {
-                forwardResult = predictableFunction.Predict(forwardResult);
+                forwardResult = predictableFunction.Predict(forwardResult, batchID);
             }
 
             return forwardResult;
@@ -329,15 +323,33 @@ namespace KelpNet
         {
             int matchCount = 0;
 
+            //入出力を初期化
+            foreach (Function function in this.Functions)
+            {
+                function.InitBatch(x.Length);
+            }
+
+#if DEBUG
+            for (int i = 0; i < x.Length; i++)
+            {
+                var forwardResult = this.Predict(x[i], i);
+
+                if (Array.IndexOf(forwardResult.Data, forwardResult.Data.Max()) == y[i][0])
+                {
+                    matchCount++;
+                }
+            }
+#else
             Parallel.For(0, x.Length, i =>
             {
-                var forwardResult = this.Predict(x[i]);
+                var forwardResult = this.Predict(x[i],i);
 
                 if (Array.IndexOf(forwardResult.Data, forwardResult.Data.Max()) == y[i][0])
                 {
                     matchCount++;
                 }
             });
+#endif
 
             return matchCount / (double)x.Length;
         }

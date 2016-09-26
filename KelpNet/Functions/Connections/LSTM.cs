@@ -287,9 +287,9 @@ namespace KelpNet.Functions.Connections
             this.gxPrev = new NdArray[batchCount][];
         }
 
-        public NdArray Predict(NdArray input)
+        public NdArray Predict(NdArray input,int batchID)
         {
-            return this.ForwardSingle(input);
+            return this.ForwardSingle(input,batchID);
         }
 
         static double Sigmoid(double x)

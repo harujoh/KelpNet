@@ -78,10 +78,10 @@ namespace KelpNetTester
 
     public class MnistDataSet
     {
-        public double[][,,] Data;
+        public Array[] Data;
         public byte[][] Label;
 
-        public MnistDataSet(double[][,,] data, byte[][] label)
+        public MnistDataSet(Array[] data, byte[][] label)
         {
             this.Data = data;
             this.Label = label;

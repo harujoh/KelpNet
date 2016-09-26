@@ -14,8 +14,11 @@ namespace KelpNet
 
         public NdArray(double[] data, int[] shape)
         {
-            this.Data = data;
-            this.Shape = shape;
+            this.Data = new double[data.Length];
+            Array.Copy(data, this.Data, this.Data.Length);
+
+            this.Shape = new int[shape.Length];
+            Array.Copy(shape, this.Shape, this.Shape.Length);
         }
 
         public NdArray(NdArray ndArray)

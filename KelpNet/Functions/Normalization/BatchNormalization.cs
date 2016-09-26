@@ -285,7 +285,7 @@ namespace KelpNet.Functions.Normalization
             return gx;
         }
 
-        public override NdArray Predict(NdArray input)
+        public override NdArray Predict(NdArray input, int batchID)
         {
             this.IsTrain = false;
 
