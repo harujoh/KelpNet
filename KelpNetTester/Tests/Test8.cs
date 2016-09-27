@@ -63,6 +63,7 @@ namespace KelpNetTester.Tests
 #else
                 var sequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 #endif
+                model.ResetState();
                 model.ClearGrads();
 
                 var loss = ComputeLoss(model, sequences);
@@ -155,7 +156,9 @@ namespace KelpNetTester.Tests
 
 
         static double predict_sequence(FunctionStack model, List<double> input_seq)
-        {            
+        {
+            model.ResetState();
+            
             NdArray result = NdArray.Empty(1);
 
             for (int i = 0; i < input_seq.Count; i++)

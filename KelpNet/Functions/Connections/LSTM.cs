@@ -123,7 +123,7 @@ namespace KelpNet.Functions.Connections
 #endif
         }
 
-        protected override NdArray ForwardSingle(NdArray x, int batchID = 0) //x[5]
+        protected override NdArray ForwardSingle(NdArray x, int batchID = 0)
         {
             if (this.cParam[batchID].Count == 0)
             {
@@ -159,7 +159,8 @@ namespace KelpNet.Functions.Connections
             var li = new double[x.Length];
             var lf = new double[x.Length];
             var lo = new double[x.Length];
-            var cSave = this.cParam[batchID].Peek();
+            var cPrev = this.cParam[batchID].Peek();
+            var cResult = new double[cPrev.Length];
 
             for (int i = 0; i < this.hParam[batchID].Length; i++)
             {
@@ -168,18 +169,24 @@ namespace KelpNet.Functions.Connections
                 lf[i] = Sigmoid(r[2].Data[i]);
                 lo[i] = Sigmoid(r[3].Data[i]);
 
-                cSave[i] = la[i] * li[i] + lf[i] * cSave[i];
-                this.hParam[batchID].Data[i] = lo[i] * Math.Tanh(cSave[i]);
+                cResult[i] = la[i] * li[i] + lf[i] * cPrev[i];
+                this.hParam[batchID].Data[i] = lo[i] * Math.Tanh(cResult[i]);
             }
 
             //Backward用
-            this.cParam[batchID].Push(cSave);
+            this.cParam[batchID].Push(cResult);
             this.aParam[batchID].Push(la);
             this.iParam[batchID].Push(li);
             this.fParam[batchID].Push(lf);
             this.oParam[batchID].Push(lo);
 
             return this.hParam[batchID];
+        }
+
+        public override void ResetState()
+        {
+            this.cParam = new[] { new Stack<double[]>() };
+            this.hParam = new NdArray[1];
         }
 
         protected override NdArray BackwardSingle(NdArray gh, int batchID = 0)

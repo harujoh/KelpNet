@@ -36,6 +36,10 @@ namespace KelpNet
             return this.BackwardSingle(gy, batchId);
         }
 
+        public virtual void ResetState()
+        {
+        }
+
         //バッチ実行前に初期化が必要な関数に使用
         public virtual void InitBatch(int batchCount)
         {            

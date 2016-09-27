@@ -120,6 +120,14 @@ namespace KelpNet
             }
         }
 
+        public void ResetState()
+        {
+            foreach (var function in this.Functions)
+            {
+                function.ResetState();
+            }
+        }
+
         //予想を実行する（外部からの使用を想定してArrayが引数
         public NdArray Predict(Array input, int batchID = 0)
         {
