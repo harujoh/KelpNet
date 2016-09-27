@@ -1,27 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KelpNet.Interface;
 
 namespace KelpNet.Functions.Connections
 {
     public class LSTM : Function, IPredictableFunction
     {
-        public Stack<NdArray>[] aParam;
-        public Stack<NdArray>[] iParam;
-        public Stack<NdArray>[] fParam;
-        public Stack<NdArray>[] oParam;
-        public Stack<NdArray>[] cParam;
+        public Stack<double[]>[] aParam;
+        public Stack<double[]>[] iParam;
+        public Stack<double[]>[] fParam;
+        public Stack<double[]>[] oParam;
+        public Stack<double[]>[] cParam;
 
-        private NdArray[] hParam = new NdArray[1];
-
-        public Stack<NdArray>[] cPrev;
-        public NdArray[] cSave = new NdArray[1];
+        private NdArray[] hParam;
 
         public Linear[] upward = new Linear[4];
         public Linear[] lateral = new Linear[4];
 
         private NdArray[][] gxPrev = new NdArray[1][];
-        private NdArray[] gcPrev = new NdArray[1];
+        private double[][] gcPrev = new double[1][];
 
         public LSTM(int inSize, int outSize, string name = "LSTM") : base(name)
         {
@@ -125,63 +123,61 @@ namespace KelpNet.Functions.Connections
 #endif
         }
 
-        protected override NdArray ForwardSingle(NdArray x, int batchID = 0)
+        protected override NdArray ForwardSingle(NdArray x, int batchID = 0) //x[5]
         {
-            if (this.cSave[batchID] == null)
+            if (this.cParam[batchID].Count == 0)
             {
-                this.cSave[batchID] = NdArray.ZerosLike(x);
+                this.cParam[batchID].Push(Enumerable.Repeat(0.0, x.Length).ToArray());
             }
 
-            this.cPrev[batchID].Push(new NdArray(this.cSave[batchID]));
-
-            List<double> tmp = new List<double>();
-            tmp.AddRange(this.upward[0].Forward(x, batchID).Data);
-            tmp.AddRange(this.upward[1].Forward(x, batchID).Data);
-            tmp.AddRange(this.upward[2].Forward(x, batchID).Data);
-            tmp.AddRange(this.upward[3].Forward(x, batchID).Data);
+            List<double> upwardResult = new List<double>();
+            upwardResult.AddRange(this.upward[0].Forward(x, batchID).Data);
+            upwardResult.AddRange(this.upward[1].Forward(x, batchID).Data);
+            upwardResult.AddRange(this.upward[2].Forward(x, batchID).Data);
+            upwardResult.AddRange(this.upward[3].Forward(x, batchID).Data);
 
             NdArray[] r;
             if (this.hParam[batchID] != null)
             {
-                List<double> tmp2 = new List<double>();
-                tmp2.AddRange(this.lateral[0].Forward(this.hParam[batchID], batchID).Data);
-                tmp2.AddRange(this.lateral[1].Forward(this.hParam[batchID], batchID).Data);
-                tmp2.AddRange(this.lateral[2].Forward(this.hParam[batchID], batchID).Data);
-                tmp2.AddRange(this.lateral[3].Forward(this.hParam[batchID], batchID).Data);
-                r = this.ExtractGates(tmp, tmp2);
+                List<double> lateralResult = new List<double>();
+                lateralResult.AddRange(this.lateral[0].Forward(this.hParam[batchID], batchID).Data);
+                lateralResult.AddRange(this.lateral[1].Forward(this.hParam[batchID], batchID).Data);
+                lateralResult.AddRange(this.lateral[2].Forward(this.hParam[batchID], batchID).Data);
+                lateralResult.AddRange(this.lateral[3].Forward(this.hParam[batchID], batchID).Data);
+
+                //加算しつつ再配置
+                r = this.ExtractGates(upwardResult, lateralResult);
             }
             else
             {
-                r = this.ExtractGates(tmp);
                 this.hParam[batchID] = NdArray.ZerosLike(x);
+
+                r = this.ExtractGates(upwardResult);
             }
 
-            var la = r[0];
-            var li = r[1];
-            var lf = r[2];
-            var lo = r[3];
-
-            var laParam = NdArray.EmptyLike(la);
-            var liParam = NdArray.EmptyLike(li);
-            var lfParam = NdArray.EmptyLike(lf);
-            var loParam = NdArray.EmptyLike(lo);
+            var la = new double[x.Length];
+            var li = new double[x.Length];
+            var lf = new double[x.Length];
+            var lo = new double[x.Length];
+            var cSave = this.cParam[batchID].Peek();
 
             for (int i = 0; i < this.hParam[batchID].Length; i++)
             {
-                laParam.Data[i] = Math.Tanh(la.Data[i]);
-                liParam.Data[i] = Sigmoid(li.Data[i]);
-                lfParam.Data[i] = Sigmoid(lf.Data[i]);
-                loParam.Data[i] = Sigmoid(lo.Data[i]);
+                la[i] = Math.Tanh(r[0].Data[i]);
+                li[i] = Sigmoid(r[1].Data[i]);
+                lf[i] = Sigmoid(r[2].Data[i]);
+                lo[i] = Sigmoid(r[3].Data[i]);
 
-                this.cSave[batchID].Data[i] = laParam.Data[i] * liParam.Data[i] + lfParam.Data[i] * this.cSave[batchID].Data[i];
-                this.hParam[batchID].Data[i] = loParam.Data[i] * Math.Tanh(this.cSave[batchID].Data[i]);
+                cSave[i] = la[i] * li[i] + lf[i] * cSave[i];
+                this.hParam[batchID].Data[i] = lo[i] * Math.Tanh(cSave[i]);
             }
 
-            this.cParam[batchID].Push(new NdArray(this.cSave[batchID]));
-            this.aParam[batchID].Push(laParam);
-            this.iParam[batchID].Push(liParam);
-            this.fParam[batchID].Push(lfParam);
-            this.oParam[batchID].Push(loParam);
+            //Backward用
+            this.cParam[batchID].Push(cSave);
+            this.aParam[batchID].Push(la);
+            this.iParam[batchID].Push(li);
+            this.fParam[batchID].Push(lf);
+            this.oParam[batchID].Push(lo);
 
             return this.hParam[batchID];
         }
@@ -206,48 +202,48 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            var lcPrev = this.cPrev[batchID].Pop();
             if (this.gcPrev[batchID] == null)
             {
-                this.gcPrev[batchID] = NdArray.EmptyLike(gh);
+                this.gcPrev[batchID] = new double[gh.Length];
             }
 
-            NdArray ga = NdArray.EmptyLike(gh);
-            NdArray gi = NdArray.EmptyLike(gh);
-            NdArray gf = NdArray.EmptyLike(gh);
-            NdArray go = NdArray.EmptyLike(gh);
+            var ga = new double[gh.Length];
+            var gi = new double[gh.Length];
+            var gf = new double[gh.Length];
+            var go = new double[gh.Length];
 
-            var cPrePara = this.cParam[batchID].Pop();
-            var aPrev = this.aParam[batchID].Pop();
-            var iPrev = this.iParam[batchID].Pop();
-            var fPrev = this.fParam[batchID].Pop();
-            var oPrev = this.oParam[batchID].Pop();
+            var lcParam = this.cParam[batchID].Pop();
+            var cPrev = this.cParam[batchID].Peek();
+            var laParam = this.aParam[batchID].Pop();
+            var liParam = this.iParam[batchID].Pop();
+            var lfParam = this.fParam[batchID].Pop();
+            var loParam = this.oParam[batchID].Pop();
 
             for (int i = 0; i < this.gcPrev[batchID].Length; i++)
             {
-                var co = Math.Tanh(cPrePara.Data[i]);
+                var co = Math.Tanh(lcParam[i]);
 
-                this.gcPrev[batchID].Data[i] = gh.Data[i] * oPrev.Data[i] * GradTanh(co) + this.gcPrev[batchID].Data[i]; //gcPrevが次回のgc
-                ga.Data[i] = this.gcPrev[batchID].Data[i] * iPrev.Data[i] * GradTanh(aPrev.Data[i]);
-                gi.Data[i] = this.gcPrev[batchID].Data[i] * aPrev.Data[i] * GradSigmoid(iPrev.Data[i]);
-                gf.Data[i] = this.gcPrev[batchID].Data[i] * lcPrev.Data[i] * GradSigmoid(fPrev.Data[i]);
-                go.Data[i] = gh.Data[i] * co * GradSigmoid(oPrev.Data[i]);
+                this.gcPrev[batchID][i] = gh.Data[i] * loParam[i] * GradTanh(co) + this.gcPrev[batchID][i];
+                ga[i] = this.gcPrev[batchID][i] * liParam[i] * GradTanh(laParam[i]);
+                gi[i] = this.gcPrev[batchID][i] * laParam[i] * GradSigmoid(liParam[i]);
+                gf[i] = this.gcPrev[batchID][i] * cPrev[i] * GradSigmoid(lfParam[i]);
+                go[i] = gh.Data[i] * co * GradSigmoid(loParam[i]);
 
-                this.gcPrev[batchID].Data[i] *= fPrev.Data[i]; //multiply f here
+                this.gcPrev[batchID][i] *= lfParam[i];
             }
 
             var r = this.RestoreGates(ga, gi, gf, go);
             this.gxPrev[batchID] = r;
 
-            ga = this.upward[0].Backward(r[0], batchID);
-            gi = this.upward[1].Backward(r[1], batchID);
-            gf = this.upward[2].Backward(r[2], batchID);
-            go = this.upward[3].Backward(r[3], batchID);
+            ga = this.upward[0].Backward(r[0], batchID).Data;
+            gi = this.upward[1].Backward(r[1], batchID).Data;
+            gf = this.upward[2].Backward(r[2], batchID).Data;
+            go = this.upward[3].Backward(r[3], batchID).Data;
 
             double[] gx = new double[ga.Length];
             for (int i = 0; i < ga.Length; i++)
             {
-                gx[i] = ga.Data[i] + gi.Data[i] + gf.Data[i] + go.Data[i];
+                gx[i] = ga[i] + gi[i] + gf[i] + go[i];
             }
 
             return NdArray.FromArray(gx);
@@ -262,27 +258,22 @@ namespace KelpNet.Functions.Connections
             }
 
             this.hParam = new NdArray[batchCount];
+            this.aParam = new Stack<double[]>[batchCount];
+            this.iParam = new Stack<double[]>[batchCount];
+            this.fParam = new Stack<double[]>[batchCount];
+            this.oParam = new Stack<double[]>[batchCount];
+            this.cParam = new Stack<double[]>[batchCount];
 
-            this.gcPrev = new NdArray[batchCount];
-            this.cSave = new NdArray[batchCount];
-
-            this.cPrev = new Stack<NdArray>[batchCount];
-            this.aParam = new Stack<NdArray>[batchCount];
-            this.iParam = new Stack<NdArray>[batchCount];
-            this.fParam = new Stack<NdArray>[batchCount];
-            this.oParam = new Stack<NdArray>[batchCount];
-            this.cParam = new Stack<NdArray>[batchCount];
-
-            for (int i = 0; i < this.cPrev.Length; i++)
+            for (int i = 0; i < this.cParam.Length; i++)
             {
-                this.cPrev[i] = new Stack<NdArray>();
-                this.aParam[i] = new Stack<NdArray>();
-                this.iParam[i] = new Stack<NdArray>();
-                this.fParam[i] = new Stack<NdArray>();
-                this.oParam[i] = new Stack<NdArray>();
-                this.cParam[i] = new Stack<NdArray>();
+                this.aParam[i] = new Stack<double[]>();
+                this.iParam[i] = new Stack<double[]>();
+                this.fParam[i] = new Stack<double[]>();
+                this.oParam[i] = new Stack<double[]>();
+                this.cParam[i] = new Stack<double[]>();
             }
 
+            this.gcPrev = new double[batchCount][];
             this.gxPrev = new NdArray[batchCount][];
         }
 
@@ -306,33 +297,33 @@ namespace KelpNet.Functions.Connections
             return 1 - x * x;
         }
 
-        NdArray[] RestoreGates(params NdArray[] x)
+        NdArray[] RestoreGates(params double[][] x)
         {
+            int col = x[0].Length;
+            double[] r = new double[4 * col];
+
+            for (int i = 0; i < col; i++)
+            {
+                r[i * 4 + 0] = x[0][i];
+                r[i * 4 + 1] = x[1][i];
+                r[i * 4 + 2] = x[2][i];
+                r[i * 4 + 3] = x[3][i];
+            }
+
             NdArray[] result =
             {
-                NdArray.Zeros(5),
-                NdArray.Zeros(5),
-                NdArray.Zeros(5),
-                NdArray.Zeros(5)
+                NdArray.Empty(col),
+                NdArray.Empty(col),
+                NdArray.Empty(col),
+                NdArray.Empty(col)
             };
-
-            double[] r = new double[20];
-
-            for (int i = 0; i < 5; i++)
-            {
-                r[i * 4 + 0] = x[0].Data[i];
-                r[i * 4 + 1] = x[1].Data[i];
-                r[i * 4 + 2] = x[2].Data[i];
-                r[i * 4 + 3] = x[3].Data[i];
-            }
 
             for (int i = 0; i < 4; i++)
             {
-                result[i].Data[0] = r[i * 5 + 0];
-                result[i].Data[1] = r[i * 5 + 1];
-                result[i].Data[2] = r[i * 5 + 2];
-                result[i].Data[3] = r[i * 5 + 3];
-                result[i].Data[4] = r[i * 5 + 4];
+                for (int j = 0; j < col; j++)
+                {
+                    result[i].Data[j] = r[i* col + j];
+                }
             }
 
             return result;
@@ -340,17 +331,19 @@ namespace KelpNet.Functions.Connections
 
         NdArray[] ExtractGates(params List<double>[] x)
         {
+            int col = x[0].Count/4;
+
             NdArray[] r =
             {
-                NdArray.Zeros(5),
-                NdArray.Zeros(5),
-                NdArray.Zeros(5),
-                NdArray.Zeros(5)
+                NdArray.Zeros(col),
+                NdArray.Zeros(col),
+                NdArray.Zeros(col),
+                NdArray.Zeros(col)
             };
 
             for (int i = 0; i < x.Length; i++)
             {
-                for (int j = 0; j < x[i].Count / 4; j++)
+                for (int j = 0; j < col; j++)
                 {
                     r[0].Data[j] += x[i][j * 4];
                     r[1].Data[j] += x[i][j * 4 + 1];
