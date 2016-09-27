@@ -7,11 +7,11 @@ namespace KelpNet.Functions.Connections
 {
     public class LSTM : Function, IPredictableFunction
     {
-        public Stack<double[]>[] aParam;
-        public Stack<double[]>[] iParam;
-        public Stack<double[]>[] fParam;
-        public Stack<double[]>[] oParam;
-        public Stack<double[]>[] cParam;
+        private Stack<double[]>[] aParam;
+        private Stack<double[]>[] iParam;
+        private Stack<double[]>[] fParam;
+        private Stack<double[]>[] oParam;
+        private Stack<double[]>[] cParam;
 
         private NdArray[] hParam;
 
@@ -113,12 +113,12 @@ namespace KelpNet.Functions.Connections
             for (int i = 0; i < 4; i++)
             {
                 this.upward[i] = new Linear(inSize, outSize, name: "upward" + i);
-                Parameters.Add(new OptimizeParameter(this.upward[i].W, this.upward[i].gW, this.Name + " " + this.upward[i].Name + " " +  " W"));
-                Parameters.Add(new OptimizeParameter(this.upward[i].b, this.upward[i].gb, this.Name + " " + this.upward[i].Name + " " +  " b"));
+                Parameters.Add(new OptimizeParameter(this.upward[i].W, this.upward[i].gW, this.Name + " " + this.upward[i].Name + " " + " W"));
+                Parameters.Add(new OptimizeParameter(this.upward[i].b, this.upward[i].gb, this.Name + " " + this.upward[i].Name + " " + " b"));
 
                 //lateralはBiasは無し
                 this.lateral[i] = new Linear(outSize, outSize, noBias: true, name: "lateral" + i);
-                Parameters.Add(new OptimizeParameter(this.lateral[i].W, this.lateral[i].gW, this.Name + " " + this.lateral[i].Name + " " +  " W"));
+                Parameters.Add(new OptimizeParameter(this.lateral[i].W, this.lateral[i].gW, this.Name + " " + this.lateral[i].Name + " " + " W"));
             }
 #endif
         }
@@ -180,11 +180,6 @@ namespace KelpNet.Functions.Connections
             this.oParam[batchID].Push(lo);
 
             return this.hParam[batchID];
-        }
-
-        public override void ResetState()
-        {
-            this.hParam = new NdArray[1];
         }
 
         protected override NdArray BackwardSingle(NdArray gh, int batchID = 0)
@@ -277,9 +272,9 @@ namespace KelpNet.Functions.Connections
             this.gxPrev = new NdArray[batchCount][];
         }
 
-        public NdArray Predict(NdArray input,int batchID)
+        public NdArray Predict(NdArray input, int batchID)
         {
-            return this.ForwardSingle(input,batchID);
+            return this.ForwardSingle(input, batchID);
         }
 
         static double Sigmoid(double x)
@@ -322,7 +317,7 @@ namespace KelpNet.Functions.Connections
             {
                 for (int j = 0; j < col; j++)
                 {
-                    result[i].Data[j] = r[i* col + j];
+                    result[i].Data[j] = r[i * col + j];
                 }
             }
 
@@ -331,7 +326,7 @@ namespace KelpNet.Functions.Connections
 
         NdArray[] ExtractGates(params List<double>[] x)
         {
-            int col = x[0].Count/4;
+            int col = x[0].Count / 4;
 
             NdArray[] r =
             {
