@@ -6,7 +6,7 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _alpha;
 
-        public ELU(double alpha, string name = "ELU") : base(name)
+        public ELU(double alpha = 1.0 , string name = "ELU") : base(name)
         {
             this._alpha = alpha;
         }
