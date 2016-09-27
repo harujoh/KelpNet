@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="FunctionStack.cs" />
     <Compile Include="Function.cs" />
+    <Compile Include="Functions\Activations\ELU.cs" />
     <Compile Include="Functions\Activations\LeakyReLU.cs" />
     <Compile Include="Functions\Activations\ReLU.cs" />
     <Compile Include="Functions\Activations\Sigmoid.cs" />
