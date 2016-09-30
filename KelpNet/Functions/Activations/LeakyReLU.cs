@@ -1,5 +1,8 @@
-﻿namespace KelpNet.Functions.Activations
+﻿using System;
+
+namespace KelpNet.Functions.Activations
 {
+    [Serializable]
     public class LeakyReLU : NeedPreviousDataFunction
     {
         private readonly double _slope;

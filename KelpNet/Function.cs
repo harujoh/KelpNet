@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace KelpNet
 {
     //FunctionStackに積み上げるFunctionの基底クラス
+    [Serializable]
     public abstract class Function
     {
         public string Name;
@@ -36,6 +37,7 @@ namespace KelpNet
             return this.BackwardSingle(gy, batchId);
         }
 
+        //ある処理実行後に特定のデータを初期値に戻す処理
         public virtual void ResetState()
         {
         }
@@ -79,6 +81,12 @@ namespace KelpNet
         public override string ToString()
         {
             return this.Name;
+        }
+
+        //コピーを作成するメソッド
+        public Function Clone()
+        {
+            return DeepCopyHelper.DeepCopy(this);
         }
     }
 }

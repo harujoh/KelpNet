@@ -12,13 +12,6 @@ namespace KelpNet
         //ロス関数のデリゲート宣言
         public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
 
-        //ファンクションペア（非バッチ処理をまとめ、極力複数層に渡った並列処理を実現する
-        public class FunctionPare
-        {
-            public List<IBatchFunction> BatchFunctions = new List<IBatchFunction>();
-            public List<Function> SoloFunctions = new List<Function>();
-        }
-
         //バッチ実行用に保管
         private readonly List<FunctionPare> _functionPares = new List<FunctionPare>();
 
@@ -31,6 +24,7 @@ namespace KelpNet
         //Optimizerをココで保持する
         private Optimizer _optimizer;
 
+        //更新対象となるパラメータを保持
         public List<OptimizeParameter> Parameters = new List<OptimizeParameter>();
 
         //コンストラクタ
@@ -62,6 +56,12 @@ namespace KelpNet
                 //フラグを設定
                 isPreFuncBatch = batchFunction != null;
             }
+        }
+
+        //コピーを作成するメソッド
+        public FunctionStack Clone()
+        {
+            return DeepCopyHelper.DeepCopy(this);
         }
 
         //Optimizerを設定
@@ -120,6 +120,7 @@ namespace KelpNet
             }
         }
 
+        //ある処理実行後に特定のデータを初期値に戻す処理
         public void ResetState()
         {
             foreach (var function in this.Functions)
@@ -131,11 +132,11 @@ namespace KelpNet
         //予想を実行する（外部からの使用を想定してArrayが引数
         public NdArray Predict(Array input, int batchID = 0)
         {
-            return this.Predict(NdArray.FromArray(input),batchID);
+            return this.Predict(NdArray.FromArray(input), batchID);
         }
 
         //予想を実行する
-        public NdArray Predict(NdArray input,int batchID=0)
+        public NdArray Predict(NdArray input, int batchID = 0)
         {
             NdArray forwardResult = input;
 
@@ -179,7 +180,16 @@ namespace KelpNet
             return loss;
         }
 
+        public void InitBatch(int batchSize)
+        {
+            //入出力を初期化
+            foreach (Function function in this.Functions)
+            {
+                function.InitBatch(batchSize);
+            }
+        }
 
+        //Forwardのバッチ版
         public NdArray[] BatchForward(Array[] input, Array[] teach, LossFunction lossFunction, out List<double> sumLoss)
         {
             int batchCount = input.Length;
@@ -247,6 +257,7 @@ namespace KelpNet
             return backwardResult;
         }
 
+        //Backwardのバッチ版
         public void BatchBackward(NdArray[] backwardResult)
         {
             //backwardを実行
@@ -282,6 +293,7 @@ namespace KelpNet
         //バッチで学習処理を行う
         public List<double> BatchTrain(Array[] input, Array[] teach, LossFunction lossFunction)
         {
+            //結果の誤差保存用
             List<double> sumLoss;
 
             //入出力を初期化
@@ -290,7 +302,10 @@ namespace KelpNet
                 function.InitBatch(input.Length);
             }
 
+            //Forwardのバッチを実行
             var backwardResult = this.BatchForward(input, teach, lossFunction, out sumLoss);
+
+            //Backwardのバッチを実行
             this.BatchBackward(backwardResult);
 
             return sumLoss;
@@ -342,7 +357,7 @@ namespace KelpNet
 #else
             Parallel.For(0, x.Length, i =>
             {
-                var forwardResult = this.Predict(x[i],i);
+                var forwardResult = this.Predict(x[i], i);
 
                 if (Array.IndexOf(forwardResult.Data, forwardResult.Data.Max()) == y[i][0])
                 {

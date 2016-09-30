@@ -2,6 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
+    [Serializable]
     public class Linear : NeedPreviousDataFunction
     {
         public NdArray W;
@@ -45,7 +46,7 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray output = NdArray.Empty(1, OutputCount);
+            NdArray output = NdArray.Empty(OutputCount);
             NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount);
 
             for (int i = 0; i < OutputCount; i++)

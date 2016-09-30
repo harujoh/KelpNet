@@ -5,6 +5,7 @@ using KelpNet.Interface;
 
 namespace KelpNet.Functions.Connections
 {
+    [Serializable]
     public class LSTM : Function, IPredictableFunction
     {
         private Stack<double[]>[] aParam;
@@ -23,93 +24,6 @@ namespace KelpNet.Functions.Connections
 
         public LSTM(int inSize, int outSize, string name = "LSTM") : base(name)
         {
-#if DEBUG
-            for (int i = 0; i < 4; i++)
-            {
-                this.upward[i] = new Linear(inSize, outSize, name: "upward" + i);
-
-                //lateralはBiasは無し
-                this.lateral[i] = new Linear(outSize, outSize, noBias: true, name: "lateral" + i);
-            }
-
-            this.upward[0].W = NdArray.FromArray(new[,]{
-            {-0.04395561,  0.00953909, -0.08359507,  0.08964871, -0.00650719},
-                {-0.0575492,   0.07147719,  0.08890767, -0.0564871,  -0.09726748},
-                {-0.05821012,  0.0130387,   0.06219254,  0.03400032, -0.01163356},
-                {-0.07131696, -0.03838185, -0.09704818,  0.02615761,  0.02697979},
-                { 0.08959083, -0.07590719, -0.05582947,  0.02060409,  0.04031029}
-            });
-            this.upward[0].b = NdArray.FromArray(new[] { 0.03594227, -0.00667736, 0.00918686, -0.05687213, -0.09300639 });
-
-            this.upward[1].W = NdArray.FromArray(new[,]{
-                { 0.00493388,  0.01904213,  0.06349733,  0.08207227,  0.09927054},
-                {-0.05937263, -0.0824149,  -0.06575577,  0.04905749,  0.06992707},
-                {-0.00150587,  0.04190406,  0.02523944, -0.07424963,  0.05040478},
-                {-0.09756977,  0.06557105, -0.0616635,  -0.04204918,  0.02662499},
-                { 0.04577347, -0.01056622,  0.04013773, -0.04184886, -0.0828003 }
-            });
-            this.upward[1].b = NdArray.FromArray(new[] { 0.05552417, -0.01824856, -0.01015915, -0.04751314, -0.03874684 });
-
-            this.upward[2].W = NdArray.FromArray(new[,]{
-                {-0.06588724,  0.05582662, -0.07949429, -0.0348076,   0.0511508 },
-                {-0.01625326, -0.02578919, -0.03175092,  0.03544928, -0.0100778 },
-                {-0.07827286,  0.04940033,  0.08252732, -0.08152542, -0.0321954 },
-                { 0.02304256, -0.0946193,   0.03883769,  0.07799184, -0.0723974 },
-                {-0.06058234, -0.09420774,  0.06511135,  0.03198707, -0.03319233}
-            });
-            this.upward[2].b = NdArray.FromArray(new[] { -0.05932232, 0.08657682, 0.0953408, 0.0827532, 0.01947624 });
-
-            this.upward[3].W = NdArray.FromArray(new[,]{
-                {-0.0430833,   0.07852951,  0.08043411,  0.09334686, -0.04600554},
-                { 0.04217525, -0.03100407, -0.03556751,  0.07804406, -0.09834558},
-                { 0.0883133,  -0.02476237, -0.08914164,  0.0588782,   0.04889128},
-                {-0.01575579, -0.00557019,  0.05506143,  0.03283211,  0.07986852},
-                {-0.0146129,   0.02733113,  0.05563244,  0.04313883, -0.00209575}
-            });
-            this.upward[3].b = NdArray.FromArray(new[] { -0.06486291, 0.05479813, 0.00306977, 0.07728702, 0.04547007 });
-
-
-            this.lateral[0].W = NdArray.FromArray(new[,]{
-                { 0.00970838, -0.09677468, -0.05098628,  0.01430712, -0.06938247},
-                {-0.06167605, -0.05409741, -0.02639686,  0.08743017, -0.06690538},
-                {0.05643582, -0.03038138, -0.03113236, -0.03279318,  0.0631598},
-                {-0.05885514, -0.07111458,  0.04224461, -0.09915958,  0.02011202},
-                {0.07988876,  0.0377701,   0.03605221,  0.07979446, -0.05496476}
-            });
-
-            this.lateral[1].W = NdArray.FromArray(new[,]{
-                {-0.01900506,  0.01345564,  0.07828248,  0.04267332, -0.00484286},
-                {0.09092383,  0.02374125, -0.02484604, -0.01459825, -0.08989462},
-                {0.04657019, -0.00915463,  0.00073637,  0.00318613, -0.08723193},
-                {0.0380653,  -0.04503078,  0.0613486,  -0.00372761,  0.04565996},
-                {-0.08838285, -0.04949837,  0.08403265, -0.09652784, -0.08095802}
-            });
-
-            this.lateral[2].W = NdArray.FromArray(new[,]{
-                {0.05430992, -0.063843,    0.02891743,  0.06503975, -0.07874666},
-                {-0.09891963, -0.07618238, -0.03567919, -0.06237401, -0.04461374},
-                {-0.03283143,  0.09137988, -0.08329749, -0.05893804,  0.03652418},
-                {-0.0428125,   0.02421166,  0.07261568,  0.06710947,  0.08136631},
-                {-0.08614939, -0.05302165, -0.06242198, -0.00018274, -0.09131889}
-            });
-
-            this.lateral[3].W = NdArray.FromArray(new[,]{
-                {-0.06869422, -0.09478083,  0.00827363,  0.08640816, -0.05355168},
-                {-0.03474252,  0.06299275,  0.05079195, -0.00116762,  0.05746876},
-                {-0.01644047, -0.09919241,  0.03294539,  0.0124337,   0.00149174},
-                {-0.0728629,   0.02334053, -0.06079264,  0.0744803,  -0.02010363},
-                {-0.08747777,  0.0438894,   0.06413155,  0.08054566,  0.01802104}
-            });
-
-            for (int i = 0; i < 4; i++)
-            {
-                Parameters.Add(new OptimizeParameter(this.upward[i].W, this.upward[i].gW, this.Name + " " + this.upward[i].Name + " " + " W"));
-                Parameters.Add(new OptimizeParameter(this.upward[i].b, this.upward[i].gb, this.Name + " " + this.upward[i].Name + " " + " b"));
-
-                //lateralはBiasは無し
-                Parameters.Add(new OptimizeParameter(this.lateral[i].W, this.lateral[i].gW, this.Name + " " + this.lateral[i].Name + " " + " W"));
-            }
-#else
             for (int i = 0; i < 4; i++)
             {
                 this.upward[i] = new Linear(inSize, outSize, name: "upward" + i);
@@ -120,14 +34,16 @@ namespace KelpNet.Functions.Connections
                 this.lateral[i] = new Linear(outSize, outSize, noBias: true, name: "lateral" + i);
                 Parameters.Add(new OptimizeParameter(this.lateral[i].W, this.lateral[i].gW, this.Name + " " + this.lateral[i].Name + " " + " W"));
             }
-#endif
+
+            InputCount = inSize;
+            OutputCount = outSize;
         }
 
         protected override NdArray ForwardSingle(NdArray x, int batchID = 0)
         {
             if (this.cParam[batchID].Count == 0)
             {
-                this.cParam[batchID].Push(Enumerable.Repeat(0.0, x.Length).ToArray());
+                this.cParam[batchID].Push(Enumerable.Repeat(0.0, OutputCount).ToArray());
             }
 
             List<double> upwardResult = new List<double>();
@@ -150,15 +66,15 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                this.hParam[batchID] = NdArray.ZerosLike(x);
+                this.hParam[batchID] = NdArray.Zeros(OutputCount);
 
                 r = this.ExtractGates(upwardResult);
             }
 
-            var la = new double[x.Length];
-            var li = new double[x.Length];
-            var lf = new double[x.Length];
-            var lo = new double[x.Length];
+            var la = new double[OutputCount];
+            var li = new double[OutputCount];
+            var lf = new double[OutputCount];
+            var lo = new double[OutputCount];
             var cPrev = this.cParam[batchID].Peek();
             var cResult = new double[cPrev.Length];
 
@@ -206,13 +122,13 @@ namespace KelpNet.Functions.Connections
 
             if (this.gcPrev[batchID] == null)
             {
-                this.gcPrev[batchID] = new double[gh.Length];
+                this.gcPrev[batchID] = new double[InputCount];
             }
 
-            var ga = new double[gh.Length];
-            var gi = new double[gh.Length];
-            var gf = new double[gh.Length];
-            var go = new double[gh.Length];
+            var ga = new double[InputCount];
+            var gi = new double[InputCount];
+            var gf = new double[InputCount];
+            var go = new double[InputCount];
 
             var lcParam = this.cParam[batchID].Pop();
             var cPrev = this.cParam[batchID].Peek();
@@ -242,7 +158,7 @@ namespace KelpNet.Functions.Connections
             gf = this.upward[2].Backward(r[2], batchID).Data;
             go = this.upward[3].Backward(r[3], batchID).Data;
 
-            double[] gx = new double[ga.Length];
+            double[] gx = new double[InputCount];
             for (int i = 0; i < ga.Length; i++)
             {
                 gx[i] = ga[i] + gi[i] + gf[i] + go[i];
@@ -251,6 +167,7 @@ namespace KelpNet.Functions.Connections
             return NdArray.FromArray(gx);
         }
 
+        //バッチ実行時にバッティングするメンバをバッチ数分用意
         public override void InitBatch(int batchCount)
         {
             for (int i = 0; i < 4; i++)

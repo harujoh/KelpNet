@@ -2,6 +2,7 @@
 
 namespace KelpNet.Functions.Activations
 {
+    [Serializable]
     public class ReLU : NeedPreviousDataFunction
     {
         public ReLU(string name= "ReLU") : base(name)

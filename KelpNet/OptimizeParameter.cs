@@ -1,12 +1,15 @@
-﻿namespace KelpNet
+﻿using System;
+
+namespace KelpNet
 {
+    [Serializable]
     public class OptimizeParameter
     {
         public string Name;
         public NdArray Param;
         public NdArray Grad;
 
-        //Updateを行わずに実行されたTrainの回数をカウントし、バッチ更新時に使用する
+        //Updateを行わずに実行されたBackwardの回数をカウントし、バッチ更新時に使用する
         public int TrainCount;
 
         public int Length
@@ -27,7 +30,9 @@
         //傾きの初期化
         public void ClearGrad()
         {
+            //0埋め
             this.Grad.Fill(0);
+
             //バッチカウントもリセット
             this.TrainCount = 0;
         }

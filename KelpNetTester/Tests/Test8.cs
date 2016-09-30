@@ -26,7 +26,6 @@ namespace KelpNetTester.Tests
 #endif
 
         const int DISPLAY_EPOCH = 2;
-
         const int PREDICTION_LENGTH = 75;
 
         public static void Run()
@@ -97,10 +96,7 @@ namespace KelpNetTester.Tests
             Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
 
             //入出力を初期化
-            foreach (Function function in model.Functions)
-            {
-                function.InitBatch(MINI_BATCH_SIZE);
-            }
+            model.InitBatch(MINI_BATCH_SIZE);
 
             for (int i = 0; i < LENGTH_OF_SEQUENCE - 1; i++)
             {

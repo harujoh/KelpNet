@@ -4,6 +4,7 @@ using KelpNet.Interface;
 namespace KelpNet.Functions.Normalization
 {
     //Chainerより移植　finetuningは未実装
+    [Serializable]
     public class BatchNormalization : NeedPreviousDataFunction, IBatchFunction
     {
         private bool IsTrain;

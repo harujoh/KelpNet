@@ -2,6 +2,7 @@
 
 namespace KelpNet.Functions.Connections
 {
+    [Serializable]
     public class Convolution2D : NeedPreviousDataFunction
     {
         public NdArray W;

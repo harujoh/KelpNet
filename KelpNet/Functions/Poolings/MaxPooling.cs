@@ -2,6 +2,7 @@
 
 namespace KelpNet.Functions.Poolings
 {
+    [Serializable]
     public class MaxPooling : NeedPreviousDataFunction
     {
         private int _kSize;

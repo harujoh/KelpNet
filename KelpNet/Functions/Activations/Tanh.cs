@@ -2,6 +2,7 @@
 
 namespace KelpNet.Functions.Activations
 {
+    [Serializable]
     public class Tanh : NeedPreviousDataFunction
     {
         public Tanh(string name = "Tanh") : base(name)

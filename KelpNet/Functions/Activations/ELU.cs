@@ -2,6 +2,7 @@
 
 namespace KelpNet.Functions.Activations
 {
+    [Serializable]
     public class ELU : NeedPreviousDataFunction
     {
         private readonly double _alpha;

@@ -7,6 +7,7 @@ namespace KelpNet
 {
     //NumpyのNdArrayを模したクラス
     //N次元のArrayクラスを入力に取り、内部的には1次元配列として保持する事で動作を模倣している
+    [Serializable]
     public class NdArray
     {
         public double[] Data;

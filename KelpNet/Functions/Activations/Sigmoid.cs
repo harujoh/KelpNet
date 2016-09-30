@@ -2,6 +2,7 @@
 
 namespace KelpNet.Functions.Activations
 {
+    [Serializable]
     public class Sigmoid : NeedPreviousDataFunction
     {
         public Sigmoid(string name = "Sigmoid") : base(name)

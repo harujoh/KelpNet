@@ -1,5 +1,8 @@
-﻿namespace KelpNet.Functions.Noise
+﻿using System;
+
+namespace KelpNet.Functions.Noise
 {
+    [Serializable]
     public class Dropout : Function
     {
         private readonly double dropoutRatio;

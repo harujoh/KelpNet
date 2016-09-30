@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using KelpNet.Interface;
 
 namespace KelpNet.Functions
 {
     //前回の入出力を自動的に扱うクラステンプレート
+    [Serializable]
     public abstract class NeedPreviousDataFunction : Function, IPredictableFunction
     {
         //後入れ先出しリスト

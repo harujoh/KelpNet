@@ -66,6 +66,10 @@
       <Project>{6782a5ff-52ad-4757-b7e4-2f661459e812}</Project>
       <Name>MNistLoader</Name>
     </ProjectReference>
+    <ProjectReference Include="..\VocabularyMaker\VocabularyMaker.csproj">
+      <Project>{97349e4b-e378-40d2-a712-8922d5f80406}</Project>
+      <Name>VocabularyMaker</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
