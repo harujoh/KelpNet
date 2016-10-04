@@ -32,3 +32,23 @@ TwitterID: harujoh
 
 ## License
 Apache License 2.0
+
+
+##実装済み関数
+- Activation
+　・ELU
+ ・LeakyReLU
+ ・ReLU
+ ・Sigmoid
+ ・Tanｈ
+- Connection
+　・Convolution2D
+ ・EmbedID
+ ・Linear
+ ・LSTM
+- Poolings
+　・AveragePooling
+　・MaxPooling
+- Others
+　・DropOut
+　・BatchNormalization
