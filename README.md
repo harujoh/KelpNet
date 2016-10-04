@@ -35,30 +35,30 @@ Apache License 2.0
 
 
 ##実装済み関数
-- Activations
+- Activations:
 　・ELU
 　・LeakyReLU
 　・ReLU
 　・Sigmoid
 　・Tanh
-- Connections
+- Connections:
 　・Convolution2D
 　・EmbedID
 　・Linear
 　・LSTM
-- Poolings
+- Poolings:
 　・AveragePooling
 　・MaxPooling
-- LossFunctions
+- LossFunctions:
 　・MeanSquaredError
 　・SoftmaxCrossEntropy
-- Optimizers
+- Optimizers:
 　・AdaDelta
 　・AdaGrad
 　・Adam
 　・MomentumSGD
 　・RMSprop
 　・SGD
-- Others
+- Others:
 　・DropOut
 　・BatchNormalization
