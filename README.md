@@ -37,15 +37,15 @@ Apache License 2.0
 ##実装済み関数
 - Activation
 　・ELU
- ・LeakyReLU
- ・ReLU
- ・Sigmoid
- ・Tanｈ
+　・LeakyReLU
+　・ReLU
+　・Sigmoid
+　・Tanh
 - Connection
 　・Convolution2D
- ・EmbedID
- ・Linear
- ・LSTM
+　・EmbedID
+　・Linear
+　・LSTM
 - Poolings
 　・AveragePooling
 　・MaxPooling
