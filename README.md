@@ -32,3 +32,33 @@ TwitterID: harujoh
 
 ## License
 Apache License 2.0
+
+
+##実装済み関数
+- Activations:
+　・ELU
+　・LeakyReLU
+　・ReLU
+　・Sigmoid
+　・Tanh
+- Connections:
+　・Convolution2D
+　・EmbedID
+　・Linear
+　・LSTM
+- Poolings:
+　・AveragePooling
+　・MaxPooling
+- LossFunctions:
+　・MeanSquaredError
+　・SoftmaxCrossEntropy
+- Optimizers:
+　・AdaDelta
+　・AdaGrad
+　・Adam
+　・MomentumSGD
+　・RMSprop
+　・SGD
+- Others:
+　・DropOut
+　・BatchNormalization
