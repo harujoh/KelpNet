@@ -7,6 +7,7 @@ namespace VocabularyMaker
     public class Vocabulary
     {
         public List<string> Data = new List<string>();
+        public int EosID = -1;
 
         public int Length
         {
@@ -31,6 +32,11 @@ namespace VocabularyMaker
             for (int i = 0; i < replace.Length; i++)
             {
                 result[i] = this.Data.IndexOf(replace[i]);
+            }
+
+            if (this.EosID == -1)
+            {
+                this.EosID = this.Data.IndexOf("<EOS>");
             }
 
             return result;

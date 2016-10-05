@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KelpNet.Common;
 using KelpNet.Interface;
 
 namespace KelpNet
@@ -13,7 +14,7 @@ namespace KelpNet
         public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
 
         //バッチ実行用に保管
-        private readonly List<FunctionPare> _functionPares = new List<FunctionPare>();
+        private readonly List<FunctionGroup> _functionPares = new List<FunctionGroup>();
 
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
@@ -22,7 +23,7 @@ namespace KelpNet
         private readonly List<IPredictableFunction> _predictableFunctions = new List<IPredictableFunction>();
 
         //Optimizerをココで保持する
-        private Optimizer _optimizer;
+        private Optimizer[] _optimizers;
 
         //更新対象となるパラメータを保持
         public List<OptimizeParameter> Parameters = new List<OptimizeParameter>();
@@ -38,7 +39,7 @@ namespace KelpNet
             if (batchFunction == null)
             {
                 //最初が通常の層だったら事前にペアを追加
-                this._functionPares.Add(new FunctionPare());
+                this._functionPares.Add(new FunctionGroup());
             }
 
             //入力された関数を振り分ける
@@ -65,10 +66,13 @@ namespace KelpNet
         }
 
         //Optimizerを設定
-        public void SetOptimizer(Optimizer optimizer)
+        public void SetOptimizer(params Optimizer[] optimizers)
         {
-            this._optimizer = optimizer;
-            this._optimizer.SetParameters(this.Parameters);
+            this._optimizers = optimizers;
+            foreach (var optimizer in optimizers)
+            {
+                optimizer.SetParameters(this.Parameters);
+            }
         }
 
         //シングルタスク用の層を積み上げる
@@ -95,7 +99,7 @@ namespace KelpNet
                 //バッチ関数が連続していないかチェック
                 if (!preFuncIsBatch)
                 {
-                    this._functionPares.Add(new FunctionPare());
+                    this._functionPares.Add(new FunctionGroup());
                 }
 
                 //ペアにバッチ関数を追加
@@ -210,7 +214,7 @@ namespace KelpNet
             int functionCount = 0;
 
             //forwardを実行
-            foreach (FunctionPare functionPare in this._functionPares)
+            foreach (FunctionGroup functionPare in this._functionPares)
             {
                 //まずバッチ専用関数を処理
                 foreach (IBatchFunction batchFunction in functionPare.BatchFunctions)
@@ -327,7 +331,10 @@ namespace KelpNet
             }
 
             //宣言されているOptimizerの更新を実行
-            this._optimizer.Update();
+            foreach (var optimizer in this._optimizers)
+            {
+                optimizer.Update();
+            }
 
             //傾きをリセット
             this.ClearGrads();
@@ -368,5 +375,16 @@ namespace KelpNet
 
             return matchCount / (double)x.Length;
         }
+
+        public void Save(string fileName)
+        {
+            
+        }
+
+        public static FunctionStack Load(string fileName)
+        {
+            return new FunctionStack();
+        }
+
     }
 }

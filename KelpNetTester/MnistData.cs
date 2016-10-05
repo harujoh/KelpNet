@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using KelpNet;
+using KelpNet.Common;
 using MNISTLoader;
 
 namespace KelpNetTester

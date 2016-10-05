@@ -43,14 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DeepCopyHelper.cs" />
-    <Compile Include="FunctionPare.cs" />
+    <Compile Include="Common\DeepCopyHelper.cs" />
+    <Compile Include="FunctionGroup.cs" />
     <Compile Include="FunctionStack.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Functions\Activations\ELU.cs" />
     <Compile Include="Functions\Activations\LeakyReLU.cs" />
     <Compile Include="Functions\Activations\ReLU.cs" />
     <Compile Include="Functions\Activations\Sigmoid.cs" />
+    <Compile Include="Functions\Activations\Softmax.cs" />
     <Compile Include="Functions\Activations\Tanh.cs" />
     <Compile Include="Functions\Connections\Convolution2D.cs" />
     <Compile Include="Functions\Connections\EmbedID.cs" />
@@ -64,8 +65,8 @@
     <Compile Include="Loss\SoftmaxCrossEntropy.cs" />
     <Compile Include="Functions\Poolings\AveragePooling.cs" />
     <Compile Include="Functions\Poolings\MaxPooling.cs" />
-    <Compile Include="Mother.cs" />
-    <Compile Include="NdArray.cs" />
+    <Compile Include="Common\Mother.cs" />
+    <Compile Include="Common\NdArray.cs" />
     <Compile Include="OptimizeParameter.cs" />
     <Compile Include="Optimizer.cs" />
     <Compile Include="Optimizers\AdaDelta.cs" />

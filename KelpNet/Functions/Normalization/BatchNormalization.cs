@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Interface;
 
 namespace KelpNet.Functions.Normalization

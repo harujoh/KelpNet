@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace KelpNet
+namespace KelpNet.Common
 {
     //NumpyのNdArrayを模したクラス
     //N次元のArrayクラスを入力に取り、内部的には1次元配列として保持する事で動作を模倣している
@@ -110,7 +110,7 @@ namespace KelpNet
             if (data.Rank == 1)
             {
                 resultData = new double[data.Length];
-                data.CopyTo(resultData, 0);
+                Array.Copy(data, resultData, data.Length);
 
                 resultShape = new[] { data.Length };
             }
@@ -135,7 +135,7 @@ namespace KelpNet
                     Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * resultData.Length);
 
                     //型変換しつつコピー
-                    array.CopyTo(resultData, 0);
+                    Array.Copy(array, resultData, array.Length);
                 }
                 else
                 {

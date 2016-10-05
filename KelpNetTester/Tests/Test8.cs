@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using KelpNet;
+using KelpNet.Common;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
@@ -20,7 +21,7 @@ namespace KelpNetTester.Tests
         const int MINI_BATCH_SIZE = 1;
         const int LENGTH_OF_SEQUENCE = 5;
 #else
-        const int TRAINING_EPOCHS = 1000;
+        const int TRAINING_EPOCHS = 5000;
         const int MINI_BATCH_SIZE = 100;
         const int LENGTH_OF_SEQUENCE = 100;
 #endif

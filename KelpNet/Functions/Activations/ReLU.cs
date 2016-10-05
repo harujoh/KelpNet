@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 
 namespace KelpNet.Functions.Activations
 {

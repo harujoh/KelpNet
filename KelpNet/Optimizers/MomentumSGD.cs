@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using KelpNet.Common;
 
 namespace KelpNet.Optimizers
 {

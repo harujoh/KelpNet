@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KelpNet.Common;
 using KelpNet.Interface;
 
 namespace KelpNet.Functions

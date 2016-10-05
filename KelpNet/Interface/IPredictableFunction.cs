@@ -1,4 +1,6 @@
-﻿namespace KelpNet.Interface
+﻿using KelpNet.Common;
+
+namespace KelpNet.Interface
 {
     //コレから継承されたクラスが予測処理時に呼ばれる
     public interface IPredictableFunction

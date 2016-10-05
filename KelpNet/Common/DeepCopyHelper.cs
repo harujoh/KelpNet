@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace KelpNet
+namespace KelpNet.Common
 {
     //コチラを参考にしています
     //http://d.hatena.ne.jp/tekk/20100131/1264913887

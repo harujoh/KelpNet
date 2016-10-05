@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KelpNet.Common;
 using KelpNet.Interface;
 
 namespace KelpNet.Functions.Connections
@@ -22,17 +23,17 @@ namespace KelpNet.Functions.Connections
         private NdArray[][] gxPrev = new NdArray[1][];
         private double[][] gcPrev = new double[1][];
 
-        public LSTM(int inSize, int outSize, string name = "LSTM") : base(name)
+        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name)
         {
             for (int i = 0; i < 4; i++)
             {
-                this.upward[i] = new Linear(inSize, outSize, name: "upward" + i);
-                Parameters.Add(new OptimizeParameter(this.upward[i].W, this.upward[i].gW, this.Name + " " + this.upward[i].Name + " " + " W"));
-                Parameters.Add(new OptimizeParameter(this.upward[i].b, this.upward[i].gb, this.Name + " " + this.upward[i].Name + " " + " b"));
+                this.upward[i] = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward" + i);
+                Parameters.Add(new OptimizeParameter(this.upward[i].W, this.upward[i].gW, this.Name + " " + this.upward[i].Name + " W"));
+                Parameters.Add(new OptimizeParameter(this.upward[i].b, this.upward[i].gb, this.Name + " " + this.upward[i].Name + " b"));
 
                 //lateralはBiasは無し
-                this.lateral[i] = new Linear(outSize, outSize, noBias: true, name: "lateral" + i);
-                Parameters.Add(new OptimizeParameter(this.lateral[i].W, this.lateral[i].gW, this.Name + " " + this.lateral[i].Name + " " + " W"));
+                this.lateral[i] = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral" + i);
+                Parameters.Add(new OptimizeParameter(this.lateral[i].W, this.lateral[i].gW, this.Name + " " + this.lateral[i].Name + " W"));
             }
 
             InputCount = inSize;
