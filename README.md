@@ -1,5 +1,5 @@
 # Kelp.Net
-Kelp.NetはChainerを参考にC#で実装された深層学習の学習用ライブラリです。
+Kelp.NetはChainerを参考に全てC#で実装された深層学習のライブラリです。
 
 
 ##特徴
