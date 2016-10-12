@@ -72,6 +72,7 @@
     <Compile Include="Optimizers\AdaDelta.cs" />
     <Compile Include="Optimizers\AdaGrad.cs" />
     <Compile Include="Optimizers\Adam.cs" />
+    <Compile Include="Optimizers\GradientClipping.cs" />
     <Compile Include="Optimizers\MomentumSGD.cs" />
     <Compile Include="Optimizers\RMSprop.cs" />
     <Compile Include="Optimizers\SGD.cs" />

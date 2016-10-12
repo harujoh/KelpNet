@@ -21,10 +21,5 @@ namespace KelpNet.Optimizers
                 }
             });
         }
-
-        protected override void Initialize()
-        {
-            //特に初期化処理は行わない
-        }
     }
 }

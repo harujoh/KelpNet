@@ -26,6 +26,8 @@ namespace KelpNet
             this.Initialize();
         }
 
-        protected abstract void Initialize();
+        protected virtual void Initialize()
+        {            
+        }
     }
 }

@@ -13,9 +13,9 @@ namespace KelpNet.Functions.Connections
         private Stack<double[]>[] iParam;
         private Stack<double[]>[] fParam;
         private Stack<double[]>[] oParam;
-        private Stack<double[]>[] cParam;
+        private Stack<double[]>[] cParam = new Stack<double[]>[1];
 
-        private NdArray[] hParam;
+        private NdArray[] hParam = new NdArray[1];
 
         public Linear[] upward = new Linear[4];
         public Linear[] lateral = new Linear[4];
@@ -102,8 +102,16 @@ namespace KelpNet.Functions.Connections
 
         public override void ResetState()
         {
-            this.cParam = new[] { new Stack<double[]>() };
-            this.hParam = new NdArray[1];
+            this.cParam = new Stack<double[]>[this.cParam.Length];
+            for (int i = 0; i < this.cParam.Length; i++)
+            {
+                this.cParam[i] = new Stack<double[]>();
+            }
+
+            this.hParam = new NdArray[this.hParam.Length];
+
+            this.gcPrev = new double[this.gcPrev.Length][];
+            this.gxPrev = new NdArray[this.gxPrev.Length][];
         }
 
         protected override NdArray BackwardSingle(NdArray gh, int batchID = 0)
@@ -184,7 +192,7 @@ namespace KelpNet.Functions.Connections
             this.oParam = new Stack<double[]>[batchCount];
             this.cParam = new Stack<double[]>[batchCount];
 
-            for (int i = 0; i < this.cParam.Length; i++)
+            for (int i = 0; i < batchCount; i++)
             {
                 this.aParam[i] = new Stack<double[]>();
                 this.iParam[i] = new Stack<double[]>();

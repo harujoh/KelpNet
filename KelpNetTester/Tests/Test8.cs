@@ -9,22 +9,16 @@ using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
-    //LSTMによる正弦波の予測（t の値から t+1 の値を予測する）
+    //LSTMによるSin関数の学習（t の値から t+1 の値を予測する）
     //参考： http://seiya-kumada.blogspot.jp/2016/07/lstm-chainer.html
     class Test8
     {
         const int STEPS_PER_CYCLE = 50;
         const int NUMBER_OF_CYCLES = 100;
 
-#if DEBUG
-        const int TRAINING_EPOCHS = 100;
-        const int MINI_BATCH_SIZE = 1;
-        const int LENGTH_OF_SEQUENCE = 5;
-#else
-        const int TRAINING_EPOCHS = 5000;
+        const int TRAINING_EPOCHS = 1000;
         const int MINI_BATCH_SIZE = 100;
         const int LENGTH_OF_SEQUENCE = 100;
-#endif
 
         const int DISPLAY_EPOCH = 2;
         const int PREDICTION_LENGTH = 75;
@@ -36,19 +30,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack model = new FunctionStack(
-                new Linear(1, 5,
-#if DEBUG
-                    initialW: new[,] { { 0.06301765 }, { 0.02956826 }, { -0.0451562 }, { 0.08234128 }, { -0.02225312 } },
-                    initialb: new[] { 0.04880815, -0.09647872, 0.04342706, 0.00905941, -0.08944918 },
-#endif
-                    name: "Linear l1"),
+                new Linear(1, 5,name: "Linear l1"),
                 new LSTM(5, 5, name: "LSTM l2"),
-                new Linear(5, 1,
-#if DEBUG
-                    initialW: new[,] { { 0.03912614, -0.01009424, -0.05674245, 0.07616881, 0.0120074 } },
-                    initialb: new[] { -0.04287718 },
-#endif
-                    name: "Linear l3")
+                new Linear(5, 1,name: "Linear l3")
             );
 
             //optimizerを宣言
@@ -58,11 +42,8 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Training...");
             for (int epoch = 0; epoch < TRAINING_EPOCHS; epoch++)
             {
-#if DEBUG
-                var sequences = new[] { NdArray.FromArray(new[] { 0.58778524, 0.68454713, 0.77051324, 0.84432792, 0.90482705 }) };
-#else
                 var sequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
-#endif
+
                 model.ResetState();
                 model.ClearGrads();
 
@@ -79,11 +60,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Testing...");
             var testSequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 
-#if DEBUG
-            int sample_index = 0;
-#else
             int sample_index = 45;
-#endif
             predict(testSequences[sample_index], model, PREDICTION_LENGTH);
         }
 

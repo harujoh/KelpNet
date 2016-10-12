@@ -10,7 +10,7 @@ using VocabularyMaker;
 
 namespace KelpNetTester.Tests
 {
-    //RNNの実装
+    //SimpleなRNNによるRNNLM
     //『Chainerによる実践深層学習』より（ISBN 978-4-274-21934-4）
     class Test9
     {
@@ -46,7 +46,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Train Start.");
             for (int epoch = 0; epoch < TRAINING_EPOCHS; epoch++)
             {
-                NdArray h = NdArray.Empty(N_UNITS);
+                NdArray h = NdArray.Zeros(N_UNITS);
                 for (int pos = 0; pos < trainData.Length; pos++)
                 {
                     var id = trainData[pos];
@@ -147,7 +147,7 @@ namespace KelpNetTester.Tests
         {
             double sum = 0.0;
 
-            NdArray h = NdArray.Empty(N_UNITS);
+            NdArray h = NdArray.Zeros(N_UNITS);
 
             for (int i = 1; i < s.Count; i++)
             {

@@ -8,7 +8,7 @@ using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
-    //MLPでSin関数を学習する
+    //MLPによるSin関数の学習
 
     //学習対象の周期を増やしたり、サンプリング数(N)を増やすとスコアが悪化するので、
     //課題として挑戦してみると良いかもしれない

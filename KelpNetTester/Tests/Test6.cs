@@ -12,7 +12,7 @@ using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
-    //5層CNNによるMNIST（手書き文字）の認識
+    //5層CNNによるMNIST（手書き文字）の学習
     //Test4と違うのはネットワークの構成とOptimizerだけです
     class Test6
     {
