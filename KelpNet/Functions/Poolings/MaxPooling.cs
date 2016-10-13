@@ -20,7 +20,7 @@ namespace KelpNet.Functions.Poolings
         protected override NdArray NeedPreviousForward(NdArray input)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
-            NdArray result = NdArray.Empty(input.Shape[0], outputSize, outputSize);
+            NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);
             result.Fill(double.MinValue);
 
             for (int i = 0; i < input.Shape[0]; i++)

@@ -28,22 +28,9 @@ namespace KelpNet.Common
             Array.Copy(ndArray.Data, this.Data, this.Data.Length);
         }
 
-        public static NdArray EmptyLike(NdArray baseArray)
-        {
-            return new NdArray(new double[GetArrayLength(baseArray.Shape)], baseArray.Shape);
-        }
-
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            int length = GetArrayLength(baseArray.Shape);
-            double[] resutlArray = new double[length]; 
-
-            for (int i = 0; i < length; i++)
-            {
-                resutlArray[i] = 0;
-            }
-
-            return new NdArray(resutlArray, baseArray.Shape);
+            return new NdArray(new double[GetArrayLength(baseArray.Shape)], baseArray.Shape);
         }
 
         public static NdArray OnesLike(NdArray baseArray)
@@ -59,22 +46,9 @@ namespace KelpNet.Common
             return new NdArray(resutlArray, baseArray.Shape);
         }
 
-        public static NdArray Empty(params int[] shape)
-        {
-            return new NdArray(new double[GetArrayLength(shape)], shape);
-        }
-
         public static NdArray Zeros(params int[] shape)
         {
-            int length = GetArrayLength(shape);
-            double[] resutlArray = new double[length];
-
-            for (int i = 0; i < length; i++)
-            {
-                resutlArray[i] = 0;
-            }
-
-            return new NdArray(resutlArray, shape);
+            return new NdArray(new double[GetArrayLength(shape)], shape);
         }
 
         public static NdArray Ones(params int[] shape)

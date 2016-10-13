@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Connections
 
         public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID") : base(name)
         {
-            this.W = NdArray.Empty(inputCount, outputCount);
+            this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
 
             Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W"));
@@ -32,30 +32,35 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray result = NdArray.Empty(x.Length, OutputCount);
+            NdArray result = NdArray.Zeros(x.Length, OutputCount);
+            double[] resultData = new double[result.Length];
 
             for (int i = 0; i < x.Length; i++)
             {
                 for (int j = 0; j < OutputCount; j++)
                 {
-                    result.Data[i * OutputCount + j] = this.W.Data[(int)x.Data[i] * OutputCount + j];
+                    resultData[i * OutputCount + j] = this.W.Data[(int)x.Data[i] * OutputCount + j];
                 }
             }
+
+            result.Data = resultData;
 
             return result;
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            this.gW = NdArray.ZerosLike(this.W);
+            double[] resultData = new double[this.W.Length];
 
             for (int i = 0; i < prevInput.Length; i++)
             {
                 for (int j = 0; j < OutputCount; j++)
                 {
-                    this.gW.Data[(int)prevInput.Data[i] * OutputCount + j] += gy.Data[i + j];
+                    resultData[(int)prevInput.Data[i] * OutputCount + j] += gy.Data[i + j];
                 }
             }
+
+            this.gW.Data = resultData;
 
             //これより上に層があるとエラーになる
             return null;

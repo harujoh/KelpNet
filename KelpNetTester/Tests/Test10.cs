@@ -82,13 +82,18 @@ namespace KelpNetTester.Tests
                 //Run truncated BPTT
                 if ((i + 1) % BPROP_LEN == 0)
                 {
+                    Console.WriteLine("backward start");
                     for (int j = 0; backNdArrays.Count > 0; j++)
                     {
+                        Console.WriteLine("backward" + backNdArrays.Count);
                         model.BatchBackward(backNdArrays.Pop());
                     }
+                    Console.WriteLine("backward done");
 
+                    Console.WriteLine("update start");
                     model.Update();
                     model.ResetState();
+                    Console.WriteLine("update done");
                 }
 
                 if ((i + 1) % jump == 0)

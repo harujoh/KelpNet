@@ -47,20 +47,31 @@ namespace KelpNet.Functions.Connections
                 this.cParam[batchID].Push(Enumerable.Repeat(0.0, OutputCount).ToArray());
             }
 
-            List<double> upwardResult = new List<double>();
-            upwardResult.AddRange(this.upward[0].Forward(x, batchID).Data);
-            upwardResult.AddRange(this.upward[1].Forward(x, batchID).Data);
-            upwardResult.AddRange(this.upward[2].Forward(x, batchID).Data);
-            upwardResult.AddRange(this.upward[3].Forward(x, batchID).Data);
+            //List<double> upwardResult = new List<double>();
+            //upwardResult.AddRange(this.upward[0].Forward(x, batchID).Data);
+            //upwardResult.AddRange(this.upward[1].Forward(x, batchID).Data);
+            //upwardResult.AddRange(this.upward[2].Forward(x, batchID).Data);
+            //upwardResult.AddRange(this.upward[3].Forward(x, batchID).Data);
+            double[] upwardResult = new double[OutputCount * 4];
+            Array.Copy(this.upward[0].Forward(x, batchID).Data, 0, upwardResult, 0 * OutputCount, OutputCount);
+            Array.Copy(this.upward[1].Forward(x, batchID).Data, 0, upwardResult, 1 * OutputCount, OutputCount);
+            Array.Copy(this.upward[2].Forward(x, batchID).Data, 0, upwardResult, 2 * OutputCount, OutputCount);
+            Array.Copy(this.upward[3].Forward(x, batchID).Data, 0, upwardResult, 3 * OutputCount, OutputCount);
 
             NdArray[] r;
             if (this.hParam[batchID] != null)
             {
-                List<double> lateralResult = new List<double>();
-                lateralResult.AddRange(this.lateral[0].Forward(this.hParam[batchID], batchID).Data);
-                lateralResult.AddRange(this.lateral[1].Forward(this.hParam[batchID], batchID).Data);
-                lateralResult.AddRange(this.lateral[2].Forward(this.hParam[batchID], batchID).Data);
-                lateralResult.AddRange(this.lateral[3].Forward(this.hParam[batchID], batchID).Data);
+                //List<double> lateralResult = new List<double>();
+                //lateralResult.AddRange(this.lateral[0].Forward(this.hParam[batchID], batchID).Data);
+                //lateralResult.AddRange(this.lateral[1].Forward(this.hParam[batchID], batchID).Data);
+                //lateralResult.AddRange(this.lateral[2].Forward(this.hParam[batchID], batchID).Data);
+                //lateralResult.AddRange(this.lateral[3].Forward(this.hParam[batchID], batchID).Data);
+                double[] lateralResult = new double[OutputCount*4];
+                Array.Copy(this.lateral[0].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 0 * OutputCount, OutputCount);
+                Array.Copy(this.lateral[1].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 1 * OutputCount, OutputCount);
+                Array.Copy(this.lateral[2].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 2 * OutputCount, OutputCount);
+                Array.Copy(this.lateral[3].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 3 * OutputCount, OutputCount);
+
 
                 //加算しつつ再配置
                 r = this.ExtractGates(upwardResult, lateralResult);
@@ -240,10 +251,10 @@ namespace KelpNet.Functions.Connections
 
             NdArray[] result =
             {
-                NdArray.Empty(col),
-                NdArray.Empty(col),
-                NdArray.Empty(col),
-                NdArray.Empty(col)
+                NdArray.Zeros(col),
+                NdArray.Zeros(col),
+                NdArray.Zeros(col),
+                NdArray.Zeros(col)
             };
 
             for (int i = 0; i < 4; i++)
@@ -257,9 +268,9 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        NdArray[] ExtractGates(params List<double>[] x)
+        NdArray[] ExtractGates(params double[][] x)
         {
-            int col = x[0].Count / 4;
+            int col = x[0].Length / 4;
 
             NdArray[] r =
             {

@@ -9,7 +9,7 @@ namespace KelpNet.Loss
         {
             loss = 0;
 
-            NdArray diff = NdArray.EmptyLike(teachSignal);
+            NdArray diff = NdArray.ZerosLike(teachSignal);
             double coeff = 2.0 / diff.Length;
 
             for (int i = 0; i < input.Length; i++)

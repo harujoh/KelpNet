@@ -22,8 +22,10 @@ namespace KelpNet.Functions.Connections
             this._stride = stride;
             this._pad = pad;
 
-            this.W = NdArray.Empty(outputChannels, inputChannels, kSize, kSize);
+            this.W = NdArray.Zeros(outputChannels, inputChannels, kSize, kSize);
             this.gW = NdArray.ZerosLike(this.W);
+
+            this.b = NdArray.Zeros(outputChannels);
 
             if (initialW == null)
             {
@@ -39,7 +41,6 @@ namespace KelpNet.Functions.Connections
 
             if (!noBias)
             {
-                this.b = NdArray.Zeros(outputChannels);
                 this.gb = NdArray.ZerosLike(this.b);
 
                 if (initialb != null)
@@ -60,7 +61,7 @@ namespace KelpNet.Functions.Connections
 
             NdArray result = NdArray.Zeros(OutputCount, outputSize, outputSize);
 
-            NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount, InputCount);
+            //NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount, InputCount);
 
             for (int i = 0; i < OutputCount; i++)
             {
@@ -87,7 +88,7 @@ namespace KelpNet.Functions.Connections
                             }
                         }
 
-                        result.Data[result.GetIndex(i, y, x)] += bias.Get(i);
+                        result.Data[result.GetIndex(i, y, x)] += this.b.Data[i];
                     }
                 }
             }
@@ -97,7 +98,7 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray gx = NdArray.EmptyLike(prevInput);
+            NdArray gx = NdArray.ZerosLike(prevInput);
 
             for (int j = 0; j < gy.Shape[0]; j++)
             {
@@ -156,7 +157,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            if (this.b != null)
+            if (this.gb != null)
             {
                 for (int i = 0; i < gy.Shape[0]; i++)
                 {

@@ -133,7 +133,7 @@ namespace KelpNetTester.Tests
         {
             model.ResetState();
             
-            NdArray result = NdArray.Empty(1);
+            NdArray result = NdArray.Zeros(1);
 
             for (int i = 0; i < input_seq.Count; i++)
             {
@@ -156,7 +156,7 @@ namespace KelpNetTester.Tests
 
             public NdArray Make()
             {
-                NdArray result = NdArray.Empty(this.stepsPerCycle * this.numberOfCycles);
+                NdArray result = NdArray.Zeros(this.stepsPerCycle * this.numberOfCycles);
 
                 for (int i = 0; i < this.numberOfCycles; i++)
                 {
@@ -175,7 +175,7 @@ namespace KelpNetTester.Tests
 
                 for (int j = 0; j < result.Length; j++)
                 {
-                    result[j] = NdArray.Empty(lengthOfSequence);
+                    result[j] = NdArray.Zeros(lengthOfSequence);
 
                     int index = Mother.Dice.Next(baseFreq.Length - lengthOfSequence);
                     for (int i = 0; i < lengthOfSequence; i++)

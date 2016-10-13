@@ -53,7 +53,7 @@ namespace KelpNet.Functions.Poolings
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray result = NdArray.EmptyLike(prevInput);
+            NdArray result = NdArray.ZerosLike(prevInput);
             gy.Shape = (int[])prevOutput.Shape.Clone();
 
             double m = this._kSize * this._kSize;

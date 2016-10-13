@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Activations
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray y = NdArray.EmptyLike(x);
+            NdArray y = NdArray.ZerosLike(x);
 
             for (int i = 0; i < x.Length; i++)
             {
@@ -27,7 +27,7 @@ namespace KelpNet.Functions.Activations
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray result = NdArray.EmptyLike(gy);
+            NdArray result = NdArray.ZerosLike(gy);
 
             for (int i = 0; i < gy.Length; i++)
             {

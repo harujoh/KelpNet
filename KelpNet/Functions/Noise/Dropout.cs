@@ -16,7 +16,7 @@ namespace KelpNet.Functions.Noise
 
         protected override NdArray ForwardSingle(NdArray x, int batchID = -1)
         {
-            NdArray result = NdArray.EmptyLike(x);
+            double[] resultData = new double[x.Length];
 
             if (this.mask == null || batchID == -1)
             {
@@ -27,23 +27,23 @@ namespace KelpNet.Functions.Noise
                 for (int i = 0; i < this.mask.Length; i++)
                 {
                     this.mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
-                    result.Data[i] = x.Data[i] * this.mask[i];
+                    resultData[i] = x.Data[i] * this.mask[i];
                 }
             }
             else
             {
                 for (int i = 0; i < this.mask.Length; i++)
                 {
-                    result.Data[i] = x.Data[i] * this.mask[i];
+                    resultData[i] = x.Data[i] * this.mask[i];
                 }
             }
 
-            return result;
+            return new NdArray(resultData, x.Shape);
         }
 
         protected override NdArray BackwardSingle(NdArray gy, int batchID = 0)
         {
-            NdArray result = NdArray.EmptyLike(gy);
+            NdArray result = NdArray.ZerosLike(gy);
 
             for (int i = 0; i < this.mask.Length; i++)
             {

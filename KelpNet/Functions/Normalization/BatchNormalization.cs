@@ -62,7 +62,7 @@ namespace KelpNet.Functions.Normalization
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray y = NdArray.EmptyLike(x);
+            NdArray y = NdArray.ZerosLike(x);
 
             //計算用パラメータの取得
             if (this.IsTrain)
@@ -123,7 +123,7 @@ namespace KelpNet.Functions.Normalization
             this.Xhat = new double[x.Length][];
             for (int i = 0; i < x.Length; i++)
             {
-                y[i] = NdArray.EmptyLike(x[i]);
+                y[i] = NdArray.ZerosLike(x[i]);
                 this.Xhat[i] = new double[this.ChannelSize];
 
                 for (int j = 0; j < this.ChannelSize; j++)
@@ -192,7 +192,7 @@ namespace KelpNet.Functions.Normalization
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray gx = NdArray.EmptyLike(gy);
+            NdArray gx = NdArray.ZerosLike(gy);
 
             this.gBeta.Fill(0);
             this.gGamma.Fill(0);
@@ -232,7 +232,7 @@ namespace KelpNet.Functions.Normalization
             NdArray[] gx = new NdArray[gy.Length];
             for (int i = 0; i < gy.Length; i++)
             {
-                gx[i] = NdArray.Empty(this.ChannelSize);
+                gx[i] = NdArray.Zeros(this.ChannelSize);
             }
 
             this.gBeta.Fill(0);

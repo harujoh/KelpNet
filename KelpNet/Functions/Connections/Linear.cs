@@ -14,9 +14,12 @@ namespace KelpNet.Functions.Connections
 
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name)
         {
-            this.W = NdArray.Empty(outputCount, inputCount);
+            this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
             Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W" ));
+
+            //Zeroバイアス
+            this.b = NdArray.Zeros(outputCount);
 
             if (initialW == null)
             {
@@ -30,7 +33,6 @@ namespace KelpNet.Functions.Connections
 
             if (!noBias)
             {
-                this.b = NdArray.Zeros(outputCount);
                 this.gb = NdArray.ZerosLike(this.b);
 
                 if (initialb != null)
@@ -47,20 +49,19 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray output = NdArray.Empty(OutputCount);
-            NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount);
+            double[] output = new double[OutputCount];
 
             for (int i = 0; i < OutputCount; i++)
             {
-                for (int j = 0; j < this.W.Shape[1]; j++)
+                for (int j = 0; j < InputCount; j++)
                 {
-                    output.Data[i] += x.Data[j] * this.W.Get(i, j);
+                    output[i] += x.Data[j] * this.W.Get(i, j);
                 }
 
-                output.Data[i] += bias.Get(i);
+                output[i] += this.b.Data[i];
             }
 
-            return output;
+            return NdArray.FromArray(output);
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
@@ -73,17 +74,17 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            NdArray gx = NdArray.Empty(1, InputCount);
+            double[] gxData = new double[InputCount];
 
             for (int i = 0; i < this.W.Shape[0]; i++)
             {
                 for (int j = 0; j < this.W.Shape[1]; j++)
                 {
-                    gx.Data[j] += this.W.Get(i, j) * gy.Data[i];
+                    gxData[j] += this.W.Get(i, j) * gy.Data[i];
                 }
             }
 
-            if (this.b != null)
+            if (this.gb != null)
             {
                 for (int j = 0; j < gy.Length; j++)
                 {
@@ -91,7 +92,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return gx;
+            return new NdArray(gxData, new[] { 1, InputCount });
         }
     }
 }
