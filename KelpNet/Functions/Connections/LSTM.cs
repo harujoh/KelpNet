@@ -52,7 +52,7 @@ namespace KelpNet.Functions.Connections
             Array.Copy(this.upward[2].Forward(x, batchID).Data, 0, upwardResult, 2 * OutputCount, OutputCount);
             Array.Copy(this.upward[3].Forward(x, batchID).Data, 0, upwardResult, 3 * OutputCount, OutputCount);
 
-            NdArray[] r;
+            double[][] r;
             if (this.hParam[batchID] != null)
             {
                 double[] lateralResult = new double[OutputCount * 4];
@@ -80,10 +80,10 @@ namespace KelpNet.Functions.Connections
 
             for (int i = 0; i < this.hParam[batchID].Length; i++)
             {
-                la[i] = Math.Tanh(r[0].Data[i]);
-                li[i] = Sigmoid(r[1].Data[i]);
-                lf[i] = Sigmoid(r[2].Data[i]);
-                lo[i] = Sigmoid(r[3].Data[i]);
+                la[i] = Math.Tanh(r[0][i]);
+                li[i] = Sigmoid(r[1][i]);
+                lf[i] = Sigmoid(r[2][i]);
+                lo[i] = Sigmoid(r[3][i]);
 
                 cResult[i] = la[i] * li[i] + lf[i] * cPrev[i];
                 this.hParam[batchID].Data[i] = lo[i] * Math.Tanh(cResult[i]);
@@ -224,11 +224,39 @@ namespace KelpNet.Functions.Connections
             return 1 - x * x;
         }
 
+        //Forward用
+        double[][] ExtractGates(params double[][] x)
+        {
+            int col = x[0].Length / 4;
+
+            double[][] r =
+            {
+                new double[col],
+                new double[col],
+                new double[col],
+                new double[col]
+            };
+
+            for (int j = 0; j < x.Length; j++)
+            {
+                for (int i = 0; i < col; i++)
+                {
+                    r[0][i] += x[j][i * 4];
+                    r[1][i] += x[j][i * 4 + 1];
+                    r[2][i] += x[j][i * 4 + 2];
+                    r[3][i] += x[j][i * 4 + 3];
+                }
+            }
+
+            return r;
+        }
+
+        //Backward用
         NdArray[] RestoreGates(params double[][] x)
         {
             int col = x[0].Length;
 
-            NdArray[] result = 
+            NdArray[] result =
             {
                 NdArray.Zeros(col),
                 NdArray.Zeros(col),
@@ -236,45 +264,13 @@ namespace KelpNet.Functions.Connections
                 NdArray.Zeros(col)
             };
 
-            for (int i = 0; i < col*4; i++)
+            for (int i = 0; i < col * 4; i++)
             {
                 //暗黙的に切り捨て
-                result[i/col].Data[i%col] = x[i%4][i/4];
+                result[i / col].Data[i % col] = x[i % 4][i / 4];
             }
 
             return result;
-        }
-
-        NdArray[] ExtractGates(params double[][] x)
-        {
-            int col = x[0].Length / 4;
-
-            double[] data1 = new double[col];
-            double[] data2 = new double[col];
-            double[] data3 = new double[col];
-            double[] data4 = new double[col];
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                for (int j = 0; j < col; j++)
-                {
-                    data1[j] += x[i][j * 4];
-                    data2[j] += x[i][j * 4 + 1];
-                    data3[j] += x[i][j * 4 + 2];
-                    data4[j] += x[i][j * 4 + 3];
-                }
-            }
-
-            int[] shape = { col };
-            NdArray[] r =
-            {
-                new NdArray(data1,shape),
-                new NdArray(data2,shape),
-                new NdArray(data3,shape),
-                new NdArray(data4,shape)
-            };
-
-            return r;
         }
     }
 }
