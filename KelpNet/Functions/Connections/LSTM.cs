@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Interface;
 
@@ -228,26 +227,19 @@ namespace KelpNet.Functions.Connections
         NdArray[] RestoreGates(params double[][] x)
         {
             int col = x[0].Length;
-            double[] r = new double[4 * col];
 
-            for (int i = 0; i < col; i++)
+            NdArray[] result = 
             {
-                r[i * 4 + 0] = x[0][i];
-                r[i * 4 + 1] = x[1][i];
-                r[i * 4 + 2] = x[2][i];
-                r[i * 4 + 3] = x[3][i];
-            }
+                NdArray.Zeros(col),
+                NdArray.Zeros(col),
+                NdArray.Zeros(col),
+                NdArray.Zeros(col)
+            };
 
-            NdArray[] result = new NdArray[4];
-
-            for (int i = 0; i < result.Length; i++)
+            for (int i = 0; i < col*4; i++)
             {
-                double[] data = new double[col];
-                for (int j = 0; j < col; j++)
-                {
-                    data[j] = r[i * col + j];
-                }
-                result[i] = new NdArray(data, new[] { data.Length });
+                //暗黙的に切り捨て
+                result[i/col].Data[i%col] = x[i%4][i/4];
             }
 
             return result;
