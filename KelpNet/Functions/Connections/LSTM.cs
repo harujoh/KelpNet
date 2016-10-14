@@ -44,14 +44,9 @@ namespace KelpNet.Functions.Connections
         {
             if (this.cParam[batchID].Count == 0)
             {
-                this.cParam[batchID].Push(Enumerable.Repeat(0.0, OutputCount).ToArray());
+                this.cParam[batchID].Push(new double[OutputCount]);
             }
 
-            //List<double> upwardResult = new List<double>();
-            //upwardResult.AddRange(this.upward[0].Forward(x, batchID).Data);
-            //upwardResult.AddRange(this.upward[1].Forward(x, batchID).Data);
-            //upwardResult.AddRange(this.upward[2].Forward(x, batchID).Data);
-            //upwardResult.AddRange(this.upward[3].Forward(x, batchID).Data);
             double[] upwardResult = new double[OutputCount * 4];
             Array.Copy(this.upward[0].Forward(x, batchID).Data, 0, upwardResult, 0 * OutputCount, OutputCount);
             Array.Copy(this.upward[1].Forward(x, batchID).Data, 0, upwardResult, 1 * OutputCount, OutputCount);
@@ -61,17 +56,11 @@ namespace KelpNet.Functions.Connections
             NdArray[] r;
             if (this.hParam[batchID] != null)
             {
-                //List<double> lateralResult = new List<double>();
-                //lateralResult.AddRange(this.lateral[0].Forward(this.hParam[batchID], batchID).Data);
-                //lateralResult.AddRange(this.lateral[1].Forward(this.hParam[batchID], batchID).Data);
-                //lateralResult.AddRange(this.lateral[2].Forward(this.hParam[batchID], batchID).Data);
-                //lateralResult.AddRange(this.lateral[3].Forward(this.hParam[batchID], batchID).Data);
-                double[] lateralResult = new double[OutputCount*4];
-                Array.Copy(this.lateral[0].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 0 * OutputCount, OutputCount);
-                Array.Copy(this.lateral[1].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 1 * OutputCount, OutputCount);
-                Array.Copy(this.lateral[2].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 2 * OutputCount, OutputCount);
-                Array.Copy(this.lateral[3].Forward(this.hParam[batchID], batchID).Data, 0, upwardResult, 3 * OutputCount, OutputCount);
-
+                double[] lateralResult = new double[OutputCount * 4];
+                Array.Copy(this.lateral[0].Forward(this.hParam[batchID], batchID).Data, 0, lateralResult, 0 * OutputCount, OutputCount);
+                Array.Copy(this.lateral[1].Forward(this.hParam[batchID], batchID).Data, 0, lateralResult, 1 * OutputCount, OutputCount);
+                Array.Copy(this.lateral[2].Forward(this.hParam[batchID], batchID).Data, 0, lateralResult, 2 * OutputCount, OutputCount);
+                Array.Copy(this.lateral[3].Forward(this.hParam[batchID], batchID).Data, 0, lateralResult, 3 * OutputCount, OutputCount);
 
                 //加算しつつ再配置
                 r = this.ExtractGates(upwardResult, lateralResult);
@@ -249,20 +238,16 @@ namespace KelpNet.Functions.Connections
                 r[i * 4 + 3] = x[3][i];
             }
 
-            NdArray[] result =
-            {
-                NdArray.Zeros(col),
-                NdArray.Zeros(col),
-                NdArray.Zeros(col),
-                NdArray.Zeros(col)
-            };
+            NdArray[] result = new NdArray[4];
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < result.Length; i++)
             {
+                double[] data = new double[col];
                 for (int j = 0; j < col; j++)
                 {
-                    result[i].Data[j] = r[i * col + j];
+                    data[j] = r[i * col + j];
                 }
+                result[i] = new NdArray(data, new[] { data.Length });
             }
 
             return result;
@@ -272,24 +257,30 @@ namespace KelpNet.Functions.Connections
         {
             int col = x[0].Length / 4;
 
-            NdArray[] r =
-            {
-                NdArray.Zeros(col),
-                NdArray.Zeros(col),
-                NdArray.Zeros(col),
-                NdArray.Zeros(col)
-            };
+            double[] data1 = new double[col];
+            double[] data2 = new double[col];
+            double[] data3 = new double[col];
+            double[] data4 = new double[col];
 
             for (int i = 0; i < x.Length; i++)
             {
                 for (int j = 0; j < col; j++)
                 {
-                    r[0].Data[j] += x[i][j * 4];
-                    r[1].Data[j] += x[i][j * 4 + 1];
-                    r[2].Data[j] += x[i][j * 4 + 2];
-                    r[3].Data[j] += x[i][j * 4 + 3];
+                    data1[j] += x[i][j * 4];
+                    data2[j] += x[i][j * 4 + 1];
+                    data3[j] += x[i][j * 4 + 2];
+                    data4[j] += x[i][j * 4 + 3];
                 }
             }
+
+            int[] shape = { col };
+            NdArray[] r =
+            {
+                new NdArray(data1,shape),
+                new NdArray(data2,shape),
+                new NdArray(data3,shape),
+                new NdArray(data4,shape)
+            };
 
             return r;
         }
