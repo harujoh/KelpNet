@@ -33,17 +33,14 @@ namespace KelpNet.Functions.Connections
         protected override NdArray NeedPreviousForward(NdArray x)
         {
             NdArray result = NdArray.Zeros(x.Length, OutputCount);
-            double[] resultData = new double[result.Length];
 
             for (int i = 0; i < x.Length; i++)
             {
                 for (int j = 0; j < OutputCount; j++)
                 {
-                    resultData[i * OutputCount + j] = this.W.Data[(int)x.Data[i] * OutputCount + j];
+                    result.Data[i * OutputCount + j] = this.W.Data[(int)x.Data[i] * OutputCount + j];
                 }
             }
-
-            result.Data = resultData;
 
             return result;
         }

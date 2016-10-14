@@ -61,8 +61,6 @@ namespace KelpNet.Functions.Connections
 
             NdArray result = NdArray.Zeros(OutputCount, outputSize, outputSize);
 
-            //NdArray bias = this.b != null ? this.b : NdArray.Zeros(OutputCount, InputCount);
-
             for (int i = 0; i < OutputCount; i++)
             {
                 for (int y = 0; y < outputSize; y++)

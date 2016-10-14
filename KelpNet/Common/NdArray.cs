@@ -15,8 +15,11 @@ namespace KelpNet.Common
 
         public NdArray(double[] data, int[] shape)
         {
-            this.Data = data;
-            this.Shape = shape;
+            this.Data = new double[data.Length];
+            Array.Copy(data, this.Data, this.Data.Length);
+
+            this.Shape = new int[shape.Length];
+            Array.Copy(shape, this.Shape, this.Shape.Length);
         }
 
         public NdArray(NdArray ndArray)
@@ -24,21 +27,35 @@ namespace KelpNet.Common
             this.Shape = new int[ndArray.Shape.Length];
             Array.Copy(ndArray.Shape, this.Shape, this.Shape.Length);
 
-            this.Data = new double[GetArrayLength(this.Shape)];
+            this.Data = new double[ndArray.Length];
             Array.Copy(ndArray.Data, this.Data, this.Data.Length);
+        }
+
+        public int Length
+        {
+            get { return this.Data.Length; }
+        }
+
+        public double Get(params int[] indices)
+        {
+            return this.Data[this.GetIndex(indices)];
+        }
+
+        public void Set(int[] indices, double val)
+        {
+            this.Data[this.GetIndex(indices)] = val;
         }
 
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            return new NdArray(new double[GetArrayLength(baseArray.Shape)], baseArray.Shape);
+            return new NdArray(new double[baseArray.Length], baseArray.Shape);
         }
 
         public static NdArray OnesLike(NdArray baseArray)
         {
-            int length = GetArrayLength(baseArray.Shape);
-            double[] resutlArray = new double[length];
+            double[] resutlArray = new double[baseArray.Length];
 
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < resutlArray.Length; i++)
             {
                 resutlArray[i] = 1;
             }
@@ -48,15 +65,14 @@ namespace KelpNet.Common
 
         public static NdArray Zeros(params int[] shape)
         {
-            return new NdArray(new double[GetArrayLength(shape)], shape);
+            return new NdArray(new double[ShapeToArrayLength(shape)], shape);
         }
 
         public static NdArray Ones(params int[] shape)
         {
-            int length = GetArrayLength(shape);
-            double[] resutlArray = new double[length];
+            double[] resutlArray = new double[ShapeToArrayLength(shape)];
 
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < resutlArray.Length; i++)
             {
                 resutlArray[i] = 1;
             }
@@ -64,7 +80,7 @@ namespace KelpNet.Common
             return new NdArray(resutlArray, shape);
         }
 
-        static int GetArrayLength(params int[] shapes)
+        static int ShapeToArrayLength(params int[] shapes)
         {
             int result = 1;
 
@@ -78,12 +94,11 @@ namespace KelpNet.Common
 
         public static NdArray FromArray(Array data)
         {
-            double[] resultData;
+            double[] resultData = new double[data.Length]; 
             int[] resultShape;
 
             if (data.Rank == 1)
             {
-                resultData = new double[data.Length];
                 Array.Copy(data, resultData, data.Length);
 
                 resultShape = new[] { data.Length };
@@ -96,8 +111,6 @@ namespace KelpNet.Common
                 {
                     resultShape[i] = data.GetLength(i);
                 }
-
-                resultData = new double[data.Length];
 
                 //int -> doubleの指定ミスで例外がポコポコ出るので、ここで吸収
                 if (data.GetType().GetElementType() != typeof(double))
@@ -118,21 +131,6 @@ namespace KelpNet.Common
             }
 
             return new NdArray(resultData, resultShape);
-        }
-
-        public int Length
-        {
-            get { return this.Data.Length; }
-        }
-
-        public double Get(params int[] indices)
-        {
-            return this.Data[this.GetIndex(indices)];
-        }
-
-        public void Set(int[] indices, double val)
-        {
-            this.Data[this.GetIndex(indices)] = val;
         }
 
         public void Fill(double val)
