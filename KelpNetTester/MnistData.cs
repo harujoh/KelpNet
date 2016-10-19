@@ -12,42 +12,42 @@ namespace KelpNetTester
         readonly MnistDataLoader mnistDataLoader = new MnistDataLoader();
 
         private double[][,,] X;
-        private byte[][] Tx;
+        private int[][] Tx;
 
         private double[][,,] Y;
-        private byte[][] Ty;
+        private int[][] Ty;
 
         public MnistData()
         {
             //トレーニングデータ
             this.X = new double[this.mnistDataLoader.TrainData.Length][,,];
             //トレーニングデータラベル
-            this.Tx = new byte[this.mnistDataLoader.TrainData.Length][];
+            this.Tx = new int[this.mnistDataLoader.TrainData.Length][];
 
             for (int i = 0; i < this.mnistDataLoader.TrainData.Length; i++)
             {
                 this.X[i] = new double[1, 28, 28];
                 Buffer.BlockCopy(this.mnistDataLoader.TrainData[i].Select(val => val / 255.0).ToArray(), 0, this.X[i], 0, sizeof(double) *this.X[i].Length);
-                this.Tx[i] = new[] { this.mnistDataLoader.TrainLabel[i] };
+                this.Tx[i] = new [] { (int)this.mnistDataLoader.TrainLabel[i] };
             }
 
             //教師データ
             this.Y = new double[this.mnistDataLoader.TeachData.Length][,,];
             //教師データラベル
-            this.Ty = new byte[this.mnistDataLoader.TeachData.Length][];
-
+            this.Ty = new int[this.mnistDataLoader.TeachData.Length][];
+            
             for (int i = 0; i < this.mnistDataLoader.TeachData.Length; i++)
             {
                 this.Y[i] = new double[1, 28, 28];
                 Buffer.BlockCopy(this.mnistDataLoader.TeachData[i].Select(val => val / 255.0).ToArray(), 0, this.Y[i], 0, sizeof(double) *this.Y[i].Length);
-                this.Ty[i] = new[] { this.mnistDataLoader.TeachLabel[i] };
+                this.Ty[i] = new[] { (int)this.mnistDataLoader.TeachLabel[i] };
             }
         }
 
         public MnistDataSet GetRandomYSet(int dataCount)
         {
             var listY = new List<double[,,]>();
-            var listTy = new List<byte[]>();
+            var listTy = new List<int[]>();
 
             for (int j = 0; j < dataCount; j++)
             {
@@ -63,7 +63,7 @@ namespace KelpNetTester
         public MnistDataSet GetRandomXSet(int dataCount)
         {
             var listX = new List<double[,,]>();
-            var listTx = new List<byte[]>();
+            var listTx = new List<int[]>();
 
             for (int j = 0; j < dataCount; j++)
             {
@@ -80,9 +80,9 @@ namespace KelpNetTester
     public class MnistDataSet
     {
         public Array[] Data;
-        public byte[][] Label;
+        public int[][] Label;
 
-        public MnistDataSet(Array[] data, byte[][] label)
+        public MnistDataSet(Array[] data, int[][] label)
         {
             this.Data = data;
             this.Label = label;

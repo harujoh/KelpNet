@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using KelpNet.Common;
 using KelpNet.Interface;
 
@@ -11,10 +11,7 @@ namespace KelpNet
     public class FunctionStack
     {
         //ロス関数のデリゲート宣言
-        public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
-
-        //バッチ実行用に保管
-        private readonly List<FunctionGroup> _functionPares = new List<FunctionGroup>();
+        public delegate NdArray[] LossFunction(NdArray[] input, NdArray[] teachSignal, out double loss);
 
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
@@ -31,31 +28,14 @@ namespace KelpNet
         //コンストラクタ
         public FunctionStack(params Function[] functions)
         {
-            //バッチファンクションが連続した時に無駄にペアを増やさないためのフラグ
-            bool isPreFuncBatch = false;
-
-            //最初の層はバッチ関数か
-            var batchFunction = functions[0] as IBatchFunction;
-            if (batchFunction == null)
-            {
-                //最初が通常の層だったら事前にペアを追加
-                this._functionPares.Add(new FunctionGroup());
-            }
-
             //入力された関数を振り分ける
             foreach (Function function in functions)
             {
                 //逐次実行タスク用
-                this.StackSingleTaskFunction(function);
-
-                //バッチ実行タスク用
-                this.StackBatchTaskFunction(function, isPreFuncBatch);
+                this.StackFunction(function);
 
                 //パラメーターを保持
                 this.Parameters.AddRange(function.Parameters);
-
-                //フラグを設定
-                isPreFuncBatch = batchFunction != null;
             }
         }
 
@@ -76,7 +56,7 @@ namespace KelpNet
         }
 
         //シングルタスク用の層を積み上げる
-        public void StackSingleTaskFunction(Function function)
+        public void StackFunction(Function function)
         {
             //全関数リストへ追加
             this.Functions.Add(function);
@@ -86,29 +66,6 @@ namespace KelpNet
             if (predictableFunction != null)
             {
                 this._predictableFunctions.Add(predictableFunction);
-            }
-        }
-
-        //バッチタスク用の層を積み上げる
-        public void StackBatchTaskFunction(Function function, bool preFuncIsBatch)
-        {
-            //バッチ関数が入ってきたらペアを追加
-            var batchFunction = function as IBatchFunction;
-            if (batchFunction != null)
-            {
-                //バッチ関数が連続していないかチェック
-                if (!preFuncIsBatch)
-                {
-                    this._functionPares.Add(new FunctionGroup());
-                }
-
-                //ペアにバッチ関数を追加
-                this._functionPares[this._functionPares.Count - 1].BatchFunctions.Add(batchFunction);
-            }
-            else
-            {
-                //ペアに関数を追加
-                this._functionPares[this._functionPares.Count - 1].SoloFunctions.Add(function);
             }
         }
 
@@ -134,67 +91,44 @@ namespace KelpNet
         }
 
         //予想を実行する（外部からの使用を想定してArrayが引数
-        public NdArray Predict(Array input, int batchID = 0)
+        public NdArray[] Predict(Array[] input)
         {
-            return this.Predict(NdArray.FromArray(input), batchID);
+            NdArray[] ndArrays = new NdArray[input.Length];
+
+            for (int i = 0; i < ndArrays.Length; i++)
+            {
+                ndArrays[i] = NdArray.FromArray(input[i]);
+            }
+
+            return this.Predict(ndArrays);
         }
 
         //予想を実行する
-        public NdArray Predict(NdArray input, int batchID = 0)
+        public NdArray[] Predict(NdArray[] input)
         {
-            NdArray forwardResult = input;
+            NdArray[] forwardResult = input;
 
             foreach (IPredictableFunction predictableFunction in this._predictableFunctions)
             {
-                forwardResult = predictableFunction.Predict(forwardResult, batchID);
+                forwardResult = predictableFunction.Predict(forwardResult);
             }
 
             return forwardResult;
         }
 
-        //訓練を実施する　引数のデリゲートにロス関数を入力する
-        //public delegate NdArray LossFunction(NdArray input, NdArray teachSignal, out double loss);
-        public double Train(Array input, Array teach, LossFunction lossFunction)
+        //予想を実行する
+        public NdArray Predict(NdArray input)
         {
-            //全層の『入力』と『出力』を全て保存するため＋１
-            NdArray[] inputData = new NdArray[this.Functions.Count + 1];
-
-            //入力値を保存
-            inputData[0] = NdArray.FromArray(input);
-
-            //forwardを実行
-            for (int i = 0; i < this.Functions.Count; i++)
-            {
-                //出力を次層の入力として保存する
-                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
-            }
-
-            //戻り値の誤差用
-            double loss;
-
-            //デリゲートで入力されたロス関数を実行
-            NdArray backwardResult = lossFunction(inputData[this.Functions.Count], NdArray.FromArray(teach), out loss);
-
-            //backwardを実行
-            for (int i = this.Functions.Count - 1; i >= 0; i--)
-            {
-                backwardResult = this.Functions[i].Backward(backwardResult);
-            }
-
-            return loss;
+            return this.Predict(new [] {input})[0];
         }
 
-        public void InitBatch(int batchSize)
+        public NdArray Predict(Array input)
         {
-            //入出力を初期化
-            foreach (Function function in this.Functions)
-            {
-                function.InitBatch(batchSize);
-            }
+            return this.Predict(NdArray.FromArray(input));
         }
 
-        //Forwardのバッチ版
-        public NdArray[] BatchForward(Array[] input, Array[] teach, LossFunction lossFunction, out List<double> sumLoss)
+        //Forward
+        public NdArray[] Forward(Array[] input, Array[] teach, LossFunction lossFunction, out double sumLoss)
         {
             int batchCount = input.Length;
 
@@ -211,108 +145,50 @@ namespace KelpNet
                 inputData[0][i] = NdArray.FromArray(input[i]);
             }
 
-            int functionCount = 0;
-
-            //forwardを実行
-            foreach (FunctionGroup functionPare in this._functionPares)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                //まずバッチ専用関数を処理
-                foreach (IBatchFunction batchFunction in functionPare.BatchFunctions)
-                {
-                    inputData[functionCount + 1] = batchFunction.BatchForward(inputData[functionCount]);
-
-                    functionCount++;
-                }
-
-                //その後、その他の関数を処理
-#if DEBUG
-                for (int k = 0; k < batchCount; k++)
-                {
-                    for (int j = 0; j < functionPare.SoloFunctions.Count; j++)
-                    {
-                        inputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(inputData[functionCount + j][k], k);
-                    }
-                }
-#else
-                Parallel.For(0, batchCount, k =>
-                {
-                    for (int j = 0; j < functionPare.SoloFunctions.Count; j++)
-                    {
-                        inputData[functionCount + j + 1][k] = functionPare.SoloFunctions[j].Forward(inputData[functionCount + j][k], k);
-                    }
-                });
-#endif
-                functionCount += functionPare.SoloFunctions.Count;
+                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
             }
 
-            //戻り値の誤差用
-            sumLoss = new List<double>();
+            NdArray[] teachArray = new NdArray[teach.Length];
 
-            NdArray[] backwardResult = new NdArray[batchCount];
-            for (int i = 0; i < backwardResult.Length; i++)
+            //デリゲートで入力されたロス関数を実行
+            for (int i =0;i<teach.Length;i++)
             {
-                double loss;
-                //デリゲートで入力されたロス関数を実行
-                backwardResult[i] = lossFunction(inputData[functionCount][i], NdArray.FromArray(teach[i]), out loss);
-
-                sumLoss.Add(loss);
+                teachArray[i] = NdArray.FromArray(teach[i]);
             }
 
-            return backwardResult;
+            return lossFunction(inputData[this.Functions.Count], teachArray, out sumLoss);
         }
 
-        //Backwardのバッチ版
-        public void BatchBackward(NdArray[] backwardResult)
+        //Backward
+        public void Backward(NdArray[] backwardResult)
         {
-            //backwardを実行
-            for (int i = this._functionPares.Count - 1; i >= 0; i--)
+            for (int i = this.Functions.Count - 1; i >= 0; i--)
             {
-                //バックワードは逆にその他の関数から処理
-#if DEBUG
-                for (int k = 0; k < backwardResult.Length; k++)
-                {
-                    for (int j = this._functionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
-                    {
-                        backwardResult[k] = this._functionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
-                    }
-                }
-#else
-                Parallel.For(0, backwardResult.Length, k =>
-                {
-                    for (int j = this._functionPares[i].SoloFunctions.Count - 1; j >= 0; j--)
-                    {
-                        backwardResult[k] = this._functionPares[i].SoloFunctions[j].Backward(backwardResult[k], k);
-                    }
-                });
-#endif
-
-                //その後、バッチ関数を処理
-                for (int j = this._functionPares[i].BatchFunctions.Count - 1; j >= 0; j--)
-                {
-                    backwardResult = this._functionPares[i].BatchFunctions[j].BatchBackward(backwardResult);
-                }
+                backwardResult = this.Functions[i].Backward(backwardResult);
             }
         }
 
         //バッチで学習処理を行う
-        public List<double> BatchTrain(Array[] input, Array[] teach, LossFunction lossFunction)
+        public double Train(Array[] input, Array[] teach, LossFunction lossFunction)
         {
             //結果の誤差保存用
-            List<double> sumLoss;
-
-            //入出力を初期化
-            foreach (Function function in this.Functions)
-            {
-                function.InitBatch(input.Length);
-            }
+            double sumLoss;
 
             //Forwardのバッチを実行
-            var backwardResult = this.BatchForward(input, teach, lossFunction, out sumLoss);
+            var backwardResult = this.Forward(input, teach, lossFunction, out sumLoss);
 
             //Backwardのバッチを実行
-            this.BatchBackward(backwardResult);
+            this.Backward(backwardResult);
 
             return sumLoss;
+        }
+
+        //バッチで学習処理を行う
+        public double Train(Array input, Array teach, LossFunction lossFunction)
+        {
+            return this.Train(new[] {input}, new[] {teach}, lossFunction);
         }
 
         //重みの更新処理
@@ -341,50 +217,21 @@ namespace KelpNet
         }
 
         //精度測定
-        public double Accuracy(Array[] x, byte[][] y)
+        public double Accuracy(Array[] x, int[][] y)
         {
             int matchCount = 0;
 
-            //入出力を初期化
-            foreach (Function function in this.Functions)
-            {
-                function.InitBatch(x.Length);
-            }
+            var forwardResult = this.Predict(x);
 
-#if DEBUG
             for (int i = 0; i < x.Length; i++)
             {
-                var forwardResult = this.Predict(x[i], i);
-
-                if (Array.IndexOf(forwardResult.Data, forwardResult.Data.Max()) == y[i][0])
+                if (Array.IndexOf(forwardResult[i].Data, forwardResult[i].Data.Max()) == y[i][0])
                 {
                     matchCount++;
                 }
             }
-#else
-            Parallel.For(0, x.Length, i =>
-            {
-                var forwardResult = this.Predict(x[i], i);
-
-                if (Array.IndexOf(forwardResult.Data, forwardResult.Data.Max()) == y[i][0])
-                {
-                    matchCount++;
-                }
-            });
-#endif
 
             return matchCount / (double)x.Length;
         }
-
-        public void Save(string fileName)
-        {
-            
-        }
-
-        public static FunctionStack Load(string fileName)
-        {
-            return new FunctionStack();
-        }
-
     }
 }

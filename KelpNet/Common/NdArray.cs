@@ -311,5 +311,11 @@ namespace KelpNet.Common
             return sb.ToString();
         }
 
+        //コピーを作成するメソッド
+        public NdArray Clone()
+        {
+            return DeepCopyHelper.DeepCopy(this);
+        }
+
     }
 }

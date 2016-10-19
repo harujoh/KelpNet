@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Linq;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Loss
 {
@@ -8,21 +11,41 @@ namespace KelpNet.Loss
     {
         public static NdArray SoftmaxCrossEntropy(NdArray input, NdArray teachSignal, out double loss)
         {
-            int maxIndex = (int)Math.Max(teachSignal.Data.Max(), 0.0);
+            return SoftmaxCrossEntropy(new[] { input }, new[] { teachSignal }, out loss)[0];
+        }
 
-            var logY = SoftmaxLog(input);
-            loss = -logY.Data[maxIndex];
+        public static NdArray[] SoftmaxCrossEntropy(NdArray[] input, NdArray[] teachSignal, out double loss)
+        {
+            double[] localloss = new double[input.Length];
+            NdArray[] resultArray = new NdArray[input.Length];
 
-            NdArray result = NdArray.ZerosLike(logY);
-
-            for (int i = 0; i < logY.Length; i++)
+#if DEBUG
+            for(int i = 0; i < input.Length; i ++)
+#else
+            Parallel.For(0, input.Length, i =>
+#endif
             {
-                result.Data[i] = Math.Exp(logY.Data[i]);
+                int maxIndex = (int)Math.Max(teachSignal[i].Data.Max(), 0.0);
+
+                var logY = SoftmaxLog(input[i]);
+                localloss[i] = -logY.Data[maxIndex];
+
+                NdArray result = NdArray.ZerosLike(logY);
+
+                for (int j = 0; j < logY.Length; j++)
+                {
+                    result.Data[j] = Math.Exp(logY.Data[j]);
+                }
+
+                result.Data[maxIndex] -= 1;
+
+                resultArray[i] = result;
             }
-
-            result.Data[maxIndex] -= 1;
-
-            return result;
+#if !DEBUG
+            );
+#endif
+            loss = localloss.Average();
+            return resultArray;
         }
 
 

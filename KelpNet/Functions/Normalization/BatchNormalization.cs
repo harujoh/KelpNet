@@ -1,12 +1,12 @@
 ﻿using System;
 using KelpNet.Common;
-using KelpNet.Interface;
 
+//todo parallel化
 namespace KelpNet.Functions.Normalization
 {
     //Chainerより移植　finetuningは未実装
     [Serializable]
-    public class BatchNormalization : NeedPreviousDataFunction, IBatchFunction
+    public class BatchNormalization : NeedPreviousDataFunction
     {
         private bool IsTrain;
         private readonly bool InputIsTrain;
@@ -37,8 +37,8 @@ namespace KelpNet.Functions.Normalization
             this.gBeta = NdArray.ZerosLike(this.Beta);
 
             //学習対象のParameterを登録
-            Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, this.Name + " Gamma"));
-            Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, this.Name + " Beta"));
+            Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, Name + " Gamma"));
+            Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, Name + " Beta"));
 
             this.IsTrain = isTrain;
             this.InputIsTrain = isTrain;
@@ -50,8 +50,8 @@ namespace KelpNet.Functions.Normalization
             {
                 this.gMean = NdArray.Zeros(channelSize);
                 this.gVariance = NdArray.Zeros(channelSize);
-                Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, this.Name + " Mean"));
-                Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, this.Name + " Variance"));
+                Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, Name + " Mean"));
+                Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, Name + " Variance"));
             }
 
             this.Decay = decay;
@@ -60,44 +60,7 @@ namespace KelpNet.Functions.Normalization
             this.ChannelSize = channelSize;
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
-        {
-            NdArray y = NdArray.ZerosLike(x);
-
-            //計算用パラメータの取得
-            if (this.IsTrain)
-            {
-                //メンバのMeanとVarianceを設定する
-                this.CalcVariance(x);
-            }
-            else
-            {
-                this.Mean = this.AvgMean.Data;
-                this.Variance = this.AvgVar.Data;
-            }
-
-            this.Std = new double[this.Variance.Length];
-            for (int i = 0; i < this.Variance.Length; i++)
-            {
-                this.Std[i] = Math.Sqrt(this.Variance[i]);
-            }
-
-            //結果を計算
-            this.Xhat = new[]
-            {
-                new double[this.ChannelSize]
-            };
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                this.Xhat[0][i] = (x.Data[i] - this.Mean[i]) / this.Std[i];
-                y.Data[i] = this.Gamma.Data[i] * this.Xhat[0][i] + this.Beta.Data[i];
-            }
-
-            return y;
-        }
-
-        public NdArray[] BatchForward(NdArray[] x)
+        protected override NdArray[] NeedPreviousForward(NdArray[] x)
         {
             NdArray[] y = new NdArray[x.Length];
 
@@ -190,44 +153,7 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
-        {
-            NdArray gx = NdArray.ZerosLike(gy);
-
-            this.gBeta.Fill(0);
-            this.gGamma.Fill(0);
-
-            for (int j = 0; j < this.ChannelSize; j++)
-            {
-                this.gBeta.Data[j] += gy.Data[j];
-                this.gGamma.Data[j] += gy.Data[j] * this.Xhat[0][j];
-            }
-
-            if (!this.IsTrain)
-            {
-                // 学習なし
-                for (int i = 0; i < this.ChannelSize; i++)
-                {
-                    var gs = this.Gamma.Data[i] / this.Std[i];
-                    this.gMean.Data[i] = -gs * this.gBeta.Data[i];
-                    this.gVariance.Data[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
-                    gx.Data[i] = gs * gy.Data[i];
-                }
-            }
-            else
-            {
-                for (int i = 0; i < this.ChannelSize; i++)
-                {
-                    var gs = this.Gamma.Data[i] / this.Std[i];
-                    var val = this.Xhat[0][i] * this.gGamma.Data[i] + this.gBeta.Data[i];
-                    gx.Data[i] = gs * (gy.Data[i] - val);
-                }
-            }
-
-            return gx;
-        }
-
-        public NdArray[] BatchBackward(NdArray[] gy)
+        protected override NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
             NdArray[] gx = new NdArray[gy.Length];
             for (int i = 0; i < gy.Length; i++)
@@ -279,15 +205,10 @@ namespace KelpNet.Functions.Normalization
                 }
             }
 
-            for (int i = 0; i < Parameters.Count; i++)
-            {
-                Parameters[i].TrainCount += gy.Length;
-            }
-
             return gx;
         }
 
-        public override NdArray Predict(NdArray input, int batchID)
+        public override NdArray[] Predict(NdArray[] input)
         {
             this.IsTrain = false;
 

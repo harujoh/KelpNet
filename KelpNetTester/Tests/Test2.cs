@@ -8,7 +8,7 @@ using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
-    //MLPによるXORの学習【回帰版】
+    //MLPによるXORの学習【回帰版】 ※精度が悪く何度か実行しないと望んだ結果を得られない
     class Test2
     {
         public static void Run()
@@ -44,7 +44,6 @@ namespace KelpNetTester.Tests
             //optimizerを宣言(今回はAdam)
             nn.SetOptimizer(new Adam());
 
-
             //訓練ループ
             Console.WriteLine("Training...");
             for (int i = 0; i < learningCount; i++)
@@ -56,15 +55,17 @@ namespace KelpNetTester.Tests
                 nn.Train(trainData[3], trainLabel[3], LossFunctions.MeanSquaredError);
 
                 //訓練後に毎回更新を実行しなければ、ミニバッチとして更新できる
-                nn.Update(); 
+                nn.Update();
             }
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
             foreach (var val in trainData)
             {
-                var input = NdArray.FromArray(val);
-                Console.WriteLine(input + ":" + nn.Predict(input));
+                var input =  NdArray.FromArray(val);
+                var result = nn.Predict(input);
+                Console.WriteLine(input + " => " + (result.Data[0] > 0.5?1:0) + result);
+
             }
         }
     }

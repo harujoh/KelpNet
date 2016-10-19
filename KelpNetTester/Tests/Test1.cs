@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet;
 using KelpNet.Common;
 using KelpNet.Functions.Activations;
@@ -28,10 +29,10 @@ namespace KelpNetTester.Tests
             //訓練データラベル
             double[][] trainLabel =
             {
-                new[] { 0.0},
-                new[] { 1.0},
-                new[] { 1.0},
-                new[] { 0.0}
+                new[] { 0.0 },
+                new[] { 1.0 },
+                new[] { 1.0 },
+                new[] { 0.0 }
             };
 
             //ネットワークの構成は FunctionStack に書き連ねる
@@ -43,7 +44,6 @@ namespace KelpNetTester.Tests
 
             //optimizerを宣言
             nn.SetOptimizer(new MomentumSGD());
-
 
             //訓練ループ
             Console.WriteLine("Training...");
@@ -57,13 +57,14 @@ namespace KelpNetTester.Tests
                 }
             }
 
-
             //訓練結果を表示
             Console.WriteLine("Test Start...");
             foreach (var val in trainData)
             {
-                var input = NdArray.FromArray(val);
-                Console.WriteLine(input + ":" + nn.Predict(input));
+                var input =  NdArray.FromArray(val);
+                var result = nn.Predict(input);
+                int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
+                Console.WriteLine(input + " => " + resultIndex + " " + result);
             }
         }
     }

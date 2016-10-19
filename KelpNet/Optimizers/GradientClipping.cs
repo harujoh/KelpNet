@@ -1,5 +1,7 @@
 ﻿using System;
+#if !DEBUG
 using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Optimizers
 {
@@ -30,13 +32,20 @@ namespace KelpNet.Optimizers
 
             if (rate < 1)
             {
+#if DEBUG
+                foreach (var parameter in Parameters)
+#else
                 Parallel.ForEach(Parameters, parameter =>
+#endif
                 {
                     for (int j = 0; j < parameter.Length; j++)
                     {
                         parameter.Grad.Data[j] *= rate;
                     }
-                });
+                }
+#if !DEBUG
+                );
+#endif
 
             }
 

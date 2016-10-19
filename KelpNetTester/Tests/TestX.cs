@@ -1,5 +1,4 @@
 ﻿using System;
-using KelpNet;
 using KelpNet.Common;
 using KelpNet.Functions.Connections;
 using KelpNet.Optimizers;
@@ -32,7 +31,7 @@ namespace KelpNetTester.Tests
                 0.01844446,-0.08441339,0.01957355,0.04430714,-0.03080243,
                 -0.0261334,-0.03794889,-0.00638074,0.07278767,-0.02165155,
                 0.08390063,-0.03253863,0.0311571,0.08088892,-0.07267931
-            },name:"l0");
+            }, name: "l0");
 
             var l1 = new Linear(5, 5, initialW: new[]{
                 -0.02690255,0.08830735,-0.02041466,-0.0431439,-0.07749002,

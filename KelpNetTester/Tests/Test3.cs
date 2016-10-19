@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet;
 using KelpNet.Common;
 using KelpNet.Functions.Activations;
@@ -67,7 +68,7 @@ namespace KelpNetTester.Tests
 
             foreach (var val in trainData)
             {
-                Console.WriteLine(val[0] + ":" + nn.Predict(NdArray.FromArray(val)).Data[0]);
+                Console.WriteLine(val[0] + ":" + nn.Predict( NdArray.FromArray(val)).Data[0]);
             }
         }
     }

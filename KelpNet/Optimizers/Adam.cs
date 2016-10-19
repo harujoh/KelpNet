@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Optimizers
 {
@@ -34,7 +36,11 @@ namespace KelpNet.Optimizers
 
         protected override void DoUpdate()
         {
-            Parallel.For(0, Parameters.Count, i =>
+#if DEBUG
+            for (int i = 0; i < Parameters.Count; i++)
+#else
+            Parallel.For(0, Parameters.Count, i => 
+#endif
             {
                 for (int k = 0; k < Parameters[i].Length; k++)
                 {
@@ -45,7 +51,10 @@ namespace KelpNet.Optimizers
 
                     Parameters[i].Param.Data[k] -= this.lr *this.m[i].Data[k] / (Math.Sqrt(this.v[i].Data[k]) + this.eps);
                 }
-            });
+            }
+#if !DEBUG
+            );
+#endif
         }
 
         protected override void Initialize()

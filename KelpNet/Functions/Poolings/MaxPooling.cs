@@ -1,5 +1,8 @@
 ﻿using System;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Functions.Poolings
 {
@@ -10,64 +13,90 @@ namespace KelpNet.Functions.Poolings
         private int _stride;
         private int _pad;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0,string name= "MaxPooling") :base(name)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling") : base(name)
         {
             this._kSize = ksize;
             this._stride = stride;
             this._pad = pad;
         }
 
-        protected override NdArray NeedPreviousForward(NdArray input)
+        protected override NdArray[] NeedPreviousForward(NdArray[] input)
         {
-            int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
-            NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);
-            result.Fill(double.MinValue);
+            NdArray[] resultArray = new NdArray[input.Length];
 
-            for (int i = 0; i < input.Shape[0]; i++)
+#if DEBUG
+            for (int i = 0; i < input.Length; i++)
+#else
+            Parallel.For(0, input.Length, i =>
+#endif
             {
-                for (int y = 0; y < outputSize; y++)
-                {
-                    for (int x = 0; x < outputSize; x++)
-                    {
-                        for (int dy = 0; dy < this._kSize; dy++)
-                        {
-                            for (int dx = 0; dx < this._kSize; dx++)
-                            {
-                                int inputIndexX = x * this._stride + dx - this._pad;
-                                int inputIndexY = y * this._stride + dy - this._pad;
+                int outputSize = (int)Math.Floor((input[i].Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
+                NdArray result = NdArray.Zeros(input[i].Shape[0], outputSize, outputSize);
+                result.Fill(double.MinValue);
 
-                                if (inputIndexX >= 0 && inputIndexX < input.Shape[1] &&
-                                    inputIndexY >= 0 && inputIndexY < input.Shape[2])
+                for (int j = 0; j < input[i].Shape[0]; j++)
+                {
+                    for (int y = 0; y < outputSize; y++)
+                    {
+                        for (int x = 0; x < outputSize; x++)
+                        {
+                            for (int dy = 0; dy < this._kSize; dy++)
+                            {
+                                for (int dx = 0; dx < this._kSize; dx++)
                                 {
-                                    result.Data[result.GetIndex(i, x, y)] = Math.Max(result.Data[result.GetIndex(i, x, y)], input.Get(i, inputIndexX, inputIndexY));
+                                    int inputIndexX = x * this._stride + dx - this._pad;
+                                    int inputIndexY = y * this._stride + dy - this._pad;
+
+                                    if (inputIndexX >= 0 && inputIndexX < input[i].Shape[1] &&
+                                        inputIndexY >= 0 && inputIndexY < input[i].Shape[2])
+                                    {
+                                        result.Data[result.GetIndex(j, x, y)] = Math.Max(result.Data[result.GetIndex(j, x, y)], input[i].Get(j, inputIndexX, inputIndexY));
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            return result;
+                resultArray[i] = result;
+            }
+#if !DEBUG
+            );
+#endif
+            return resultArray;
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
-            NdArray result = NdArray.ZerosLike(prevInput);            
-            gy.Shape = (int[])prevOutput.Shape.Clone();
+            NdArray[] resultArray = new NdArray[gy.Length];
 
-            for (int i = 0; i < result.Shape[0]; i++)
+#if DEBUG
+            for (int i = 0; i < gy.Length; i++)
+#else
+            Parallel.For(0, gy.Length, i =>
+#endif
             {
-                for (int y = 0; y < gy.Shape[1]; y++)
+                NdArray result = NdArray.ZerosLike(prevInput[i]);
+                gy[i].Shape = (int[])prevOutput[i].Shape.Clone();
+
+                for (int j = 0; j < result.Shape[0]; j++)
                 {
-                    for (int x = 0; x < gy.Shape[2]; x++)
+                    for (int y = 0; y < gy[i].Shape[1]; y++)
                     {
-                        //前回の入力値と出力値を比較して、同じ値のものを見つける
-                        this.setresult(i, y, x, gy.Data[gy.GetIndex(i, y, x)], prevInput, prevOutput, ref result);
+                        for (int x = 0; x < gy[i].Shape[2]; x++)
+                        {
+                            //前回の入力値と出力値を比較して、同じ値のものを見つける
+                            this.setresult(j, y, x, gy[i].Data[gy[i].GetIndex(j, y, x)], prevInput[i], prevOutput[i], ref result);
+                        }
                     }
                 }
-            }
 
-            return result;
+                resultArray[i] = result;
+            }
+#if !DEBUG
+            );
+#endif
+            return resultArray;
         }
 
         //同じ値を複数持つ場合、左上優先にして処理を打ち切る

@@ -1,5 +1,8 @@
 ﻿using System;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Functions.Connections
 {
@@ -16,7 +19,7 @@ namespace KelpNet.Functions.Connections
         {
             this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
-            Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W" ));
+            Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
 
             //Zeroバイアス
             this.b = NdArray.Zeros(outputCount);
@@ -40,59 +43,87 @@ namespace KelpNet.Functions.Connections
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
                 }
 
-                Parameters.Add(new OptimizeParameter(this.b, this.gb, this.Name + " b"));
+                Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
             }
 
             OutputCount = outputCount;
             InputCount = inputCount;
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override NdArray[] NeedPreviousForward(NdArray[] x)
         {
-            double[] output = new double[OutputCount];
+            NdArray[] y = new NdArray[x.Length];
 
-            for (int i = 0; i < OutputCount; i++)
+#if DEBUG
+            for (int i = 0; i < x.Length; i++)
+#else
+            Parallel.For(0, x.Length, i =>
+#endif
             {
-                for (int j = 0; j < InputCount; j++)
+                double[] output = new double[OutputCount];
+
+                for (int j = 0; j < OutputCount; j++)
                 {
-                    output[i] += x.Data[j] * this.W.Get(i, j);
+                    for (int k = 0; k < InputCount; k++)
+                    {
+                        output[j] += x[i].Data[k] * this.W.Get(j, k);
+                    }
+
+                    output[j] += this.b.Data[j];
                 }
 
-                output[i] += this.b.Data[i];
+                y[i] = NdArray.FromArray(output);
             }
+#if !DEBUG
+            );
+#endif
 
-            return NdArray.FromArray(output);
+            return y;
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
-            for (int i = 0; i < prevInput.Length; i++)
+            NdArray[] gx = new NdArray[gy.Length];
+
+#if DEBUG
+            for (int i = 0; i < gy.Length; i++)
+#else
+            Parallel.For(0, gy.Length, i =>
+#endif
             {
-                for (int j = 0; j < gy.Length; j++)
+                for (int j = 0; j < prevInput[i].Length; j++)
                 {
-                    this.gW.Data[this.gW.GetIndex(j, i)] += prevInput.Data[i] * gy.Data[j];
+                    for (int k = 0; k < gy[i].Length; k++)
+                    {
+                        this.gW.Data[this.gW.GetIndex(k, j)] += prevInput[i].Data[j] * gy[i].Data[k];
+                    }
                 }
-            }
 
-            double[] gxData = new double[InputCount];
+                double[] gxData = new double[InputCount];
 
-            for (int i = 0; i < this.W.Shape[0]; i++)
-            {
-                for (int j = 0; j < this.W.Shape[1]; j++)
+                for (int j = 0; j < this.W.Shape[0]; j++)
                 {
-                    gxData[j] += this.W.Get(i, j) * gy.Data[i];
+                    for (int k = 0; k < this.W.Shape[1]; k++)
+                    {
+                        gxData[k] += this.W.Get(j, k) * gy[i].Data[j];
+                    }
                 }
-            }
 
-            if (this.gb != null)
-            {
-                for (int j = 0; j < gy.Length; j++)
+                if (this.gb != null)
                 {
-                    this.gb.Data[j] += gy.Data[j];
+                    for (int j = 0; j < gy[i].Length; j++)
+                    {
+                        this.gb.Data[j] += gy[i].Data[j];
+                    }
                 }
-            }
 
-            return new NdArray(gxData, new[] { 1, InputCount });
+                gx[i] = new NdArray(gxData, new[] { 1, InputCount });
+            }
+#if !DEBUG
+            );
+#endif
+
+            return gx;
         }
     }
 }

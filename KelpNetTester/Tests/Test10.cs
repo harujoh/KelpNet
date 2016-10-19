@@ -33,8 +33,6 @@ namespace KelpNetTester.Tests
 
             int nVocab = vocabulary.Length;
 
-            Console.WriteLine("Done.");
-
             Console.WriteLine("Network Initilizing.");
             FunctionStack model = new FunctionStack(
                 new EmbedID(nVocab, N_UNITS, name: "l1 EmbedID"),
@@ -59,12 +57,9 @@ namespace KelpNetTester.Tests
 
             Console.WriteLine("Train Start.");
 
-            //入出力を初期化
-            model.InitBatch(BATCH_SIZE);
-
             for (int i = 0; i < jump * N_EPOCH; i++)
             {
-                Console.WriteLine("{0}/{1}", i+1, jump);
+                Console.WriteLine("{0}/{1}", i + 1, jump);
 
                 var x = new int[BATCH_SIZE][];
                 var t = new int[BATCH_SIZE][];
@@ -75,25 +70,21 @@ namespace KelpNetTester.Tests
                     t[j] = new[] { trainData[(int)((jump * j + i + 1) % wholeLen)] };
                 }
 
-                List<double> sumLoss;
-                backNdArrays.Push(model.BatchForward(x, t, LossFunctions.SoftmaxCrossEntropy, out sumLoss));
-                Console.WriteLine("Loss: {0}", sumLoss.Average());
+                double sumLoss;
+                backNdArrays.Push(model.Forward(x, t, LossFunctions.SoftmaxCrossEntropy, out sumLoss));
+                Console.WriteLine("Loss: {0}", sumLoss);
 
                 //Run truncated BPTT
                 if ((i + 1) % BPROP_LEN == 0)
                 {
-                    Console.WriteLine("backward start");
                     for (int j = 0; backNdArrays.Count > 0; j++)
                     {
                         Console.WriteLine("backward" + backNdArrays.Count);
-                        model.BatchBackward(backNdArrays.Pop());
+                        model.Backward(backNdArrays.Pop());
                     }
-                    Console.WriteLine("backward done");
 
-                    Console.WriteLine("update start");
                     model.Update();
                     model.ResetState();
-                    Console.WriteLine("update done");
                 }
 
                 if ((i + 1) % jump == 0)
@@ -133,9 +124,9 @@ namespace KelpNetTester.Tests
                     t[j] = new[] { dataset[j + i + 1] };
                 }
 
-                List<double> sumLoss;
-                predictModel.BatchForward(x, t, LossFunctions.SoftmaxCrossEntropy, out sumLoss);
-                totalLoss.AddRange(sumLoss);
+                double sumLoss;
+                predictModel.Forward(x, t, LossFunctions.SoftmaxCrossEntropy, out sumLoss);
+                totalLoss.Add(sumLoss);
             }
 
             //calc perplexity

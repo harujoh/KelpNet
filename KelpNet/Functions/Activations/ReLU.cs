@@ -1,36 +1,66 @@
 ﻿using System;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
     public class ReLU : NeedPreviousDataFunction
     {
-        public ReLU(string name= "ReLU") : base(name)
+        public ReLU(string name = "ReLU") : base(name)
         {
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override NdArray[] NeedPreviousForward(NdArray[] x)
         {
-            NdArray y = NdArray.ZerosLike(x);
+            NdArray[] result = new NdArray[x.Length];
 
+#if DEBUG
             for (int i = 0; i < x.Length; i++)
+#else
+            Parallel.For(0, x.Length, i =>
+#endif
             {
-                y.Data[i] = Math.Max(0, x.Data[i]);
-            }
+                double[] y = new double[x[i].Length];
 
-            return y;
+                for (int j = 0; j < x[i].Length; j++)
+                {
+                    y[j] = Math.Max(0, x[i].Data[j]);
+                }
+
+                result[i] = new NdArray(y, x[i].Shape);
+            }
+#if !DEBUG
+            );
+#endif
+
+            return result;
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
-            NdArray result = NdArray.ZerosLike(gy);
+            NdArray[] result = new NdArray[gy.Length];
 
+#if DEBUG
             for (int i = 0; i < gy.Length; i++)
+#else
+            Parallel.For(0, gy.Length, i =>
+#endif
             {
-                result.Data[i] = prevOutput.Data[i] > 0 ? gy.Data[i] : 0;
-            }
+                double[] gx = new double[gy[i].Length];
 
+                for (int j = 0; j < gy[i].Length; j++)
+                {
+                    gx[j] = prevOutput[i].Data[j] > 0 ? gy[i].Data[j] : 0;
+                }
+
+                result[i] = new NdArray(gx, gy[i].Shape);
+            }
+#if !DEBUG
+            );
+#endif
             return result;
         }
     }

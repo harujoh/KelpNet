@@ -15,37 +15,47 @@ namespace KelpNet
         public int OutputCount;
         public int InputCount;
 
-        protected abstract NdArray ForwardSingle(NdArray x, int batchId = 0);
-        protected abstract NdArray BackwardSingle(NdArray gy, int batchId = 0);
+        protected abstract NdArray[] ForwardSingle(NdArray[] x);
+        protected abstract NdArray[] BackwardSingle(NdArray[] gy);
 
         protected Function(string name)
         {
             this.Name = name;
         }
 
-        public NdArray Forward(NdArray x, int batchId = 0)
+        public NdArray[] Forward(NdArray[] x)
         {
-            return this.ForwardSingle(x, batchId);
+            return this.ForwardSingle(x);
         }
 
-        public NdArray Backward(NdArray gy, int batchId = 0)
+        public NdArray Forward(NdArray x)
+        {
+            return this.ForwardSingle(new [] { x})[0];
+        }
+
+        public NdArray[] Backward(NdArray[] gy)
+        {
+            foreach (OptimizeParameter parameter in this.Parameters)
+            {
+                parameter.TrainCount+=gy.Length;
+            }
+
+            return this.BackwardSingle(gy);
+        }
+
+        public NdArray Backward(NdArray gy)
         {
             foreach (OptimizeParameter parameter in this.Parameters)
             {
                 parameter.TrainCount++;
             }
 
-            return this.BackwardSingle(gy, batchId);
+            return this.BackwardSingle(new[] { gy})[0];
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理
         public virtual void ResetState()
         {
-        }
-
-        //バッチ実行前に初期化が必要な関数に使用
-        public virtual void InitBatch(int batchCount)
-        {            
         }
 
         //初期値が入力されなかった場合、この関数で初期化を行う

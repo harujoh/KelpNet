@@ -59,15 +59,15 @@ namespace KelpNetTester.Tests
                     var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    var sumLoss = nn.BatchTrain(datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
-                    totalLoss.AddRange(sumLoss);
+                    var sumLoss = nn.Train(datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
+                    totalLoss.Add(sumLoss);
 
                     //バッチ更新
                     nn.Update();
 
                     //結果出力
                     Console.WriteLine("total loss " + totalLoss.Average());
-                    Console.WriteLine("local loss " + sumLoss.Average());
+                    Console.WriteLine("local loss " + sumLoss);
 
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)

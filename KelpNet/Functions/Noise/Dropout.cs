@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Functions.Noise
 {
@@ -7,55 +12,74 @@ namespace KelpNet.Functions.Noise
     public class Dropout : Function
     {
         private readonly double dropoutRatio;
-        private double[] mask;
+        private readonly List<double[]> Mask = new List<double[]>();
 
         public Dropout(double dropoutRatio = 0.5, string name = "Dropout") : base(name)
         {
             this.dropoutRatio = dropoutRatio;
         }
 
-        protected override NdArray ForwardSingle(NdArray x, int batchID = -1)
+        protected override NdArray[] ForwardSingle(NdArray[] x)
         {
-            double[] resultData = new double[x.Length];
+            NdArray[] result = new NdArray[x.Length];
+            var mask = new double[x[0].Length];
+            double scale = 1.0 / (1.0 - this.dropoutRatio);
 
-            if (this.mask == null || batchID == -1)
+            for (int j = 0; j < mask.Length; j++)
             {
-                double scale = 1.0 / (1.0 - this.dropoutRatio);
+                mask[j] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
+            }
 
-                this.mask = new double[x.Length];
+#if DEBUG
+            for (int i = 0; i < x.Length; i++)
+#else
+            Parallel.For(0, x.Length, i =>
+#endif
+            {
+                double[] y = new double[x[i].Length];
 
-                for (int i = 0; i < this.mask.Length; i++)
+                for (int j = 0; j < mask.Length; j++)
                 {
-                    this.mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
-                    resultData[i] = x.Data[i] * this.mask[i];
+                    y[j] = x[i].Data[j] * mask[j];
                 }
-            }
-            else
-            {
-                for (int i = 0; i < this.mask.Length; i++)
-                {
-                    resultData[i] = x.Data[i] * this.mask[i];
-                }
-            }
 
-            return new NdArray(resultData, x.Shape);
-        }
-
-        protected override NdArray BackwardSingle(NdArray gy, int batchID = 0)
-        {
-            NdArray result = NdArray.ZerosLike(gy);
-
-            for (int i = 0; i < this.mask.Length; i++)
-            {
-                result.Data[i] = gy.Data[i] * this.mask[i];
+                result[i] = new NdArray(y, x[i].Shape);
             }
+#if !DEBUG
+            );
+#endif
+            this.Mask.Add(mask);
 
             return result;
         }
 
-        public override void InitBatch(int batchCount)
+        protected override NdArray[] BackwardSingle(NdArray[] gy)
         {
-            this.mask = null;
+            NdArray[] result = new NdArray[gy.Length];
+
+            double[] mask = this.Mask.Last();
+
+#if DEBUG
+            for (int i = 0; i < gy.Length; i++)
+#else
+            Parallel.For(0, gy.Length, i =>
+#endif
+            {
+                double[] gx = new double[gy[i].Length];
+
+                for (int j = 0; j < mask.Length; j++)
+                {
+                    gx[j] = gy[i].Data[j] * mask[j];
+                }
+
+                result[i] = new NdArray(gx, gy[i].Shape);
+            }
+#if !DEBUG
+            );
+#endif
+            this.Mask.RemoveAt(this.Mask.Count-1);
+
+            return result;
         }
     }
 }

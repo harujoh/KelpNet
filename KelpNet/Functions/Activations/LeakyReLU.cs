@@ -1,5 +1,8 @@
 ﻿using System;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Functions.Activations
 {
@@ -13,29 +16,54 @@ namespace KelpNet.Functions.Activations
             this._slope = slope;
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override NdArray[] NeedPreviousForward(NdArray[] x)
         {
-            NdArray y = new NdArray(x);
+            NdArray[] result = new NdArray[x.Length];
 
+#if DEBUG
             for (int i = 0; i < x.Length; i++)
+#else
+            Parallel.For(0, x.Length, i =>
+#endif
             {
-                if (y.Data[i] < 0) y.Data[i] *= this._slope;
-            }
+                double[] y = new double[x[i].Length];
 
-            return y;
+                for (int j = 0; j < x[i].Length; j++)
+                {
+                    if (y[j] < 0) y[j] *= this._slope;
+                }
+
+                result[i] = new NdArray(y, x[i].Shape);
+            }
+#if !DEBUG
+            );
+#endif
+
+            return result;
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
         {
-            NdArray result = new NdArray(gy);
+            NdArray[] result = new NdArray[gy.Length];
 
+#if DEBUG
             for (int i = 0; i < gy.Length; i++)
+#else
+            Parallel.For(0, gy.Length, i =>
+#endif
             {
-                if (prevOutput.Data[i] < 0)
+                double[] gx = new double[gy[i].Length];
+
+                for (int j = 0; j < gx.Length; j++)
                 {
-                    prevOutput.Data[i] *= this._slope;
+                    gx[j] = prevOutput[i].Data[j] > 0 ? gy[i].Data[j] : prevOutput[i].Data[j] * this._slope;
                 }
+
+                result[i] = new NdArray(gx, gy[i].Shape);
             }
+#if !DEBUG
+            );
+#endif
 
             return result;
         }

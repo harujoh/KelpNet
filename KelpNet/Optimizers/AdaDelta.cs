@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Optimizers
 {
@@ -20,7 +22,11 @@ namespace KelpNet.Optimizers
 
         protected override void DoUpdate()
         {
-            Parallel.For(0, this.Parameters.Count, i =>
+#if DEBUG
+            for (int i = 0; i < Parameters.Count; i++)
+#else
+            Parallel.For(0, Parameters.Count, i => 
+#endif
             {
                 for (int k = 0; k < Parameters[i].Length; k++)
                 {
@@ -35,15 +41,18 @@ namespace KelpNet.Optimizers
 
                     Parameters[i].Param.Data[k] -= dx;
                 }
-            });
+            }
+#if !DEBUG
+            );
+#endif
         }
 
         protected override void Initialize()
         {
-            this.msg = new NdArray[this.Parameters.Count];
-            this.msdx = new NdArray[this.Parameters.Count];
+            this.msg = new NdArray[Parameters.Count];
+            this.msdx = new NdArray[Parameters.Count];
 
-            for (int i = 0; i < this.Parameters.Count; i++)
+            for (int i = 0; i < Parameters.Count; i++)
             {
                 this.msg[i] = NdArray.ZerosLike(Parameters[i].Param);
                 this.msdx[i] = NdArray.ZerosLike(Parameters[i].Param);

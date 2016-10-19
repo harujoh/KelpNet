@@ -30,9 +30,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack model = new FunctionStack(
-                new Linear(1, 5,name: "Linear l1"),
+                new Linear(1, 5, name: "Linear l1"),
                 new LSTM(5, 5, name: "LSTM l2"),
-                new Linear(5, 1,name: "Linear l3")
+                new Linear(5, 1, name: "Linear l3")
             );
 
             //optimizerを宣言
@@ -44,12 +44,12 @@ namespace KelpNetTester.Tests
             {
                 var sequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 
-                model.ResetState();
-                model.ClearGrads();
-
                 var loss = ComputeLoss(model, sequences);
 
                 model.Update();
+
+                model.ResetState();
+                model.ClearGrads();
 
                 if (epoch != 0 && epoch % DISPLAY_EPOCH == 0)
                 {
@@ -73,9 +73,6 @@ namespace KelpNetTester.Tests
 
             Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
 
-            //入出力を初期化
-            model.InitBatch(MINI_BATCH_SIZE);
-
             for (int i = 0; i < LENGTH_OF_SEQUENCE - 1; i++)
             {
                 for (int j = 0; j < MINI_BATCH_SIZE; j++)
@@ -84,14 +81,14 @@ namespace KelpNetTester.Tests
                     t[j] = new[] { sequences[j].Data[i + 1] };
                 }
 
-                List<double> sumLoss;
-                backNdArrays.Push(model.BatchForward(x, t, LossFunctions.MeanSquaredError, out sumLoss));
-                totalLoss.AddRange(sumLoss);
+                double sumLoss;
+                backNdArrays.Push(model.Forward(x, t, LossFunctions.MeanSquaredError, out sumLoss));
+                totalLoss.Add(sumLoss);
             }
 
             for (int i = 0; backNdArrays.Count > 0; i++)
             {
-                model.BatchBackward(backNdArrays.Pop());
+                model.Backward(backNdArrays.Pop());
             }
 
             return totalLoss.Average();
@@ -132,12 +129,12 @@ namespace KelpNetTester.Tests
         static double predict_sequence(FunctionStack model, List<double> input_seq)
         {
             model.ResetState();
-            
+
             NdArray result = NdArray.Zeros(1);
 
             for (int i = 0; i < input_seq.Count; i++)
             {
-                result = model.Predict(new[]{input_seq[i]});
+                result = model.Predict(new[] { input_seq[i] });
             }
 
             return result.Data[0];
