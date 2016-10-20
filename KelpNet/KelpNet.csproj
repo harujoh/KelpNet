@@ -74,7 +74,6 @@
     <Compile Include="Optimizers\MomentumSGD.cs" />
     <Compile Include="Optimizers\RMSprop.cs" />
     <Compile Include="Optimizers\SGD.cs" />
-    <Compile Include="Interface\IPredictableFunction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

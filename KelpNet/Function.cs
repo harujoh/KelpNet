@@ -93,5 +93,10 @@ namespace KelpNet
         {
             return this.Name;
         }
+
+        public virtual NdArray[] Predict(NdArray[] input)
+        {
+            return this.ForwardSingle(input);
+        }
     }
 }

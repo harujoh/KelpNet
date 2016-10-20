@@ -81,5 +81,12 @@ namespace KelpNet.Functions.Noise
 
             return result;
         }
+
+        //Predict時に何もしない
+        public override NdArray[] Predict(NdArray[] input)
+        {
+            return input;
+        }
+
     }
 }

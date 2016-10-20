@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using KelpNet.Common;
-using KelpNet.Interface;
 
 namespace KelpNet
 {
@@ -15,9 +13,6 @@ namespace KelpNet
 
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
-
-        //学習用の関数を除く関数がココにPredictableFunctionとして保管される（現在はDropoutを実行しないために用意）
-        private readonly List<IPredictableFunction> _predictableFunctions = new List<IPredictableFunction>();
 
         //Optimizerをココで保持する
         private Optimizer[] _optimizers;
@@ -31,8 +26,8 @@ namespace KelpNet
             //入力された関数を振り分ける
             foreach (Function function in functions)
             {
-                //逐次実行タスク用
-                this.StackFunction(function);
+                //全関数リストへ追加
+                this.Functions.Add(function);
 
                 //パラメーターを保持
                 this.Parameters.AddRange(function.Parameters);
@@ -52,20 +47,6 @@ namespace KelpNet
             foreach (var optimizer in optimizers)
             {
                 optimizer.SetParameters(this.Parameters);
-            }
-        }
-
-        //シングルタスク用の層を積み上げる
-        public void StackFunction(Function function)
-        {
-            //全関数リストへ追加
-            this.Functions.Add(function);
-
-            //予測処理実行用のリストへ追加
-            var predictableFunction = function as IPredictableFunction;
-            if (predictableFunction != null)
-            {
-                this._predictableFunctions.Add(predictableFunction);
             }
         }
 
@@ -108,7 +89,7 @@ namespace KelpNet
         {
             NdArray[] forwardResult = input;
 
-            foreach (IPredictableFunction predictableFunction in this._predictableFunctions)
+            foreach (Function predictableFunction in this.Functions)
             {
                 forwardResult = predictableFunction.Predict(forwardResult);
             }

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using KelpNet.Common;
-using KelpNet.Interface;
 
 namespace KelpNet.Functions
 {
     //前回の入出力を自動的に扱うクラステンプレート
     [Serializable]
-    public abstract class NeedPreviousDataFunction : Function, IPredictableFunction
+    public abstract class NeedPreviousDataFunction : Function
     {
         //後入れ先出しリスト
         private List<NdArray[]> _prevInput = new List<NdArray[]>();
@@ -44,11 +43,6 @@ namespace KelpNet.Functions
             this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
 
             return this.NeedPreviousBackward(gy, prevInput , prevOutput);
-        }
-
-        public virtual NdArray[] Predict(NdArray[] input)
-        {
-            return this.ForwardSingle(input);
         }
     }
 }

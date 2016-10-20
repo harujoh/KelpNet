@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using KelpNet.Common;
-using KelpNet.Interface;
 #if !DEBUG
 using System.Threading.Tasks;
 #endif
@@ -10,7 +9,7 @@ using System.Threading.Tasks;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class LSTM : Function, IPredictableFunction
+    public class LSTM : Function
     {
         private List<double[]>[] aParam;
         private List<double[]>[] iParam;
@@ -288,11 +287,6 @@ namespace KelpNet.Functions.Connections
             }
 
             this.gcPrev = new double[batchCount][];
-        }
-
-        public NdArray[] Predict(NdArray[] input)
-        {
-            return this.ForwardSingle(input);
         }
 
         static double Sigmoid(double x)
