@@ -29,7 +29,7 @@ namespace KelpNet.Functions
                 prevInput[i] = new NdArray(x[i]);
             }
 
-            this._prevInput.Add(x);
+            this._prevInput.Add(prevInput);
             this._prevOutput.Add(this.NeedPreviousForward(x));
 
             return this._prevOutput.Last();
