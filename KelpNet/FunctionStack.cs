@@ -34,12 +34,6 @@ namespace KelpNet
             }
         }
 
-        //コピーを作成するメソッド
-        public FunctionStack Clone()
-        {
-            return DeepCopyHelper.DeepCopy(this);
-        }
-
         //Optimizerを設定
         public void SetOptimizer(params Optimizer[] optimizers)
         {
@@ -111,35 +105,25 @@ namespace KelpNet
         //Forward
         public NdArray[] Forward(Array[] input, Array[] teach, LossFunction lossFunction, out double sumLoss)
         {
-            int batchCount = input.Length;
-
-            //全層の『入力』と『出力』を全て保存するため＋１
-            NdArray[][] inputData = new NdArray[this.Functions.Count + 1][];
-            for (int i = 0; i < this.Functions.Count + 1; i++)
+            NdArray[] inputData = new NdArray[input.Length];
+            for (int i = 0; i < inputData.Length; i++)
             {
-                inputData[i] = new NdArray[batchCount];
-            }
-
-            //最初のデータを保存
-            for (int i = 0; i < batchCount; i++)
-            {
-                inputData[0][i] = NdArray.FromArray(input[i]);
+                inputData[i] = NdArray.FromArray(input[i]);
             }
 
             for (int i = 0; i < this.Functions.Count; i++)
             {
-                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
+                inputData = this.Functions[i].Forward(inputData);
             }
 
             NdArray[] teachArray = new NdArray[teach.Length];
-
-            //デリゲートで入力されたロス関数を実行
             for (int i =0;i<teach.Length;i++)
             {
                 teachArray[i] = NdArray.FromArray(teach[i]);
             }
 
-            return lossFunction(inputData[this.Functions.Count], teachArray, out sumLoss);
+            //デリゲートで入力されたロス関数を実行
+            return lossFunction(inputData, teachArray, out sumLoss);
         }
 
         //Backward
@@ -213,6 +197,12 @@ namespace KelpNet
             }
 
             return matchCount / (double)x.Length;
+        }
+
+        //コピーを作成するメソッド
+        public FunctionStack Clone()
+        {
+            return DeepCopyHelper.DeepCopy(this);
         }
     }
 }
