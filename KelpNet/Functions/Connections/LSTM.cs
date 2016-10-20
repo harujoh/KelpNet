@@ -49,31 +49,17 @@ namespace KelpNet.Functions.Connections
             NdArray[][] upwards = new NdArray[4][];
             NdArray[][] laterals = new NdArray[4][];
 
-#if DEBUG
             for (int i = 0; i < upwards.Length; i++)
-#else
-            Parallel.For(0, upwards.Length, i =>
-#endif
             {
                 upwards[i] = this.upward[i].Forward(x);
             }
-#if !DEBUG
-            );
-#endif
 
             if (this.hParam != null)
             {
-#if DEBUG
                 for (int i = 0; i < laterals.Length; i++)
-#else
-                Parallel.For(0, laterals.Length, i =>
-#endif
                 {
                     laterals[i] = this.lateral[i].Forward(this.hParam);
                 }
-#if !DEBUG
-                );
-#endif
             }
             else
             {
@@ -160,11 +146,7 @@ namespace KelpNet.Functions.Connections
             {
                 NdArray[][] ghPre = new NdArray[4][];
 
-#if DEBUG
                 for (int i = 0; i < ghPre.Length; i++)
-#else
-                Parallel.For(0, ghPre.Length, i =>
-#endif
                 {
                     ghPre[i] = this.lateral[i].Backward(this.gxPrev[i]);
 
@@ -176,9 +158,6 @@ namespace KelpNet.Functions.Connections
                         }
                     }
                 }
-#if !DEBUG
-                );
-#endif
             }
             else
             {
@@ -245,17 +224,10 @@ namespace KelpNet.Functions.Connections
 #endif
 
             NdArray[][] gArray = new NdArray[4][];
-#if DEBUG
             for (int i = 0; i < gArray.Length; i++)
-#else
-            Parallel.For(0, gArray.Length, i =>
-#endif
             {
                 gArray[i] = this.upward[i].Backward(this.gxPrev[i]);
             }
-#if !DEBUG
-            );
-#endif
 
 #if DEBUG
             for (int i = 0; i < gh.Length; i++)
