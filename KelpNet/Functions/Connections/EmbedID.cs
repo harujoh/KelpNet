@@ -81,7 +81,9 @@ namespace KelpNet.Functions.Connections
             );
 #endif
             //これより上に層があるとエラーになる
-            return null;
+            var dummy = new [] {NdArray.Zeros(1)};
+
+            return dummy;
         }
     }
 }

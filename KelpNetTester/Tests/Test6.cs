@@ -89,7 +89,7 @@ namespace KelpNetTester.Tests
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)
                     {
-                        Console.WriteLine("Testing...");
+                        Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
                         var datasetY = mnistData.GetRandomYSet(TEACH_DATA_COUNT);

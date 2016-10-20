@@ -46,8 +46,6 @@ namespace KelpNetTester.Tests
             //訓練ループ
             for (int i = 0; i < EPOCH; i++)
             {
-                Console.WriteLine("training..." + i + "/" + EPOCH);
-
                 //誤差集計用
                 double loss = 0.0;
 
@@ -60,7 +58,11 @@ namespace KelpNetTester.Tests
                     nn.Update();
                 }
 
-                Console.WriteLine("loss:" + loss / N);
+                if (i % (EPOCH / 10) == 0)
+                {
+                    Console.WriteLine("loss:" + loss / N);
+                    Console.WriteLine("");
+                }
             }
 
             //訓練結果を表示
