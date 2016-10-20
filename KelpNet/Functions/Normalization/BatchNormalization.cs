@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Functions.Normalization
 {
