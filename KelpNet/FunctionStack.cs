@@ -44,64 +44,6 @@ namespace KelpNet
             }
         }
 
-        //傾きの初期化
-        public void ClearGrads()
-        {
-            foreach (var function in this.Functions)
-            {
-                for (int j = 0; j < function.Parameters.Count; j++)
-                {
-                    function.Parameters[j].ClearGrad();
-                }
-            }
-        }
-
-        //ある処理実行後に特定のデータを初期値に戻す処理
-        public void ResetState()
-        {
-            foreach (var function in this.Functions)
-            {
-                function.ResetState();
-            }
-        }
-
-        //予想を実行する（外部からの使用を想定してArrayが引数
-        public NdArray[] Predict(Array[] input)
-        {
-            NdArray[] ndArrays = new NdArray[input.Length];
-
-            for (int i = 0; i < ndArrays.Length; i++)
-            {
-                ndArrays[i] = NdArray.FromArray(input[i]);
-            }
-
-            return this.Predict(ndArrays);
-        }
-
-        //予想を実行する
-        public NdArray[] Predict(NdArray[] input)
-        {
-            NdArray[] forwardResult = input;
-
-            foreach (Function predictableFunction in this.Functions)
-            {
-                forwardResult = predictableFunction.Predict(forwardResult);
-            }
-
-            return forwardResult;
-        }
-
-        //予想を実行する
-        public NdArray Predict(NdArray input)
-        {
-            return this.Predict(new [] {input})[0];
-        }
-
-        public NdArray Predict(Array input)
-        {
-            return this.Predict(NdArray.FromArray(input));
-        }
-
         //Forward
         public NdArray[] Forward(Array[] input, Array[] teach, LossFunction lossFunction, out double sumLoss)
         {
@@ -111,13 +53,13 @@ namespace KelpNet
                 inputData[i] = NdArray.FromArray(input[i]);
             }
 
-            for (int i = 0; i < this.Functions.Count; i++)
+            foreach (Function function in this.Functions)
             {
-                inputData = this.Functions[i].Forward(inputData);
+                inputData = function.Forward(inputData);
             }
 
             NdArray[] teachArray = new NdArray[teach.Length];
-            for (int i =0;i<teach.Length;i++)
+            for (int i = 0; i < teach.Length; i++)
             {
                 teachArray[i] = NdArray.FromArray(teach[i]);
             }
@@ -153,7 +95,7 @@ namespace KelpNet
         //バッチで学習処理を行う
         public double Train(Array input, Array teach, LossFunction lossFunction)
         {
-            return this.Train(new[] {input}, new[] {teach}, lossFunction);
+            return this.Train(new[] { input }, new[] { teach }, lossFunction);
         }
 
         //重みの更新処理
@@ -179,6 +121,64 @@ namespace KelpNet
 
             //傾きをリセット
             this.ClearGrads();
+        }
+
+        //傾きの初期化
+        public void ClearGrads()
+        {
+            foreach (var function in this.Functions)
+            {
+                foreach (OptimizeParameter parameter in function.Parameters)
+                {
+                    parameter.ClearGrad();
+                }
+            }
+        }
+
+        //ある処理実行後に特定のデータを初期値に戻す処理
+        public void ResetState()
+        {
+            foreach (var function in this.Functions)
+            {
+                function.ResetState();
+            }
+        }
+
+        //予想を実行する（外部からの使用を想定してArrayが引数
+        public NdArray[] Predict(Array[] input)
+        {
+            NdArray[] ndArrays = new NdArray[input.Length];
+            for (int i = 0; i < ndArrays.Length; i++)
+            {
+                ndArrays[i] = NdArray.FromArray(input[i]);
+            }
+
+            return this.Predict(ndArrays);
+        }
+
+        //予想を実行する
+        public NdArray[] Predict(NdArray[] input)
+        {
+            NdArray[] forwardResult = input;
+
+            foreach (Function predictableFunction in this.Functions)
+            {
+                forwardResult = predictableFunction.Predict(forwardResult);
+            }
+
+            return forwardResult;
+        }
+
+        //予想を実行する
+        public NdArray Predict(NdArray input)
+        {
+            return this.Predict(new [] {input})[0];
+        }
+
+        //予想を実行する
+        public NdArray Predict(Array input)
+        {
+            return this.Predict(NdArray.FromArray(input));
         }
 
         //精度測定
