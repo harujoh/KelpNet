@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using KelpNet.Common;
 
-//todo parallel化
 namespace KelpNet.Functions.Normalization
 {
     //Chainerより移植　finetuningは未実装
@@ -84,7 +84,11 @@ namespace KelpNet.Functions.Normalization
 
             //結果を計算
             this.Xhat = new double[x.Length][];
+#if DEBUG
             for (int i = 0; i < x.Length; i++)
+#else
+            Parallel.For(0, x.Length, i =>
+#endif
             {
                 y[i] = NdArray.ZerosLike(x[i]);
                 this.Xhat[i] = new double[this.ChannelSize];
@@ -95,6 +99,9 @@ namespace KelpNet.Functions.Normalization
                     y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i][j] + this.Beta.Data[j];
                 }
             }
+#if !DEBUG
+            );
+#endif
 
             //パラメータを更新
             if (this.IsTrain)
@@ -164,19 +171,30 @@ namespace KelpNet.Functions.Normalization
             this.gBeta.Fill(0);
             this.gGamma.Fill(0);
 
-            for (int i = 0; i < gy.Length; i++)
+#if DEBUG
+            for (int i = 0; i < this.ChannelSize; i++)
+#else
+            Parallel.For(0, this.ChannelSize, i =>
+#endif
             {
-                for (int j = 0; j < this.ChannelSize; j++)
+                for (int j = 0; j < gy.Length; j++)
                 {
-                    this.gBeta.Data[j] += gy[i].Data[j];
-                    this.gGamma.Data[j] += gy[i].Data[j] * this.Xhat[i][j];
+                    this.gBeta.Data[i] += gy[j].Data[i];
+                    this.gGamma.Data[i] += gy[j].Data[i] * this.Xhat[j][i];
                 }
             }
+#if !DEBUG
+            );
+#endif
 
             if (!this.IsTrain)
             {
                 // 学習なし
+#if DEBUG
                 for (int i = 0; i < this.ChannelSize; i++)
+#else
+                Parallel.For(0, this.ChannelSize, i =>
+#endif
                 {
                     var gs = this.Gamma.Data[i] / this.Std[i];
                     this.gMean.Data[i] = -gs * this.gBeta.Data[i];
@@ -187,12 +205,19 @@ namespace KelpNet.Functions.Normalization
                         gx[j].Data[i] = gs * gy[j].Data[i];
                     }
                 }
+#if !DEBUG
+                );
+#endif
             }
             else
             {
                 var m = gy.Length;
 
+#if DEBUG
                 for (int i = 0; i < this.ChannelSize; i++)
+#else
+                Parallel.For(0, this.ChannelSize, i =>
+#endif
                 {
                     var gs = this.Gamma.Data[i] / this.Std[i];
 
@@ -203,6 +228,9 @@ namespace KelpNet.Functions.Normalization
                         gx[j].Data[i] = gs * (gy[j].Data[i] - val);
                     }
                 }
+#if !DEBUG
+                );
+#endif
             }
 
             return gx;
