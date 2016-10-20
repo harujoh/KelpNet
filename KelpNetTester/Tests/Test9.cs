@@ -19,7 +19,6 @@ namespace KelpNetTester.Tests
 
         public static void Run()
         {
-
             Console.WriteLine("Build Vocabulary.");
 
             Vocabulary vocabulary = new Vocabulary();

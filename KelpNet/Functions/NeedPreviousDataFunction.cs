@@ -23,7 +23,13 @@ namespace KelpNet.Functions
 
         protected override NdArray[] ForwardSingle(NdArray[] x)
         {
-            this._prevInput.Add(DeepCopyHelper.DeepCopy(x));
+            NdArray[] prevInput = new NdArray[x.Length];
+            for (int i = 0; i < prevInput.Length; i++)
+            {
+                prevInput[i] = new NdArray(x[i]);
+            }
+
+            this._prevInput.Add(x);
             this._prevOutput.Add(this.NeedPreviousForward(x));
 
             return this._prevOutput.Last();

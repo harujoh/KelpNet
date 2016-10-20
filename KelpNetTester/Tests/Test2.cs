@@ -64,7 +64,7 @@ namespace KelpNetTester.Tests
             {
                 var input =  NdArray.FromArray(val);
                 var result = nn.Predict(input);
-                Console.WriteLine(input + " => " + (result.Data[0] > 0.5?1:0) + result);
+                Console.WriteLine(input + " => " + (result.Data[0] > 0.5?1:0) + " " + result);
 
             }
         }
