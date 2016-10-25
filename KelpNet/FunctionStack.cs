@@ -10,6 +10,7 @@ namespace KelpNet
     {
         //ロス関数のデリゲート宣言
         public delegate NdArray[] LossFunction(NdArray[] input, NdArray[] teachSignal, out double loss);
+        public delegate NdArray SingleLossFunction(NdArray input, NdArray teachSignal, out double loss);
 
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
@@ -68,6 +69,32 @@ namespace KelpNet
             return lossFunction(inputData, teachArray, out sumLoss);
         }
 
+        //Forward
+        public NdArray Forward(Array input, Array teach, SingleLossFunction lossFunction, out double sumLoss)
+        {
+            NdArray inputData = NdArray.FromArray(input);
+
+            foreach (Function function in this.Functions)
+            {
+                inputData = function.Forward(inputData);
+            }
+
+            var teachArray = NdArray.FromArray(teach);
+
+            //デリゲートで入力されたロス関数を実行
+            return lossFunction(inputData, teachArray, out sumLoss);
+        }
+
+        //Backward
+        public void Backward(NdArray backwardResult)
+        {
+            for (int i = this.Functions.Count - 1; i >= 0; i--)
+            {
+                backwardResult = this.Functions[i].Backward(backwardResult);
+            }
+        }
+
+
         //Backward
         public void Backward(NdArray[] backwardResult)
         {
@@ -93,9 +120,20 @@ namespace KelpNet
         }
 
         //バッチで学習処理を行う
-        public double Train(Array input, Array teach, LossFunction lossFunction)
+        public double Train(Array input, Array teach, SingleLossFunction lossFunction)
         {
-            return this.Train(new[] { input }, new[] { teach }, lossFunction);
+            //結果の誤差保存用
+            double sumLoss;
+
+            //Forwardのバッチを実行
+            var backwardResult = this.Forward(input, teach, lossFunction, out sumLoss);
+
+            //Backwardのバッチを実行
+            this.Backward(backwardResult);
+
+            return sumLoss;
+
+            //return this.Train(new[] { input }, new[] { teach }, lossFunction);
         }
 
         //重みの更新処理

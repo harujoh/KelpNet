@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using KelpNet.Common;
+#if !DEBUG
+using System.Threading.Tasks;
+#endif
 
 namespace KelpNet.Functions
 {
@@ -13,12 +16,21 @@ namespace KelpNet.Functions
         private List<NdArray[]> _prevInput = new List<NdArray[]>();
         private List<NdArray[]> _prevOutput = new List<NdArray[]>();
 
-        protected abstract NdArray[] NeedPreviousForward(NdArray[] x);
-        protected abstract NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput);
+        protected abstract NdArray NeedPreviousForward(NdArray x);
+        protected abstract NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput);
 
         protected NeedPreviousDataFunction(string name) : base(name)
         {
         }
+
+        public override NdArray ForwardSingle(NdArray x)
+        {
+            this._prevInput.Add(new[] { x });
+            this._prevOutput.Add(new[] { this.NeedPreviousForward(x) });
+
+            return this._prevOutput.Last()[0];
+        }
+
 
         protected override NdArray[] ForwardSingle(NdArray[] x)
         {
@@ -29,9 +41,36 @@ namespace KelpNet.Functions
             }
 
             this._prevInput.Add(prevInput);
-            this._prevOutput.Add(this.NeedPreviousForward(x));
+
+
+            NdArray[] prevoutput = new NdArray[x.Length];
+
+#if DEBUG
+            for(int i = 0; i < x.Length; i ++)
+#else
+            Parallel.For(0, x.Length, i =>
+#endif
+            {
+                prevoutput[i] = this.NeedPreviousForward(x[i]);
+            }
+#if !DEBUG
+            );
+#endif
+
+            this._prevOutput.Add(prevoutput);
 
             return this._prevOutput.Last();
+        }
+
+        public override NdArray BackwardSingle(NdArray gy)
+        {
+            var prevInput = this._prevInput.Last()[0];
+            var prevOutput = this._prevOutput.Last()[0];
+
+            this._prevInput.RemoveAt(this._prevInput.Count - 1);
+            this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
+
+            return this.NeedPreviousBackward(gy, prevInput, prevOutput);
         }
 
         protected override NdArray[] BackwardSingle(NdArray[] gy)
@@ -42,7 +81,21 @@ namespace KelpNet.Functions
             this._prevInput.RemoveAt(this._prevInput.Count - 1);
             this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
 
-            return this.NeedPreviousBackward(gy, prevInput , prevOutput);
+            NdArray[] result = new NdArray[gy.Length];
+
+#if DEBUG
+            for (int i = 0; i < gy.Length; i++)
+#else
+            Parallel.For(0, gy.Length, i =>
+#endif
+            {
+                result[i] = this.NeedPreviousBackward(gy[i], prevInput[i], prevOutput[i]);
+            }
+#if !DEBUG
+            );
+#endif
+
+            return result;
         }
     }
 }

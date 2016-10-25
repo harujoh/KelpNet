@@ -11,7 +11,21 @@ namespace KelpNet.Loss
     {
         public static NdArray SoftmaxCrossEntropy(NdArray input, NdArray teachSignal, out double loss)
         {
-            return SoftmaxCrossEntropy(new[] { input }, new[] { teachSignal }, out loss)[0];
+            int maxIndex = (int)Math.Max(teachSignal.Data.Max(), 0.0);
+
+            var logY = SoftmaxLog(input);
+            loss = -logY.Data[maxIndex];
+
+            NdArray result = NdArray.ZerosLike(logY);
+
+            for (int j = 0; j < logY.Length; j++)
+            {
+                result.Data[j] = Math.Exp(logY.Data[j]);
+            }
+
+            result.Data[maxIndex] -= 1;
+
+            return result;
         }
 
         public static NdArray[] SoftmaxCrossEntropy(NdArray[] input, NdArray[] teachSignal, out double loss)
@@ -25,21 +39,7 @@ namespace KelpNet.Loss
             Parallel.For(0, input.Length, i =>
 #endif
             {
-                int maxIndex = (int)Math.Max(teachSignal[i].Data.Max(), 0.0);
-
-                var logY = SoftmaxLog(input[i]);
-                localloss[i] = -logY.Data[maxIndex];
-
-                NdArray result = NdArray.ZerosLike(logY);
-
-                for (int j = 0; j < logY.Length; j++)
-                {
-                    result.Data[j] = Math.Exp(logY.Data[j]);
-                }
-
-                result.Data[maxIndex] -= 1;
-
-                resultArray[i] = result;
+                resultArray[i] = SoftmaxCrossEntropy(input[i], teachSignal[i], out localloss[i]);
             }
 #if !DEBUG
             );

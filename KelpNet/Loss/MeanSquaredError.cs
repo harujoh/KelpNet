@@ -11,7 +11,22 @@ namespace KelpNet.Loss
     {
         public static NdArray MeanSquaredError(NdArray input, NdArray teachSignal, out double loss)
         {
-            return MeanSquaredError(new[] { input }, new[] { teachSignal }, out loss)[0];
+            loss = 0.0;
+
+            NdArray diff = NdArray.ZerosLike(teachSignal);
+            double coeff = 2.0 / diff.Length;
+
+            for (int j = 0; j < input.Length; j++)
+            {
+                diff.Data[j] = input.Data[j] - teachSignal.Data[j];
+                loss += Math.Pow(diff.Data[j], 2);
+
+                diff.Data[j] *= coeff;
+            }
+
+            loss /= diff.Length;
+
+            return diff;
         }
 
         public static NdArray[] MeanSquaredError(NdArray[] input, NdArray[] teachSignal, out double loss)
@@ -25,24 +40,7 @@ namespace KelpNet.Loss
             Parallel.For(0, input.Length, i =>
 #endif
             {
-                double localloss = 0.0;
-
-                NdArray diff = NdArray.ZerosLike(teachSignal[i]);
-                double coeff = 2.0 / diff.Length;
-
-                for (int j = 0; j < input[i].Length; j++)
-                {
-                    diff.Data[j] = input[i].Data[j] - teachSignal[i].Data[j];
-                    localloss += Math.Pow(diff.Data[j], 2);
-
-                    diff.Data[j] *= coeff;
-                }
-
-                localloss /= diff.Length;
-
-                lossList[i] = localloss;
-
-                result[i] = diff;
+                result[i] = MeanSquaredError(input[i], teachSignal[i], out lossList[i]);
             }
 
 #if !DEBUG

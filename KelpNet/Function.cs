@@ -18,6 +18,16 @@ namespace KelpNet
         protected abstract NdArray[] ForwardSingle(NdArray[] x);
         protected abstract NdArray[] BackwardSingle(NdArray[] gy);
 
+        public virtual NdArray ForwardSingle(NdArray x)
+        {
+            return this.ForwardSingle(new [] {x})[0];
+        }
+
+        public virtual NdArray BackwardSingle(NdArray gy)
+        {
+            return this.BackwardSingle(new[] { gy })[0];
+        }
+
         protected Function(string name)
         {
             this.Name = name;
@@ -30,7 +40,7 @@ namespace KelpNet
 
         public NdArray Forward(NdArray x)
         {
-            return this.ForwardSingle(new [] { x})[0];
+            return this.ForwardSingle(x);
         }
 
         public NdArray[] Backward(NdArray[] gy)
@@ -50,7 +60,7 @@ namespace KelpNet
                 parameter.TrainCount++;
             }
 
-            return this.BackwardSingle(new[] { gy})[0];
+            return this.BackwardSingle(gy);
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理

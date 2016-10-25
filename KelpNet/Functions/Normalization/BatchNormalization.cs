@@ -8,7 +8,7 @@ namespace KelpNet.Functions.Normalization
 {
     //Chainerより移植　finetuningは未実装
     [Serializable]
-    public class BatchNormalization : NeedPreviousDataFunction
+    public class BatchNormalization : Function
     {
         private bool IsTrain;
         private readonly bool InputIsTrain;
@@ -62,7 +62,7 @@ namespace KelpNet.Functions.Normalization
             this.ChannelSize = channelSize;
         }
 
-        protected override NdArray[] NeedPreviousForward(NdArray[] x)
+        protected override NdArray[] ForwardSingle(NdArray[] x)
         {
             NdArray[] y = new NdArray[x.Length];
 
@@ -162,7 +162,7 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        protected override NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
+        protected override NdArray[] BackwardSingle(NdArray[] gy)
         {
             NdArray[] gx = new NdArray[gy.Length];
             for (int i = 0; i < gy.Length; i++)
@@ -242,7 +242,7 @@ namespace KelpNet.Functions.Normalization
         {
             this.IsTrain = false;
 
-            var result = this.NeedPreviousForward(input);
+            var result = this.ForwardSingle(input);
 
             //フラグをリセット
             this.IsTrain = this.InputIsTrain;

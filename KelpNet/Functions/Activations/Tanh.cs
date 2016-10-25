@@ -1,8 +1,5 @@
 ﻿using System;
 using KelpNet.Common;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Functions.Activations
 {
@@ -13,55 +10,28 @@ namespace KelpNet.Functions.Activations
         {
         }
 
-        protected override NdArray[] NeedPreviousForward(NdArray[] x)
+        protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray[] result = new NdArray[x.Length];
+            double[] y = new double[x.Length];
 
-#if DEBUG
-            for (int i = 0; i < x.Length; i++)
-#else
-            Parallel.For(0, x.Length, i =>
-#endif
+            for (int j = 0; j < y.Length; j++)
             {
-                double[] y = new double[x[i].Length];
-
-                for (int j = 0; j < y.Length; j++)
-                {
-                    y[j] = Math.Tanh(x[i].Data[j]);
-                }
-
-                result[i] = new NdArray(y, x[i].Shape);
+                y[j] = Math.Tanh(x.Data[j]);
             }
-#if !DEBUG
-            );
-#endif
-            return result;
+
+            return new NdArray(y, x.Shape);
         }
 
-        protected override NdArray[] NeedPreviousBackward(NdArray[] gy, NdArray[] prevInput, NdArray[] prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray[] result = new NdArray[gy.Length];
+            double[] gx = new double[gy.Length];
 
-#if DEBUG
-            for (int i = 0; i < gy.Length; i++)
-#else
-            Parallel.For(0, gy.Length, i =>
-#endif
+            for (int j = 0; j < gx.Length; j++)
             {
-                double[] gx = new double[gy[i].Length];
-
-                for (int j = 0; j < gx.Length; j++)
-                {
-                    gx[j] = gy[i].Data[j] * (1 - prevOutput[i].Data[j] * prevOutput[i].Data[j]);
-                }
-
-                result[i] = new NdArray(gx, gy[i].Shape);
+                gx[j] = gy.Data[j] * (1 - prevOutput.Data[j] * prevOutput.Data[j]);
             }
-#if !DEBUG
-            );
-#endif
 
-            return result;
+            return new NdArray(gx, gy.Shape);
         }
     }
 }
