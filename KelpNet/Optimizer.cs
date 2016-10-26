@@ -19,7 +19,7 @@ namespace KelpNet
         //カウントを取るために呼び変えしている
         protected abstract void DoUpdate();
 
-        //更新対象となる関数を保存
+        //更新対象となるパラメータを保存
         public void SetParameters(IEnumerable<OptimizeParameter> parameters)
         {
             this.Parameters.AddRange(parameters);

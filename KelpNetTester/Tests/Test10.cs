@@ -44,10 +44,10 @@ namespace KelpNetTester.Tests
                 new Linear(N_UNITS, nVocab, name: "l4 Linear")
             );
 
-            SGD sgd = new SGD(learningRate: 1.0);
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
             GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);
-            model.SetOptimizer(sgd, gradientClipping);
+            SGD sgd = new SGD(learningRate: 1.0);
+            model.SetOptimizer(gradientClipping,sgd);
 
             double wholeLen = trainData.Length;
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
