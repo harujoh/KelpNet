@@ -15,19 +15,7 @@ namespace KelpNet
         public int OutputCount;
         public int InputCount;
 
-        protected abstract NdArray[] ForwardSingle(NdArray[] x);
-        protected abstract NdArray[] BackwardSingle(NdArray[] gy);
-
-        public virtual NdArray ForwardSingle(NdArray x)
-        {
-            return this.ForwardSingle(new [] {x})[0];
-        }
-
-        public virtual NdArray BackwardSingle(NdArray gy)
-        {
-            return this.BackwardSingle(new[] { gy })[0];
-        }
-
+        //コンストラクタ
         protected Function(string name)
         {
             this.Name = name;
@@ -38,19 +26,24 @@ namespace KelpNet
             return this.ForwardSingle(x);
         }
 
-        public NdArray Forward(NdArray x)
-        {
-            return this.ForwardSingle(x);
-        }
-
         public NdArray[] Backward(NdArray[] gy)
         {
             foreach (OptimizeParameter parameter in this.Parameters)
             {
-                parameter.TrainCount+=gy.Length;
+                parameter.TrainCount += gy.Length;
             }
 
             return this.BackwardSingle(gy);
+        }
+
+        //通常であれば非バッチ呼び出しを仮想とすべきだが、
+        //バッチ専用関数がデフォルトで非バッチ関数がイレギュラーであるため
+        protected abstract NdArray[] ForwardSingle(NdArray[] x);
+        protected abstract NdArray[] BackwardSingle(NdArray[] gy);
+
+        public NdArray Forward(NdArray x)
+        {
+            return this.ForwardSingle(x);
         }
 
         public NdArray Backward(NdArray gy)
@@ -63,9 +56,36 @@ namespace KelpNet
             return this.BackwardSingle(gy);
         }
 
+        //個別に非バッチ処理が書けるように用意
+        public virtual NdArray ForwardSingle(NdArray x)
+        {
+            return this.ForwardSingle(new [] {x})[0];
+        }
+
+        public virtual NdArray BackwardSingle(NdArray gy)
+        {
+            return this.BackwardSingle(new[] { gy })[0];
+        }
+
+        //評価関数
+        public virtual NdArray[] Predict(NdArray[] input)
+        {
+            return this.ForwardSingle(input);
+        }
+
+        public virtual NdArray Predict(NdArray input)
+        {
+            return this.ForwardSingle(input);
+        }
+
         //ある処理実行後に特定のデータを初期値に戻す処理
         public virtual void ResetState()
         {
+        }
+
+        public override string ToString()
+        {
+            return this.Name;
         }
 
         //初期値が入力されなかった場合、この関数で初期化を行う
@@ -81,13 +101,13 @@ namespace KelpNet
             }
         }
 
-        double Normal(double scale = 0.05)
+        private double Normal(double scale = 0.05)
         {
             Mother.Sigma = scale;
             return Mother.RandomNormal();
         }
 
-        int GetFans(int[] shape)
+        private int GetFans(int[] shape)
         {
             int result = 1;
 
@@ -97,16 +117,6 @@ namespace KelpNet
             }
 
             return result;
-        }
-
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        public virtual NdArray[] Predict(NdArray[] input)
-        {
-            return this.ForwardSingle(input);
         }
     }
 }

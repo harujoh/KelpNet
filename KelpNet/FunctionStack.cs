@@ -86,7 +86,7 @@ namespace KelpNet
         }
 
         //Backward
-        public void Backward(NdArray backwardResult)
+        public void Backward(NdArray[] backwardResult)
         {
             for (int i = this.Functions.Count - 1; i >= 0; i--)
             {
@@ -94,9 +94,8 @@ namespace KelpNet
             }
         }
 
-
         //Backward
-        public void Backward(NdArray[] backwardResult)
+        public void Backward(NdArray backwardResult)
         {
             for (int i = this.Functions.Count - 1; i >= 0; i--)
             {
@@ -132,8 +131,6 @@ namespace KelpNet
             this.Backward(backwardResult);
 
             return sumLoss;
-
-            //return this.Train(new[] { input }, new[] { teach }, lossFunction);
         }
 
         //重みの更新処理
@@ -194,10 +191,20 @@ namespace KelpNet
             return this.Predict(ndArrays);
         }
 
+        //予想を実行する[非バッチ]（外部からの使用を想定してArrayが引数
+        public NdArray Predict(Array input)
+        {
+            return this.Predict(NdArray.FromArray(input));
+        }
+
         //予想を実行する
         public NdArray[] Predict(NdArray[] input)
         {
-            NdArray[] forwardResult = input;
+            NdArray[] forwardResult = new NdArray[input.Length];
+            for (int i = 0; i < forwardResult.Length;i++)
+            {
+                forwardResult[i] = new NdArray(input[i]);
+            }
 
             foreach (Function predictableFunction in this.Functions)
             {
@@ -207,16 +214,17 @@ namespace KelpNet
             return forwardResult;
         }
 
-        //予想を実行する
+        //予想を実行する[非バッチ]
         public NdArray Predict(NdArray input)
         {
-            return this.Predict(new [] {input})[0];
-        }
+            NdArray forwardResult = new NdArray(input);
 
-        //予想を実行する
-        public NdArray Predict(Array input)
-        {
-            return this.Predict(NdArray.FromArray(input));
+            foreach (Function predictableFunction in this.Functions)
+            {
+                forwardResult = predictableFunction.Predict(forwardResult);
+            }
+
+            return forwardResult;
         }
 
         //精度測定
