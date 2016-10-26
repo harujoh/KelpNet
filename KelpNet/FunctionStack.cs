@@ -118,16 +118,16 @@ namespace KelpNet
             return sumLoss;
         }
 
-        //バッチで学習処理を行う
+        //非バッチで学習処理を行う
         public double Train(Array input, Array teach, SingleLossFunction lossFunction)
         {
             //結果の誤差保存用
             double sumLoss;
 
-            //Forwardのバッチを実行
+            //Forwardを実行
             var backwardResult = this.Forward(input, teach, lossFunction, out sumLoss);
 
-            //Backwardのバッチを実行
+            //Backwardを実行
             this.Backward(backwardResult);
 
             return sumLoss;
@@ -136,7 +136,7 @@ namespace KelpNet
         //重みの更新処理
         public void Update()
         {
-            //更新実行前にバッチカウントを使って各Functionの傾きを補正
+            //更新実行前に訓練カウントを使って各Functionの傾きを補正
             foreach (var function in this.Functions)
             {
                 foreach (OptimizeParameter functionParameter in function.Parameters)
@@ -148,7 +148,7 @@ namespace KelpNet
                 }
             }
 
-            //宣言されているOptimizerの更新を実行
+            //Optimizerの更新を実行
             foreach (var optimizer in this._optimizers)
             {
                 optimizer.Update();

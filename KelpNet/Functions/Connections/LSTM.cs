@@ -30,12 +30,11 @@ namespace KelpNet.Functions.Connections
             for (int i = 0; i < 4; i++)
             {
                 this.upward[i] = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward" + i);
-                Parameters.Add(new OptimizeParameter(this.upward[i].W, this.upward[i].gW, Name + " " + this.upward[i].Name + " W"));
-                Parameters.Add(new OptimizeParameter(this.upward[i].b, this.upward[i].gb, Name + " " + this.upward[i].Name + " b"));
+                Parameters.AddRange(this.upward[i].Parameters);
 
                 //lateralはBiasは無し
                 this.lateral[i] = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral" + i);
-                Parameters.Add(new OptimizeParameter(this.lateral[i].W, this.lateral[i].gW, Name + " " + this.lateral[i].Name + " W"));
+                Parameters.AddRange(this.lateral[i].Parameters);
             }
 
             InputCount = inSize;
