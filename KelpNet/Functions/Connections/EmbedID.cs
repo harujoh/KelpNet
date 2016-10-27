@@ -34,11 +34,11 @@ namespace KelpNet.Functions.Connections
         {
             NdArray result = NdArray.Zeros(x.Length, OutputCount);
 
-            for (int j = 0; j < x.Length; j++)
+            for (int i = 0; i < x.Length; i++)
             {
-                for (int k = 0; k < OutputCount; k++)
+                for (int j = 0; j < OutputCount; j++)
                 {
-                    result.Data[j * OutputCount + k] = this.W.Data[(int)x.Data[j] * OutputCount + k];
+                    result.Data[i * OutputCount + j] = this.W.Data[(int)x.Data[i] * OutputCount + j];
                 }
             }
 
@@ -47,15 +47,15 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            for (int j = 0; j < prevInput.Length; j++)
+            for (int i = 0; i < prevInput.Length; i++)
             {
-                for (int k = 0; k < OutputCount; k++)
+                for (int j = 0; j < OutputCount; j++)
                 {
-                    this.gW.Data[(int)prevInput.Data[j] * OutputCount + k] += gy.Data[j + k];
+                    this.gW.Data[(int)prevInput.Data[i] * OutputCount + j] += gy.Data[i + j];
                 }
             }
 
-            return NdArray.Zeros(1);
+            return null;
         }
     }
 }

@@ -26,9 +26,10 @@ namespace KelpNet.Functions.Poolings
 
             int resultIndex = 0;
 
-            for (int j = 0; j < input.Shape[0]; j++)
+            for (int i = 0; i < input.Shape[0]; i++)
             {
-                int inputIndexOffset = j * input.Shape[1] * input.Shape[2];
+                int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
+
                 for (int y = 0; y < outputSize; y++)
                 {
                     for (int x = 0; x < outputSize; x++)
@@ -69,9 +70,9 @@ namespace KelpNet.Functions.Poolings
 
             int gyIndex = 0;
 
-            for (int j = 0; j < prevInput.Shape[0]; j++)
+            for (int i = 0; i < prevInput.Shape[0]; i++)
             {
-                int resultIndexOffset = j * prevInput.Shape[1] * prevInput.Shape[2];
+                int resultIndexOffset = i * prevInput.Shape[1] * prevInput.Shape[2];
                 for (int y = 0; y < prevOutput.Shape[1]; y++)
                 {
                     for (int x = 0; x < prevOutput.Shape[2]; x++)

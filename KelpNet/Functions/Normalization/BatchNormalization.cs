@@ -135,25 +135,25 @@ namespace KelpNet.Functions.Normalization
             }
 
             this.Mean = new double[this.ChannelSize];
-            for (int j = 0; j < this.Mean.Length; j++)
+            for (int i = 0; i < this.Mean.Length; i++)
             {
-                for (int i = 0; i < values.Length; i++)
+                for (int j = 0; j < values.Length; j++)
                 {
-                    this.Mean[j] += values[i].Data[j];
+                    this.Mean[i] += values[j].Data[i];
                 }
 
-                this.Mean[j] /= values.Length;
+                this.Mean[i] /= values.Length;
             }
 
 
-            for (int j = 0; j < this.Mean.Length; j++)
+            for (int i = 0; i < this.Mean.Length; i++)
             {
-                for (int i = 0; i < values.Length; i++)
+                for (int j = 0; j < values.Length; j++)
                 {
-                    this.Variance[j] += Math.Pow(values[i].Data[j] - this.Mean[j], 2);
+                    this.Variance[i] += Math.Pow(values[j].Data[i] - this.Mean[i], 2);
                 }
 
-                this.Variance[j] /= values.Length;
+                this.Variance[i] /= values.Length;
             }
 
             for (int i = 0; i < this.Variance.Length; i++)

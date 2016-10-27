@@ -18,9 +18,9 @@ namespace KelpNet.Loss
 
             double[] gx = new double[logY.Length];
 
-            for (int j = 0; j < logY.Length; j++)
+            for (int i = 0; i < logY.Length; i++)
             {
-                gx[j] = Math.Exp(logY[j]);
+                gx[i] = Math.Exp(logY[i]);
             }
 
             gx[maxIndex] -= 1;
@@ -55,9 +55,9 @@ namespace KelpNet.Loss
             double[] y = new double[x.Length];
             var m = x.Max();
 
-            for (int j = 0; j < x.Length; j++)
+            for (int i = 0; i < x.Length; i++)
             {
-                y[j] = Math.Exp(x[j] - m);
+                y[i] = Math.Exp(x[i] - m);
             }
 
             m += Math.Log(y.Sum());

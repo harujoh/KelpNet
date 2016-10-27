@@ -17,9 +17,9 @@ namespace KelpNet.Functions.Activations
         {
             double[] y = new double[x.Length];
 
-            for (int j = 0; j < x.Length; j++)
+            for (int i = 0; i < x.Length; i++)
             {
-                y[j] = x.Data[j] >= 0 ? x.Data[j] : this._alpha * (Math.Exp(x.Data[j]) - 1);
+                y[i] = x.Data[i] >= 0 ? x.Data[i] : this._alpha * (Math.Exp(x.Data[i]) - 1);
             }
 
             return new NdArray(y, x.Shape);
@@ -29,11 +29,11 @@ namespace KelpNet.Functions.Activations
         {
             double[] gx = new double[gy.Length];
 
-            for (int j = 0; j < gx.Length; j++)
+            for (int i = 0; i < gx.Length; i++)
             {
-                gx[j] = prevOutput.Data[j] >= 0
-                    ? gy.Data[j]
-                    : gy.Data[j] * this._alpha * Math.Exp(prevInput.Data[j]);
+                gx[i] = prevOutput.Data[i] >= 0
+                    ? gy.Data[i]
+                    : gy.Data[i] * this._alpha * Math.Exp(prevInput.Data[i]);
             }
 
             return new NdArray(gx, gy.Shape);

@@ -18,15 +18,15 @@ namespace KelpNet.Functions.Activations
             var maxval = x.Data.Max();
             var sumval = 0.0;
 
-            for (int j = 0; j < y.Length; j++)
+            for (int i = 0; i < y.Length; i++)
             {
-                y[j] = Math.Exp(x.Data[j] - maxval);
-                sumval += y[j];
+                y[i] = Math.Exp(x.Data[i] - maxval);
+                sumval += y[i];
             }
 
-            for (int j = 0; j < y.Length; j++)
+            for (int i = 0; i < y.Length; i++)
             {
-                y[j] /= sumval;
+                y[i] /= sumval;
             }
 
             return new NdArray(y, x.Shape);
@@ -37,15 +37,15 @@ namespace KelpNet.Functions.Activations
             double[] gx = new double[gy.Length];
             var sumdx = 0.0;
 
-            for (int j = 0; j < gx.Length; j++)
+            for (int i = 0; i < gx.Length; i++)
             {
-                gx[j] = prevOutput.Data[j] * gy.Data[j];
-                sumdx += gx[j];
+                gx[i] = prevOutput.Data[i] * gy.Data[i];
+                sumdx += gx[i];
             }
 
-            for (int j = 0; j < gx.Length; j++)
+            for (int i = 0; i < gx.Length; i++)
             {
-                gx[j] -= prevOutput.Data[j] * sumdx;
+                gx[i] -= prevOutput.Data[i] * sumdx;
             }
 
             return new NdArray(gx, gy.Shape);

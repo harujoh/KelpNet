@@ -16,12 +16,12 @@ namespace KelpNet.Loss
             double[] diff = new double[teachSignal.Length];
             double coeff = 2.0 / diff.Length;
 
-            for (int j = 0; j < input.Length; j++)
+            for (int i = 0; i < input.Length; i++)
             {
-                diff[j] = input.Data[j] - teachSignal.Data[j];
-                loss += Math.Pow(diff[j], 2);
+                diff[i] = input.Data[i] - teachSignal.Data[i];
+                loss += Math.Pow(diff[i], 2);
 
-                diff[j] *= coeff;
+                diff[i] *= coeff;
             }
 
             loss /= diff.Length;

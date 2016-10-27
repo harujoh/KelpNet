@@ -23,9 +23,9 @@ namespace KelpNet.Optimizers
             Parallel.ForEach(Parameters, parameter =>
 #endif
             {
-                for (int j = 0; j < parameter.Length; j++)
+                for (int i = 0; i < parameter.Length; i++)
                 {
-                    parameter.Param.Data[j] -= this.LearningRate * parameter.Grad.Data[j];
+                    parameter.Param.Data[i] -= this.LearningRate * parameter.Grad.Data[i];
                 }
             }
 #if !DEBUG

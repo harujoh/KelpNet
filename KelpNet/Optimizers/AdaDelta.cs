@@ -29,18 +29,18 @@ namespace KelpNet.Optimizers
             Parallel.For(0, Parameters.Count, i => 
 #endif
             {
-                for (int k = 0; k < Parameters[i].Length; k++)
+                for (int j = 0; j < Parameters[i].Length; j++)
                 {
-                    var grad = Parameters[i].Grad.Data[k];
-                    this.msg[i].Data[k] *= this.rho;
-                    this.msg[i].Data[k] += (1 - this.rho) * grad * grad;
+                    var grad = Parameters[i].Grad.Data[j];
+                    this.msg[i].Data[j] *= this.rho;
+                    this.msg[i].Data[j] += (1 - this.rho) * grad * grad;
 
-                    var dx = Math.Sqrt((this.msdx[i].Data[k] + this.eps) / (this.msg[i].Data[k] + this.eps)) * grad;
+                    var dx = Math.Sqrt((this.msdx[i].Data[j] + this.eps) / (this.msg[i].Data[j] + this.eps)) * grad;
 
-                    this.msdx[i].Data[k] *= this.rho;
-                    this.msdx[i].Data[k] += (1 - this.rho) * dx * dx;
+                    this.msdx[i].Data[j] *= this.rho;
+                    this.msdx[i].Data[j] += (1 - this.rho) * dx * dx;
 
-                    Parameters[i].Param.Data[k] -= dx;
+                    Parameters[i].Param.Data[j] -= dx;
                 }
             }
 #if !DEBUG

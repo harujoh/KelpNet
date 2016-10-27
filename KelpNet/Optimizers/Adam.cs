@@ -37,14 +37,14 @@ namespace KelpNet.Optimizers
             Parallel.For(0, Parameters.Count, i => 
 #endif
             {
-                for (int k = 0; k < Parameters[i].Length; k++)
+                for (int j = 0; j < Parameters[i].Length; j++)
                 {
-                    double grad = Parameters[i].Grad.Data[k];
+                    double grad = Parameters[i].Grad.Data[j];
 
-                    this.m[i].Data[k] += (1 - this.beta1) * (grad - this.m[i].Data[k]);
-                    this.v[i].Data[k] += (1 - this.beta2) * (grad * grad - this.v[i].Data[k]);
+                    this.m[i].Data[j] += (1 - this.beta1) * (grad - this.m[i].Data[j]);
+                    this.v[i].Data[j] += (1 - this.beta2) * (grad * grad - this.v[i].Data[j]);
 
-                    Parameters[i].Param.Data[k] -= lr *this.m[i].Data[k] / (Math.Sqrt(this.v[i].Data[k]) + this.eps);
+                    Parameters[i].Param.Data[j] -= lr *this.m[i].Data[j] / (Math.Sqrt(this.v[i].Data[j]) + this.eps);
                 }
             }
 #if !DEBUG

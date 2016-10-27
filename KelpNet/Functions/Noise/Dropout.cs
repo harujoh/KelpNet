@@ -25,9 +25,9 @@ namespace KelpNet.Functions.Noise
             var mask = new double[x[0].Length];
             double scale = 1.0 / (1.0 - this.dropoutRatio);
 
-            for (int j = 0; j < mask.Length; j++)
+            for (int i = 0; i < mask.Length; i++)
             {
-                mask[j] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
+                mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
 
 #if DEBUG

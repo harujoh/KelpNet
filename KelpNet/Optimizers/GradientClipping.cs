@@ -22,9 +22,9 @@ namespace KelpNet.Optimizers
 
             foreach (var parameter in Parameters)
             {
-                for (int j = 0; j < parameter.Length; j++)
+                for (int i = 0; i < parameter.Length; i++)
                 {
-                    s += Math.Pow(parameter.Grad.Data[j], 2);
+                    s += Math.Pow(parameter.Grad.Data[i], 2);
                 }
             }
 
@@ -39,9 +39,9 @@ namespace KelpNet.Optimizers
                 Parallel.ForEach(Parameters, parameter =>
 #endif
                 {
-                    for (int j = 0; j < parameter.Length; j++)
+                    for (int i = 0; i < parameter.Length; i++)
                     {
-                        parameter.Grad.Data[j] *= rate;
+                        parameter.Grad.Data[i] *= rate;
                     }
                 }
 #if !DEBUG
