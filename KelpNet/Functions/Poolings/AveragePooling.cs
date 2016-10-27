@@ -30,6 +30,7 @@ namespace KelpNet.Functions.Poolings
                 {
                     for (int x = 0; x < outputSize; x++)
                     {
+                        int resultIndex = result.GetIndex(j, y, x);
                         for (int dy = 0; dy < this._kSize; dy++)
                         {
                             for (int dx = 0; dx < this._kSize; dx++)
@@ -40,7 +41,7 @@ namespace KelpNet.Functions.Poolings
                                 if (inputIndexY >= 0 && inputIndexY < input.Shape[1] &&
                                     inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                 {
-                                    result.Data[result.GetIndex(j, y, x)] += input.Get(j, inputIndexY, inputIndexX) / m;
+                                    result.Data[resultIndex] += input.Get(j, inputIndexY, inputIndexX) / m;
                                 }
                             }
                         }
@@ -64,6 +65,8 @@ namespace KelpNet.Functions.Poolings
                 {
                     for (int x = 0; x < gy.Shape[2]; x++)
                     {
+                        int gyIndex = result.GetIndex(j, y, x);
+
                         for (int dy = 0; dy < this._kSize; dy++)
                         {
                             for (int dx = 0; dx < this._kSize; dx++)
@@ -74,8 +77,7 @@ namespace KelpNet.Functions.Poolings
                                 if (outputIndexY >= 0 && outputIndexY < result.Shape[1] &&
                                     outputIndexX >= 0 && outputIndexX < result.Shape[2])
                                 {
-                                    result.Data[result.GetIndex(j, outputIndexY, outputIndexX)] =
-                                        gy.Data[gy.GetIndex(j, y, x)] / m;
+                                    result.Data[result.GetIndex(j, outputIndexY, outputIndexX)] = gy.Data[gyIndex] / m;
                                 }
                             }
                         }

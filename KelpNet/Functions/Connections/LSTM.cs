@@ -11,16 +11,16 @@ namespace KelpNet.Functions.Connections
     [Serializable]
     public class LSTM : Function
     {
+        public Linear[] upward = new Linear[4];
+        public Linear[] lateral = new Linear[4];
+
         private List<double[]>[] aParam;
         private List<double[]>[] iParam;
         private List<double[]>[] fParam;
         private List<double[]>[] oParam;
-        private List<double[]>[] cParam; // = new List<double[]>[1];
+        private List<double[]>[] cParam;
 
         private NdArray[] hParam;
-
-        public Linear[] upward = new Linear[4];
-        public Linear[] lateral = new Linear[4];
 
         private NdArray[][] gxPrev;
         private double[][] gcPrev;

@@ -13,20 +13,20 @@ namespace KelpNet.Loss
         {
             loss = 0.0;
 
-            NdArray diff = NdArray.ZerosLike(teachSignal);
+            double[] diff = new double[teachSignal.Length];
             double coeff = 2.0 / diff.Length;
 
             for (int j = 0; j < input.Length; j++)
             {
-                diff.Data[j] = input.Data[j] - teachSignal.Data[j];
-                loss += Math.Pow(diff.Data[j], 2);
+                diff[j] = input.Data[j] - teachSignal.Data[j];
+                loss += Math.Pow(diff[j], 2);
 
-                diff.Data[j] *= coeff;
+                diff[j] *= coeff;
             }
 
             loss /= diff.Length;
 
-            return diff;
+            return new NdArray(diff,teachSignal.Shape);
         }
 
         public static NdArray[] MeanSquaredError(NdArray[] input, NdArray[] teachSignal, out double loss)

@@ -53,9 +53,10 @@ namespace KelpNet.Functions.Connections
 
             for (int j = 0; j < OutputCount; j++)
             {
+                int indexOffset = InputCount * j;
                 for (int k = 0; k < InputCount; k++)
                 {
-                    output[j] += x.Data[k] * this.W.Get(j, k);
+                    output[j] += x.Data[k] * this.W.Data[indexOffset + k];
                 }
 
                 output[j] += this.b.Data[j];
@@ -66,11 +67,12 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            for (int j = 0; j < prevInput.Length; j++)
+            for (int i = 0; i < gy.Length; i++)
             {
-                for (int k = 0; k < gy.Length; k++)
+                int indexOffset = InputCount * i;
+                for (int j = 0; j < prevInput.Length; j++)
                 {
-                    this.gW.Data[this.gW.GetIndex(k, j)] += prevInput.Data[j] * gy.Data[k];
+                    this.gW.Data[indexOffset + j] += prevInput.Data[j] * gy.Data[i];
                 }
             }
 
@@ -78,9 +80,10 @@ namespace KelpNet.Functions.Connections
 
             for (int j = 0; j < this.W.Shape[0]; j++)
             {
+                int indexOffset = InputCount * j;
                 for (int k = 0; k < this.W.Shape[1]; k++)
                 {
-                    gxData[k] += this.W.Get(j, k) * gy.Data[j];
+                    gxData[k] += this.W.Data[indexOffset + k] * gy.Data[j];
                 }
             }
 

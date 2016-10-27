@@ -67,6 +67,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int x = 0; x < outputSize; x++)
                     {
+                        int resultIndex = result.GetIndex(j, y, x);
                         for (int k = 0; k < InputCount; k++)
                         {
                             for (int dy = 0; dy < this._kSize; dy++)
@@ -79,14 +80,14 @@ namespace KelpNet.Functions.Connections
                                     if (inputIndexY >= 0 && inputIndexY < input.Shape[1] &&
                                         inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                     {
-                                        result.Data[result.GetIndex(j, y, x)] +=
+                                        result.Data[resultIndex] +=
                                             input.Get(k, inputIndexY, inputIndexX) * this.W.Get(j, k, dy, dx);
                                     }
                                 }
                             }
                         }
 
-                        result.Data[result.GetIndex(j, y, x)] += this.b.Data[j];
+                        result.Data[resultIndex] += this.b.Data[j];
                     }
                 }
             }
@@ -106,6 +107,7 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int x = 0; x < gy.Shape[2]; x++)
                         {
+                            int gyIndex = gy.GetIndex(k, y, x);
                             for (int dy = 0; dy < this.gW.Shape[2]; dy++)
                             {
                                 for (int dx = 0; dx < this.gW.Shape[3]; dx++)
@@ -117,7 +119,7 @@ namespace KelpNet.Functions.Connections
                                         prevIndexX >= 0 && prevIndexX < prevInput.Shape[2])
                                     {
                                         this.gW.Data[this.gW.GetIndex(k, j, dy, dx)] +=
-                                            prevInput.Get(j, prevIndexY, prevIndexX) * gy.Get(k, y, x);
+                                            prevInput.Get(j, prevIndexY, prevIndexX) * gy.Data[gyIndex];
                                     }
                                 }
                             }
@@ -134,6 +136,7 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int x = 0; x < gy.Shape[2]; x++)
                         {
+                            int gyIndex = gy.GetIndex(k, y, x);
                             for (int dy = 0; dy < this._kSize; dy++)
                             {
                                 for (int dx = 0; dx < this._kSize; dx++)
@@ -146,8 +149,7 @@ namespace KelpNet.Functions.Connections
                                         )
                                     {
                                         gx.Data[gx.GetIndex(j, outputIndexY, outputIndexX)] +=
-                                            this.W.Get(k, j, dy, dx) *
-                                            gy.Data[gy.GetIndex(k, y, x)];
+                                            this.W.Get(k, j, dy, dx) * gy.Data[gyIndex];
                                     }
                                 }
                             }
@@ -158,14 +160,12 @@ namespace KelpNet.Functions.Connections
 
             if (this.gb != null)
             {
+                int gyindex = 0;
                 for (int j = 0; j < gy.Shape[0]; j++)
                 {
-                    for (int k = 0; k < gy.Shape[1]; k++)
+                    for (int k = 0; k < gy.Shape[1] * gy.Shape[2]; k++)
                     {
-                        for (int l = 0; l < gy.Shape[2]; l++)
-                        {
-                            this.gb.Data[j] += gy.Get(j, k, l);
-                        }
+                        this.gb.Data[j] += gy.Data[gyindex++];
                     }
                 }
             }

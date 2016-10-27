@@ -29,6 +29,7 @@ namespace KelpNet.Functions.Poolings
                 {
                     for (int x = 0; x < outputSize; x++)
                     {
+                        int resultIndex = result.GetIndex(j, x, y);
                         for (int dy = 0; dy < this._kSize; dy++)
                         {
                             for (int dx = 0; dx < this._kSize; dx++)
@@ -39,7 +40,7 @@ namespace KelpNet.Functions.Poolings
                                 if (inputIndexX >= 0 && inputIndexX < input.Shape[1] &&
                                     inputIndexY >= 0 && inputIndexY < input.Shape[2])
                                 {
-                                    result.Data[result.GetIndex(j, x, y)] = Math.Max(result.Data[result.GetIndex(j, x, y)], input.Get(j, inputIndexX, inputIndexY));
+                                    result.Data[result.GetIndex(j, x, y)] = Math.Max(result.Data[resultIndex], input.Get(j, inputIndexX, inputIndexY));
                                 }
                             }
                         }

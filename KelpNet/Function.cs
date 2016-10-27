@@ -29,9 +29,10 @@ namespace KelpNet
 
         public NdArray[] Backward(NdArray[] gy)
         {
+            //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
             foreach (OptimizeParameter parameter in this.Parameters)
             {
-                parameter.TrainCount += gy.Length;
+                parameter.TrainCount++;
             }
 
             return this.BackwardSingle(gy);
