@@ -67,6 +67,7 @@ namespace KelpNet.Functions.Connections
             {
                 //Wインデックス用
                 int outChOffset = i * InputCount * this._kSize * this._kSize;
+
                 for (int y = 0; y < outputSize; y++)
                 {
                     for (int x = 0; x < outputSize; x++)
@@ -75,8 +76,9 @@ namespace KelpNet.Functions.Connections
                         {
                             //Wインデックス用
                             int inChOffset = j * this._kSize * this._kSize;
+
                             //inputインデックス用
-                            int inputOffset = j*input.Shape[1]*input.Shape[2];
+                            int inputOffset = j * input.Shape[1] * input.Shape[2];
 
                             for (int dy = 0; dy < this._kSize; dy++)
                             {
@@ -91,7 +93,7 @@ namespace KelpNet.Functions.Connections
                                         if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                         {
                                             int wIndex = outChOffset + inChOffset + dy * this._kSize + dx;
-                                            int inputIndex = inputOffset + inputIndexY*input.Shape[2] + inputIndexX;
+                                            int inputIndex = inputOffset + inputIndexY * input.Shape[2] + inputIndexX;
 
                                             result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
                                         }
@@ -130,6 +132,7 @@ namespace KelpNet.Functions.Connections
                         {
                             //gWインデックス用
                             int inChOffset = j * this._kSize * this._kSize;
+
                             //inputインデックス用
                             int inputOffset = j * prevInput.Shape[1] * prevInput.Shape[2];
 
@@ -150,7 +153,6 @@ namespace KelpNet.Functions.Connections
 
                                             //prevInputとgxのshapeは等しい
                                             int inputIndex = inputOffset + indexY * prevInput.Shape[2] + indexX;
-
 
                                             this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
 

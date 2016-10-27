@@ -13,16 +13,6 @@ namespace KelpNet.Optimizers
         private double beta2;
         private double eps;
 
-        double lr
-        {
-            get
-            {
-                double fix1 = 1 - Math.Pow(this.beta1, UpdateCount);
-                double fix2 = 1 - Math.Pow(this.beta2, UpdateCount);
-                return this.alpha * Math.Sqrt(fix2) / fix1;
-            }
-        }
-
         private NdArray[] m;
         private NdArray[] v;
 
@@ -36,6 +26,10 @@ namespace KelpNet.Optimizers
 
         protected override void DoUpdate()
         {
+            double fix1 = 1 - Math.Pow(this.beta1, UpdateCount);
+            double fix2 = 1 - Math.Pow(this.beta2, UpdateCount);
+            var lr = this.alpha * Math.Sqrt(fix2) / fix1;
+
 #if DEBUG
             for (int i = 0; i < Parameters.Count; i++)
 #else
@@ -49,7 +43,7 @@ namespace KelpNet.Optimizers
                     this.m[i].Data[k] += (1 - this.beta1) * (grad - this.m[i].Data[k]);
                     this.v[i].Data[k] += (1 - this.beta2) * (grad * grad - this.v[i].Data[k]);
 
-                    Parameters[i].Param.Data[k] -= this.lr *this.m[i].Data[k] / (Math.Sqrt(this.v[i].Data[k]) + this.eps);
+                    Parameters[i].Param.Data[k] -= lr *this.m[i].Data[k] / (Math.Sqrt(this.v[i].Data[k]) + this.eps);
                 }
             }
 #if !DEBUG

@@ -36,11 +36,13 @@ namespace KelpNet.Common
             get { return this.Data.Length; }
         }
 
+        //繰り返し呼び出されるシーンでは使用しないこと
         public double Get(params int[] indices)
         {
             return this.Data[this.GetIndex(indices)];
         }
 
+        //繰り返し呼び出されるシーンでは使用しないこと
         public void Set(int[] indices, double val)
         {
             this.Data[this.GetIndex(indices)] = val;
@@ -142,7 +144,7 @@ namespace KelpNet.Common
         }
 
         //N次元のIndexから１次元のIndexを取得する
-        public int GetIndex(params int[] indices)
+        private int GetIndex(params int[] indices)
         {
 #if DEBUG
             if (this.Shape.Length != indices.Length)
