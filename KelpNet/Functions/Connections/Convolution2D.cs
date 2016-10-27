@@ -25,8 +25,6 @@ namespace KelpNet.Functions.Connections
             this.W = NdArray.Zeros(outputChannels, inputChannels, kSize, kSize);
             this.gW = NdArray.ZerosLike(this.W);
 
-            this.b = NdArray.Zeros(outputChannels);
-
             if (initialW == null)
             {
                 InitWeight(this.W);
@@ -39,10 +37,13 @@ namespace KelpNet.Functions.Connections
 
             Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
 
+
+            //noBias=trueでもbiasを用意して更新しない
+            this.b = NdArray.Zeros(outputChannels);
+            this.gb = NdArray.ZerosLike(this.b);
+
             if (!noBias)
             {
-                this.gb = NdArray.ZerosLike(this.b);
-
                 if (initialb != null)
                 {
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
@@ -59,7 +60,8 @@ namespace KelpNet.Functions.Connections
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
 
-            NdArray result = NdArray.Zeros(OutputCount, outputSize, outputSize);
+            double[] result = new double[OutputCount * outputSize * outputSize];
+            int resultIndex = 0;
 
             for (int j = 0; j < OutputCount; j++)
             {
@@ -67,110 +69,87 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int x = 0; x < outputSize; x++)
                     {
-                        int resultIndex = result.GetIndex(j, y, x);
-                        for (int k = 0; k < InputCount; k++)
+                        for (int k = 0; k < input.Shape[0]; k++)
                         {
                             for (int dy = 0; dy < this._kSize; dy++)
                             {
-                                for (int dx = 0; dx < this._kSize; dx++)
-                                {
-                                    int inputIndexX = x * this._stride + dx - this._pad;
-                                    int inputIndexY = y * this._stride + dy - this._pad;
+                                int inputIndexY = y * this._stride + dy - this._pad;
 
-                                    if (inputIndexY >= 0 && inputIndexY < input.Shape[1] &&
-                                        inputIndexX >= 0 && inputIndexX < input.Shape[2])
+                                if (inputIndexY >= 0 && inputIndexY < input.Shape[1])
+                                {
+                                    for (int dx = 0; dx < this._kSize; dx++)
                                     {
-                                        result.Data[resultIndex] +=
-                                            input.Get(k, inputIndexY, inputIndexX) * this.W.Get(j, k, dy, dx);
+                                        int inputIndexX = x * this._stride + dx - this._pad;
+
+                                        if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
+                                        {
+                                            result[resultIndex] +=
+                                                input.Get(k, inputIndexY, inputIndexX) * this.W.Get(j, k, dy, dx);
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        result.Data[resultIndex] += this.b.Data[j];
+                        result[resultIndex] += this.b.Data[j];
+                        resultIndex++;
                     }
                 }
             }
 
-            return result;
+            return new NdArray(result, new[] { OutputCount, outputSize, outputSize });
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray gx = NdArray.ZerosLike(prevInput);
+            double[] gx = new double[prevInput.Length];
+
+            int gyIndex = 0;
 
             for (int k = 0; k < gy.Shape[0]; k++)
             {
-                for (int j = 0; j < prevInput.Shape[0]; j++)
+                for (int y = 0; y < gy.Shape[1]; y++)
                 {
-                    for (int y = 0; y < gy.Shape[1]; y++)
+                    for (int x = 0; x < gy.Shape[2]; x++)
                     {
-                        for (int x = 0; x < gy.Shape[2]; x++)
-                        {
-                            int gyIndex = gy.GetIndex(k, y, x);
-                            for (int dy = 0; dy < this.gW.Shape[2]; dy++)
-                            {
-                                for (int dx = 0; dx < this.gW.Shape[3]; dx++)
-                                {
-                                    int prevIndexY = y * this._stride + dy - this._pad;
-                                    int prevIndexX = x * this._stride + dx - this._pad;
+                        double gyData = gy.Data[gyIndex];
 
-                                    if (prevIndexY >= 0 && prevIndexY < prevInput.Shape[1] &&
-                                        prevIndexX >= 0 && prevIndexX < prevInput.Shape[2])
-                                    {
-                                        this.gW.Data[this.gW.GetIndex(k, j, dy, dx)] +=
-                                            prevInput.Get(j, prevIndexY, prevIndexX) * gy.Data[gyIndex];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (int j = 0; j < gx.Shape[0]; j++)
-            {
-                for (int k = 0; k < gy.Shape[0]; k++)
-                {
-                    for (int y = 0; y < gy.Shape[1]; y++)
-                    {
-                        for (int x = 0; x < gy.Shape[2]; x++)
+                        for (int j = 0; j < prevInput.Shape[0]; j++)
                         {
-                            int gyIndex = gy.GetIndex(k, y, x);
                             for (int dy = 0; dy < this._kSize; dy++)
                             {
-                                for (int dx = 0; dx < this._kSize; dx++)
-                                {
-                                    int outputIndexY = y * this._stride + dy - this._pad;
-                                    int outputIndexX = x * this._stride + dx - this._pad;
+                                int indexY = y * this._stride + dy - this._pad;
 
-                                    if (outputIndexY >= 0 && outputIndexY < gx.Shape[1] &&
-                                        outputIndexX >= 0 && outputIndexX < gx.Shape[2]
-                                        )
+                                if (indexY >= 0 && indexY < prevInput.Shape[1])
+                                {
+                                    for (int dx = 0; dx < this._kSize; dx++)
                                     {
-                                        gx.Data[gx.GetIndex(j, outputIndexY, outputIndexX)] +=
-                                            this.W.Get(k, j, dy, dx) * gy.Data[gyIndex];
+                                        int indexX = x * this._stride + dx - this._pad;
+
+                                        //prevInputとgxのshapeは等しい
+                                        int index = prevInput.GetIndex(j, indexY, indexX);
+
+                                        //WとgWのshapeは等しい
+                                        int wIndex = this.W.GetIndex(k, j, dy, dx);
+
+                                        if (indexX >= 0 && indexX < prevInput.Shape[2])
+                                        {
+                                            this.gW.Data[wIndex] += prevInput.Data[index] * gyData;
+
+                                            gx[index] += this.W.Data[wIndex] * gyData;
+                                        }
                                     }
                                 }
                             }
                         }
+
+                        this.gb.Data[k] += gyData;
+                        gyIndex++;
                     }
                 }
             }
 
-            if (this.gb != null)
-            {
-                int gyindex = 0;
-                for (int j = 0; j < gy.Shape[0]; j++)
-                {
-                    for (int k = 0; k < gy.Shape[1] * gy.Shape[2]; k++)
-                    {
-                        this.gb.Data[j] += gy.Data[gyindex++];
-                    }
-                }
-            }
-
-            return gx;
+            return new NdArray(gx, prevInput.Shape);
         }
     }
 }

@@ -53,7 +53,6 @@ namespace KelpNetTester.Tests
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT+1; i++)
                 {
-                    Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
                     var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
@@ -65,14 +64,15 @@ namespace KelpNetTester.Tests
                     //バッチ更新
                     nn.Update();
 
-                    //結果出力
-                    Console.WriteLine("total loss " + totalLoss.Average());
-                    Console.WriteLine("local loss " + sumLoss);
-
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)
                     {
-                        Console.WriteLine("Testing...");
+                        Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
+                        //結果出力
+                        Console.WriteLine("total loss " + totalLoss.Average());
+                        Console.WriteLine("local loss " + sumLoss);
+
+                        Console.WriteLine("\nTesting...");
                         
                         //テストデータからランダムにデータを取得
                         var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);

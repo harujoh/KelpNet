@@ -156,6 +156,9 @@ namespace KelpNet
 
             //傾きをリセット
             this.ClearGrads();
+
+            //ガベージコレクタを明示的に起動
+            GC.Collect();
         }
 
         //傾きの初期化

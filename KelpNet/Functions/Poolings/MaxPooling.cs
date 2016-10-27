@@ -32,15 +32,18 @@ namespace KelpNet.Functions.Poolings
                         int resultIndex = result.GetIndex(j, x, y);
                         for (int dy = 0; dy < this._kSize; dy++)
                         {
-                            for (int dx = 0; dx < this._kSize; dx++)
-                            {
-                                int inputIndexX = x * this._stride + dx - this._pad;
-                                int inputIndexY = y * this._stride + dy - this._pad;
+                            int inputIndexY = y * this._stride + dy - this._pad;
 
-                                if (inputIndexX >= 0 && inputIndexX < input.Shape[1] &&
-                                    inputIndexY >= 0 && inputIndexY < input.Shape[2])
+                            if (inputIndexY >= 0 && inputIndexY < input.Shape[2])
+                            {
+                                for (int dx = 0; dx < this._kSize; dx++)
                                 {
-                                    result.Data[result.GetIndex(j, x, y)] = Math.Max(result.Data[resultIndex], input.Get(j, inputIndexX, inputIndexY));
+                                    int inputIndexX = x * this._stride + dx - this._pad;
+
+                                    if (inputIndexX >= 0 && inputIndexX < input.Shape[1])
+                                    {
+                                        result.Data[resultIndex] = Math.Max(result.Data[resultIndex], input.Get(j, inputIndexX, inputIndexY));
+                                    }
                                 }
                             }
                         }
@@ -53,42 +56,46 @@ namespace KelpNet.Functions.Poolings
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
-            NdArray result = NdArray.ZerosLike(prevInput);
-            gy.Shape = (int[])prevOutput.Shape.Clone();
+            double[] result = new double[prevInput.Length];
 
-            for (int j = 0; j < result.Shape[0]; j++)
+            int index = 0;
+            for (int j = 0; j < prevInput.Shape[0]; j++)
             {
-                for (int y = 0; y < gy.Shape[1]; y++)
+                for (int y = 0; y < prevOutput.Shape[1]; y++)
                 {
-                    for (int x = 0; x < gy.Shape[2]; x++)
+                    for (int x = 0; x < prevOutput.Shape[2]; x++)
                     {
                         //前回の入力値と出力値を比較して、同じ値のものを見つける
-                        this.setresult(j, y, x, gy.Data[gy.GetIndex(j, y, x)], prevInput, prevOutput, ref result);
+                        this.SetResult(j, y, x, gy.Data[index], prevInput, prevOutput.Data[index], ref result);
+                        index++;
                     }
                 }
             }
 
-            return result;
+            return new NdArray(result, prevInput.Shape);
         }
 
         //同じ値を複数持つ場合、左上優先にして処理を打ち切る
         //他のライブラリの実装では乱数を取って同じ値の中からどれかを選ぶ物が多い
-        void setresult(int i, int y, int x, double data, NdArray PrevInput, NdArray PrevOutput, ref NdArray result)
+        void SetResult(int i, int y, int x, double data, NdArray prevInput, double prevOutputData, ref double[] result)
         {
             for (int dy = 0; dy < this._kSize; dy++)
             {
-                for (int dx = 0; dx < this._kSize; dx++)
-                {
-                    int outputIndexY = y * this._stride + dy - this._pad;
-                    int outputIndexX = x * this._stride + dx - this._pad;
+                int outputIndexY = y * this._stride + dy - this._pad;
 
-                    if (outputIndexY >= 0 && outputIndexY < result.Shape[1] &&
-                        outputIndexX >= 0 && outputIndexX < result.Shape[2])
+                if (outputIndexY >= 0 && outputIndexY < prevInput.Shape[1])
+                {
+                    for (int dx = 0; dx < this._kSize; dx++)
                     {
-                        if (PrevInput.Data[PrevInput.GetIndex(i, outputIndexY, outputIndexX)].Equals(PrevOutput.Data[PrevOutput.GetIndex(i, y, x)]))
+                        int outputIndexX = x * this._stride + dx - this._pad;
+
+                        if (outputIndexX >= 0 && outputIndexX < prevInput.Shape[2])
                         {
-                            result.Data[result.GetIndex(i, outputIndexY, outputIndexX)] = data;
-                            return;
+                            if (prevInput.Data[prevInput.GetIndex(i, outputIndexY, outputIndexX)].Equals(prevOutputData))
+                            {
+                                result[prevInput.GetIndex(i, outputIndexY, outputIndexX)] = data;
+                                return;
+                            }
                         }
                     }
                 }
