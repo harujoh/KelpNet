@@ -37,7 +37,6 @@ namespace KelpNet.Functions.Connections
 
             Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
 
-
             //noBias=trueでもbiasを用意して更新しない
             this.b = NdArray.Zeros(outputChannels);
             this.gb = NdArray.ZerosLike(this.b);

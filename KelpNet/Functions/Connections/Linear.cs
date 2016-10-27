@@ -18,9 +18,6 @@ namespace KelpNet.Functions.Connections
             this.gW = NdArray.ZerosLike(this.W);
             Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
 
-            //Zeroバイアス
-            this.b = NdArray.Zeros(outputCount);
-
             if (initialW == null)
             {
                 InitWeight(this.W);
@@ -31,10 +28,12 @@ namespace KelpNet.Functions.Connections
                 Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
+            //noBias=trueでもbiasを用意して更新しない
+            this.b = NdArray.Zeros(outputCount);
+            this.gb = NdArray.ZerosLike(this.b);
+
             if (!noBias)
             {
-                this.gb = NdArray.ZerosLike(this.b);
-
                 if (initialb != null)
                 {
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
@@ -51,15 +50,16 @@ namespace KelpNet.Functions.Connections
         {
             double[] output = new double[OutputCount];
 
-            for (int j = 0; j < OutputCount; j++)
+            for (int i = 0; i < OutputCount; i++)
             {
-                int indexOffset = InputCount * j;
-                for (int k = 0; k < InputCount; k++)
+                int indexOffset = InputCount * i;
+
+                for (int j = 0; j < InputCount; j++)
                 {
-                    output[j] += x.Data[k] * this.W.Data[indexOffset + k];
+                    output[i] += x.Data[j] * this.W.Data[indexOffset + j];
                 }
 
-                output[j] += this.b.Data[j];
+                output[i] += this.b.Data[i];
             }
 
             return NdArray.FromArray(output);
@@ -67,32 +67,21 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
+            double[] gxData = new double[InputCount];
+
             for (int i = 0; i < gy.Length; i++)
             {
                 int indexOffset = InputCount * i;
-                for (int j = 0; j < prevInput.Length; j++)
-                {
-                    this.gW.Data[indexOffset + j] += prevInput.Data[j] * gy.Data[i];
-                }
-            }
+                double gyData = gy.Data[i];
 
-            double[] gxData = new double[InputCount];
-
-            for (int j = 0; j < this.W.Shape[0]; j++)
-            {
-                int indexOffset = InputCount * j;
-                for (int k = 0; k < this.W.Shape[1]; k++)
+                for (int j = 0; j < InputCount; j++)
                 {
-                    gxData[k] += this.W.Data[indexOffset + k] * gy.Data[j];
-                }
-            }
+                    this.gW.Data[indexOffset + j] += prevInput.Data[j] * gyData;
 
-            if (this.gb != null)
-            {
-                for (int j = 0; j < gy.Length; j++)
-                {
-                    this.gb.Data[j] += gy.Data[j];
+                    gxData[j] += this.W.Data[indexOffset + j] * gyData;
                 }
+
+                this.gb.Data[i] += gyData;
             }
 
             return new NdArray(gxData, new[] { 1, InputCount });
