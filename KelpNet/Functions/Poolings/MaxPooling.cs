@@ -22,31 +22,34 @@ namespace KelpNet.Functions.Poolings
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
             NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);
             result.Fill(double.MinValue);
+            int resultIndex = 0;
 
             for (int j = 0; j < input.Shape[0]; j++)
             {
+                int inputIndexOffset = j*input.Shape[1]*input.Shape[2];
                 for (int y = 0; y < outputSize; y++)
                 {
                     for (int x = 0; x < outputSize; x++)
                     {
-                        int resultIndex = result.GetIndex(j, x, y);
                         for (int dy = 0; dy < this._kSize; dy++)
                         {
                             int inputIndexY = y * this._stride + dy - this._pad;
 
-                            if (inputIndexY >= 0 && inputIndexY < input.Shape[2])
+                            if (inputIndexY >= 0 && inputIndexY < input.Shape[1])
                             {
                                 for (int dx = 0; dx < this._kSize; dx++)
                                 {
                                     int inputIndexX = x * this._stride + dx - this._pad;
 
-                                    if (inputIndexX >= 0 && inputIndexX < input.Shape[1])
+                                    if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                     {
-                                        result.Data[resultIndex] = Math.Max(result.Data[resultIndex], input.Get(j, inputIndexX, inputIndexY));
+                                        int inputIndex = inputIndexOffset + inputIndexY * input.Shape[2] + inputIndexX;
+                                        result.Data[resultIndex] = Math.Max(result.Data[resultIndex], input.Data[inputIndex]);
                                     }
                                 }
                             }
                         }
+                        resultIndex++;
                     }
                 }
             }
@@ -59,14 +62,15 @@ namespace KelpNet.Functions.Poolings
             double[] result = new double[prevInput.Length];
 
             int index = 0;
-            for (int j = 0; j < prevInput.Shape[0]; j++)
+            for (int i = 0; i < prevInput.Shape[0]; i++)
             {
+                int prevInputIndexOffset = i*prevInput.Shape[1]*prevInput.Shape[2];
                 for (int y = 0; y < prevOutput.Shape[1]; y++)
                 {
                     for (int x = 0; x < prevOutput.Shape[2]; x++)
                     {
                         //前回の入力値と出力値を比較して、同じ値のものを見つける
-                        this.SetResult(j, y, x, gy.Data[index], prevInput, prevOutput.Data[index], ref result);
+                        this.SetResult(prevInputIndexOffset, y, x, gy.Data[index], prevInput, prevOutput.Data[index], ref result);
                         index++;
                     }
                 }
@@ -77,7 +81,7 @@ namespace KelpNet.Functions.Poolings
 
         //同じ値を複数持つ場合、左上優先にして処理を打ち切る
         //他のライブラリの実装では乱数を取って同じ値の中からどれかを選ぶ物が多い
-        void SetResult(int i, int y, int x, double data, NdArray prevInput, double prevOutputData, ref double[] result)
+        void SetResult(int prevInputIndexOffset, int y, int x, double data, NdArray prevInput, double prevOutputData, ref double[] result)
         {
             for (int dy = 0; dy < this._kSize; dy++)
             {
@@ -91,9 +95,11 @@ namespace KelpNet.Functions.Poolings
 
                         if (outputIndexX >= 0 && outputIndexX < prevInput.Shape[2])
                         {
-                            if (prevInput.Data[prevInput.GetIndex(i, outputIndexY, outputIndexX)].Equals(prevOutputData))
+                            int prevInputIndex = prevInputIndexOffset + outputIndexY * prevInput.Shape[2] + outputIndexX;
+
+                            if (prevInput.Data[prevInputIndex].Equals(prevOutputData))
                             {
-                                result[prevInput.GetIndex(i, outputIndexY, outputIndexX)] = data;
+                                result[prevInputIndex] = data;
                                 return;
                             }
                         }

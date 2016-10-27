@@ -63,14 +63,21 @@ namespace KelpNet.Functions.Connections
             double[] result = new double[OutputCount * outputSize * outputSize];
             int resultIndex = 0;
 
-            for (int j = 0; j < OutputCount; j++)
+            for (int i = 0; i < OutputCount; i++)
             {
+                //Wインデックス用
+                int outChOffset = i * InputCount * this._kSize * this._kSize;
                 for (int y = 0; y < outputSize; y++)
                 {
                     for (int x = 0; x < outputSize; x++)
                     {
-                        for (int k = 0; k < input.Shape[0]; k++)
+                        for (int j = 0; j < input.Shape[0]; j++)
                         {
+                            //Wインデックス用
+                            int inChOffset = j * this._kSize * this._kSize;
+                            //inputインデックス用
+                            int inputOffset = j*input.Shape[1]*input.Shape[2];
+
                             for (int dy = 0; dy < this._kSize; dy++)
                             {
                                 int inputIndexY = y * this._stride + dy - this._pad;
@@ -83,15 +90,17 @@ namespace KelpNet.Functions.Connections
 
                                         if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                         {
-                                            result[resultIndex] +=
-                                                input.Get(k, inputIndexY, inputIndexX) * this.W.Get(j, k, dy, dx);
+                                            int wIndex = outChOffset + inChOffset + dy * this._kSize + dx;
+                                            int inputIndex = inputOffset + inputIndexY*input.Shape[2] + inputIndexX;
+
+                                            result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
                                         }
                                     }
                                 }
                             }
                         }
 
-                        result[resultIndex] += this.b.Data[j];
+                        result[resultIndex] += this.b.Data[i];
                         resultIndex++;
                     }
                 }
@@ -106,8 +115,11 @@ namespace KelpNet.Functions.Connections
 
             int gyIndex = 0;
 
-            for (int k = 0; k < gy.Shape[0]; k++)
+            for (int i = 0; i < gy.Shape[0]; i++)
             {
+                //gWインデックス用
+                int outChOffset = i * InputCount * this._kSize * this._kSize;
+
                 for (int y = 0; y < gy.Shape[1]; y++)
                 {
                     for (int x = 0; x < gy.Shape[2]; x++)
@@ -116,6 +128,11 @@ namespace KelpNet.Functions.Connections
 
                         for (int j = 0; j < prevInput.Shape[0]; j++)
                         {
+                            //gWインデックス用
+                            int inChOffset = j * this._kSize * this._kSize;
+                            //inputインデックス用
+                            int inputOffset = j * prevInput.Shape[1] * prevInput.Shape[2];
+
                             for (int dy = 0; dy < this._kSize; dy++)
                             {
                                 int indexY = y * this._stride + dy - this._pad;
@@ -126,24 +143,25 @@ namespace KelpNet.Functions.Connections
                                     {
                                         int indexX = x * this._stride + dx - this._pad;
 
-                                        //prevInputとgxのshapeは等しい
-                                        int index = prevInput.GetIndex(j, indexY, indexX);
-
-                                        //WとgWのshapeは等しい
-                                        int wIndex = this.W.GetIndex(k, j, dy, dx);
-
                                         if (indexX >= 0 && indexX < prevInput.Shape[2])
                                         {
-                                            this.gW.Data[wIndex] += prevInput.Data[index] * gyData;
+                                            //WとgWのshapeは等しい
+                                            int wIndex = outChOffset + inChOffset + dy * this._kSize + dx;
 
-                                            gx[index] += this.W.Data[wIndex] * gyData;
+                                            //prevInputとgxのshapeは等しい
+                                            int inputIndex = inputOffset + indexY * prevInput.Shape[2] + indexX;
+
+
+                                            this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
+
+                                            gx[inputIndex] += this.W.Data[wIndex] * gyData;
                                         }
                                     }
                                 }
                             }
                         }
 
-                        this.gb.Data[k] += gyData;
+                        this.gb.Data[i] += gyData;
                         gyIndex++;
                     }
                 }

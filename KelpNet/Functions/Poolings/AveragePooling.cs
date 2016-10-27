@@ -28,6 +28,7 @@ namespace KelpNet.Functions.Poolings
 
             for (int j = 0; j < input.Shape[0]; j++)
             {
+                int inputIndexOffset = j * input.Shape[1] * input.Shape[2];
                 for (int y = 0; y < outputSize; y++)
                 {
                     for (int x = 0; x < outputSize; x++)
@@ -44,7 +45,9 @@ namespace KelpNet.Functions.Poolings
 
                                     if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                     {
-                                        result[resultIndex] += input.Get(j, inputIndexY, inputIndexX) / m;
+                                        int inputindex = inputIndexOffset + inputIndexY * input.Shape[2] + inputIndexX;
+
+                                        result[resultIndex] += input.Data[inputindex] / m;
                                     }
                                 }
                             }
@@ -68,12 +71,13 @@ namespace KelpNet.Functions.Poolings
 
             for (int j = 0; j < prevInput.Shape[0]; j++)
             {
+                int resultIndexOffset = j * prevInput.Shape[1] * prevInput.Shape[2];
                 for (int y = 0; y < prevOutput.Shape[1]; y++)
                 {
                     for (int x = 0; x < prevOutput.Shape[2]; x++)
                     {
                         double gyData = gy.Data[gyIndex] / m;
-                        
+
                         for (int dy = 0; dy < this._kSize; dy++)
                         {
                             int outputIndexY = y * this._stride + dy - this._pad;
@@ -86,7 +90,8 @@ namespace KelpNet.Functions.Poolings
 
                                     if (outputIndexX >= 0 && outputIndexX < prevInput.Shape[2])
                                     {
-                                        result[prevInput.GetIndex(j, outputIndexY, outputIndexX)] = gyData;
+                                        int resultIndex = resultIndexOffset + outputIndexY * prevInput.Shape[2] + outputIndexX;
+                                        result[resultIndex] = gyData;
                                     }
                                 }
                             }
