@@ -1,9 +1,11 @@
-﻿#if !DEBUG
+﻿using System;
+#if !DEBUG
 using System.Threading.Tasks;
 #endif
 
 namespace KelpNet.Optimizers
 {
+    [Serializable]
     public class SGD : Optimizer
     {
         public double LearningRate;

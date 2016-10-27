@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace KelpNet.Optimizers
 {
+    [Serializable]
     public class AdaDelta : Optimizer
     {
         private NdArray[] msg;

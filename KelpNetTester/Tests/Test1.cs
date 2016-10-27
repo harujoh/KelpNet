@@ -66,6 +66,22 @@ namespace KelpNetTester.Tests
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input + " => " + resultIndex + " " + result);
             }
+
+            //学習の終わったネットワークを保存
+            nn.Save("test.nn");
+
+            //学習の終わったネットワークを読み込み
+            var testnn = FunctionStack.Load("test.nn");
+
+            Console.WriteLine("Test Start...");
+            foreach (var val in trainData)
+            {
+                var input = NdArray.FromArray(val);
+                var result = testnn.Predict(input);
+                int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
+                Console.WriteLine(input + " => " + resultIndex + " " + result);
+            }
+
         }
     }
 }

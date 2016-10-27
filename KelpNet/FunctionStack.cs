@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using KelpNet.Common;
 
 namespace KelpNet
 {
     //層を積み上げるこのライブラリのメインとなるクラス
+    [Serializable]
     public class FunctionStack
     {
         //ロス関数のデリゲート宣言
@@ -246,6 +249,29 @@ namespace KelpNet
             }
 
             return matchCount / (double)x.Length;
+        }
+
+        public void Save(string fileName)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+
+            using (Stream stream = File.OpenWrite(fileName))
+            {
+                bf.Serialize(stream, this);
+            }            
+        }
+
+        public static FunctionStack Load(string fileName)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            FunctionStack result;
+
+            using (Stream stream = File.OpenRead(fileName))
+            {
+                result = (FunctionStack)bf.Deserialize(stream);
+            }
+
+            return result;
         }
 
         //コピーを作成するメソッド

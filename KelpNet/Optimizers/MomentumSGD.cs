@@ -1,10 +1,12 @@
-﻿using KelpNet.Common;
+﻿using System;
+using KelpNet.Common;
 #if !DEBUG
 using System.Threading.Tasks;
 #endif
 
 namespace KelpNet.Optimizers
 {
+    [Serializable]
     public class MomentumSGD : Optimizer
     {
         private double LearningRate;

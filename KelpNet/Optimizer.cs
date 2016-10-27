@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace KelpNet
 {
     //Optimizerの基底クラス
+    [Serializable]
     public abstract class Optimizer
     {
         //更新回数のカウント

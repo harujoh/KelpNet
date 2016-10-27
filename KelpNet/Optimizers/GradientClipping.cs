@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace KelpNet.Optimizers
 {
+    [Serializable]
     public class GradientClipping : Optimizer
     {
         public double Threshold;
