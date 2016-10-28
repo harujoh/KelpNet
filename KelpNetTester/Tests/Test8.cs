@@ -81,8 +81,10 @@ namespace KelpNetTester.Tests
                     t[j] = new[] { sequences[j].Data[i + 1] };
                 }
 
+                var forwardResult = model.Forward(x);
+
                 double sumLoss;
-                backNdArrays.Push(model.Forward(x, t, LossFunctions.MeanSquaredError, out sumLoss));
+                backNdArrays.Push(LossFunctions.MeanSquaredError(forwardResult, t, out sumLoss));
                 totalLoss.Add(sumLoss);
             }
 
