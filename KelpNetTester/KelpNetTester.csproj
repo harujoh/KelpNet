@@ -47,7 +47,7 @@
     <Compile Include="MnistData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tests\Class12.cs" />
+    <Compile Include="Tests\Test12.cs" />
     <Compile Include="Tests\Test10.cs" />
     <Compile Include="Tests\Test11.cs" />
     <Compile Include="Tests\Test3.cs" />
