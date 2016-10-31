@@ -19,10 +19,10 @@ namespace KelpNetTester.Tests
     {
         //ミニバッチの数
         //ミニバッチにC#標準のParallelを使用しているため、大きくし過ぎると遅くなるので注意
-        const int BATCH_DATA_COUNT = 20;
+        const int BATCH_DATA_COUNT = 256;
 
         //一世代あたりの訓練回数
-        const int TRAIN_DATA_COUNT = 3000; // = 60000 / 20
+        const int TRAIN_DATA_COUNT = 234; // = 60,000 / 256
 
         //性能評価時のデータ数
         const int TEST_DATA_COUNT = 100;
@@ -98,9 +98,6 @@ namespace KelpNetTester.Tests
                 new Linear(256 + 10, 1024, name: "cDNI1 Linear1"),
                 new BatchNormalization(1024, name: "cDNI1 Nrom1"),
                 new ReLU(name: "cDNI1 ReLU1"),
-                new Linear(1024, 1024, name: "cDNI1 Linear2"),
-                new BatchNormalization(1024, name: "cDNI1 Nrom2"),
-                new ReLU(name: "cDNI1 ReLU2"),
                 new Linear(1024, 256, initialW: new double[1024, 256], name: "DNI1 Linear3")
             );
 
@@ -108,9 +105,6 @@ namespace KelpNetTester.Tests
                 new Linear(256, 1024, name: "cDNI2 Linear1"),
                 new BatchNormalization(1024, name: "cDNI2 Nrom1"),
                 new ReLU(name: "cDNI2 ReLU1"),
-                new Linear(1024, 1024, name: "cDNI2 Linear2"),
-                new BatchNormalization(1024, name: "cDNI2 Nrom2"),
-                new ReLU(name: "cDNI2 ReLU2"),
                 new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI2 Linear3")
             );
 
@@ -118,9 +112,6 @@ namespace KelpNetTester.Tests
                 new Linear(256, 1024, name: "cDNI3 Linear1"),
                 new BatchNormalization(1024, name: "cDNI3 Nrom1"),
                 new ReLU(name: "cDNI3 ReLU1"),
-                new Linear(1024, 1024, name: "cDNI3 Linear2"),
-                new BatchNormalization(1024, name: "cDNI3 Nrom2"),
-                new ReLU(name: "cDNI3 ReLU2"),
                 new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI3 Linear3")
             );
 
@@ -135,8 +126,7 @@ namespace KelpNetTester.Tests
             cDNI3.SetOptimizer(new Adam());
 
 
-            //三世代学習
-            for (int epoch = 0; epoch < 20; epoch++)
+            for (int epoch = 0; epoch < 10; epoch++)
             {
                 Console.WriteLine("epoch " + (epoch + 1));
 
@@ -149,7 +139,6 @@ namespace KelpNetTester.Tests
 
                 List<double> cDNI3totalLoss = new List<double>();
 
-
                 var layer1ForwardResults = new List<ResultDataSet>();
                 var layer2ForwardResults = new List<ResultDataSet>();
                 var layer3ForwardResults = new List<ResultDataSet>();
@@ -161,6 +150,10 @@ namespace KelpNetTester.Tests
                 var cDNI1Result = new List<NdArray[]>();
                 var cDNI2Result = new List<NdArray[]>();
                 var cDNI3Result = new List<NdArray[]>();
+
+                int cDNI1Count = 0;
+                int cDNI2Count = 0;
+                int cDNI3Count = 0;
 
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
@@ -186,6 +179,8 @@ namespace KelpNetTester.Tests
                         //第一層を更新
                         Layer1.Backward(cDNI1Result.Last());
                         Layer1.Update();
+
+                        cDNI1Count++;
                     }
 
                     //第二層を2～6回実行
@@ -203,6 +198,8 @@ namespace KelpNetTester.Tests
                         //第二層を更新
                         layer2BackwardResult.Add(Layer2.Backward(cDNI2Result.Last()));
                         Layer2.Update();
+
+                        cDNI2Count++;
                     }
 
                     //第一層用のcDNIの学習を2～6回実行
@@ -234,6 +231,8 @@ namespace KelpNetTester.Tests
                         //第三層を更新
                         layer3BackwardResult.Add(Layer3.Backward(cDNI3Result.Last()));
                         Layer3.Update();
+
+                        cDNI3Count++;
                     }
 
 
@@ -288,9 +287,9 @@ namespace KelpNetTester.Tests
                     Console.WriteLine("total loss " + totalLoss.Average());
                     Console.WriteLine("local loss " + sumLoss);
 
-                    Console.WriteLine("\ncDNI1 total loss " + cDNI1totalLoss.Average());
-                    Console.WriteLine("cDNI2 total loss " + cDNI2totalLoss.Average());
-                    Console.WriteLine("cDNI3 total loss " + cDNI3totalLoss.Average());
+                    Console.WriteLine("\ncDNI1[" + cDNI1Count + "] total loss " + cDNI1totalLoss.Average());
+                    Console.WriteLine("cDNI2[" + cDNI2Count + "] total loss " + cDNI2totalLoss.Average());
+                    Console.WriteLine("cDNI3[" + cDNI3Count + "] total loss " + cDNI3totalLoss.Average());
 
                     Console.WriteLine("\ncDNI1 local loss " + cDNI1loss);
                     Console.WriteLine("cDNI2 local loss " + cDNI2loss);
