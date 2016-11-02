@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using KelpNet;
+using KelpNet.Common;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Normalization;
@@ -16,13 +17,13 @@ namespace KelpNetTester.Tests
     {
         //ミニバッチの数
         //ミニバッチにC#標準のParallelを使用しているため、大きくし過ぎると遅くなるので注意
-        const int BATCH_DATA_COUNT = 20;
+        const int BATCH_DATA_COUNT = 200;
 
         //一世代あたりの訓練回数
-        const int TRAIN_DATA_COUNT = 3000; // = 60000 / 20
+        const int TRAIN_DATA_COUNT = 300; // = 60000 / 20
 
         //性能評価時のデータ数
-        const int TEST_DATA_COUNT = 100;
+        const int TEST_DATA_COUNT = 1000;
 
         public static void Run()
         {
@@ -100,6 +101,7 @@ namespace KelpNetTester.Tests
             Layer2.SetOptimizer(new Adam());
             Layer3.SetOptimizer(new Adam());
             Layer4.SetOptimizer(new Adam());
+
             DNI1.SetOptimizer(new Adam());
             DNI2.SetOptimizer(new Adam());
             DNI3.SetOptimizer(new Adam());
@@ -126,7 +128,7 @@ namespace KelpNetTester.Tests
                     var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    var layer1ForwardResult = Layer1.Forward(datasetX.Data);
+                    var layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
 
                     //第一層の傾きを取得
                     var DNI1Result = DNI1.Forward(layer1ForwardResult);
@@ -174,7 +176,7 @@ namespace KelpNetTester.Tests
 
                     //第四層の傾きを取得
                     double sumLoss;
-                    var lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, datasetX.Label, out sumLoss);
+                    var lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(datasetX.Label), out sumLoss);
 
                     //第四層を更新
                     var layer4BackwardResult = Layer4.Backward(lossResult);
@@ -210,7 +212,7 @@ namespace KelpNetTester.Tests
                         var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        var accuracy = nn.Accuracy(datasetY.Data, datasetY.Label);
+                        var accuracy = Trainer.Accuracy(nn, NdArray.FromArray(datasetY.Data), datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

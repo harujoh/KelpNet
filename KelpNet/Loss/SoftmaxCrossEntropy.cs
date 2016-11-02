@@ -28,31 +28,6 @@ namespace KelpNet.Loss
             return new NdArray(gx, input.Shape);
         }
 
-        public static NdArray SoftmaxCrossEntropy(NdArray input, Array teach, out double loss)
-        {
-            return SoftmaxCrossEntropy(input, NdArray.FromArray(teach), out loss);
-        }
-
-        public static NdArray[] SoftmaxCrossEntropy(NdArray[] input, Array[] teachSignal, out double loss)
-        {
-            double[] localloss = new double[input.Length];
-            NdArray[] resultArray = new NdArray[input.Length];
-
-#if DEBUG
-            for(int i = 0; i < input.Length; i ++)
-#else
-            Parallel.For(0, input.Length, i =>
-#endif
-            {
-                resultArray[i] = SoftmaxCrossEntropy(input[i], teachSignal[i], out localloss[i]);
-            }
-#if !DEBUG
-            );
-#endif
-            loss = localloss.Average();
-            return resultArray;
-        }
-
         public static NdArray[] SoftmaxCrossEntropy(NdArray[] input, NdArray[] teachSignal, out double loss)
         {
             double[] localloss = new double[input.Length];

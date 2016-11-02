@@ -9,7 +9,7 @@ namespace KelpNetTester
         static void Main(string[] args)
         {
             //MLPによるXORの学習
-            //Test1.Run();
+            Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -23,10 +23,10 @@ namespace KelpNetTester
             //エクセルCNNの再現
             //Test5.Run();
 
-            //5層CNNによるMNIST（手書き文字）の学習
+            //5層CNNによるMNISTの学習
             //Test6.Run();
 
-            //BatchNormを使った15層MLPによるMNIST（手書き文字）の学習
+            //BatchNormを使った15層MLPによるMNISTの学習
             //Test7.Run();
 
             //LSTMによるSin関数の学習
@@ -38,11 +38,11 @@ namespace KelpNetTester
             //LSTMによるRNNLM
             //Test10.Run();
 
-            //Synthetic GradientsによるMNIST（手書き文字）の学習
+            //Decoupled Neural Interfaces using Synthetic GradientsによるMNISTの学習
             //Test11.Run();
 
-            //Synthetic GradientsによるMNIST（手書き文字）の学習[非同期]
-            Test12.Run();
+            //Test11のDNIをcDNIとした
+            //Test12.Run();
 
             //Linearの分割実行
             //TestX.Run();

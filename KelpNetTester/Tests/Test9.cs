@@ -76,7 +76,7 @@ namespace KelpNetTester.Tests
                             var h2 = model.Functions[3].Forward(h);
 
                             double loss;
-                            tmp.Push(LossFunctions.SoftmaxCrossEntropy(h2, new[] { tx }, out loss));
+                            tmp.Push(LossFunctions.SoftmaxCrossEntropy(h2, NdArray.FromArray(new[] { tx }), out loss));
                             accumloss += loss;
                         }
 

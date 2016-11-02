@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using KelpNet.Common;
 
 namespace KelpNet
 {
     //層を積み上げるこのライブラリのメインとなるクラス
+    //一回のForward、Backward、Updateで同時に実行される関数の集まり
     [Serializable]
     public class FunctionStack : Function
     {
-        //ロス関数のデリゲート宣言
-        public delegate NdArray[] LossFunction(NdArray[] input, Array[] teachSignal, out double loss);
-        public delegate NdArray SingleLossFunction(NdArray input, Array teachSignal, out double loss);
-
         //すべての層がココにFunctionクラスとして保管される
         public readonly List<Function> Functions = new List<Function>();
 
         //Optimizerをココで保持する
-        private Optimizer[] _optimizers;
+        private Optimizer[] Optimizers;
 
         //コンストラクタ
         public FunctionStack(params Function[] functions) : base("FunctionStack")
@@ -31,55 +27,25 @@ namespace KelpNet
                 this.Functions.Add(function);
 
                 //パラメーターを保持
-                this.Parameters.AddRange(function.Parameters);
+                Parameters.AddRange(function.Parameters);
             }
         }
 
+        //Functionとして呼び出された時にバトンを渡す
         protected override NdArray[] ForwardSingle(NdArray[] x)
         {
-            return this.ForwardSingle(x);
+            return this.Forward(x);
         }
 
+        //Functionとして呼び出された時にバトンを渡す
         protected override NdArray[] BackwardSingle(NdArray[] gy)
         {
             return this.Backward(gy);
         }
 
-        //Optimizerを設定
-        public void SetOptimizer(params Optimizer[] optimizers)
-        {
-            this._optimizers = optimizers;
-            foreach (var optimizer in optimizers)
-            {
-                optimizer.SetParameters(this.Parameters);
-            }
-        }
 
         //Forward
-        //public NdArray[] Forward(Array[] input, Array[] teach, LossFunction lossFunction, out double sumLoss)
-        public NdArray[] Forward(Array[] input)
-        {
-            NdArray[] inputData = new NdArray[input.Length];
-            for (int i = 0; i < inputData.Length; i++)
-            {
-                inputData[i] = NdArray.FromArray(input[i]);
-            }
-
-            return this.Forward(inputData);
-        }
-
         public override NdArray[] Forward(NdArray[] input)
-        {
-            foreach (Function function in this.Functions)
-            {
-                input = function.Forward(input);
-            }
-
-            return input;
-        }
-
-        //Forward
-        public override NdArray Forward(NdArray input)
         {
             foreach (Function function in this.Functions)
             {
@@ -100,6 +66,18 @@ namespace KelpNet
             return backwardResult;
         }
 
+
+        //Forward
+        public override NdArray Forward(NdArray input)
+        {
+            foreach (Function function in this.Functions)
+            {
+                input = function.Forward(input);
+            }
+
+            return input;
+        }
+
         //Backward
         public override NdArray Backward(NdArray backwardResult)
         {
@@ -111,36 +89,14 @@ namespace KelpNet
             return backwardResult;
         }
 
-        //バッチで学習処理を行う
-        public double Train(Array[] input, Array[] teach, LossFunction lossFunction)
+        //Optimizerを設定
+        public void SetOptimizer(params Optimizer[] optimizers)
         {
-            //結果の誤差保存用
-            double sumLoss;
-
-            //Forwardのバッチを実行
-            var forwardResult = this.Forward(input);
-
-            //Backwardのバッチを実行
-            this.Backward(lossFunction(forwardResult, teach, out sumLoss));
-
-            return sumLoss;
-        }
-
-        //非バッチで学習処理を行う
-        public double Train(Array input, Array teach, SingleLossFunction lossFunction)
-        {
-            //結果の誤差保存用
-            double sumLoss;
-
-            var forwardResult = this.Forward(input);
-
-            //Forwardを実行
-            var lossResult = lossFunction(forwardResult, teach, out sumLoss);
-
-            //Backwardを実行
-            this.Backward(lossResult);
-
-            return sumLoss;
+            this.Optimizers = optimizers;
+            foreach (var optimizer in optimizers)
+            {
+                optimizer.SetParameters(Parameters);
+            }
         }
 
         //重みの更新処理
@@ -159,12 +115,12 @@ namespace KelpNet
             }
 
             //Optimizerの更新を実行
-            foreach (var optimizer in this._optimizers)
+            foreach (var optimizer in this.Optimizers)
             {
                 optimizer.Update();
             }
 
-            //傾きをリセット
+            //傾きとカウンタをリセット
             this.ClearGrads();
 
             //ガベージコレクタを明示的に起動
@@ -190,18 +146,6 @@ namespace KelpNet
             {
                 function.ResetState();
             }
-        }
-
-        //予想を実行する（外部からの使用を想定してArrayが引数
-        public NdArray[] Predict(Array[] input)
-        {
-            NdArray[] ndArrays = new NdArray[input.Length];
-            for (int i = 0; i < ndArrays.Length; i++)
-            {
-                ndArrays[i] = NdArray.FromArray(input[i]);
-            }
-
-            return this.Predict(ndArrays);
         }
 
         //予想を実行する
@@ -232,24 +176,6 @@ namespace KelpNet
             }
 
             return forwardResult;
-        }
-
-        //精度測定
-        public double Accuracy(Array[] x, int[][] y)
-        {
-            int matchCount = 0;
-
-            var forwardResult = this.Predict(x);
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                if (Array.IndexOf(forwardResult[i].Data, forwardResult[i].Data.Max()) == y[i][0])
-                {
-                    matchCount++;
-                }
-            }
-
-            return matchCount / (double)x.Length;
         }
 
         public void Save(string fileName)

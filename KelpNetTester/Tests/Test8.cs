@@ -81,10 +81,8 @@ namespace KelpNetTester.Tests
                     t[j] = new[] { sequences[j].Data[i + 1] };
                 }
 
-                var forwardResult = model.Forward(x);
-
                 double sumLoss;
-                backNdArrays.Push(LossFunctions.MeanSquaredError(forwardResult, t, out sumLoss));
+                backNdArrays.Push(Trainer.Forward(model,x,t, LossFunctions.MeanSquaredError, out sumLoss));
                 totalLoss.Add(sumLoss);
             }
 
@@ -136,7 +134,7 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < input_seq.Count; i++)
             {
-                result = model.Predict(new[] { input_seq[i] });
+                result = Trainer.Predict(model, new[] { input_seq[i] });
             }
 
             return result.Data[0];

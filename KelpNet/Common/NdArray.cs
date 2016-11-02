@@ -94,6 +94,18 @@ namespace KelpNet.Common
             return result;
         }
 
+        public static NdArray[] FromArray(Array[] data)
+        {
+            NdArray[] result = new NdArray[data.Length];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = FromArray(data[i]);
+            }
+
+            return result;
+        }
+
         public static NdArray FromArray(Array data)
         {
             double[] resultData = new double[data.Length]; 

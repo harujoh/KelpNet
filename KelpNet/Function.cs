@@ -27,11 +27,6 @@ namespace KelpNet
             return this.ForwardSingle(x);
         }
 
-        public virtual NdArray Forward(Array input)
-        {
-            return this.Forward(NdArray.FromArray(input));
-        }
-
         public virtual NdArray[] Backward(NdArray[] gy)
         {
             //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
@@ -65,12 +60,12 @@ namespace KelpNet
         }
 
         //任意で個別に非バッチ関数が書けるように用意
-        public virtual NdArray ForwardSingle(NdArray x)
+        protected virtual NdArray ForwardSingle(NdArray x)
         {
             return this.ForwardSingle(new [] {x})[0];
         }
 
-        public virtual NdArray BackwardSingle(NdArray gy)
+        protected virtual NdArray BackwardSingle(NdArray gy)
         {
             return this.BackwardSingle(new[] { gy })[0];
         }
@@ -84,12 +79,6 @@ namespace KelpNet
         public virtual NdArray Predict(NdArray input)
         {
             return this.ForwardSingle(input);
-        }
-
-        //予想を実行する[非バッチ]（外部からの使用を想定してArrayが引数
-        public virtual NdArray Predict(Array input)
-        {
-            return this.Predict(NdArray.FromArray(input));
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理

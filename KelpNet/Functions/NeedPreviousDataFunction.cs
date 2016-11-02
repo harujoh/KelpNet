@@ -23,7 +23,7 @@ namespace KelpNet.Functions
         {
         }
 
-        public override NdArray ForwardSingle(NdArray x)
+        protected override NdArray ForwardSingle(NdArray x)
         {
             this._prevInput.Add(new[] { x });
             this._prevOutput.Add(new[] { this.NeedPreviousForward(x) });
@@ -62,7 +62,7 @@ namespace KelpNet.Functions
             return this._prevOutput.Last();
         }
 
-        public override NdArray BackwardSingle(NdArray gy)
+        protected override NdArray BackwardSingle(NdArray gy)
         {
             var prevInput = this._prevInput.Last()[0];
             var prevOutput = this._prevOutput.Last()[0];

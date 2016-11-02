@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet;
 using KelpNet.Common;
 using KelpNet.Functions.Activations;
@@ -29,8 +28,9 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < N; i++)
             {
                 //Sin波を一周期分用意
-                trainData[i] = new[] { -Math.PI + Math.PI * 2.0 * i / (N - 1) };
-                trainLabel[i] = new[] { Math.Sin(trainData[i][0]) };
+                var radian = -Math.PI + Math.PI * 2.0 * i / (N - 1);
+                trainData[i] = new[] { radian };
+                trainLabel[i] = new[] { Math.Sin(radian) };
             }
 
             //ネットワークの構成を FunctionStack に書き連ねる
@@ -52,10 +52,7 @@ namespace KelpNetTester.Tests
                 for (int j = 0; j < N; j++)
                 {
                     //ネットワークは訓練を実行すると戻り値に誤差が返ってくる
-                    loss += nn.Train(trainData[j], trainLabel[j], LossFunctions.MeanSquaredError);
-
-                    //今回は逐次更新
-                    nn.Update();
+                    loss += Trainer.Train(nn, trainData[j], trainLabel[j], LossFunctions.MeanSquaredError);
                 }
 
                 if (i % (EPOCH / 10) == 0)
@@ -70,7 +67,7 @@ namespace KelpNetTester.Tests
 
             foreach (var val in trainData)
             {
-                Console.WriteLine(val[0] + ":" + nn.Predict( NdArray.FromArray(val)).Data[0]);
+                Console.WriteLine(val[0] + ":" + Trainer.Predict(nn,val).Data[0]);
             }
         }
     }

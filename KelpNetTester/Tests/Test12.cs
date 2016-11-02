@@ -38,7 +38,7 @@ namespace KelpNetTester.Tests
                 this.Label = label;
             }
 
-            public double[][] GetTrainData()
+            public NdArray[] GetTrainData()
             {
                 //第一層の傾きを取得
                 var train = new double[BATCH_DATA_COUNT][];
@@ -50,7 +50,7 @@ namespace KelpNetTester.Tests
                     Buffer.BlockCopy(this.Result[k].Data, 0, train[k], 0, sizeof(double) * 256);
                 }
 
-                return train;
+                return NdArray.FromArray(train);
             }
         }
 
@@ -139,157 +139,97 @@ namespace KelpNetTester.Tests
 
                 List<double> cDNI3totalLoss = new List<double>();
 
-                var layer1ForwardResults = new List<ResultDataSet>();
-                var layer2ForwardResults = new List<ResultDataSet>();
-                var layer3ForwardResults = new List<ResultDataSet>();
-
-                var layer2BackwardResult = new List<NdArray[]>();
-                var layer3BackwardResult = new List<NdArray[]>();
-                var layer4BackwardResult = new List<NdArray[]>();
-
-                var cDNI1Result = new List<NdArray[]>();
-                var cDNI2Result = new List<NdArray[]>();
-                var cDNI3Result = new List<NdArray[]>();
-
-                int cDNI1Count = 0;
-                int cDNI2Count = 0;
-                int cDNI3Count = 0;
 
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
                     //訓練データからランダムにデータを取得
-                    var datasetX = new MnistDataSet[10];
-                    for (int j = 0; j < datasetX.Length; j++)
-                    {
-                        datasetX[j] = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
-                    }
+                    var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
-                    //第一層を2～6回実行
-                    var count = Mother.Dice.Next(2, 6);
-                    for (int j = 0; j < count; j++)
-                    {
-                        var layer1ForwardResult = Layer1.Forward(datasetX[j].Data);
-                        var layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX[j].Label);
-                        layer1ForwardResults.Add(layer1ResultDataSet);
+                    //第一層を実行
+                    var layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
+                    var layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX.Label);
 
-                        ////第一層の傾きを取得
-                        cDNI1Result.Add(cDNI1.Forward(layer1ResultDataSet.GetTrainData()));
+                    ////第一層の傾きを取得
+                    var cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
 
-                        //第一層を更新
-                        Layer1.Backward(cDNI1Result.Last());
-                        Layer1.Update();
+                    //第一層を更新
+                    Layer1.Backward(cDNI1Result);
+                    Layer1.Update();
 
-                        cDNI1Count++;
-                    }
+                    
+                    //第二層を実行
+                    var layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
+                    var layer2ResultDataSet = new ResultDataSet(layer2ForwardResult, layer1ResultDataSet.Label);
 
-                    //第二層を2～6回実行
-                    count = Mother.Dice.Next(2, 6);
-                    for (int j = 0; j < count && layer1ForwardResults.Count > 0; j++)
-                    {
-                        var layer2ForwardResult = Layer2.Forward(layer1ForwardResults[0].Result);
-                        var layer2ResultDataSet = new ResultDataSet(layer2ForwardResult, layer1ForwardResults[0].Label);
-                        layer2ForwardResults.Add(layer2ResultDataSet);
-                        layer1ForwardResults.RemoveAt(0);
+                    //第二層の傾きを取得
+                    var cDNI2Result =cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
-                        //第二層の傾きを取得
-                        cDNI2Result.Add(cDNI2.Forward(layer2ResultDataSet.GetTrainData()));
+                    //第二層を更新
+                    var layer2BackwardResult = Layer2.Backward(cDNI2Result);
+                    Layer2.Update();
 
-                        //第二層を更新
-                        layer2BackwardResult.Add(Layer2.Backward(cDNI2Result.Last()));
-                        Layer2.Update();
 
-                        cDNI2Count++;
-                    }
-
-                    //第一層用のcDNIの学習を2～6回実行
+                    //第一層用のcDNIの学習を実行
                     double cDNI1loss = 0;
-                    count = Mother.Dice.Next(2, 6);
-                    for (int j = 0; j < count && layer2BackwardResult.Count > 0 && cDNI1Result.Count > 0; j++)
-                    {
-                        var DNI1lossResult = LossFunctions.MeanSquaredError(cDNI1Result[0], layer2BackwardResult[0], out cDNI1loss);
-                        cDNI1Result.RemoveAt(0);
-                        layer2BackwardResult.RemoveAt(0);
+                    var DNI1lossResult = LossFunctions.MeanSquaredError(cDNI1Result, layer2BackwardResult, out cDNI1loss);
 
-                        cDNI1.Backward(DNI1lossResult);
-                        cDNI1.Update();
-                        cDNI1totalLoss.Add(cDNI1loss);
-                    }
-
-                    //第三層を2～6回実行
-                    count = Mother.Dice.Next(2, 6);
-                    for (int j = 0; j < count && layer2ForwardResults.Count > 0; j++)
-                    {
-                        var layer3ForwardResult = Layer3.Forward(layer2ForwardResults[0].Result);
-                        var layer3ResultDataSet = new ResultDataSet(layer3ForwardResult, layer2ForwardResults[0].Label);
-                        layer3ForwardResults.Add(layer3ResultDataSet);
-                        layer2ForwardResults.RemoveAt(0);
-
-                        //第三層の傾きを取得
-                        cDNI3Result.Add(cDNI3.Forward(layer3ResultDataSet.GetTrainData()));
-
-                        //第三層を更新
-                        layer3BackwardResult.Add(Layer3.Backward(cDNI3Result.Last()));
-                        Layer3.Update();
-
-                        cDNI3Count++;
-                    }
+                    cDNI1.Backward(DNI1lossResult);
+                    cDNI1.Update();
+                    cDNI1totalLoss.Add(cDNI1loss);
 
 
-                    //第二層用のcDNIの学習を2～6回実行
+                    //第三層を実行
+                    var layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
+                    var layer3ResultDataSet = new ResultDataSet(layer3ForwardResult, layer2ResultDataSet.Label);
+
+                    //第三層の傾きを取得
+                    var cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
+
+                    //第三層を更新
+                    var layer3BackwardResult = Layer3.Backward(cDNI3Result);
+                    Layer3.Update();
+
+
+                    //第二層用のcDNIの学習を実行
                     double cDNI2loss = 0;
-                    count = Mother.Dice.Next(2, 6);
-                    for (int j = 0; j < count && layer3BackwardResult.Count > 0 && cDNI2Result.Count > 0; j++)
-                    {
-                        var DNI2lossResult = LossFunctions.MeanSquaredError(cDNI2Result[0], layer3BackwardResult[0], out cDNI2loss);
-                        cDNI2Result.RemoveAt(0);
-                        layer3BackwardResult.RemoveAt(0);
+                    var DNI2lossResult = LossFunctions.MeanSquaredError(cDNI2Result, layer3BackwardResult, out cDNI2loss);
 
-                        cDNI2.Backward(DNI2lossResult);
-                        cDNI2.Update();
-                        cDNI2totalLoss.Add(cDNI2loss);
-                    }
+                    cDNI2.Backward(DNI2lossResult);
+                    cDNI2.Update();
+                    cDNI2totalLoss.Add(cDNI2loss);
 
 
+                    //第四層を実行
+                    var layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
+
+                    //第四層の傾きを取得
                     double sumLoss = 0;
-                    //第四層を2～6回実行
-                    count = Mother.Dice.Next(2, 6);
-                    for (int j = 0; j < count && layer3ForwardResults.Count > 0; j++)
-                    {
-                        var layer4ForwardResult = Layer4.Forward(layer3ForwardResults[0].Result);
+                    var lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(layer3ResultDataSet.Label), out sumLoss);
 
-                        //第四層の傾きを取得
-                        var lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, layer3ForwardResults[0].Label, out sumLoss);
-                        layer3ForwardResults.RemoveAt(0);
+                    //第四層を更新
+                    var layer4BackwardResult = Layer4.Backward(lossResult);
+                    Layer4.Update();
+                    totalLoss.Add(sumLoss);
 
-                        //第四層を更新
-                        layer4BackwardResult.Add(Layer4.Backward(lossResult));
-                        Layer4.Update();
-                        totalLoss.Add(sumLoss);
-                    }
 
                     //第三層用のcDNIの学習を実行
                     double cDNI3loss = 0;
-                    count = Mother.Dice.Next(2, 6);
-                    for (int j = 0; j < count && layer4BackwardResult.Count > 0 && cDNI3Result.Count > 0; j++)
-                    {
-                        var DNI3lossResult = LossFunctions.MeanSquaredError(cDNI3Result[0], layer4BackwardResult[0], out cDNI3loss);
-                        cDNI3Result.RemoveAt(0);
-                        layer4BackwardResult.RemoveAt(0);
+                    var DNI3lossResult = LossFunctions.MeanSquaredError(cDNI3Result, layer4BackwardResult, out cDNI3loss);
 
-                        cDNI3.Backward(DNI3lossResult);
-                        cDNI3.Update();
-                        cDNI3totalLoss.Add(cDNI3loss);
-                    }
+                    cDNI3.Backward(DNI3lossResult);
+                    cDNI3.Update();
+                    cDNI3totalLoss.Add(cDNI3loss);
+
 
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
                     //結果出力
                     Console.WriteLine("total loss " + totalLoss.Average());
                     Console.WriteLine("local loss " + sumLoss);
 
-                    Console.WriteLine("\ncDNI1[" + cDNI1Count + "] total loss " + cDNI1totalLoss.Average());
-                    Console.WriteLine("cDNI2[" + cDNI2Count + "] total loss " + cDNI2totalLoss.Average());
-                    Console.WriteLine("cDNI3[" + cDNI3Count + "] total loss " + cDNI3totalLoss.Average());
+                    Console.WriteLine("\ncDNI1 total loss " + cDNI1totalLoss.Average());
+                    Console.WriteLine("cDNI2 total loss " + cDNI2totalLoss.Average());
+                    Console.WriteLine("cDNI3 total loss " + cDNI3totalLoss.Average());
 
                     Console.WriteLine("\ncDNI1 local loss " + cDNI1loss);
                     Console.WriteLine("cDNI2 local loss " + cDNI2loss);
@@ -304,7 +244,7 @@ namespace KelpNetTester.Tests
                         var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        var accuracy = nn.Accuracy(datasetY.Data, datasetY.Label);
+                        var accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }
