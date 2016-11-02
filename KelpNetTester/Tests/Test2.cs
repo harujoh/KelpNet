@@ -1,6 +1,5 @@
 ﻿using System;
 using KelpNet;
-using KelpNet.Common;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
@@ -17,7 +16,7 @@ namespace KelpNetTester.Tests
             const int learningCount = 10000;
 
             //訓練データ
-            double[][] trainData =
+            double[][] trainData = 
             {
                 new[] { 0.0, 0.0 },
                 new[] { 1.0, 0.0 },
@@ -26,7 +25,7 @@ namespace KelpNetTester.Tests
             };
 
             //訓練データラベル
-            double[][] trainLabel =
+            double[][] trainLabel = 
             {
                 new[] { 0.0 },
                 new[] { 1.0 },
@@ -49,10 +48,10 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < learningCount; i++)
             {
                 //今回はロス関数にMeanSquaredErrorを使う
-                nn.Train(trainData[0], trainLabel[0], LossFunctions.MeanSquaredError);
-                nn.Train(trainData[1], trainLabel[1], LossFunctions.MeanSquaredError);
-                nn.Train(trainData[2], trainLabel[2], LossFunctions.MeanSquaredError);
-                nn.Train(trainData[3], trainLabel[3], LossFunctions.MeanSquaredError);
+                Trainer.Train(nn, trainData[0], trainLabel[0], LossFunctions.MeanSquaredError, false);
+                Trainer.Train(nn, trainData[1], trainLabel[1], LossFunctions.MeanSquaredError, false);
+                Trainer.Train(nn, trainData[2], trainLabel[2], LossFunctions.MeanSquaredError, false);
+                Trainer.Train(nn, trainData[3], trainLabel[3], LossFunctions.MeanSquaredError, false);
 
                 //訓練後に毎回更新を実行しなければ、ミニバッチとして更新できる
                 nn.Update();
@@ -62,9 +61,8 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (var val in trainData)
             {
-                var input =  NdArray.FromArray(val);
-                var result = nn.Predict(input);
-                Console.WriteLine(input + " => " + (result.Data[0] > 0.5?1:0) + " " + result);
+                var result = Trainer.Predict(nn, val);
+                Console.WriteLine(val + " => " + (result.Data[0] > 0.5?1:0) + " " + result);
 
             }
         }

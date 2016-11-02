@@ -81,7 +81,7 @@ namespace KelpNetTester.Tests
             nn.SetOptimizer(new SGD(0.1));
 
             //訓練を実施
-            nn.Train(x, t, LossFunctions.MeanSquaredError);
+            Trainer.Train(nn, x, t, LossFunctions.MeanSquaredError, false);
 
             //Updateを実行するとgradが消費されてしまうため値を先に出力
             Console.WriteLine("gw1");

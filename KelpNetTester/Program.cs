@@ -23,10 +23,10 @@ namespace KelpNetTester
             //エクセルCNNの再現
             //Test5.Run();
 
-            //5層CNNによるMNIST（手書き文字）の学習
+            //5層CNNによるMNISTの学習
             //Test6.Run();
 
-            //BatchNormを使った15層MLPによるMNIST（手書き文字）の学習
+            //BatchNormを使った15層MLPによるMNISTの学習
             //Test7.Run();
 
             //LSTMによるSin関数の学習
@@ -37,6 +37,12 @@ namespace KelpNetTester
 
             //LSTMによるRNNLM
             //Test10.Run();
+
+            //Decoupled Neural Interfaces using Synthetic GradientsによるMNISTの学習
+            //Test11.Run();
+
+            //Test11のDNIをcDNIとした
+            //Test12.Run();
 
             //Linearの分割実行
             //TestX.Run();

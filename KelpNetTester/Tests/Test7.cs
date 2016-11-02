@@ -22,7 +22,7 @@ namespace KelpNetTester.Tests
         const int TRAIN_DATA_COUNT = 50000;
 
         //性能評価時のデータ数
-        const int TEST_DATA_COUNT = 100;
+        const int TEST_DATA_COUNT = 200;
 
         //中間層の数
         const int N = 30; //参考先リンクと同様の1000でも動作するがCPUでは遅いので
@@ -110,16 +110,12 @@ namespace KelpNetTester.Tests
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
-
                     //訓練データからランダムにデータを取得
                     var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //学習を実行
-                    var sumLoss = nn.Train(datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
+                    var sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
                     totalLoss.Add(sumLoss);
-
-                    //バッチ更新
-                    nn.Update();
 
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)
@@ -135,7 +131,7 @@ namespace KelpNetTester.Tests
                         var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        var accuracy = nn.Accuracy(datasetY.Data, datasetY.Label);
+                        var accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

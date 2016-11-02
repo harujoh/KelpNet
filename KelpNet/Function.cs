@@ -22,12 +22,12 @@ namespace KelpNet
         }
 
         //外部公開用
-        public NdArray[] Forward(NdArray[] x)
+        public virtual NdArray[] Forward(NdArray[] x)
         {
             return this.ForwardSingle(x);
         }
 
-        public NdArray[] Backward(NdArray[] gy)
+        public virtual NdArray[] Backward(NdArray[] gy)
         {
             //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
             foreach (OptimizeParameter parameter in this.Parameters)
@@ -44,12 +44,12 @@ namespace KelpNet
         protected abstract NdArray[] BackwardSingle(NdArray[] gy);
 
         //外部公開用非バッチ関数
-        public NdArray Forward(NdArray x)
+        public virtual NdArray Forward(NdArray x)
         {
             return this.ForwardSingle(x);
         }
 
-        public NdArray Backward(NdArray gy)
+        public virtual NdArray Backward(NdArray gy)
         {
             foreach (OptimizeParameter parameter in this.Parameters)
             {
@@ -60,12 +60,12 @@ namespace KelpNet
         }
 
         //任意で個別に非バッチ関数が書けるように用意
-        public virtual NdArray ForwardSingle(NdArray x)
+        protected virtual NdArray ForwardSingle(NdArray x)
         {
             return this.ForwardSingle(new [] {x})[0];
         }
 
-        public virtual NdArray BackwardSingle(NdArray gy)
+        protected virtual NdArray BackwardSingle(NdArray gy)
         {
             return this.BackwardSingle(new[] { gy })[0];
         }

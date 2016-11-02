@@ -26,7 +26,7 @@ namespace KelpNet.Loss
 
             loss /= diff.Length;
 
-            return new NdArray(diff,teachSignal.Shape);
+            return new NdArray(diff, teachSignal.Shape);
         }
 
         public static NdArray[] MeanSquaredError(NdArray[] input, NdArray[] teachSignal, out double loss)

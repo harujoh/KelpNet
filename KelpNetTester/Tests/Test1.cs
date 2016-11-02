@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using KelpNet;
-using KelpNet.Common;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
@@ -18,7 +17,7 @@ namespace KelpNetTester.Tests
             const int learningCount = 10000;
 
             //訓練データ
-            double[][] trainData =
+            double[][] trainData = 
             {
                 new[] { 0.0, 0.0 },
                 new[] { 1.0, 0.0 },
@@ -27,7 +26,7 @@ namespace KelpNetTester.Tests
             };
 
             //訓練データラベル
-            double[][] trainLabel =
+            double[][] trainLabel = 
             {
                 new[] { 0.0 },
                 new[] { 1.0 },
@@ -52,17 +51,15 @@ namespace KelpNetTester.Tests
                 for (int j = 0; j < trainData.Length; j++)
                 {
                     //訓練実行時にロス関数を記述
-                    nn.Train(trainData[j], trainLabel[j], LossFunctions.SoftmaxCrossEntropy);
-                    nn.Update();
+                    Trainer.Train(nn, trainData[j], trainLabel[j], LossFunctions.SoftmaxCrossEntropy);
                 }
             }
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (var val in trainData)
+            foreach (var input in trainData)
             {
-                var input =  NdArray.FromArray(val);
-                var result = nn.Predict(input);
+                var result = Trainer.Predict(nn, input);
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input + " => " + resultIndex + " " + result);
             }
@@ -74,10 +71,9 @@ namespace KelpNetTester.Tests
             var testnn = FunctionStack.Load("test.nn");
 
             Console.WriteLine("Test Start...");
-            foreach (var val in trainData)
+            foreach (var input in trainData)
             {
-                var input = NdArray.FromArray(val);
-                var result = testnn.Predict(input);
+                var result = Trainer.Predict(testnn, input);
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input + " => " + resultIndex + " " + result);
             }
