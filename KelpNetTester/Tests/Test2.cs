@@ -62,7 +62,7 @@ namespace KelpNetTester.Tests
             foreach (var val in trainData)
             {
                 var result = Trainer.Predict(nn, val);
-                Console.WriteLine(val + " => " + (result.Data[0] > 0.5?1:0) + " " + result);
+                Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5?1:0) + " " + result);
 
             }
         }

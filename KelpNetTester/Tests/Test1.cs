@@ -17,7 +17,7 @@ namespace KelpNetTester.Tests
             const int learningCount = 10000;
 
             //訓練データ
-            double[][] trainData = 
+            double[][] trainData =
             {
                 new[] { 0.0, 0.0 },
                 new[] { 1.0, 0.0 },
@@ -26,7 +26,7 @@ namespace KelpNetTester.Tests
             };
 
             //訓練データラベル
-            double[][] trainLabel = 
+            double[][] trainLabel =
             {
                 new[] { 0.0 },
                 new[] { 1.0 },
@@ -61,7 +61,7 @@ namespace KelpNetTester.Tests
             {
                 var result = Trainer.Predict(nn, input);
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
-                Console.WriteLine(input + " => " + resultIndex + " " + result);
+                Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
 
             //学習の終わったネットワークを保存
@@ -75,7 +75,7 @@ namespace KelpNetTester.Tests
             {
                 var result = Trainer.Predict(testnn, input);
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
-                Console.WriteLine(input + " => " + resultIndex + " " + result);
+                Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
 
         }
