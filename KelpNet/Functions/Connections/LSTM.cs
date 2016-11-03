@@ -95,6 +95,7 @@ namespace KelpNet.Functions.Connections
                 Array.Copy(upwards[2][i].Data, 0, upwardResult, 2 * OutputCount, OutputCount);
                 Array.Copy(upwards[3][i].Data, 0, upwardResult, 3 * OutputCount, OutputCount);
 
+                //再配置
                 double[][] r = this.ExtractGates(upwardResult);
 
                 var la = new double[OutputCount];

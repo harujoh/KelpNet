@@ -59,7 +59,6 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < jump * N_EPOCH; i++)
             {
-                Console.WriteLine("{0}/{1}", i + 1, jump);
 
                 var x = new int[BATCH_SIZE][];
                 var t = new int[BATCH_SIZE][];
@@ -72,7 +71,7 @@ namespace KelpNetTester.Tests
 
                 double sumLoss;
                 backNdArrays.Push(Trainer.Forward(model,x,t, LossFunctions.SoftmaxCrossEntropy, out sumLoss));
-                Console.WriteLine("Loss: {0}", sumLoss);
+                Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
 
                 //Run truncated BPTT
                 if ((i + 1) % BPROP_LEN == 0)
