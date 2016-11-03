@@ -1,5 +1,4 @@
 ﻿using System;
-using KelpNet.Common;
 #if !DEBUG
 using System.Threading.Tasks;
 #endif
@@ -9,7 +8,7 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class RMSprop : Optimizer
     {
-        private NdArray[] ms;
+        private double[][] ms;
 
         private double lr;
         private double alpha;
@@ -33,10 +32,10 @@ namespace KelpNet.Optimizers
                 for (int j = 0; j < Parameters[i].Length; j++)
                 {
                     var grad = Parameters[i].Grad.Data[j];
-                    this.ms[i].Data[j] *= this.alpha;
-                    this.ms[i].Data[j] += (1 - this.alpha) * grad * grad;
+                    this.ms[i][j] *= this.alpha;
+                    this.ms[i][j] += (1 - this.alpha) * grad * grad;
 
-                    Parameters[i].Param.Data[j] -= this.lr * grad / (Math.Sqrt(this.ms[i].Data[j]) + this.eps);
+                    Parameters[i].Param.Data[j] -= this.lr * grad / (Math.Sqrt(this.ms[i][j]) + this.eps);
                 }
             }
 #if !DEBUG
@@ -46,11 +45,11 @@ namespace KelpNet.Optimizers
 
         protected override void Initialize()
         {
-            this.ms = new NdArray[Parameters.Count];
+            this.ms = new double[Parameters.Count][];
 
             for (int i = 0; i < this.ms.Length; i++)
             {
-                this.ms[i] = NdArray.ZerosLike(Parameters[i].Param);
+                this.ms[i] = new double[Parameters[i].Param.Length];
             }
         }
     }

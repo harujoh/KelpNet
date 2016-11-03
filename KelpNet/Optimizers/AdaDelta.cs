@@ -9,8 +9,8 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class AdaDelta : Optimizer
     {
-        private NdArray[] msg;
-        private NdArray[] msdx;
+        private double[][] msg;
+        private double[][] msdx;
 
         private double rho;
         private double eps;
@@ -32,13 +32,13 @@ namespace KelpNet.Optimizers
                 for (int j = 0; j < Parameters[i].Length; j++)
                 {
                     var grad = Parameters[i].Grad.Data[j];
-                    this.msg[i].Data[j] *= this.rho;
-                    this.msg[i].Data[j] += (1 - this.rho) * grad * grad;
+                    this.msg[i][j] *= this.rho;
+                    this.msg[i][j] += (1 - this.rho) * grad * grad;
 
-                    var dx = Math.Sqrt((this.msdx[i].Data[j] + this.eps) / (this.msg[i].Data[j] + this.eps)) * grad;
+                    var dx = Math.Sqrt((this.msdx[i][j] + this.eps) / (this.msg[i][j] + this.eps)) * grad;
 
-                    this.msdx[i].Data[j] *= this.rho;
-                    this.msdx[i].Data[j] += (1 - this.rho) * dx * dx;
+                    this.msdx[i][j] *= this.rho;
+                    this.msdx[i][j] += (1 - this.rho) * dx * dx;
 
                     Parameters[i].Param.Data[j] -= dx;
                 }
@@ -50,13 +50,13 @@ namespace KelpNet.Optimizers
 
         protected override void Initialize()
         {
-            this.msg = new NdArray[Parameters.Count];
-            this.msdx = new NdArray[Parameters.Count];
+            this.msg = new double[Parameters.Count][];
+            this.msdx = new double[Parameters.Count][];
 
             for (int i = 0; i < Parameters.Count; i++)
             {
-                this.msg[i] = NdArray.ZerosLike(Parameters[i].Param);
-                this.msdx[i] = NdArray.ZerosLike(Parameters[i].Param);
+                this.msg[i] = new double[Parameters[i].Param.Length];
+                this.msdx[i] = new double[Parameters[i].Param.Length];
             }
         }
     }

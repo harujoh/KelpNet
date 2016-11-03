@@ -12,7 +12,7 @@ namespace KelpNet.Optimizers
         private double LearningRate;
         private double momentum;
 
-        private NdArray[] v;
+        private double[][] v;
 
         public MomentumSGD(double learningRate = 0.01, double momentum = 0.9)
         {
@@ -30,10 +30,10 @@ namespace KelpNet.Optimizers
             {
                 for (int k = 0; k < Parameters[i].Length; k++)
                 {
-                    this.v[i].Data[k] *= this.momentum;
-                    this.v[i].Data[k] -= this.LearningRate*Parameters[i].Grad.Data[k];
+                    this.v[i][k] *= this.momentum;
+                    this.v[i][k] -= this.LearningRate*Parameters[i].Grad.Data[k];
 
-                    Parameters[i].Param.Data[k] += this.v[i].Data[k];
+                    Parameters[i].Param.Data[k] += this.v[i][k];
                 }
             }
 #if !DEBUG
@@ -43,11 +43,11 @@ namespace KelpNet.Optimizers
 
         protected override void Initialize()
         {
-            this.v = new NdArray[Parameters.Count];
+            this.v = new double[Parameters.Count][];
 
             for (int i = 0; i < this.v.Length; i++)
             {
-                this.v[i] = NdArray.ZerosLike(Parameters[i].Param);
+                this.v[i] = new double[Parameters[i].Param.Length];
             }
         }
     }

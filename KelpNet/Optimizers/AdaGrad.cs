@@ -1,5 +1,4 @@
 ﻿using System;
-using KelpNet.Common;
 #if !DEBUG
 using System.Threading.Tasks;
 #endif
@@ -9,7 +8,7 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class AdaGrad : Optimizer
     {
-        private NdArray[] h;
+        private double[][] h;
 
         private double lr;
         private double eps;
@@ -32,9 +31,10 @@ namespace KelpNet.Optimizers
                 {
                     var grad = Parameters[i].Grad.Data[k];
 
-                    this.h[i].Data[k] += grad * grad;
+                    this.h[i][k] += grad * grad;
 
-                    Parameters[i].Param.Data[k] -= this.lr * grad / (Math.Sqrt(this.h[i].Data[k]) + this.eps);
+                    Parameters[i].Param.Data[k] -= this.lr * grad / (Math.Sqrt(this.h[i][k]) + this.eps);
+
                 }
             }
 #if !DEBUG
@@ -44,12 +44,13 @@ namespace KelpNet.Optimizers
 
         protected override void Initialize()
         {
-            this.h = new NdArray[Parameters.Count];
+            this.h = new double[Parameters.Count][];
 
             for (int i = 0; i < this.h.Length; i++)
             {
-                this.h[i] = NdArray.ZerosLike(Parameters[i].Param);
+                this.h[i] = new double[Parameters[i].Param.Length];
             }
+
         }
     }
 }

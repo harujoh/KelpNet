@@ -14,8 +14,8 @@ namespace KelpNet.Optimizers
         private double beta2;
         private double eps;
 
-        private NdArray[] m;
-        private NdArray[] v;
+        private double[][] m;
+        private double[][] v;
 
         public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double eps = 1e-8)
         {
@@ -41,10 +41,10 @@ namespace KelpNet.Optimizers
                 {
                     double grad = Parameters[i].Grad.Data[j];
 
-                    this.m[i].Data[j] += (1 - this.beta1) * (grad - this.m[i].Data[j]);
-                    this.v[i].Data[j] += (1 - this.beta2) * (grad * grad - this.v[i].Data[j]);
+                    this.m[i][j] += (1 - this.beta1) * (grad - this.m[i][j]);
+                    this.v[i][j] += (1 - this.beta2) * (grad * grad - this.v[i][j]);
 
-                    Parameters[i].Param.Data[j] -= lr *this.m[i].Data[j] / (Math.Sqrt(this.v[i].Data[j]) + this.eps);
+                    Parameters[i].Param.Data[j] -= lr *this.m[i][j] / (Math.Sqrt(this.v[i][j]) + this.eps);
                 }
             }
 #if !DEBUG
@@ -54,13 +54,13 @@ namespace KelpNet.Optimizers
 
         protected override void Initialize()
         {
-            this.m = new NdArray[Parameters.Count];
-            this.v = new NdArray[Parameters.Count];
+            this.m = new double[Parameters.Count][];
+            this.v = new double[Parameters.Count][];
 
             for (int i = 0; i < Parameters.Count; i++)
             {
-                this.m[i] = NdArray.ZerosLike(Parameters[i].Param);
-                this.v[i] = NdArray.ZerosLike(Parameters[i].Param);
+                this.m[i] = new double[Parameters[i].Param.Length];
+                this.v[i] = new double[Parameters[i].Param.Length];
             }
         }
     }
