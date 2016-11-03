@@ -45,25 +45,37 @@ namespace KelpNet.Functions.Connections
         {
             NdArray[] result = new NdArray[x.Length];
             NdArray[][] upwards = new NdArray[4][];
-            NdArray[][] laterals = new NdArray[4][];
 
             for (int i = 0; i < upwards.Length; i++)
             {
                 upwards[i] = this.upward[i].Forward(x);
             }
 
-            if (this.hParam != null)
+            if (this.hParam == null)
             {
-                for (int i = 0; i < laterals.Length; i++)
+                //値がなければ初期化
+                this.InitBatch(x.Length);
+
+                this.hParam = new NdArray[x.Length];
+                for (int i = 0; i < this.hParam.Length; i++)
                 {
-                    laterals[i] = this.lateral[i].Forward(this.hParam);
+                    this.hParam[i] = NdArray.Zeros(OutputCount);
                 }
             }
             else
             {
-                this.InitBatch(x.Length);
-
-                this.hParam = new NdArray[x.Length];
+                //値があればupwardへ加算
+                for (int i = 0; i < this.lateral.Length; i++)
+                {
+                    var laterals = this.lateral[i].Forward(this.hParam);
+                    for (int j = 0; j < laterals.Length; j++)
+                    {
+                        for (int k = 0; k < laterals[j].Length; k++)
+                        {
+                            upwards[i][j].Data[k] += laterals[j].Data[k];
+                        }
+                    }
+                }
             }
 
 #if DEBUG
@@ -83,24 +95,7 @@ namespace KelpNet.Functions.Connections
                 Array.Copy(upwards[2][i].Data, 0, upwardResult, 2 * OutputCount, OutputCount);
                 Array.Copy(upwards[3][i].Data, 0, upwardResult, 3 * OutputCount, OutputCount);
 
-                double[][] r;
-                if (this.hParam[i] != null)
-                {
-                    double[] lateralResult = new double[OutputCount * 4];
-                    Array.Copy(laterals[0][i].Data, 0, lateralResult, 0 * OutputCount, OutputCount);
-                    Array.Copy(laterals[1][i].Data, 0, lateralResult, 1 * OutputCount, OutputCount);
-                    Array.Copy(laterals[2][i].Data, 0, lateralResult, 2 * OutputCount, OutputCount);
-                    Array.Copy(laterals[3][i].Data, 0, lateralResult, 3 * OutputCount, OutputCount);
-
-                    //加算しつつ再配置
-                    r = this.ExtractGates(upwardResult, lateralResult);
-                }
-                else
-                {
-                    this.hParam[i] = NdArray.Zeros(OutputCount);
-
-                    r = this.ExtractGates(upwardResult);
-                }
+                double[][] r = this.ExtractGates(upwardResult);
 
                 var la = new double[OutputCount];
                 var li = new double[OutputCount];
@@ -159,7 +154,7 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                this.gxPrev = new []
+                this.gxPrev = new[]
                 {
                     new NdArray[gh.Length],
                     new NdArray[gh.Length],
@@ -304,27 +299,22 @@ namespace KelpNet.Functions.Connections
         }
 
         //Forward用
-        double[][] ExtractGates(params double[][] x)
+        double[][] ExtractGates(double[] x)
         {
-            int col = x[0].Length / 4;
-
             double[][] r =
             {
-                new double[col],
-                new double[col],
-                new double[col],
-                new double[col]
+                new double[OutputCount],
+                new double[OutputCount],
+                new double[OutputCount],
+                new double[OutputCount]
             };
 
-            for (int j = 0; j < x.Length; j++)
+            for (int i = 0; i < OutputCount; i++)
             {
-                for (int i = 0; i < col; i++)
-                {
-                    r[0][i] += x[j][i * 4];
-                    r[1][i] += x[j][i * 4 + 1];
-                    r[2][i] += x[j][i * 4 + 2];
-                    r[3][i] += x[j][i * 4 + 3];
-                }
+                r[0][i] = x[i * 4 + 0];
+                r[1][i] = x[i * 4 + 1];
+                r[2][i] = x[i * 4 + 2];
+                r[3][i] = x[i * 4 + 3];
             }
 
             return r;
@@ -333,20 +323,18 @@ namespace KelpNet.Functions.Connections
         //Backward用
         NdArray[] RestoreGates(params double[][] x)
         {
-            int col = x[0].Length;
-
             NdArray[] result =
             {
-                NdArray.Zeros(col),
-                NdArray.Zeros(col),
-                NdArray.Zeros(col),
-                NdArray.Zeros(col)
+                NdArray.Zeros(OutputCount),
+                NdArray.Zeros(OutputCount),
+                NdArray.Zeros(OutputCount),
+                NdArray.Zeros(OutputCount)
             };
 
-            for (int i = 0; i < col * 4; i++)
+            for (int i = 0; i < OutputCount * 4; i++)
             {
                 //暗黙的に切り捨て
-                result[i / col].Data[i % col] = x[i % 4][i / 4];
+                result[i / OutputCount].Data[i % OutputCount] = x[i % 4][i / 4];
             }
 
             return result;
