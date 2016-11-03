@@ -5,7 +5,7 @@ using KelpNet.Common;
 namespace KelpNet
 {
     //ネットワークの訓練を実行するクラス
-    //主に型変換を担う
+    //主にArray->NdArrayの型変換を担う
     public class Trainer
     {
         //ロス関数のデリゲート宣言

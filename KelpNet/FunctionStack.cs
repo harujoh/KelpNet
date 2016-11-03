@@ -149,14 +149,8 @@ namespace KelpNet
         }
 
         //予想を実行する
-        public override NdArray[] Predict(NdArray[] input)
+        public override NdArray[] Predict(NdArray[] forwardResult)
         {
-            NdArray[] forwardResult = new NdArray[input.Length];
-            for (int i = 0; i < forwardResult.Length;i++)
-            {
-                forwardResult[i] = new NdArray(input[i]);
-            }
-
             foreach (Function predictableFunction in this.Functions)
             {
                 forwardResult = predictableFunction.Predict(forwardResult);
@@ -168,14 +162,12 @@ namespace KelpNet
         //予想を実行する[非バッチ]
         public override NdArray Predict(NdArray input)
         {
-            NdArray forwardResult = new NdArray(input);
-
             foreach (Function predictableFunction in this.Functions)
             {
-                forwardResult = predictableFunction.Predict(forwardResult);
+                input = predictableFunction.Predict(input);
             }
 
-            return forwardResult;
+            return input;
         }
 
         public void Save(string fileName)

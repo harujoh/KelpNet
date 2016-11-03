@@ -36,6 +36,11 @@ namespace KelpNet.Common
             get { return this.Data.Length; }
         }
 
+        public int Rank
+        {
+            get { return this.Shape.Length; }
+        }
+
         //繰り返し呼び出されるシーンでは使用しないこと
         public double Get(params int[] indices)
         {
@@ -108,7 +113,7 @@ namespace KelpNet.Common
 
         public static NdArray FromArray(Array data)
         {
-            double[] resultData = new double[data.Length]; 
+            double[] resultData = new double[data.Length];
             int[] resultShape;
 
             if (data.Rank == 1)
@@ -118,7 +123,7 @@ namespace KelpNet.Common
                 resultShape = new[] { data.Length };
             }
             else
-            {
+            {                
                 resultShape = new int[data.Rank];
 
                 for (int i = 0; i < data.Rank; i++)
@@ -235,9 +240,6 @@ namespace KelpNet.Common
             for (int i = 0; i < this.Length; i++)
             {
                 string[] divStr;
-                //何故この判定をしたのか思い出せない、さしあたって不具合が出たため一旦削除
-                //double doubleVal;
-                //if (isExponential && double.TryParse(this.Data[i].ToString(), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out doubleVal))
                 if (isExponential)
                 {
                     divStr = this.Data[i].ToString("0.00000000e+00").Split('.');
