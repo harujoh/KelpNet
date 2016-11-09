@@ -16,19 +16,19 @@ namespace KelpNet.Common
         public NdArray(double[] data, int[] shape)
         {
             this.Data = new double[data.Length];
-            Array.Copy(data, this.Data, this.Data.Length);
+            Buffer.BlockCopy(data, 0, this.Data, 0, sizeof(double) * this.Data.Length);
 
             this.Shape = new int[shape.Length];
-            Array.Copy(shape, this.Shape, this.Shape.Length);
+            Buffer.BlockCopy(shape, 0, this.Shape, 0, sizeof(int) * this.Shape.Length);
         }
 
         public NdArray(NdArray ndArray)
         {
-            this.Shape = new int[ndArray.Shape.Length];
-            Array.Copy(ndArray.Shape, this.Shape, this.Shape.Length);
-
             this.Data = new double[ndArray.Length];
-            Array.Copy(ndArray.Data, this.Data, this.Data.Length);
+            Buffer.BlockCopy(ndArray.Data, 0, this.Data, 0, sizeof(double) * this.Data.Length);
+
+            this.Shape = new int[ndArray.Shape.Length];
+            Buffer.BlockCopy(ndArray.Shape, 0, this.Shape, 0, sizeof(int) * ndArray.Shape.Length);
         }
 
         public int Length

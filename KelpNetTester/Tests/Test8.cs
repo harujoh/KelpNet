@@ -82,7 +82,7 @@ namespace KelpNetTester.Tests
                 }
 
                 double sumLoss;
-                backNdArrays.Push(Trainer.Forward(model,x,t, LossFunctions.MeanSquaredError, out sumLoss));
+                backNdArrays.Push(Trainer.Forward(model, x, t, LossFunctions.MeanSquaredError, out sumLoss));
                 totalLoss.Add(sumLoss);
             }
 
@@ -101,7 +101,7 @@ namespace KelpNetTester.Tests
             {
                 pre_input_seq = new double[1];
             }
-            Array.Copy(seq.Data, pre_input_seq, pre_input_seq.Length);
+            Buffer.BlockCopy(seq.Data, 0, pre_input_seq, 0, sizeof(double) * pre_input_seq.Length);
 
             List<double> input_seq = new List<double>();
             input_seq.AddRange(pre_input_seq);

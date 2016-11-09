@@ -23,7 +23,7 @@ namespace KelpNet.Functions.Normalization
         private readonly NdArray gMean;
         private readonly NdArray gVariance;
         private double[] Std;
-        private double[][] Xhat;
+        private double[,] Xhat;
 
         private double[] Mean;
         private double[] Variance;
@@ -85,7 +85,7 @@ namespace KelpNet.Functions.Normalization
             }
 
             //結果を計算
-            this.Xhat = new double[x.Length][];
+            this.Xhat = new double[x.Length, this.ChannelSize];
 #if DEBUG
             for (int i = 0; i < x.Length; i++)
 #else
@@ -93,12 +93,11 @@ namespace KelpNet.Functions.Normalization
 #endif
             {
                 y[i] = NdArray.ZerosLike(x[i]);
-                this.Xhat[i] = new double[this.ChannelSize];
 
                 for (int j = 0; j < this.ChannelSize; j++)
                 {
-                    this.Xhat[i][j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
-                    y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i][j] + this.Beta.Data[j];
+                    this.Xhat[i,j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
+                    y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i,j] + this.Beta.Data[j];
                 }
             }
 #if !DEBUG
@@ -182,7 +181,7 @@ namespace KelpNet.Functions.Normalization
                 for (int j = 0; j < gy.Length; j++)
                 {
                     this.gBeta.Data[i] += gy[j].Data[i];
-                    this.gGamma.Data[i] += gy[j].Data[i] * this.Xhat[j][i];
+                    this.gGamma.Data[i] += gy[j].Data[i] * this.Xhat[j,i];
                 }
             }
 #if !DEBUG
@@ -225,7 +224,7 @@ namespace KelpNet.Functions.Normalization
 
                     for (int j = 0; j < gy.Length; j++)
                     {
-                        var val = (this.Xhat[j][i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
+                        var val = (this.Xhat[j,i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
 
                         gx[j].Data[i] = gs * (gy[j].Data[i] - val);
                     }

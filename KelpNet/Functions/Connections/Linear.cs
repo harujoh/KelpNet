@@ -12,7 +12,7 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name,inputCount,outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name, inputCount, outputCount)
         {
             this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
@@ -46,6 +46,8 @@ namespace KelpNet.Functions.Connections
         protected override NdArray NeedPreviousForward(NdArray x)
         {
             double[] output = new double[OutputCount];
+            //バイアスを最初から入れておく
+            Buffer.BlockCopy(this.b.Data, 0, output, 0, sizeof(double) * OutputCount);
 
             for (int i = 0; i < OutputCount; i++)
             {
@@ -55,8 +57,6 @@ namespace KelpNet.Functions.Connections
                 {
                     output[i] += x.Data[j] * this.W.Data[indexOffset + j];
                 }
-
-                output[i] += this.b.Data[i];
             }
 
             return NdArray.FromArray(output);
