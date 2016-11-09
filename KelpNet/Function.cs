@@ -12,13 +12,15 @@ namespace KelpNet
 
         public List<OptimizeParameter> Parameters = new List<OptimizeParameter>();
 
-        public int OutputCount;
-        public int InputCount;
+        protected readonly int OutputCount;
+        protected readonly int InputCount;
 
         //コンストラクタ
-        protected Function(string name)
+        protected Function(string name, int inputCount = 0, int oututCount = 0)
         {
             this.Name = name;
+            this.InputCount = inputCount;
+            this.OutputCount = oututCount;
         }
 
         //外部公開用
@@ -62,7 +64,7 @@ namespace KelpNet
         //任意で個別に非バッチ関数が書けるように用意
         protected virtual NdArray ForwardSingle(NdArray x)
         {
-            return this.ForwardSingle(new [] {x})[0];
+            return this.ForwardSingle(new[] { x })[0];
         }
 
         protected virtual NdArray BackwardSingle(NdArray gy)

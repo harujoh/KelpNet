@@ -19,7 +19,7 @@ namespace KelpNet.Functions
         protected abstract NdArray NeedPreviousForward(NdArray x);
         protected abstract NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput);
 
-        protected NeedPreviousDataFunction(string name) : base(name)
+        protected NeedPreviousDataFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
         {
         }
 

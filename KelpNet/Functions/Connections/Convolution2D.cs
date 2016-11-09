@@ -16,7 +16,7 @@ namespace KelpNet.Functions.Connections
         private int _stride;
         private int _pad;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name, inputChannels, outputChannels)
         {
             this._kSize = kSize;
             this._stride = stride;
@@ -50,9 +50,6 @@ namespace KelpNet.Functions.Connections
 
                 Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
             }
-
-            OutputCount = outputChannels;
-            InputCount = inputChannels;
         }
 
         protected override NdArray NeedPreviousForward(NdArray input)

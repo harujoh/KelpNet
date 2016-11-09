@@ -12,7 +12,7 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name,inputCount,outputCount)
         {
             this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
@@ -41,9 +41,6 @@ namespace KelpNet.Functions.Connections
 
                 Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
             }
-
-            OutputCount = outputCount;
-            InputCount = inputCount;
         }
 
         protected override NdArray NeedPreviousForward(NdArray x)

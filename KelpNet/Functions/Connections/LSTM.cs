@@ -25,7 +25,7 @@ namespace KelpNet.Functions.Connections
         private NdArray[][] gxPrev;
         private double[][] gcPrev;
 
-        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name)
+        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -36,9 +36,6 @@ namespace KelpNet.Functions.Connections
                 this.lateral[i] = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral" + i);
                 Parameters.AddRange(this.lateral[i].Parameters);
             }
-
-            InputCount = inSize;
-            OutputCount = outSize;
         }
 
         protected override NdArray[] ForwardSingle(NdArray[] x)
