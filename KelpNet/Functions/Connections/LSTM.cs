@@ -102,14 +102,8 @@ namespace KelpNet.Functions.Connections
                     this.cParam[i].Add(new double[OutputCount]);
                 }
 
-                double[] upwardResult = new double[OutputCount * 4];
-                Buffer.BlockCopy(upwards0[i].Data, 0, upwardResult, sizeof(double) * 0 * OutputCount, sizeof(double) * OutputCount);
-                Buffer.BlockCopy(upwards1[i].Data, 0, upwardResult, sizeof(double) * 1 * OutputCount, sizeof(double) * OutputCount);
-                Buffer.BlockCopy(upwards2[i].Data, 0, upwardResult, sizeof(double) * 2 * OutputCount, sizeof(double) * OutputCount);
-                Buffer.BlockCopy(upwards3[i].Data, 0, upwardResult, sizeof(double) * 3 * OutputCount, sizeof(double) * OutputCount);
-
                 //再配置
-                double[,] r = this.ExtractGates(upwardResult);
+                double[,] r = this.ExtractGates(upwards0[i].Data, upwards1[i].Data, upwards2[i].Data, upwards3[i].Data);
 
                 var la = new double[OutputCount];
                 var li = new double[OutputCount];
@@ -284,7 +278,6 @@ namespace KelpNet.Functions.Connections
                 this.cParam[i] = new List<double[]>();
                 this.hParam[i] = NdArray.Zeros(OutputCount);
             }
-
         }
 
         static double Sigmoid(double x)
@@ -303,16 +296,18 @@ namespace KelpNet.Functions.Connections
         }
 
         //Forward用
-        double[,] ExtractGates(double[] x)
+        double[,] ExtractGates(params double[][] x)
         {
             double[,] r = new double[4, OutputCount];
 
             for (int i = 0; i < OutputCount; i++)
             {
-                r[0, i] = x[i * 4 + 0];
-                r[1, i] = x[i * 4 + 1];
-                r[2, i] = x[i * 4 + 2];
-                r[3, i] = x[i * 4 + 3];
+                int index = i * 4;
+
+                r[0, i] = x[index/OutputCount][index%OutputCount];
+                r[1, i] = x[++index / OutputCount][index % OutputCount];
+                r[2, i] = x[++index / OutputCount][index % OutputCount];
+                r[3, i] = x[++index / OutputCount][index % OutputCount];
             }
 
             return r;
