@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet.Common;
 
 namespace KelpNet.Functions.Connections
@@ -45,9 +46,8 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            double[] output = new double[OutputCount];
             //バイアスを最初から入れておく
-            Buffer.BlockCopy(this.b.Data, 0, output, 0, sizeof(double) * OutputCount);
+            double[] output = this.b.Data.ToArray();
 
             for (int i = 0; i < OutputCount; i++)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -15,20 +16,16 @@ namespace KelpNet.Common
 
         public NdArray(double[] data, int[] shape)
         {
-            this.Data = new double[data.Length];
-            Buffer.BlockCopy(data, 0, this.Data, 0, sizeof(double) * this.Data.Length);
-
-            this.Shape = new int[shape.Length];
-            Buffer.BlockCopy(shape, 0, this.Shape, 0, sizeof(int) * this.Shape.Length);
+            //コンストラクタはコピーを作成する
+            this.Data = data.ToArray();
+            this.Shape = shape.ToArray();
         }
 
         public NdArray(NdArray ndArray)
         {
-            this.Data = new double[ndArray.Length];
-            Buffer.BlockCopy(ndArray.Data, 0, this.Data, 0, sizeof(double) * this.Data.Length);
-
-            this.Shape = new int[ndArray.Shape.Length];
-            Buffer.BlockCopy(ndArray.Shape, 0, this.Shape, 0, sizeof(int) * ndArray.Shape.Length);
+            //コンストラクタはコピーを作成する
+            this.Data = ndArray.Data.ToArray();
+            this.Shape = ndArray.Shape.ToArray();
         }
 
         public int Length
@@ -118,19 +115,13 @@ namespace KelpNet.Common
 
             if (data.Rank == 1)
             {
+                //型変換を兼ねる
                 Array.Copy(data, resultData, data.Length);
 
                 resultShape = new[] { data.Length };
             }
             else
             {                
-                resultShape = new int[data.Rank];
-
-                for (int i = 0; i < data.Rank; i++)
-                {
-                    resultShape[i] = data.GetLength(i);
-                }
-
                 //int -> doubleの指定ミスで例外がポコポコ出るので、ここで吸収
                 if (data.GetType().GetElementType() != typeof(double))
                 {
@@ -146,6 +137,12 @@ namespace KelpNet.Common
                 else
                 {
                     Buffer.BlockCopy(data, 0, resultData, 0, sizeof(double) * resultData.Length);
+                }
+
+                resultShape = new int[data.Rank];
+                for (int i = 0; i < data.Rank; i++)
+                {
+                    resultShape[i] = data.GetLength(i);
                 }
             }
 

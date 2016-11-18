@@ -20,7 +20,7 @@ namespace KelpNetTester.Tests
         const int MINI_BATCH_SIZE = 100;
         const int LENGTH_OF_SEQUENCE = 100;
 
-        const int DISPLAY_EPOCH = 2;
+        const int DISPLAY_EPOCH = 1;
         const int PREDICTION_LENGTH = 75;
 
         public static void Run()
