@@ -10,22 +10,20 @@ namespace KelpNet.Functions
 {
     //前回の入出力を自動的に扱うクラステンプレート
     [Serializable]
-    public abstract class NeedPreviousDataFunction : Function
+    public abstract class NeedPreviousOutputFunction : Function
     {
         //後入れ先出しリスト
-        private List<NdArray[]> _prevInput = new List<NdArray[]>();
         private List<NdArray[]> _prevOutput = new List<NdArray[]>();
 
         protected abstract NdArray NeedPreviousForward(NdArray x);
-        protected abstract NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput);
+        protected abstract NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput);
 
-        protected NeedPreviousDataFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
+        protected NeedPreviousOutputFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
         {
         }
 
         protected override NdArray ForwardSingle(NdArray x)
         {
-            this._prevInput.Add(new[] { x });
             var result = this.NeedPreviousForward(x);
             this._prevOutput.Add(new[] { result });
 
@@ -40,8 +38,6 @@ namespace KelpNet.Functions
             {
                 prevInput[i] = new NdArray(x[i]);
             }
-
-            this._prevInput.Add(prevInput);
 
 
             NdArray[] prevoutput = new NdArray[x.Length];
@@ -65,22 +61,16 @@ namespace KelpNet.Functions
 
         protected override NdArray BackwardSingle(NdArray gy)
         {
-            var prevInput = this._prevInput[this._prevInput.Count - 1][0];
-            this._prevInput.TrimExcess();
+            var prevOutput = this._prevOutput[this._prevOutput.Count-1][0];
+            this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
 
-            var prevOutput = this._prevOutput[this._prevOutput.Count - 1][0];
-            this._prevOutput.TrimExcess();
-
-            return this.NeedPreviousBackward(gy, prevInput, prevOutput);
+            return this.NeedPreviousBackward(gy, prevOutput);
         }
 
         protected override NdArray[] BackwardSingle(NdArray[] gy)
         {
-            var prevInput = this._prevInput[this._prevInput.Count - 1];
-            this._prevInput.TrimExcess();
-
             var prevOutput = this._prevOutput[this._prevOutput.Count - 1];
-            this._prevOutput.TrimExcess();
+            this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
 
             NdArray[] result = new NdArray[gy.Length];
 
@@ -90,7 +80,7 @@ namespace KelpNet.Functions
             Parallel.For(0, gy.Length, i =>
 #endif
             {
-                result[i] = this.NeedPreviousBackward(gy[i], prevInput[i], prevOutput[i]);
+                result[i] = this.NeedPreviousBackward(gy[i], prevOutput[i]);
             }
 #if !DEBUG
             );

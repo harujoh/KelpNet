@@ -4,7 +4,7 @@ using KelpNet.Common;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class ReLU : NeedPreviousDataFunction
+    public class ReLU : NeedPreviousOutputFunction
     {
         public ReLU(string name = "ReLU") : base(name)
         {
@@ -22,7 +22,7 @@ namespace KelpNet.Functions.Activations
             return new NdArray(y, x.Shape);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
         {
             double[] gx = new double[gy.Length];
 

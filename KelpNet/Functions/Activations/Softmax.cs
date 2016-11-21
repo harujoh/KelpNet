@@ -5,7 +5,7 @@ using KelpNet.Common;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class Softmax : NeedPreviousDataFunction
+    public class Softmax : NeedPreviousOutputFunction
     {
         public Softmax(string name = "Softmax") : base(name)
         {
@@ -32,7 +32,7 @@ namespace KelpNet.Functions.Activations
             return new NdArray(y, x.Shape);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
         {
             double[] gx = new double[gy.Length];
             var sumdx = 0.0;

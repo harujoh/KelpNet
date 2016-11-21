@@ -57,7 +57,8 @@ namespace KelpNet.Functions.Noise
         {
             NdArray[] result = new NdArray[gy.Length];
 
-            double[] mask = this.MaskStack.Last();
+            double[] mask = this.MaskStack[this.MaskStack.Count-1];
+            this.MaskStack.RemoveAt(this.MaskStack.Count - 1);
 
 #if DEBUG
             for (int i = 0; i < gy.Length; i++)
@@ -77,7 +78,6 @@ namespace KelpNet.Functions.Noise
 #if !DEBUG
             );
 #endif
-            this.MaskStack.RemoveAt(this.MaskStack.Count-1);
 
             return result;
         }

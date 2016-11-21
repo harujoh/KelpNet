@@ -4,7 +4,7 @@ using KelpNet.Common;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class LeakyReLU : NeedPreviousDataFunction
+    public class LeakyReLU : NeedPreviousOutputFunction
     {
         private readonly double _slope;
 
@@ -25,7 +25,7 @@ namespace KelpNet.Functions.Activations
             return new NdArray(y, x.Shape);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
         {
             double[] gx = new double[gy.Length];
 

@@ -4,7 +4,7 @@ using KelpNet.Common;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class Convolution2D : NeedPreviousDataFunction
+    public class Convolution2D : NeedPreviousInputFunction
     {
         public NdArray W;
         public NdArray b;
@@ -107,7 +107,7 @@ namespace KelpNet.Functions.Connections
             return new NdArray(result, new[] { OutputCount, outputSize, outputSize });
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
         {
             double[] gx = new double[prevInput.Length];
 

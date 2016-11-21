@@ -5,7 +5,7 @@ using KelpNet.Common;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class Linear : NeedPreviousDataFunction
+    public class Linear : NeedPreviousInputFunction
     {
         public NdArray W;
         public NdArray b;
@@ -62,7 +62,7 @@ namespace KelpNet.Functions.Connections
             return NdArray.FromArray(output);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
         {
             double[] gxData = new double[InputCount];
 
@@ -81,7 +81,7 @@ namespace KelpNet.Functions.Connections
                 this.gb.Data[i] += gyData;
             }
 
-            return new NdArray(gxData, new[] { 1, InputCount });
+            return new NdArray(gxData, prevInput.Shape);
         }
     }
 }

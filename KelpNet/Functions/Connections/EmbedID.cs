@@ -4,7 +4,7 @@ using KelpNet.Common;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class EmbedID : NeedPreviousDataFunction
+    public class EmbedID : NeedPreviousInputFunction
     {
         public NdArray W;
         public NdArray gW;
@@ -42,7 +42,7 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
         {
             for (int i = 0; i < prevInput.Length; i++)
             {

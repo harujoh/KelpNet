@@ -56,6 +56,8 @@
     <Compile Include="Functions\Connections\EmbedID.cs" />
     <Compile Include="Functions\Connections\Linear.cs" />
     <Compile Include="Functions\Connections\LSTM.cs" />
+    <Compile Include="Functions\NeedPreviousInputFunction.cs" />
+    <Compile Include="Functions\NeedPreviousOutputFunction.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="Functions\NeedPreviousDataFunction.cs" />

@@ -109,7 +109,7 @@ namespace KelpNet.Functions.Connections
                 var li = new double[OutputCount];
                 var lf = new double[OutputCount];
                 var lo = new double[OutputCount];
-                var cPrev = this.cParam[i].Last();
+                var cPrev = this.cParam[i][this.cParam[i].Count - 1];
                 var cResult = new double[cPrev.Length];
 
                 for (int j = 0; j < this.hParam[i].Length; j++)
@@ -181,19 +181,22 @@ namespace KelpNet.Functions.Connections
                 var gf = new double[InputCount];
                 var go = new double[InputCount];
 
-                var lcParam = this.cParam[i].Last();
-                var laParam = this.aParam[i].Last();
-                var liParam = this.iParam[i].Last();
-                var lfParam = this.fParam[i].Last();
-                var loParam = this.oParam[i].Last();
-
+                var lcParam = this.cParam[i][this.cParam[i].Count - 1];
                 this.cParam[i].RemoveAt(this.cParam[i].Count - 1);
+
+                var laParam = this.aParam[i][this.aParam[i].Count - 1];
                 this.aParam[i].RemoveAt(this.aParam[i].Count - 1);
+
+                var liParam = this.iParam[i][this.iParam[i].Count - 1];
                 this.iParam[i].RemoveAt(this.iParam[i].Count - 1);
+
+                var lfParam = this.fParam[i][this.fParam[i].Count - 1];
                 this.fParam[i].RemoveAt(this.fParam[i].Count - 1);
+
+                var loParam = this.oParam[i][this.oParam[i].Count - 1];
                 this.oParam[i].RemoveAt(this.oParam[i].Count - 1);
 
-                var cPrev = this.cParam[i].Last();
+                var cPrev = this.cParam[i][this.cParam[i].Count-1];
 
                 for (int j = 0; j < InputCount; j++)
                 {
@@ -304,7 +307,7 @@ namespace KelpNet.Functions.Connections
             {
                 int index = i * 4;
 
-                r[0, i] = x[index/OutputCount][index%OutputCount];
+                r[0, i] = x[index / OutputCount][index % OutputCount];
                 r[1, i] = x[++index / OutputCount][index % OutputCount];
                 r[2, i] = x[++index / OutputCount][index % OutputCount];
                 r[3, i] = x[++index / OutputCount][index % OutputCount];
