@@ -136,9 +136,9 @@ namespace KelpNet.Functions.Normalization
             this.Mean = new double[this.ChannelSize];
             for (int i = 0; i < this.Mean.Length; i++)
             {
-                for (int j = 0; j < values.Length; j++)
+                foreach (NdArray value in values)
                 {
-                    this.Mean[i] += values[j].Data[i];
+                    this.Mean[i] += value.Data[i];
                 }
 
                 this.Mean[i] /= values.Length;
@@ -147,9 +147,9 @@ namespace KelpNet.Functions.Normalization
 
             for (int i = 0; i < this.Mean.Length; i++)
             {
-                for (int j = 0; j < values.Length; j++)
+                foreach (NdArray value in values)
                 {
-                    this.Variance[i] += Math.Pow(values[j].Data[i] - this.Mean[i], 2);
+                    this.Variance[i] += Math.Pow(value.Data[i] - this.Mean[i], 2);
                 }
 
                 this.Variance[i] /= values.Length;

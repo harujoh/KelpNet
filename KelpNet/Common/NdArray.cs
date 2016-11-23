@@ -200,9 +200,9 @@ namespace KelpNet.Common
             int realMaxLength = 0;   //小数点以下の最大値
             bool isExponential = false; //指数表現にするか
 
-            for (int i = 0; i < this.Data.Length; i++)
+            foreach (double data in this.Data)
             {
-                string[] divStr = this.Data[i].ToString().Split('.');
+                string[] divStr = data.ToString().Split('.');
                 intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
                 if (divStr.Length > 1 && !isExponential)
                 {
@@ -275,9 +275,9 @@ namespace KelpNet.Common
                 //約数を調査してピッタリなら括弧を出力
                 if (i != this.Length - 1)
                 {
-                    for (int j = 0; j < CommonDivisorList.Count; j++)
+                    foreach (int commonDivisor in CommonDivisorList)
                     {
-                        if ((i + 1) % CommonDivisorList[j] == 0)
+                        if ((i + 1) % commonDivisor == 0)
                         {
                             sb.Append("]");
                             closer++;
@@ -296,18 +296,18 @@ namespace KelpNet.Common
                         closer = 0;
 
                         //括弧前のインデント
-                        for (int j = 0; j < CommonDivisorList.Count; j++)
+                        foreach (int commonDivisor in CommonDivisorList)
                         {
-                            if ((i + 1) % CommonDivisorList[j] != 0)
+                            if ((i + 1) % commonDivisor != 0)
                             {
                                 sb.Append(" ");
                             }
                         }
                     }
 
-                    for (int j = 0; j < CommonDivisorList.Count; j++)
+                    foreach (int commonDivisor in CommonDivisorList)
                     {
-                        if ((i + 1) % CommonDivisorList[j] == 0)
+                        if ((i + 1) % commonDivisor == 0)
                         {
                             sb.Append("[");
                         }
