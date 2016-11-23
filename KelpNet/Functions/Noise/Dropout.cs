@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KelpNet.Common;
 #if !DEBUG
 using System.Threading.Tasks;
