@@ -275,9 +275,10 @@ namespace KelpNet.Common
                 //約数を調査してピッタリなら括弧を出力
                 if (i != this.Length - 1)
                 {
-                    foreach (int commonDivisor in CommonDivisorList)
+                    for (int j = 0; j < CommonDivisorList.Count; j++)
                     {
-                        if ((i + 1) % commonDivisor == 0)
+                        int commonDivisor = CommonDivisorList[j];
+                        if ((i + 1)%commonDivisor == 0)
                         {
                             sb.Append("]");
                             closer++;
@@ -296,18 +297,20 @@ namespace KelpNet.Common
                         closer = 0;
 
                         //括弧前のインデント
-                        foreach (int commonDivisor in CommonDivisorList)
+                        for (int j = 0; j < CommonDivisorList.Count; j++)
                         {
-                            if ((i + 1) % commonDivisor != 0)
+                            int commonDivisor = CommonDivisorList[j];
+                            if ((i + 1)%commonDivisor != 0)
                             {
                                 sb.Append(" ");
                             }
                         }
                     }
 
-                    foreach (int commonDivisor in CommonDivisorList)
+                    for (int j = 0; j < CommonDivisorList.Count; j++)
                     {
-                        if ((i + 1) % commonDivisor == 0)
+                        int commonDivisor = CommonDivisorList[j];
+                        if ((i + 1)%commonDivisor == 0)
                         {
                             sb.Append("[");
                         }

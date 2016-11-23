@@ -18,14 +18,15 @@ namespace KelpNet.Optimizers
         protected override void DoUpdate()
         {
 #if DEBUG
-            foreach (var parameter in Parameters)
+            for (int i = 0; i < this.Parameters.Count; i++)
 #else
-            Parallel.ForEach(Parameters, parameter =>
+            Parallel.For(0, this.Parameters.Count, i =>
 #endif
             {
-                for (int i = 0; i < parameter.Length; i++)
+                var parameter = Parameters[i];
+                for (int j = 0; j < parameter.Length; j++)
                 {
-                    parameter.Param.Data[i] -= this.LearningRate * parameter.Grad.Data[i];
+                    parameter.Param.Data[j] -= this.LearningRate*parameter.Grad.Data[j];
                 }
             }
 #if !DEBUG

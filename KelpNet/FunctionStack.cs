@@ -47,9 +47,9 @@ namespace KelpNet
         //Forward
         public override NdArray[] Forward(NdArray[] input)
         {
-            foreach (Function function in this.Functions)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                input = function.Forward(input);
+                input = this.Functions[i].Forward(input);
             }
 
             return input;
@@ -70,9 +70,9 @@ namespace KelpNet
         //Forward
         public override NdArray Forward(NdArray input)
         {
-            foreach (Function function in this.Functions)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                input = function.Forward(input);
+                input = this.Functions[i].Forward(input);
             }
 
             return input;
@@ -103,13 +103,13 @@ namespace KelpNet
         public void Update()
         {
             //更新実行前に訓練カウントを使って各Functionの傾きを補正
-            foreach (var function in this.Functions)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                foreach (OptimizeParameter functionParameter in function.Parameters)
-                {
-                    for (int k = 0; k < functionParameter.Length; k++)
+                for (int j = 0; j < this.Functions[i].Parameters.Count; j++)
+                {                    
+                    for (int k = 0; k < this.Functions[i].Parameters[j].Length; k++)
                     {
-                        functionParameter.Grad.Data[k] /= functionParameter.TrainCount;
+                        this.Functions[i].Parameters[j].Grad.Data[k] /= this.Functions[i].Parameters[j].TrainCount;
                     }
                 }
             }
@@ -130,11 +130,11 @@ namespace KelpNet
         //傾きの初期化
         public void ClearGrads()
         {
-            foreach (var function in this.Functions)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                foreach (OptimizeParameter parameter in function.Parameters)
+                for (int j = 0; j < this.Functions[i].Parameters.Count; j++)
                 {
-                    parameter.ClearGrad();
+                    this.Functions[i].Parameters[j].ClearGrad();
                 }
             }
         }
@@ -142,18 +142,18 @@ namespace KelpNet
         //ある処理実行後に特定のデータを初期値に戻す処理
         public override void ResetState()
         {
-            foreach (var function in this.Functions)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                function.ResetState();
+                this.Functions[i].ResetState();
             }
         }
 
         //予想を実行する
         public override NdArray[] Predict(NdArray[] forwardResult)
         {
-            foreach (Function predictableFunction in this.Functions)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                forwardResult = predictableFunction.Predict(forwardResult);
+                forwardResult = this.Functions[i].Predict(forwardResult);
             }
 
             return forwardResult;
@@ -162,9 +162,9 @@ namespace KelpNet
         //予想を実行する[非バッチ]
         public override NdArray Predict(NdArray input)
         {
-            foreach (Function predictableFunction in this.Functions)
+            for (int i = 0; i < this.Functions.Count; i++)
             {
-                input = predictableFunction.Predict(input);
+                input = this.Functions[i].Predict(input);
             }
 
             return input;

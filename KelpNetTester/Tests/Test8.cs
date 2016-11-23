@@ -117,9 +117,9 @@ namespace KelpNetTester.Tests
                 output_seq.Add(future);
             }
 
-            foreach (double output in output_seq)
+            for (int i = 0; i < output_seq.Count; i++)
             {
-                Console.WriteLine(output);
+                Console.WriteLine(output_seq[i]);
             }
 
             Console.WriteLine(seq);
@@ -132,9 +132,9 @@ namespace KelpNetTester.Tests
 
             NdArray result = NdArray.Zeros(1);
 
-            foreach (double input in input_seq)
+            for (int i = 0; i < input_seq.Count; i++)
             {
-                result = Trainer.Predict(model, new[] { input });
+                result = Trainer.Predict(model, new[] { input_seq[i] });
             }
 
             return result.Data[0];
