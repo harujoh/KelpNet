@@ -60,7 +60,7 @@ namespace KelpNet.Functions
 
         protected override NdArray BackwardSingle(NdArray gy)
         {
-            var prevInput = this._prevInput[this._prevInput.Count-1][0];
+            NdArray prevInput = this._prevInput[this._prevInput.Count-1][0];
             this._prevInput.RemoveAt(this._prevInput.Count - 1);
 
             return this.NeedPreviousBackward(gy, prevInput);
@@ -68,7 +68,7 @@ namespace KelpNet.Functions
 
         protected override NdArray[] BackwardSingle(NdArray[] gy)
         {
-            var prevInput = this._prevInput[this._prevInput.Count-1];
+            NdArray[] prevInput = this._prevInput[this._prevInput.Count-1];
             this._prevInput.RemoveAt(this._prevInput.Count - 1);
 
             NdArray[] result = new NdArray[gy.Length];

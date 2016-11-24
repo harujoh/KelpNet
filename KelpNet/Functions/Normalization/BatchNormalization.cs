@@ -39,8 +39,8 @@ namespace KelpNet.Functions.Normalization
             this.gBeta = NdArray.ZerosLike(this.Beta);
 
             //学習対象のParameterを登録
-            Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, Name + " Gamma"));
-            Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, Name + " Beta"));
+            this.Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, Name + " Gamma"));
+            this.Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, Name + " Beta"));
 
             this.IsTrain = isTrain;
             this.InputIsTrain = isTrain;
@@ -52,8 +52,8 @@ namespace KelpNet.Functions.Normalization
             {
                 this.gMean = NdArray.Zeros(channelSize);
                 this.gVariance = NdArray.Zeros(channelSize);
-                Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, Name + " Mean"));
-                Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, Name + " Variance"));
+                this.Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, Name + " Mean"));
+                this.Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, Name + " Variance"));
             }
 
             this.Decay = decay;
@@ -107,8 +107,8 @@ namespace KelpNet.Functions.Normalization
             //パラメータを更新
             if (this.IsTrain)
             {
-                var m = x.Length;
-                var adjust = m / Math.Max(m - 1.0, 1.0); // unbiased estimation
+                int m = x.Length;
+                double adjust = m / Math.Max(m - 1.0, 1.0); // unbiased estimation
 
                 for (int i = 0; i < this.AvgMean.Length; i++)
                 {
@@ -197,7 +197,7 @@ namespace KelpNet.Functions.Normalization
                 Parallel.For(0, this.ChannelSize, i =>
 #endif
                 {
-                    var gs = this.Gamma.Data[i] / this.Std[i];
+                    double gs = this.Gamma.Data[i] / this.Std[i];
                     this.gMean.Data[i] = -gs * this.gBeta.Data[i];
                     this.gVariance.Data[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
 
@@ -212,7 +212,7 @@ namespace KelpNet.Functions.Normalization
             }
             else
             {
-                var m = gy.Length;
+                int m = gy.Length;
 
 #if DEBUG
                 for (int i = 0; i < this.ChannelSize; i++)
@@ -220,11 +220,11 @@ namespace KelpNet.Functions.Normalization
                 Parallel.For(0, this.ChannelSize, i =>
 #endif
                 {
-                    var gs = this.Gamma.Data[i] / this.Std[i];
+                    double gs = this.Gamma.Data[i] / this.Std[i];
 
                     for (int j = 0; j < gy.Length; j++)
                     {
-                        var val = (this.Xhat[j,i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
+                        double val = (this.Xhat[j,i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
 
                         gx[j].Data[i] = gs * (gy[j].Data[i] - val);
                     }
@@ -241,7 +241,7 @@ namespace KelpNet.Functions.Normalization
         {
             this.IsTrain = false;
 
-            var result = this.ForwardSingle(input);
+            NdArray[] result = this.ForwardSingle(input);
 
             //フラグをリセット
             this.IsTrain = this.InputIsTrain;

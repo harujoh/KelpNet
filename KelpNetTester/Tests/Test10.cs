@@ -27,9 +27,9 @@ namespace KelpNetTester.Tests
 
             Vocabulary vocabulary = new Vocabulary();
 
-            var trainData = vocabulary.LoadData("data/ptb.train.txt");
-            var validData = vocabulary.LoadData("data/ptb.valid.txt");
-            var testData = vocabulary.LoadData("data/ptb.test.txt");
+            int[] trainData = vocabulary.LoadData("data/ptb.train.txt");
+            int[] validData = vocabulary.LoadData("data/ptb.valid.txt");
+            int[] testData = vocabulary.LoadData("data/ptb.test.txt");
 
             int nVocab = vocabulary.Length;
 
@@ -60,8 +60,8 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < jump * N_EPOCH; i++)
             {
 
-                var x = new int[BATCH_SIZE][];
-                var t = new int[BATCH_SIZE][];
+                int[][] x = new int[BATCH_SIZE][];
+                int[][] t = new int[BATCH_SIZE][];
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {
@@ -101,7 +101,7 @@ namespace KelpNetTester.Tests
             }
 
             Console.WriteLine("test start");
-            var testPerp = Evaluate(model, testData);
+            double testPerp = Evaluate(model, testData);
             Console.WriteLine("test perplexity:" + testPerp);
         }
 
@@ -114,8 +114,8 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < dataset.Length - 1; i++)
             {
-                var x = new int[BATCH_SIZE][];
-                var t = new int[BATCH_SIZE][];
+                int[][] x = new int[BATCH_SIZE][];
+                int[][] t = new int[BATCH_SIZE][];
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {

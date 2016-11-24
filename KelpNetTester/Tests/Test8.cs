@@ -25,8 +25,8 @@ namespace KelpNetTester.Tests
 
         public static void Run()
         {
-            var dataMaker = new DataMaker(STEPS_PER_CYCLE, NUMBER_OF_CYCLES);
-            var trainData = dataMaker.Make();
+            DataMaker dataMaker = new DataMaker(STEPS_PER_CYCLE, NUMBER_OF_CYCLES);
+            NdArray trainData = dataMaker.Make();
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack model = new FunctionStack(
@@ -42,9 +42,9 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Training...");
             for (int epoch = 0; epoch < TRAINING_EPOCHS; epoch++)
             {
-                var sequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
+                NdArray[] sequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 
-                var loss = ComputeLoss(model, sequences);
+                double loss = ComputeLoss(model, sequences);
 
                 model.Update();
 
@@ -58,7 +58,7 @@ namespace KelpNetTester.Tests
             }
 
             Console.WriteLine("Testing...");
-            var testSequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
+            NdArray[] testSequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 
             int sample_index = 45;
             predict(testSequences[sample_index], model, PREDICTION_LENGTH);
@@ -68,8 +68,8 @@ namespace KelpNetTester.Tests
         {
             //全体での誤差を集計
             List<double> totalLoss = new List<double>();
-            var x = new double[MINI_BATCH_SIZE][];
-            var t = new double[MINI_BATCH_SIZE][];
+            double[][] x = new double[MINI_BATCH_SIZE][];
+            double[][] t = new double[MINI_BATCH_SIZE][];
 
             Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
 
@@ -111,7 +111,7 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < pre_length; i++)
             {
-                var future = predict_sequence(model, input_seq);
+                double future = predict_sequence(model, input_seq);
                 input_seq.RemoveAt(0);
                 input_seq.Add(future);
                 output_seq.Add(future);

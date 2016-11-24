@@ -22,8 +22,8 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Build Vocabulary.");
 
             Vocabulary vocabulary = new Vocabulary();
-            var trainData = vocabulary.LoadData("data/ptb.train.txt");
-            var testData = vocabulary.LoadData("data/ptb.test.txt");
+            int[] trainData = vocabulary.LoadData("data/ptb.train.txt");
+            int[] testData = vocabulary.LoadData("data/ptb.test.txt");
 
             int nVocab = vocabulary.Length;
 
@@ -48,7 +48,7 @@ namespace KelpNetTester.Tests
                 NdArray h = NdArray.Zeros(N_UNITS);
                 for (int pos = 0; pos < trainData.Length; pos++)
                 {
-                    var id = trainData[pos];
+                    int id = trainData[pos];
                     s.Add(id);
 
                     if (id == vocabulary.EosID)
@@ -58,12 +58,12 @@ namespace KelpNetTester.Tests
 
                         for (int i = 0; i < s.Count; i++)
                         {
-                            var tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
+                            int tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
                             //l1 Linear
-                            var xK = model.Functions[0].Forward(NdArray.FromArray(new[] { s[i] }));
+                            NdArray xK = model.Functions[0].Forward(NdArray.FromArray(new[] { s[i] }));
 
                             //l2 Linear
-                            var l2 = model.Functions[1].Forward(h);
+                            NdArray l2 = model.Functions[1].Forward(h);
                             for (int j = 0; j < xK.Length; j++)
                             {
                                 xK.Data[j] += l2.Data[j];
@@ -73,7 +73,7 @@ namespace KelpNetTester.Tests
                             h = model.Functions[2].Forward(xK);
 
                             //l3 Linear
-                            var h2 = model.Functions[3].Forward(h);
+                            NdArray h2 = model.Functions[3].Forward(h);
 
                             double loss;
                             tmp.Push(LossFunctions.SoftmaxCrossEntropy(h2, NdArray.FromArray(new[] { tx }), out loss));
@@ -84,7 +84,7 @@ namespace KelpNetTester.Tests
 
                         for (int i = 0; i < s.Count; i++)
                         {
-                            var g = model.Functions[3].Backward(tmp.Pop());
+                            NdArray g = model.Functions[3].Backward(tmp.Pop());
                             g = model.Functions[2].Backward(g);
                             g = model.Functions[1].Backward(g);
                             model.Functions[0].Backward(g);
@@ -110,7 +110,7 @@ namespace KelpNetTester.Tests
 
             for (int pos = 0; pos < 1000; pos++)
             {
-                var id = testData[pos];
+                int id = testData[pos];
                 ts.Add(id);
 
                 if (id > trainData.Length)
@@ -151,10 +151,10 @@ namespace KelpNetTester.Tests
             for (int i = 1; i < s.Count; i++)
             {
                 //l1 Linear
-                var xK = model.Functions[0].Forward(NdArray.FromArray(new[] { s[i] }));
+                NdArray xK = model.Functions[0].Forward(NdArray.FromArray(new[] { s[i] }));
 
                 //l2 Linear
-                var l2 = model.Functions[1].Forward(h);
+                NdArray l2 = model.Functions[1].Forward(h);
                 for (int j = 0; j < xK.Length; j++)
                 {
                     xK.Data[j] += l2.Data[j];
@@ -164,8 +164,8 @@ namespace KelpNetTester.Tests
                 h = model.Functions[2].Forward(xK);
 
                 //l3 Softmax(l3 Linear)
-                var yv = model.Functions[4].Forward(model.Functions[3].Forward(h));
-                var pi = yv.Data[s[i - 1]];
+                NdArray yv = model.Functions[4].Forward(model.Functions[3].Forward(h));
+                double pi = yv.Data[s[i - 1]];
                 sum -= Math.Log(pi, 2);
             }
 

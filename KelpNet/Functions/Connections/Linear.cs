@@ -17,7 +17,7 @@ namespace KelpNet.Functions.Connections
         {
             this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
-            Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
+            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
 
             if (initialW == null)
             {
@@ -40,7 +40,7 @@ namespace KelpNet.Functions.Connections
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
                 }
 
-                Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
+                this.Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
             }
         }
 

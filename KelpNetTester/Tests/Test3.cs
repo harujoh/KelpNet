@@ -27,7 +27,7 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < N; i++)
             {
                 //Sin波を一周期分用意
-                var radian = -Math.PI + Math.PI * 2.0 * i / (N - 1);
+                double radian = -Math.PI + Math.PI * 2.0 * i / (N - 1);
                 trainData[i] = new[] { radian };
                 trainLabel[i] = new[] { Math.Sin(radian) };
             }
@@ -64,7 +64,7 @@ namespace KelpNetTester.Tests
             //訓練結果を表示
             Console.WriteLine("Test Start...");
 
-            foreach (var val in trainData)
+            foreach (double[] val in trainData)
             {
                 Console.WriteLine(val[0] + ":" + Trainer.Predict(nn,val).Data[0]);
             }

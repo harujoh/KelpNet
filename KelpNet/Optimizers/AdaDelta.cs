@@ -30,11 +30,11 @@ namespace KelpNet.Optimizers
             {
                 for (int j = 0; j < Parameters[i].Length; j++)
                 {
-                    var grad = Parameters[i].Grad.Data[j];
+                    double grad = Parameters[i].Grad.Data[j];
                     this.msg[i][j] *= this.rho;
                     this.msg[i][j] += (1 - this.rho) * grad * grad;
 
-                    var dx = Math.Sqrt((this.msdx[i][j] + this.eps) / (this.msg[i][j] + this.eps)) * grad;
+                    double dx = Math.Sqrt((this.msdx[i][j] + this.eps) / (this.msg[i][j] + this.eps)) * grad;
 
                     this.msdx[i][j] *= this.rho;
                     this.msdx[i][j] += (1 - this.rho) * dx * dx;

@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Connections
                 Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
-            Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
+            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
 
             //noBias=trueでもbiasを用意して更新しない
             this.b = NdArray.Zeros(outputChannels);
@@ -48,7 +48,7 @@ namespace KelpNet.Functions.Connections
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
                 }
 
-                Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
+                this.Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
             }
         }
 

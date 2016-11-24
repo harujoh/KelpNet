@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using KelpNet;
+using KelpNet.Common;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
@@ -57,9 +58,9 @@ namespace KelpNetTester.Tests
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (var input in trainData)
+            foreach (double[] input in trainData)
             {
-                var result = Trainer.Predict(nn, input);
+                NdArray result = Trainer.Predict(nn, input);
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
@@ -68,12 +69,12 @@ namespace KelpNetTester.Tests
             nn.Save("test.nn");
 
             //学習の終わったネットワークを読み込み
-            var testnn = FunctionStack.Load("test.nn");
+            FunctionStack testnn = FunctionStack.Load("test.nn");
 
             Console.WriteLine("Test Start...");
-            foreach (var input in trainData)
+            foreach (double[] input in trainData)
             {
-                var result = Trainer.Predict(testnn, input);
+                NdArray result = Trainer.Predict(testnn, input);
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }

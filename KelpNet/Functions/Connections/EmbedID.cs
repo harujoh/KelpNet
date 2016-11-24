@@ -14,7 +14,7 @@ namespace KelpNet.Functions.Connections
             this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
 
-            Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
+            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
 
             if (initialW == null)
             {

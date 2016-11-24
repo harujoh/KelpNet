@@ -28,7 +28,7 @@ namespace KelpNet.Optimizers
         {
             double fix1 = 1 - Math.Pow(this.beta1, UpdateCount);
             double fix2 = 1 - Math.Pow(this.beta2, UpdateCount);
-            var lr = this.alpha * Math.Sqrt(fix2) / fix1;
+            double lr = this.alpha * Math.Sqrt(fix2) / fix1;
 
 #if DEBUG
             for (int i = 0; i < Parameters.Count; i++)

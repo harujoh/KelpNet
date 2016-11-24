@@ -49,7 +49,7 @@ namespace KelpNet
             double sumLoss;
 
             //Forwardのバッチを実行
-            var lossResult = lossFunction(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
+            NdArray lossResult = lossFunction(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
 
             //Backwardのバッチを実行
             functionStack.Backward(lossResult);
@@ -68,7 +68,7 @@ namespace KelpNet
             double sumLoss;
 
             //Forwardのバッチを実行
-            var lossResult = lossFunction(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
+            NdArray[] lossResult = lossFunction(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
 
             //Backwardのバッチを実行
             functionStack.Backward(lossResult);
@@ -88,7 +88,7 @@ namespace KelpNet
             double sumLoss;
 
             //Forwardを実行
-            var lossResult = lossFunction(functionStack.Forward(input), teach, out sumLoss);
+            NdArray lossResult = lossFunction(functionStack.Forward(input), teach, out sumLoss);
 
             //Backwardを実行
             functionStack.Backward(lossResult);
@@ -111,7 +111,7 @@ namespace KelpNet
         {
             int matchCount = 0;
 
-            var forwardResult = functionStack.Predict(x);
+            NdArray[] forwardResult = functionStack.Predict(x);
 
             for (int i = 0; i < x.Length; i++)
             {

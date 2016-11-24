@@ -21,7 +21,7 @@ namespace KelpNet.Functions.Noise
         protected override NdArray[] ForwardSingle(NdArray[] x)
         {
             NdArray[] result = new NdArray[x.Length];
-            var mask = new double[x[0].Length];
+            double[] mask = new double[x[0].Length];
             double scale = 1.0 / (1.0 - this.dropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)

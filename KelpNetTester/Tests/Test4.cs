@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using KelpNet;
+using KelpNet.Common;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
@@ -55,10 +56,10 @@ namespace KelpNetTester.Tests
                 {
 
                     //訓練データからランダムにデータを取得
-                    var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    var sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
+                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
                     totalLoss.Add(sumLoss);
 
                     //20回バッチを動かしたら精度をテストする
@@ -72,10 +73,10 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("\nTesting...");
                         
                         //テストデータからランダムにデータを取得
-                        var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        var accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

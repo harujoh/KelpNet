@@ -41,7 +41,7 @@ namespace KelpNetTester.Tests
             public NdArray[] GetTrainData()
             {
                 //第一層の傾きを取得
-                var train = new double[BATCH_DATA_COUNT][];
+                double[][] train = new double[BATCH_DATA_COUNT][];
 
                 for (int k = 0; k < BATCH_DATA_COUNT; k++)
                 {
@@ -144,35 +144,35 @@ namespace KelpNetTester.Tests
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
                     //訓練データからランダムにデータを取得
-                    var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    var layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
-                    var layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX.Label);
+                    NdArray[] layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
+                    ResultDataSet layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX.Label);
 
                     ////第一層の傾きを取得
-                    var cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
+                    NdArray[] cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
 
                     //第一層を更新
                     Layer1.Backward(cDNI1Result);
                     Layer1.Update();
 
-                    
+
                     //第二層を実行
-                    var layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
-                    var layer2ResultDataSet = new ResultDataSet(layer2ForwardResult, layer1ResultDataSet.Label);
+                    NdArray[] layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
+                    ResultDataSet layer2ResultDataSet = new ResultDataSet(layer2ForwardResult, layer1ResultDataSet.Label);
 
                     //第二層の傾きを取得
-                    var cDNI2Result =cDNI2.Forward(layer2ResultDataSet.GetTrainData());
+                    NdArray[] cDNI2Result =cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
                     //第二層を更新
-                    var layer2BackwardResult = Layer2.Backward(cDNI2Result);
+                    NdArray[] layer2BackwardResult = Layer2.Backward(cDNI2Result);
                     Layer2.Update();
 
 
                     //第一層用のcDNIの学習を実行
                     double cDNI1loss = 0;
-                    var DNI1lossResult = LossFunctions.MeanSquaredError(cDNI1Result, layer2BackwardResult, out cDNI1loss);
+                    NdArray[] DNI1lossResult = LossFunctions.MeanSquaredError(cDNI1Result, layer2BackwardResult, out cDNI1loss);
 
                     cDNI1.Backward(DNI1lossResult);
                     cDNI1.Update();
@@ -180,20 +180,20 @@ namespace KelpNetTester.Tests
 
 
                     //第三層を実行
-                    var layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
-                    var layer3ResultDataSet = new ResultDataSet(layer3ForwardResult, layer2ResultDataSet.Label);
+                    NdArray[] layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
+                    ResultDataSet layer3ResultDataSet = new ResultDataSet(layer3ForwardResult, layer2ResultDataSet.Label);
 
                     //第三層の傾きを取得
-                    var cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
+                    NdArray[] cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
 
                     //第三層を更新
-                    var layer3BackwardResult = Layer3.Backward(cDNI3Result);
+                    NdArray[] layer3BackwardResult = Layer3.Backward(cDNI3Result);
                     Layer3.Update();
 
 
                     //第二層用のcDNIの学習を実行
                     double cDNI2loss = 0;
-                    var DNI2lossResult = LossFunctions.MeanSquaredError(cDNI2Result, layer3BackwardResult, out cDNI2loss);
+                    NdArray[] DNI2lossResult = LossFunctions.MeanSquaredError(cDNI2Result, layer3BackwardResult, out cDNI2loss);
 
                     cDNI2.Backward(DNI2lossResult);
                     cDNI2.Update();
@@ -201,21 +201,21 @@ namespace KelpNetTester.Tests
 
 
                     //第四層を実行
-                    var layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
+                    NdArray[] layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
 
                     //第四層の傾きを取得
                     double sumLoss = 0;
-                    var lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(layer3ResultDataSet.Label), out sumLoss);
+                    NdArray[] lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(layer3ResultDataSet.Label), out sumLoss);
 
                     //第四層を更新
-                    var layer4BackwardResult = Layer4.Backward(lossResult);
+                    NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);
                     Layer4.Update();
                     totalLoss.Add(sumLoss);
 
 
                     //第三層用のcDNIの学習を実行
                     double cDNI3loss = 0;
-                    var DNI3lossResult = LossFunctions.MeanSquaredError(cDNI3Result, layer4BackwardResult, out cDNI3loss);
+                    NdArray[] DNI3lossResult = LossFunctions.MeanSquaredError(cDNI3Result, layer4BackwardResult, out cDNI3loss);
 
                     cDNI3.Backward(DNI3lossResult);
                     cDNI3.Update();
@@ -241,10 +241,10 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        var accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

@@ -28,18 +28,18 @@ namespace KelpNet.Optimizers
                 }
             }
 
-            var norm = Math.Sqrt(s);
-            var rate = this.Threshold / norm;
+            double norm = Math.Sqrt(s);
+            double rate = this.Threshold / norm;
 
             if (rate < 1)
             {
 #if DEBUG
                 for (int i = 0; i < this.Parameters.Count; i++)
 #else
-                Parallel.For(0, this.Parameters.Count, i =>
+                Parallel.For(0, Parameters.Count, i =>
 #endif
                 {
-                    var parameter = Parameters[i];
+                    OptimizeParameter parameter = Parameters[i];
 
                     for (int j = 0; j < parameter.Length; j++)
                     {

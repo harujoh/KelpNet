@@ -45,8 +45,8 @@ namespace KelpNetTester
 
         public MnistDataSet GetRandomYSet(int dataCount)
         {
-            var listY = new List<double[,,]>();
-            var listTy = new List<int[]>();
+            List<double[,,]> listY = new List<double[,,]>();
+            List<int[]> listTy = new List<int[]>();
 
             for (int j = 0; j < dataCount; j++)
             {
@@ -61,8 +61,8 @@ namespace KelpNetTester
 
         public MnistDataSet GetRandomXSet(int dataCount)
         {
-            var listX = new List<double[,,]>();
-            var listTx = new List<int[]>();
+            List<double[,,]> listX = new List<double[,,]>();
+            List<int[]> listTx = new List<int[]>();
 
             for (int j = 0; j < dataCount; j++)
             {

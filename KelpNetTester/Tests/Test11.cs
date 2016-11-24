@@ -125,67 +125,67 @@ namespace KelpNetTester.Tests
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
                     //訓練データからランダムにデータを取得
-                    var datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    var layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
+                    NdArray[] layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
 
                     //第一層の傾きを取得
-                    var DNI1Result = DNI1.Forward(layer1ForwardResult);
+                    NdArray[] DNI1Result = DNI1.Forward(layer1ForwardResult);
 
                     //第一層を更新
                     Layer1.Backward(DNI1Result);
                     Layer1.Update();
 
                     //第二層を実行
-                    var layer2ForwardResult = Layer2.Forward(layer1ForwardResult);
+                    NdArray[] layer2ForwardResult = Layer2.Forward(layer1ForwardResult);
 
                     //第二層の傾きを取得
-                    var DNI2Result = DNI2.Forward(layer2ForwardResult);
+                    NdArray[] DNI2Result = DNI2.Forward(layer2ForwardResult);
 
                     //第二層を更新
-                    var layer2BackwardResult = Layer2.Backward(DNI2Result);
+                    NdArray[] layer2BackwardResult = Layer2.Backward(DNI2Result);
                     Layer2.Update();
 
                     //第一層用のDNIの学習を実行
                     double DNI1loss;
-                    var DNI1lossResult = LossFunctions.MeanSquaredError(DNI1Result, layer2BackwardResult, out DNI1loss);
+                    NdArray[] DNI1lossResult = LossFunctions.MeanSquaredError(DNI1Result, layer2BackwardResult, out DNI1loss);
                     DNI1.Backward(DNI1lossResult);
                     DNI1.Update();
                     DNI1totalLoss.Add(DNI1loss);
 
                     //第二層を実行
-                    var layer3ForwardResult = Layer3.Forward(layer2ForwardResult);
+                    NdArray[] layer3ForwardResult = Layer3.Forward(layer2ForwardResult);
 
                     //第三層の傾きを取得
-                    var DNI3Result = DNI3.Forward(layer3ForwardResult);
+                    NdArray[] DNI3Result = DNI3.Forward(layer3ForwardResult);
 
                     //第三層を更新
-                    var layer3BackwardResult = Layer3.Backward(DNI3Result);
+                    NdArray[] layer3BackwardResult = Layer3.Backward(DNI3Result);
                     Layer3.Update();
 
                     //第二層用のDNIの学習を実行
                     double DNI2loss;
-                    var DNI2lossResult = LossFunctions.MeanSquaredError(DNI2Result, layer3BackwardResult, out DNI2loss);
+                    NdArray[] DNI2lossResult = LossFunctions.MeanSquaredError(DNI2Result, layer3BackwardResult, out DNI2loss);
                     DNI2.Backward(DNI2lossResult);
                     DNI2.Update();
                     DNI2totalLoss.Add(DNI2loss);
 
                     //第四層を実行
-                    var layer4ForwardResult = Layer4.Forward(layer3ForwardResult);
+                    NdArray[] layer4ForwardResult = Layer4.Forward(layer3ForwardResult);
 
                     //第四層の傾きを取得
                     double sumLoss;
-                    var lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(datasetX.Label), out sumLoss);
+                    NdArray[] lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(datasetX.Label), out sumLoss);
 
                     //第四層を更新
-                    var layer4BackwardResult = Layer4.Backward(lossResult);
+                    NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);
                     Layer4.Update();
                     totalLoss.Add(sumLoss);
 
                     //第三層用のDNIの学習を実行
                     double DNI3loss;
-                    var DNI3lossResult = LossFunctions.MeanSquaredError(DNI3Result, layer4BackwardResult, out DNI3loss);
+                    NdArray[] DNI3lossResult = LossFunctions.MeanSquaredError(DNI3Result, layer4BackwardResult, out DNI3loss);
                     DNI3.Backward(DNI3lossResult);
                     DNI3.Update();
                     DNI3totalLoss.Add(DNI3loss);
@@ -209,10 +209,10 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        var datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        var accuracy = Trainer.Accuracy(nn, NdArray.FromArray(datasetY.Data), datasetY.Label);
+                        double accuracy = Trainer.Accuracy(nn, NdArray.FromArray(datasetY.Data), datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

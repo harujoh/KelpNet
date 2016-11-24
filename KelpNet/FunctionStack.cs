@@ -27,7 +27,7 @@ namespace KelpNet
                 this.Functions.Add(function);
 
                 //パラメーターを保持
-                Parameters.AddRange(function.Parameters);
+                this.Parameters.AddRange(function.Parameters);
             }
         }
 
@@ -93,9 +93,9 @@ namespace KelpNet
         public void SetOptimizer(params Optimizer[] optimizers)
         {
             this.Optimizers = optimizers;
-            foreach (var optimizer in optimizers)
+            foreach (Optimizer optimizer in optimizers)
             {
-                optimizer.SetParameters(Parameters);
+                optimizer.SetParameters(this.Parameters);
             }
         }
 
@@ -115,7 +115,7 @@ namespace KelpNet
             }
 
             //Optimizerの更新を実行
-            foreach (var optimizer in this.Optimizers)
+            foreach (Optimizer optimizer in this.Optimizers)
             {
                 optimizer.Update();
             }

@@ -127,7 +127,7 @@ namespace KelpNet.Common
                 {
                     Type arrayType = data.GetType().GetElementType();
                     //一次元の長さの配列を用意
-                    var array = Array.CreateInstance(arrayType, data.Length);
+                    Array array = Array.CreateInstance(arrayType, data.Length);
                     //一次元化して
                     Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * resultData.Length);
 

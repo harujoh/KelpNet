@@ -29,7 +29,7 @@ namespace KelpNet.Optimizers
             {
                 for (int k = 0; k < Parameters[i].Length; k++)
                 {
-                    var grad = Parameters[i].Grad.Data[k];
+                    double grad = Parameters[i].Grad.Data[k];
 
                     this.h[i][k] += grad * grad;
 

@@ -15,8 +15,8 @@ namespace KelpNet.Functions.Activations
         {
             double[] y = new double[x.Length];
 
-            var maxval = x.Data.Max();
-            var sumval = 0.0;
+            double maxval = x.Data.Max();
+            double sumval = 0.0;
 
             for (int i = 0; i < y.Length; i++)
             {
@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Activations
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
         {
             double[] gx = new double[gy.Length];
-            var sumdx = 0.0;
+            double sumdx = 0.0;
 
             for (int i = 0; i < gx.Length; i++)
             {

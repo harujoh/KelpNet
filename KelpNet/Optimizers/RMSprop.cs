@@ -31,7 +31,7 @@ namespace KelpNet.Optimizers
             {
                 for (int j = 0; j < Parameters[i].Length; j++)
                 {
-                    var grad = Parameters[i].Grad.Data[j];
+                    double grad = Parameters[i].Grad.Data[j];
                     this.ms[i][j] *= this.alpha;
                     this.ms[i][j] += (1 - this.alpha) * grad * grad;
 
