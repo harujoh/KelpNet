@@ -20,11 +20,11 @@ namespace KelpNet.Optimizers
             //_sum_sqnorm
             double s = 0.0;
 
-            for (int i = 0; i < Parameters.Count; i++)
+            for (int i = 0; i < this.Parameters.Count; i++)
             {
-                for (int j = 0; j < Parameters[i].Length; j++)
+                for (int j = 0; j < this.Parameters[i].Length; j++)
                 {
-                    s += Math.Pow(Parameters[i].Grad.Data[j], 2);
+                    s += Math.Pow(this.Parameters[i].Grad.Data[j], 2);
                 }
             }
 
@@ -36,10 +36,10 @@ namespace KelpNet.Optimizers
 #if DEBUG
                 for (int i = 0; i < this.Parameters.Count; i++)
 #else
-                Parallel.For(0, Parameters.Count, i =>
+                Parallel.For(0, this.Parameters.Count, i =>
 #endif
                 {
-                    OptimizeParameter parameter = Parameters[i];
+                    OptimizeParameter parameter = this.Parameters[i];
 
                     for (int j = 0; j < parameter.Length; j++)
                     {

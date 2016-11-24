@@ -39,8 +39,8 @@ namespace KelpNet.Functions.Normalization
             this.gBeta = NdArray.ZerosLike(this.Beta);
 
             //学習対象のParameterを登録
-            this.Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, Name + " Gamma"));
-            this.Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, Name + " Beta"));
+            this.Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, this.Name + " Gamma"));
+            this.Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, this.Name + " Beta"));
 
             this.IsTrain = isTrain;
             this.InputIsTrain = isTrain;
@@ -52,8 +52,8 @@ namespace KelpNet.Functions.Normalization
             {
                 this.gMean = NdArray.Zeros(channelSize);
                 this.gVariance = NdArray.Zeros(channelSize);
-                this.Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, Name + " Mean"));
-                this.Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, Name + " Variance"));
+                this.Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, this.Name + " Mean"));
+                this.Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, this.Name + " Variance"));
             }
 
             this.Decay = decay;

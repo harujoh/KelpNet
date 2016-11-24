@@ -14,7 +14,7 @@ namespace KelpNet.Functions.Connections
             this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
 
-            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
+            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W"));
 
             if (initialW == null)
             {
@@ -29,13 +29,13 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray result = NdArray.Zeros(x.Length, OutputCount);
+            NdArray result = NdArray.Zeros(x.Length, this.OutputCount);
 
             for (int i = 0; i < x.Length; i++)
             {
-                for (int j = 0; j < OutputCount; j++)
+                for (int j = 0; j < this.OutputCount; j++)
                 {
-                    result.Data[i * OutputCount + j] = this.W.Data[(int)x.Data[i] * OutputCount + j];
+                    result.Data[i * this.OutputCount + j] = this.W.Data[(int)x.Data[i] * this.OutputCount + j];
                 }
             }
 
@@ -46,9 +46,9 @@ namespace KelpNet.Functions.Connections
         {
             for (int i = 0; i < prevInput.Length; i++)
             {
-                for (int j = 0; j < OutputCount; j++)
+                for (int j = 0; j < this.OutputCount; j++)
                 {
-                    this.gW.Data[(int)prevInput.Data[i] * OutputCount + j] += gy.Data[i + j];
+                    this.gW.Data[(int)prevInput.Data[i] * this.OutputCount + j] += gy.Data[i + j];
                 }
             }
 

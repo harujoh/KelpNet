@@ -17,7 +17,7 @@ namespace KelpNet.Functions.Connections
         {
             this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
-            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
+            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W"));
 
             if (initialW == null)
             {
@@ -40,7 +40,7 @@ namespace KelpNet.Functions.Connections
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
                 }
 
-                this.Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
+                this.Parameters.Add(new OptimizeParameter(this.b, this.gb, this.Name + " b"));
             }
         }
 
@@ -49,11 +49,11 @@ namespace KelpNet.Functions.Connections
             //バイアスを最初から入れておく
             double[] output = this.b.Data.ToArray();
 
-            for (int i = 0; i < OutputCount; i++)
+            for (int i = 0; i < this.OutputCount; i++)
             {
-                int indexOffset = InputCount * i;
+                int indexOffset = this.InputCount * i;
 
-                for (int j = 0; j < InputCount; j++)
+                for (int j = 0; j < this.InputCount; j++)
                 {
                     output[i] += x.Data[j] * this.W.Data[indexOffset + j];
                 }
@@ -64,14 +64,14 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
         {
-            double[] gxData = new double[InputCount];
+            double[] gxData = new double[this.InputCount];
 
             for (int i = 0; i < gy.Length; i++)
             {
-                int indexOffset = InputCount * i;
+                int indexOffset = this.InputCount * i;
                 double gyData = gy.Data[i];
 
-                for (int j = 0; j < InputCount; j++)
+                for (int j = 0; j < this.InputCount; j++)
                 {
                     this.gW.Data[indexOffset + j] += prevInput.Data[j] * gyData;
 

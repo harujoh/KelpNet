@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Connections
                 Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
-            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, Name + " W"));
+            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W"));
 
             //noBias=trueでもbiasを用意して更新しない
             this.b = NdArray.Zeros(outputChannels);
@@ -48,7 +48,7 @@ namespace KelpNet.Functions.Connections
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
                 }
 
-                this.Parameters.Add(new OptimizeParameter(this.b, this.gb, Name + " b"));
+                this.Parameters.Add(new OptimizeParameter(this.b, this.gb, this.Name + " b"));
             }
         }
 
@@ -56,13 +56,13 @@ namespace KelpNet.Functions.Connections
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
 
-            double[] result = new double[OutputCount * outputSize * outputSize];
+            double[] result = new double[this.OutputCount * outputSize * outputSize];
             int resultIndex = 0;
 
-            for (int i = 0; i < OutputCount; i++)
+            for (int i = 0; i < this.OutputCount; i++)
             {
                 //Wインデックス用
-                int outChOffset = i * InputCount * this._kSize * this._kSize;
+                int outChOffset = i * this.InputCount * this._kSize * this._kSize;
 
                 for (int y = 0; y < outputSize; y++)
                 {
@@ -104,7 +104,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return new NdArray(result, new[] { OutputCount, outputSize, outputSize });
+            return new NdArray(result, new[] { this.OutputCount, outputSize, outputSize });
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
@@ -116,7 +116,7 @@ namespace KelpNet.Functions.Connections
             for (int i = 0; i < gy.Shape[0]; i++)
             {
                 //gWインデックス用
-                int outChOffset = i * InputCount * this._kSize * this._kSize;
+                int outChOffset = i * this.InputCount * this._kSize * this._kSize;
 
                 for (int y = 0; y < gy.Shape[1]; y++)
                 {

@@ -24,15 +24,15 @@ namespace KelpNet.Optimizers
 #if DEBUG
             for (int i = 0; i < Parameters.Count; i++)
 #else
-            Parallel.For(0, Parameters.Count, i => 
+            Parallel.For(0, this.Parameters.Count, i =>
 #endif
             {
-                for (int k = 0; k < Parameters[i].Length; k++)
+                for (int k = 0; k < this.Parameters[i].Length; k++)
                 {
                     this.v[i][k] *= this.momentum;
-                    this.v[i][k] -= this.LearningRate*Parameters[i].Grad.Data[k];
+                    this.v[i][k] -= this.LearningRate * this.Parameters[i].Grad.Data[k];
 
-                    Parameters[i].Param.Data[k] += this.v[i][k];
+                    this.Parameters[i].Param.Data[k] += this.v[i][k];
                 }
             }
 #if !DEBUG
@@ -42,11 +42,11 @@ namespace KelpNet.Optimizers
 
         protected override void Initialize()
         {
-            this.v = new double[Parameters.Count][];
+            this.v = new double[this.Parameters.Count][];
 
             for (int i = 0; i < this.v.Length; i++)
             {
-                this.v[i] = new double[Parameters[i].Param.Length];
+                this.v[i] = new double[this.Parameters[i].Param.Length];
             }
         }
     }

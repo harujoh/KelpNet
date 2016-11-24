@@ -98,16 +98,16 @@ namespace KelpNet.Functions.Connections
             {
                 if (this.cParam[i].Count == 0)
                 {
-                    this.cParam[i].Add(new double[OutputCount]);
+                    this.cParam[i].Add(new double[this.OutputCount]);
                 }
 
                 //再配置
                 double[,] r = this.ExtractGates(upwards0[i].Data, upwards1[i].Data, upwards2[i].Data, upwards3[i].Data);
 
-                double[] la = new double[OutputCount];
-                double[] li = new double[OutputCount];
-                double[] lf = new double[OutputCount];
-                double[] lo = new double[OutputCount];
+                double[] la = new double[this.OutputCount];
+                double[] li = new double[this.OutputCount];
+                double[] lf = new double[this.OutputCount];
+                double[] lo = new double[this.OutputCount];
                 double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
                 double[] cResult = new double[cPrev.Length];
 
@@ -175,10 +175,10 @@ namespace KelpNet.Functions.Connections
             Parallel.For(0, gh.Length, i =>
 #endif
             {
-                double[] ga = new double[InputCount];
-                double[] gi = new double[InputCount];
-                double[] gf = new double[InputCount];
-                double[] go = new double[InputCount];
+                double[] ga = new double[this.InputCount];
+                double[] gi = new double[this.InputCount];
+                double[] gf = new double[this.InputCount];
+                double[] go = new double[this.InputCount];
 
                 double[] lcParam = this.cParam[i][this.cParam[i].Count - 1];
                 this.cParam[i].RemoveAt(this.cParam[i].Count - 1);
@@ -197,7 +197,7 @@ namespace KelpNet.Functions.Connections
 
                 double[] cPrev = this.cParam[i][this.cParam[i].Count-1];
 
-                for (int j = 0; j < InputCount; j++)
+                for (int j = 0; j < this.InputCount; j++)
                 {
                     double co = Math.Tanh(lcParam[j]);
 
@@ -232,7 +232,7 @@ namespace KelpNet.Functions.Connections
             Parallel.For(0, gh.Length, i =>
 #endif
             {
-                double[] gx = new double[InputCount];
+                double[] gx = new double[this.InputCount];
 
                 for (int j = 0; j < gx.Length; j++)
                 {
@@ -269,7 +269,7 @@ namespace KelpNet.Functions.Connections
             this.oParam = new List<double[]>[batchCount];
             this.cParam = new List<double[]>[batchCount];
             this.hParam = new NdArray[batchCount];
-            this.gcPrev = new double[batchCount, InputCount];
+            this.gcPrev = new double[batchCount, this.InputCount];
 
             for (int i = 0; i < batchCount; i++)
             {
@@ -278,7 +278,7 @@ namespace KelpNet.Functions.Connections
                 this.fParam[i] = new List<double[]>();
                 this.oParam[i] = new List<double[]>();
                 this.cParam[i] = new List<double[]>();
-                this.hParam[i] = NdArray.Zeros(OutputCount);
+                this.hParam[i] = NdArray.Zeros(this.OutputCount);
             }
         }
 
@@ -300,16 +300,16 @@ namespace KelpNet.Functions.Connections
         //Forward用
         double[,] ExtractGates(params double[][] x)
         {
-            double[,] r = new double[4, OutputCount];
+            double[,] r = new double[4, this.OutputCount];
 
-            for (int i = 0; i < OutputCount; i++)
+            for (int i = 0; i < this.OutputCount; i++)
             {
                 int index = i * 4;
 
-                r[0, i] = x[index / OutputCount][index % OutputCount];
-                r[1, i] = x[++index / OutputCount][index % OutputCount];
-                r[2, i] = x[++index / OutputCount][index % OutputCount];
-                r[3, i] = x[++index / OutputCount][index % OutputCount];
+                r[0, i] = x[index / this.OutputCount][index % this.OutputCount];
+                r[1, i] = x[++index / this.OutputCount][index % this.OutputCount];
+                r[2, i] = x[++index / this.OutputCount][index % this.OutputCount];
+                r[3, i] = x[++index / this.OutputCount][index % this.OutputCount];
             }
 
             return r;
@@ -320,16 +320,16 @@ namespace KelpNet.Functions.Connections
         {
             NdArray[] result =
             {
-                NdArray.Zeros(OutputCount),
-                NdArray.Zeros(OutputCount),
-                NdArray.Zeros(OutputCount),
-                NdArray.Zeros(OutputCount)
+                NdArray.Zeros(this.OutputCount),
+                NdArray.Zeros(this.OutputCount),
+                NdArray.Zeros(this.OutputCount),
+                NdArray.Zeros(this.OutputCount)
             };
 
-            for (int i = 0; i < OutputCount * 4; i++)
+            for (int i = 0; i < this.OutputCount * 4; i++)
             {
                 //暗黙的に切り捨て
-                result[i / OutputCount].Data[i % OutputCount] = x[i % 4][i / 4];
+                result[i / this.OutputCount].Data[i % this.OutputCount] = x[i % 4][i / 4];
             }
 
             return result;

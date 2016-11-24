@@ -26,16 +26,16 @@ namespace KelpNet.Optimizers
 #if DEBUG
             for (int i = 0; i < Parameters.Count; i++)
 #else
-            Parallel.For(0, Parameters.Count, i => 
+            Parallel.For(0, this.Parameters.Count, i => 
 #endif
             {
-                for (int j = 0; j < Parameters[i].Length; j++)
+                for (int j = 0; j < this.Parameters[i].Length; j++)
                 {
-                    double grad = Parameters[i].Grad.Data[j];
+                    double grad = this.Parameters[i].Grad.Data[j];
                     this.ms[i][j] *= this.alpha;
                     this.ms[i][j] += (1 - this.alpha) * grad * grad;
 
-                    Parameters[i].Param.Data[j] -= this.lr * grad / (Math.Sqrt(this.ms[i][j]) + this.eps);
+                    this.Parameters[i].Param.Data[j] -= this.lr * grad / (Math.Sqrt(this.ms[i][j]) + this.eps);
                 }
             }
 #if !DEBUG
@@ -45,11 +45,11 @@ namespace KelpNet.Optimizers
 
         protected override void Initialize()
         {
-            this.ms = new double[Parameters.Count][];
+            this.ms = new double[this.Parameters.Count][];
 
             for (int i = 0; i < this.ms.Length; i++)
             {
-                this.ms[i] = new double[Parameters[i].Param.Length];
+                this.ms[i] = new double[this.Parameters[i].Param.Length];
             }
         }
     }

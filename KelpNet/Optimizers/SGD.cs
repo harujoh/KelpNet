@@ -20,10 +20,10 @@ namespace KelpNet.Optimizers
 #if DEBUG
             for (int i = 0; i < this.Parameters.Count; i++)
 #else
-            Parallel.For(0, Parameters.Count, i =>
+            Parallel.For(0, this.Parameters.Count, i =>
 #endif
             {
-                OptimizeParameter parameter = Parameters[i];
+                OptimizeParameter parameter = this.Parameters[i];
                 for (int j = 0; j < parameter.Length; j++)
                 {
                     parameter.Param.Data[j] -= this.LearningRate*parameter.Grad.Data[j];
