@@ -8,7 +8,7 @@ namespace KelpNet
     public abstract class Optimizer
     {
         //更新回数のカウント
-        protected double UpdateCount = 1;
+        protected long UpdateCount = 1;
         protected List<OptimizeParameter> Parameters = new List<OptimizeParameter>();
 
         //更新回数のカウントを取りつつ更新処理を呼び出す
