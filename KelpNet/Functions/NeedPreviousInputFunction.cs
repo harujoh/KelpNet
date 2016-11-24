@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KelpNet.Common;
 #if !DEBUG
 using System.Threading.Tasks;
@@ -33,7 +32,14 @@ namespace KelpNet.Functions
         protected override NdArray[] ForwardSingle(NdArray[] x)
         {
             //コピーを格納
-            this._prevInput.Add(x.ToArray());
+            NdArray[] prevInput = new NdArray[x.Length];
+            for (int i = 0; i < prevInput.Length; i++)
+            {
+                prevInput[i] = new NdArray(x[i]);
+            }
+
+            this._prevInput.Add(prevInput);
+
 
             NdArray[] prevoutput = new NdArray[x.Length];
 
