@@ -102,14 +102,14 @@ namespace KelpNetTester.Tests
             );
 
             FunctionStack cDNI2 = new FunctionStack(
-                new Linear(256, 1024, name: "cDNI2 Linear1"),
+                new Linear(256+10, 1024, name: "cDNI2 Linear1"),
                 new BatchNormalization(1024, name: "cDNI2 Nrom1"),
                 new ReLU(name: "cDNI2 ReLU1"),
                 new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI2 Linear3")
             );
 
             FunctionStack cDNI3 = new FunctionStack(
-                new Linear(256, 1024, name: "cDNI3 Linear1"),
+                new Linear(256+10, 1024, name: "cDNI3 Linear1"),
                 new BatchNormalization(1024, name: "cDNI3 Nrom1"),
                 new ReLU(name: "cDNI3 ReLU1"),
                 new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI3 Linear3")
