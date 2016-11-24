@@ -95,7 +95,7 @@ namespace KelpNet
             this.Optimizers = optimizers;
             foreach (var optimizer in optimizers)
             {
-                optimizer.SetParameters(Parameters);
+                optimizer.SetParameters(this.Parameters);
             }
         }
 
