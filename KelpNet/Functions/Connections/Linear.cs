@@ -47,7 +47,7 @@ namespace KelpNet.Functions.Connections
         protected override NdArray NeedPreviousForward(NdArray x)
         {
             //バイアスを最初から入れておく
-            double[] output = this.b.Data.ToArray();
+            double[] output = this.b.Data;
 
             for (int i = 0; i < this.OutputCount; i++)
             {
