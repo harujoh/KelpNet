@@ -84,7 +84,7 @@ namespace KelpNet.Common
             return new NdArray(resutlArray, shape);
         }
 
-        static int ShapeToArrayLength(params int[] shapes)
+        private static int ShapeToArrayLength(params int[] shapes)
         {
             int result = 1;
 
