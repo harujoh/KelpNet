@@ -49,7 +49,6 @@ namespace KelpNetTester.Tests
                 model.Update();
 
                 model.ResetState();
-                model.ClearGrads();
 
                 if (epoch != 0 && epoch % DISPLAY_EPOCH == 0)
                 {

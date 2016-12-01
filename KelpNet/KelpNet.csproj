@@ -51,6 +51,7 @@
     <Compile Include="Functions\Activations\ReLU.cs" />
     <Compile Include="Functions\Activations\Sigmoid.cs" />
     <Compile Include="Functions\Activations\Softmax.cs" />
+    <Compile Include="Functions\Activations\Softplus.cs" />
     <Compile Include="Functions\Activations\Tanh.cs" />
     <Compile Include="Functions\Connections\Convolution2D.cs" />
     <Compile Include="Functions\Connections\EmbedID.cs" />
