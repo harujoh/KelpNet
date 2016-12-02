@@ -46,7 +46,7 @@ namespace KelpNetTester.Tests
 
             double learningRate = 1.0;
             IOptimizer[] gradientClipping = model.InitOptimizers(new GradientClipping(threshold: GRAD_CLIP));
-            SGD[] sgd = (SGD[])model.InitOptimizers(new SGD(learningRate));
+            IOptimizer[] sgd = model.InitOptimizers(new SGD(learningRate));
 
             double wholeLen = trainData.Length;
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
@@ -97,7 +97,7 @@ namespace KelpNetTester.Tests
 
                         for (int j = 0; j < sgd.Length; j++)
                         {
-                            sgd[j].LearningRate = learningRate;
+                            ((SGD)sgd[j]).LearningRate = learningRate;
                         }
 
                         Console.WriteLine("learning rate =" + learningRate);
