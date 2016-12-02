@@ -10,7 +10,7 @@ namespace KelpNet.Optimizers
     {
         public double LearningRate;
 
-        public SGD(double learningRate = 0.1)
+        public SGD(OptimizeParameter[] parameters, double learningRate = 0.1) : base(parameters)
         {
             this.LearningRate = learningRate;
         }
@@ -18,15 +18,14 @@ namespace KelpNet.Optimizers
         protected override void DoUpdate()
         {
 #if DEBUG
-            for (int i = 0; i < this.Parameters.Count; i++)
+            for (int i = 0; i < this.Parameters.Length; i++)
 #else
-            Parallel.For(0, this.Parameters.Count, i =>
+            Parallel.For(0, this.Parameters.Length, i =>
 #endif
             {
-                OptimizeParameter parameter = this.Parameters[i];
-                for (int j = 0; j < parameter.Length; j++)
+                for (int j = 0; j < this.Parameters[i].Length; j++)
                 {
-                    parameter.Param.Data[j] -= this.LearningRate*parameter.Grad.Data[j];
+                    this.Parameters[i].Param.Data[j] -= this.LearningRate * this.Parameters[i].Grad.Data[j];
                 }
             }
 #if !DEBUG

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using KelpNet;
 using KelpNet.Common;
 using KelpNet.Functions.Connections;
 using KelpNet.Optimizers;
@@ -66,12 +68,14 @@ namespace KelpNetTester.Tests
             }, name: "l4");
 
             //Optimizerにパラメータを登録
-            SGD sgd = new SGD();
-            sgd.SetParameters(l0.Parameters);
-            sgd.SetParameters(l1.Parameters);
-            sgd.SetParameters(l2.Parameters);
-            sgd.SetParameters(l3.Parameters);
-            sgd.SetParameters(l4.Parameters);
+            List<OptimizeParameter> parameters = new List<OptimizeParameter>();
+            parameters.AddRange(l0.Parameters);
+            parameters.AddRange(l1.Parameters);
+            parameters.AddRange(l2.Parameters);
+            parameters.AddRange(l3.Parameters);
+            parameters.AddRange(l4.Parameters);
+
+            SGD sgd = new SGD(parameters.ToArray());
 
             Console.WriteLine("l0 for");
             Console.WriteLine(l0.Forward(NdArray.FromArray(new[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));

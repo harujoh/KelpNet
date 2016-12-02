@@ -8,23 +8,29 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class AdaGrad : Optimizer
     {
-        private double[][] h;
+        private readonly double[][] h;
 
-        private double lr;
-        private double eps;
+        public double LearningRate;
+        public double Epsilon;
 
-        public AdaGrad(double lr = 0.01, double eps = 1e-8)
+        public AdaGrad(OptimizeParameter[] parameters, double learningRate = 0.01, double epsilon = 1e-8):base(parameters)
         {
-            this.lr = lr;
-            this.eps = eps;
+            this.LearningRate = learningRate;
+            this.Epsilon = epsilon;
+
+            this.h = new double[parameters.Length][];
+            for (int i = 0; i < this.h.Length; i++)
+            {
+                this.h[i] = new double[parameters[i].Param.Length];
+            }
         }
 
         protected override void DoUpdate()
         {
 #if DEBUG
-            for (int i = 0; i < Parameters.Count; i++)
+            for (int i = 0; i < this.Parameters.Length; i++)
 #else
-            Parallel.For(0, this.Parameters.Count, i => 
+            Parallel.For(0, this.Parameters.Length, i => 
 #endif
             {
                 for (int k = 0; k < this.Parameters[i].Length; k++)
@@ -33,24 +39,13 @@ namespace KelpNet.Optimizers
 
                     this.h[i][k] += grad * grad;
 
-                    this.Parameters[i].Param.Data[k] -= this.lr * grad / (Math.Sqrt(this.h[i][k]) + this.eps);
+                    this.Parameters[i].Param.Data[k] -= this.LearningRate * grad / (Math.Sqrt(this.h[i][k]) + this.Epsilon);
 
                 }
             }
 #if !DEBUG
             );
 #endif
-        }
-
-        protected override void Initialize()
-        {
-            this.h = new double[this.Parameters.Count][];
-
-            for (int i = 0; i < this.h.Length; i++)
-            {
-                this.h[i] = new double[this.Parameters[i].Param.Length];
-            }
-
         }
     }
 }

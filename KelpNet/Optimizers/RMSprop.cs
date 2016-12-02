@@ -10,47 +10,43 @@ namespace KelpNet.Optimizers
     {
         private double[][] ms;
 
-        private double lr;
-        private double alpha;
-        private double eps;
+        public double LearningRate;
+        public double Alpha;
+        public double Epsilon;
 
-        public RMSprop(double lr = 0.01,double alpha = 0.99,double eps = 1e-8)
+        public RMSprop(OptimizeParameter[] parameters, double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8) : base(parameters)
         {
-            this.lr = lr;
-            this.alpha = alpha;
-            this.eps = eps;
+            this.LearningRate = learningRate;
+            this.Alpha = alpha;
+            this.Epsilon = epsilon;
+
+            this.ms = new double[parameters.Length][];
+            for (int i = 0; i < this.ms.Length; i++)
+            {
+                this.ms[i] = new double[parameters[i].Param.Length];
+            }
         }
 
         protected override void DoUpdate()
         {
 #if DEBUG
-            for (int i = 0; i < Parameters.Count; i++)
+            for (int i = 0; i < this.Parameters.Length; i++)
 #else
-            Parallel.For(0, this.Parameters.Count, i => 
+            Parallel.For(0, this.Parameters.Length, i =>
 #endif
             {
                 for (int j = 0; j < this.Parameters[i].Length; j++)
                 {
                     double grad = this.Parameters[i].Grad.Data[j];
-                    this.ms[i][j] *= this.alpha;
-                    this.ms[i][j] += (1 - this.alpha) * grad * grad;
+                    this.ms[i][j] *= this.Alpha;
+                    this.ms[i][j] += (1 - this.Alpha) * grad * grad;
 
-                    this.Parameters[i].Param.Data[j] -= this.lr * grad / (Math.Sqrt(this.ms[i][j]) + this.eps);
+                    this.Parameters[i].Param.Data[j] -= this.LearningRate * grad / (Math.Sqrt(this.ms[i][j]) + this.Epsilon);
                 }
             }
 #if !DEBUG
             );
 #endif
-        }
-
-        protected override void Initialize()
-        {
-            this.ms = new double[this.Parameters.Count][];
-
-            for (int i = 0; i < this.ms.Length; i++)
-            {
-                this.ms[i] = new double[this.Parameters[i].Param.Length];
-            }
         }
     }
 }

@@ -36,24 +36,30 @@ namespace KelpNet.Functions.Connections
 
         public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
         {
+            this.Parameters = new OptimizeParameter[12];
+
             this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0");
             this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1");
             this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2");
             this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3");
-            this.Parameters.AddRange(this.upward0.Parameters);
-            this.Parameters.AddRange(this.upward1.Parameters);
-            this.Parameters.AddRange(this.upward2.Parameters);
-            this.Parameters.AddRange(this.upward3.Parameters);
+            this.Parameters[0] = this.upward0.Parameters[0];
+            this.Parameters[1] = this.upward0.Parameters[1];
+            this.Parameters[2] = this.upward1.Parameters[0];
+            this.Parameters[3] = this.upward1.Parameters[1];
+            this.Parameters[4] = this.upward2.Parameters[0];
+            this.Parameters[5] = this.upward2.Parameters[1];
+            this.Parameters[6] = this.upward3.Parameters[0];
+            this.Parameters[7] = this.upward3.Parameters[1];
 
             //lateralはBiasは無し
             this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0");
             this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1");
             this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2");
             this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3");
-            this.Parameters.AddRange(this.lateral0.Parameters);
-            this.Parameters.AddRange(this.lateral1.Parameters);
-            this.Parameters.AddRange(this.lateral2.Parameters);
-            this.Parameters.AddRange(this.lateral3.Parameters);
+            this.Parameters[8] = this.lateral0.Parameters[0];
+            this.Parameters[9] = this.lateral1.Parameters[0];
+            this.Parameters[10] = this.lateral2.Parameters[0];
+            this.Parameters[11] = this.lateral3.Parameters[0];
         }
 
         protected override NdArray[] ForwardSingle(NdArray[] x)

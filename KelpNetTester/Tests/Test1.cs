@@ -43,7 +43,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            nn.SetOptimizer(new MomentumSGD());
+            MomentumSGD momentumSGD = new MomentumSGD(nn.Parameters);
 
             //訓練ループ
             Console.WriteLine("Training...");
@@ -52,7 +52,7 @@ namespace KelpNetTester.Tests
                 for (int j = 0; j < trainData.Length; j++)
                 {
                     //訓練実行時にロス関数を記述
-                    Trainer.Train(nn, trainData[j], trainLabel[j], LossFunctions.SoftmaxCrossEntropy);
+                    Trainer.Train(nn, trainData[j], trainLabel[j], LossFunctions.SoftmaxCrossEntropy, momentumSGD);
                 }
             }
 

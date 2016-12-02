@@ -97,14 +97,14 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            Layer1.SetOptimizer(new Adam());
-            Layer2.SetOptimizer(new Adam());
-            Layer3.SetOptimizer(new Adam());
-            Layer4.SetOptimizer(new Adam());
+            Adam l1Adam = new Adam(Layer1.Parameters);
+            Adam l2Adam = new Adam(Layer2.Parameters);
+            Adam l3Adam = new Adam(Layer3.Parameters);
+            Adam l4Adam = new Adam(Layer4.Parameters);
 
-            DNI1.SetOptimizer(new Adam());
-            DNI2.SetOptimizer(new Adam());
-            DNI3.SetOptimizer(new Adam());
+            Adam DNI1Adam = new Adam(DNI1.Parameters);
+            Adam DNI2Adam = new Adam(DNI2.Parameters);
+            Adam DNI3Adam = new Adam(DNI3.Parameters);
 
 
             //三世代学習
@@ -135,7 +135,7 @@ namespace KelpNetTester.Tests
 
                     //第一層を更新
                     Layer1.Backward(DNI1Result);
-                    Layer1.Update();
+                    Layer1.Update(l1Adam);
 
                     //第二層を実行
                     NdArray[] layer2ForwardResult = Layer2.Forward(layer1ForwardResult);
@@ -145,13 +145,13 @@ namespace KelpNetTester.Tests
 
                     //第二層を更新
                     NdArray[] layer2BackwardResult = Layer2.Backward(DNI2Result);
-                    Layer2.Update();
+                    Layer2.Update(l2Adam);
 
                     //第一層用のDNIの学習を実行
                     double DNI1loss;
                     NdArray[] DNI1lossResult = LossFunctions.MeanSquaredError(DNI1Result, layer2BackwardResult, out DNI1loss);
                     DNI1.Backward(DNI1lossResult);
-                    DNI1.Update();
+                    DNI1.Update(DNI1Adam);
                     DNI1totalLoss.Add(DNI1loss);
 
                     //第二層を実行
@@ -162,13 +162,13 @@ namespace KelpNetTester.Tests
 
                     //第三層を更新
                     NdArray[] layer3BackwardResult = Layer3.Backward(DNI3Result);
-                    Layer3.Update();
+                    Layer3.Update(l3Adam);
 
                     //第二層用のDNIの学習を実行
                     double DNI2loss;
                     NdArray[] DNI2lossResult = LossFunctions.MeanSquaredError(DNI2Result, layer3BackwardResult, out DNI2loss);
                     DNI2.Backward(DNI2lossResult);
-                    DNI2.Update();
+                    DNI2.Update(DNI2Adam);
                     DNI2totalLoss.Add(DNI2loss);
 
                     //第四層を実行
@@ -180,14 +180,14 @@ namespace KelpNetTester.Tests
 
                     //第四層を更新
                     NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);
-                    Layer4.Update();
+                    Layer4.Update(l4Adam);
                     totalLoss.Add(sumLoss);
 
                     //第三層用のDNIの学習を実行
                     double DNI3loss;
                     NdArray[] DNI3lossResult = LossFunctions.MeanSquaredError(DNI3Result, layer4BackwardResult, out DNI3loss);
                     DNI3.Backward(DNI3lossResult);
-                    DNI3.Update();
+                    DNI3.Update(DNI3Adam);
                     DNI3totalLoss.Add(DNI3loss);
 
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);

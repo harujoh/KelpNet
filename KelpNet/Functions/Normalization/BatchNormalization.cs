@@ -11,7 +11,6 @@ namespace KelpNet.Functions.Normalization
     public class BatchNormalization : Function
     {
         private bool IsTrain;
-        private readonly bool InputIsTrain;
         private readonly NdArray Gamma;
         private readonly NdArray gGamma;
         private readonly NdArray Beta;
@@ -32,18 +31,22 @@ namespace KelpNet.Functions.Normalization
 
         public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "BatchNorm") : base(name)
         {
+            this.ChannelSize = channelSize;
+            this.Decay = decay;
+            this.Eps = eps;
+            this.IsTrain = isTrain;
+
             this.Gamma = NdArray.Ones(channelSize);
             this.Beta = NdArray.Zeros(channelSize);
 
             this.gGamma = NdArray.ZerosLike(this.Gamma);
             this.gBeta = NdArray.ZerosLike(this.Beta);
 
-            //学習対象のParameterを登録
-            this.Parameters.Add(new OptimizeParameter(this.Gamma, this.gGamma, this.Name + " Gamma"));
-            this.Parameters.Add(new OptimizeParameter(this.Beta, this.gBeta, this.Name + " Beta"));
+            this.Parameters = new OptimizeParameter[this.IsTrain ? 2 : 4];
 
-            this.IsTrain = isTrain;
-            this.InputIsTrain = isTrain;
+            //学習対象のParameterを登録
+            this.Parameters[0] = new OptimizeParameter(this.Gamma, this.gGamma, this.Name + " Gamma");
+            this.Parameters[1] = new OptimizeParameter(this.Beta, this.gBeta, this.Name + " Beta");
 
             this.AvgMean = NdArray.Zeros(channelSize);
             this.AvgVar = NdArray.Zeros(channelSize);
@@ -52,14 +55,10 @@ namespace KelpNet.Functions.Normalization
             {
                 this.gMean = NdArray.Zeros(channelSize);
                 this.gVariance = NdArray.Zeros(channelSize);
-                this.Parameters.Add(new OptimizeParameter(this.AvgMean, this.gMean, this.Name + " Mean"));
-                this.Parameters.Add(new OptimizeParameter(this.AvgVar, this.gVariance, this.Name + " Variance"));
+
+                this.Parameters[2] = new OptimizeParameter(this.AvgMean, this.gMean, this.Name + " Mean");
+                this.Parameters[3] = new OptimizeParameter(this.AvgVar, this.gVariance, this.Name + " Variance");
             }
-
-            this.Decay = decay;
-            this.Eps = eps;
-
-            this.ChannelSize = channelSize;
         }
 
         protected override NdArray[] ForwardSingle(NdArray[] x)
@@ -96,8 +95,8 @@ namespace KelpNet.Functions.Normalization
 
                 for (int j = 0; j < this.ChannelSize; j++)
                 {
-                    this.Xhat[i,j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
-                    y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i,j] + this.Beta.Data[j];
+                    this.Xhat[i, j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
+                    y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i, j] + this.Beta.Data[j];
                 }
             }
 #if !DEBUG
@@ -181,7 +180,7 @@ namespace KelpNet.Functions.Normalization
                 for (int j = 0; j < gy.Length; j++)
                 {
                     this.gBeta.Data[i] += gy[j].Data[i];
-                    this.gGamma.Data[i] += gy[j].Data[i] * this.Xhat[j,i];
+                    this.gGamma.Data[i] += gy[j].Data[i] * this.Xhat[j, i];
                 }
             }
 #if !DEBUG
@@ -224,7 +223,7 @@ namespace KelpNet.Functions.Normalization
 
                     for (int j = 0; j < gy.Length; j++)
                     {
-                        double val = (this.Xhat[j,i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
+                        double val = (this.Xhat[j, i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
 
                         gx[j].Data[i] = gs * (gy[j].Data[i] - val);
                     }
@@ -239,12 +238,22 @@ namespace KelpNet.Functions.Normalization
 
         public override NdArray[] Predict(NdArray[] input)
         {
-            this.IsTrain = false;
+            NdArray[] result;
 
-            NdArray[] result = this.ForwardSingle(input);
+            if (this.IsTrain)
+            {
+                //Predictはトレーニングしない
+                this.IsTrain = false;
 
-            //フラグをリセット
-            this.IsTrain = this.InputIsTrain;
+                result = this.ForwardSingle(input);
+
+                //フラグをリセット
+                this.IsTrain = true;
+            }
+            else
+            {
+                result = this.ForwardSingle(input);
+            }
 
             return result;
         }

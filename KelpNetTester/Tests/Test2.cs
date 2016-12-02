@@ -42,20 +42,20 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言(今回はAdam)
-            nn.SetOptimizer(new Adam());
+            Adam adam = new Adam(nn.Parameters);
 
             //訓練ループ
             Console.WriteLine("Training...");
             for (int i = 0; i < learningCount; i++)
             {
-                //今回はロス関数にMeanSquaredErrorを使う
-                Trainer.Train(nn, trainData[0], trainLabel[0], LossFunctions.MeanSquaredError, false);
-                Trainer.Train(nn, trainData[1], trainLabel[1], LossFunctions.MeanSquaredError, false);
-                Trainer.Train(nn, trainData[2], trainLabel[2], LossFunctions.MeanSquaredError, false);
-                Trainer.Train(nn, trainData[3], trainLabel[3], LossFunctions.MeanSquaredError, false);
+                //TrainerはOptimeserを省略すると更新を行わない
+                Trainer.Train(nn, trainData[0], trainLabel[0], LossFunctions.MeanSquaredError);
+                Trainer.Train(nn, trainData[1], trainLabel[1], LossFunctions.MeanSquaredError);
+                Trainer.Train(nn, trainData[2], trainLabel[2], LossFunctions.MeanSquaredError);
+                Trainer.Train(nn, trainData[3], trainLabel[3], LossFunctions.MeanSquaredError);
 
                 //訓練後に毎回更新を実行しなければ、ミニバッチとして更新できる
-                nn.Update();
+                nn.Update(adam);
             }
 
             //訓練結果を表示

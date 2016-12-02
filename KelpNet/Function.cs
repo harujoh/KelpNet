@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using KelpNet.Common;
 
 namespace KelpNet
@@ -10,7 +9,7 @@ namespace KelpNet
     {
         public string Name;
 
-        public List<OptimizeParameter> Parameters = new List<OptimizeParameter>();
+        public OptimizeParameter[] Parameters = { };
 
         protected readonly int OutputCount;
         protected readonly int InputCount;
@@ -32,7 +31,7 @@ namespace KelpNet
         public virtual NdArray[] Backward(NdArray[] gy)
         {
             //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
-            for (int i = 0; i < this.Parameters.Count; i++)
+            for (int i = 0; i < this.Parameters.Length; i++)
             {
                 this.Parameters[i].TrainCount++;
             }
@@ -53,7 +52,7 @@ namespace KelpNet
 
         public virtual NdArray Backward(NdArray gy)
         {
-            for (int i = 0; i < this.Parameters.Count; i++)
+            for (int i = 0; i < this.Parameters.Length; i++)
             {
                 this.Parameters[i].TrainCount++;
             }

@@ -45,9 +45,8 @@ namespace KelpNetTester.Tests
             );
 
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
-            GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);
-            SGD sgd = new SGD(learningRate: 1.0);
-            model.SetOptimizer(gradientClipping,sgd);
+            GradientClipping gradientClipping = new GradientClipping(model.Parameters, threshold: GRAD_CLIP);
+            SGD sgd = new SGD(model.Parameters, learningRate: 1.0);
 
             double wholeLen = trainData.Length;
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
@@ -82,7 +81,7 @@ namespace KelpNetTester.Tests
                         model.Backward(backNdArrays.Pop());
                     }
 
-                    model.Update();
+                    model.Update(gradientClipping, sgd);
                     model.ResetState();
                 }
 

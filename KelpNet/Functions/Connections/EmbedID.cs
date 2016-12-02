@@ -9,12 +9,10 @@ namespace KelpNet.Functions.Connections
         public NdArray W;
         public NdArray gW;
 
-        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID") : base(name,inputCount,outputCount)
+        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID") : base(name, inputCount, outputCount)
         {
             this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
-
-            this.Parameters.Add(new OptimizeParameter(this.W, this.gW, this.Name + " W"));
 
             if (initialW == null)
             {
@@ -25,6 +23,8 @@ namespace KelpNet.Functions.Connections
                 //単純に代入しないのはサイズのチェックを兼ねるため
                 Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
+
+            this.Parameters = new[] { new OptimizeParameter(this.W, this.gW, this.Name + " W") };
         }
 
         protected override NdArray NeedPreviousForward(NdArray x)

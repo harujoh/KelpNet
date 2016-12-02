@@ -43,7 +43,7 @@ namespace KelpNet
         }
 
         //バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, Array input, Array teach, SingleLossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, Array input, Array teach, SingleLossFunction lossFunction, params Optimizer[] optimizers)
         {
             //結果の誤差保存用
             double sumLoss;
@@ -54,15 +54,15 @@ namespace KelpNet
             //Backwardのバッチを実行
             functionStack.Backward(lossResult);
 
-            if (isUpdate)
+            if (optimizers.Length > 0)
             {
-                functionStack.Update();
+                functionStack.Update(optimizers);
             }
 
             return sumLoss;
         }
 
-        public static double Train(FunctionStack functionStack, Array[] input, Array[] teach, LossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, Array[] input, Array[] teach, LossFunction lossFunction, params Optimizer[] optimizers)
         {
             //結果の誤差保存用
             double sumLoss;
@@ -73,16 +73,16 @@ namespace KelpNet
             //Backwardのバッチを実行
             functionStack.Backward(lossResult);
 
-            if (isUpdate)
+            if (optimizers.Length > 0)
             {
-                functionStack.Update();
+                functionStack.Update(optimizers);
             }
 
             return sumLoss;
         }
 
         //非バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, SingleLossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, SingleLossFunction lossFunction, params Optimizer[] optimizers)
         {
             //結果の誤差保存用
             double sumLoss;
@@ -93,9 +93,9 @@ namespace KelpNet
             //Backwardを実行
             functionStack.Backward(lossResult);
 
-            if (isUpdate)
+            if (optimizers.Length > 0)
             {
-                functionStack.Update();
+                functionStack.Update(optimizers);
             }
 
             return sumLoss;

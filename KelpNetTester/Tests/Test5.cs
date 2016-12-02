@@ -78,10 +78,10 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerの宣言を省略するとデフォルトのSGD(0.1)が使用される
-            nn.SetOptimizer(new SGD(0.1));
+            SGD sgd = new SGD(nn.Parameters, 0.1);
 
             //訓練を実施
-            Trainer.Train(nn, x, t, LossFunctions.MeanSquaredError, false);
+            Trainer.Train(nn, x, t, LossFunctions.MeanSquaredError);
 
             //Updateを実行するとgradが消費されてしまうため値を先に出力
             Console.WriteLine("gw1");
@@ -91,7 +91,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine(l2.gb);
 
             //更新
-            nn.Update();
+            nn.Update(sgd);
 
             Console.WriteLine("w1");
             Console.WriteLine(l2.W);
