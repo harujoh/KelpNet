@@ -121,17 +121,10 @@ namespace KelpNet
             //Optimizerの更新を実行
             foreach (var optimizer in optimizers)
             {
-#if DEBUG
                 for(int i=0;i< this.Parameters.Length;i++)
-#else
-                Parallel.For(0, this.Parameters.Length, i =>
-#endif
                 {
                     optimizer[i].Update(this.Parameters[i]);
                 }
-#if !DEBUG
-                );
-#endif
             }
 
             //傾きとカウンタをリセット
