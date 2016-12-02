@@ -49,7 +49,6 @@ Apache License 2.0
 　・EmbedID
 　・Linear
 　・LSTM
-　・Softmax
 - Poolings:
 　・AveragePooling
 　・MaxPooling
