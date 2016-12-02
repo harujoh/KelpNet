@@ -11,6 +11,12 @@ namespace KelpNet
     [Serializable]
     public class FunctionStack : Function
     {
+        readonly private OptimizeParameter[] optimizer_params;
+
+        public override OptimizeParameter[] GetOptimizeParameters()
+        {
+            return optimizer_params;
+        }
         //すべての層がココにFunctionクラスとして保管される
         public readonly Function[] Functions;
 
@@ -23,9 +29,9 @@ namespace KelpNet
             List<OptimizeParameter> parameters = new List<OptimizeParameter>();
             foreach (Function function in functions)
             {
-                parameters.AddRange(function.Parameters);
+                parameters.AddRange(function.GetOptimizeParameters());
             }
-            this.Parameters = parameters.ToArray();            
+            this.optimizer_params = parameters.ToArray();            
         }
 
         //Functionとして呼び出された時にバトンを渡す
@@ -89,8 +95,9 @@ namespace KelpNet
         //重みの更新処理
         public void Update(params Optimizer[] optimizers)
         {
+            OptimizeParameter[] Parameters = this.GetOptimizeParameters();
             //更新実行前に訓練カウントを使って各Functionの傾きを補正
-            foreach (OptimizeParameter parameter in this.Parameters)
+            foreach (OptimizeParameter parameter in Parameters)
             {
                 for (int j = 0; j < parameter.Length; j++)
                 {
@@ -111,7 +118,8 @@ namespace KelpNet
         //傾きの初期化
         public void ClearGrads()
         {
-            foreach (OptimizeParameter parameter in this.Parameters)
+            OptimizeParameter[] Parameters = this.GetOptimizeParameters();
+            foreach (OptimizeParameter parameter in Parameters)
             {
                 parameter.ClearGrad();
             }
