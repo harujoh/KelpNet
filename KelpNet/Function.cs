@@ -8,8 +8,9 @@ namespace KelpNet
     public abstract class Function
     {
         public string Name;
+        public abstract OptimizeParameter[] GetOptimizeParameters();
 
-        public OptimizeParameter[] Parameters = { };
+//        public OptimizeParameter[] Parameters = { };
 
         protected readonly int OutputCount;
         protected readonly int InputCount;
@@ -30,10 +31,11 @@ namespace KelpNet
 
         public virtual NdArray[] Backward(NdArray[] gy)
         {
+            OptimizeParameter[] Parameters = this.GetOptimizeParameters();
             //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
-            for (int i = 0; i < this.Parameters.Length; i++)
+            for (int i = 0; i < Parameters.Length; i++)
             {
-                this.Parameters[i].TrainCount++;
+                Parameters[i].TrainCount++;
             }
 
             return this.BackwardSingle(gy);
@@ -52,9 +54,11 @@ namespace KelpNet
 
         public virtual NdArray Backward(NdArray gy)
         {
-            for (int i = 0; i < this.Parameters.Length; i++)
+            OptimizeParameter[] Parameters = this.GetOptimizeParameters();
+
+            for (int i = 0; i < Parameters.Length; i++)
             {
-                this.Parameters[i].TrainCount++;
+                Parameters[i].TrainCount++;
             }
 
             return this.BackwardSingle(gy);
