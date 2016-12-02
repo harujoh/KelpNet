@@ -42,12 +42,13 @@ Apache License 2.0
 　・ReLU
 　・Sigmoid
 　・Tanh
+　・Softmax
+　・Softplus
 - Connections:
 　・Convolution2D
 　・EmbedID
 　・Linear
 　・LSTM
-　・Softmax
 - Poolings:
 　・AveragePooling
 　・MaxPooling
