@@ -43,7 +43,7 @@ namespace KelpNet
         }
 
         //バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, Array input, Array teach, SingleLossFunction lossFunction, params Optimizer[] optimizers)
+        public static double Train(FunctionStack functionStack, Array input, Array teach, SingleLossFunction lossFunction, params IOptimizer[][] optimizers)
         {
             //結果の誤差保存用
             double sumLoss;
@@ -62,7 +62,7 @@ namespace KelpNet
             return sumLoss;
         }
 
-        public static double Train(FunctionStack functionStack, Array[] input, Array[] teach, LossFunction lossFunction, params Optimizer[] optimizers)
+        public static double Train(FunctionStack functionStack, Array[] input, Array[] teach, LossFunction lossFunction, params IOptimizer[][] optimizers)
         {
             //結果の誤差保存用
             double sumLoss;
@@ -82,7 +82,7 @@ namespace KelpNet
         }
 
         //非バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, SingleLossFunction lossFunction, params Optimizer[] optimizers)
+        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, SingleLossFunction lossFunction, params IOptimizer[][] optimizers)
         {
             //結果の誤差保存用
             double sumLoss;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 using KelpNet.Common;
 
 namespace KelpNet
@@ -27,6 +28,19 @@ namespace KelpNet
             }
             this.Parameters = parameters.ToArray();            
         }
+
+        //入力されたテンプレートから各パラメータに対応した長さで初期化をする
+        public IOptimizer[] InitOptimizers(IOptimizer template)
+        {
+            IOptimizer[] result = new IOptimizer[this.Parameters.Length];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = template.Initialise(this.Parameters[i]);
+            }
+
+            return result;
+        } 
 
         //Functionとして呼び出された時にバトンを渡す
         protected override NdArray[] ForwardSingle(NdArray[] x)
@@ -86,10 +100,9 @@ namespace KelpNet
             return backwardResult;
         }
 
-        //重みの更新処理
-        public void Update(params Optimizer[] optimizers)
+        //訓練カウントを使って各Functionの傾きを補正
+        public void Reduce()
         {
-            //更新実行前に訓練カウントを使って各Functionの傾きを補正
             foreach (OptimizeParameter parameter in this.Parameters)
             {
                 for (int j = 0; j < parameter.Length; j++)
@@ -97,11 +110,28 @@ namespace KelpNet
                     parameter.Grad.Data[j] /= parameter.TrainCount;
                 }
             }
+        }
+
+        //重みの更新処理
+        public void Update(params IOptimizer[][] optimizers)
+        {
+            //更新実行前に訓練カウントを使って各Functionの傾きを補正
+            this.Reduce();
 
             //Optimizerの更新を実行
             foreach (var optimizer in optimizers)
             {
-                optimizer.Update();
+#if DEBUG
+                for(int i=0;i< this.Parameters.Length;i++)
+#else
+                Parallel.For(0, this.Parameters.Length, i =>
+#endif
+                {
+                    optimizer[i].Update(this.Parameters[i]);
+                }
+#if !DEBUG
+                );
+#endif
             }
 
             //傾きとカウンタをリセット

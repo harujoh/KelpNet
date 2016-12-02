@@ -97,7 +97,7 @@ namespace KelpNetTester.Tests
             //);
 
             //optimizerを宣言
-            AdaGrad adaGrad = new AdaGrad(nn.Parameters);
+            IOptimizer[] adaGrad = nn.InitOptimizers(new AdaGrad());
 
             //三世代学習
             for (int epoch = 0; epoch < 3; epoch++)

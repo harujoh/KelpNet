@@ -97,15 +97,14 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            Adam l1Adam = new Adam(Layer1.Parameters);
-            Adam l2Adam = new Adam(Layer2.Parameters);
-            Adam l3Adam = new Adam(Layer3.Parameters);
-            Adam l4Adam = new Adam(Layer4.Parameters);
+            IOptimizer[] l1Adam = Layer1.InitOptimizers(new Adam());
+            IOptimizer[] l2Adam = Layer2.InitOptimizers(new Adam());
+            IOptimizer[] l3Adam = Layer3.InitOptimizers(new Adam());
+            IOptimizer[] l4Adam = Layer4.InitOptimizers(new Adam());
 
-            Adam DNI1Adam = new Adam(DNI1.Parameters);
-            Adam DNI2Adam = new Adam(DNI2.Parameters);
-            Adam DNI3Adam = new Adam(DNI3.Parameters);
-
+            IOptimizer[] DNI1Adam = DNI1.InitOptimizers(new Adam());
+            IOptimizer[] DNI2Adam = DNI2.InitOptimizers(new Adam());
+            IOptimizer[] DNI3Adam = DNI3.InitOptimizers(new Adam());
 
             //三世代学習
             for (int epoch = 0; epoch < 20; epoch++)

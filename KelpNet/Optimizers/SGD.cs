@@ -1,36 +1,28 @@
 ﻿using System;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class SGD : Optimizer
+    public class SGD : IOptimizer
     {
         public double LearningRate;
 
-        public SGD(OptimizeParameter[] parameters, double learningRate = 0.1) : base(parameters)
+        public SGD(double learningRate = 0.1)
         {
             this.LearningRate = learningRate;
         }
 
-        protected override void DoUpdate()
+        public IOptimizer Initialise(OptimizeParameter parameter)
         {
-#if DEBUG
-            for (int i = 0; i < this.Parameters.Length; i++)
-#else
-            Parallel.For(0, this.Parameters.Length, i =>
-#endif
+            return this;
+        }
+
+        public void Update(OptimizeParameter parameter)
+        {
+            for (int j = 0; j < parameter.Length; j++)
             {
-                for (int j = 0; j < this.Parameters[i].Length; j++)
-                {
-                    this.Parameters[i].Param.Data[j] -= this.LearningRate * this.Parameters[i].Grad.Data[j];
-                }
+                parameter.Param.Data[j] -= this.LearningRate * parameter.Grad.Data[j];
             }
-#if !DEBUG
-            );
-#endif
         }
     }
 }

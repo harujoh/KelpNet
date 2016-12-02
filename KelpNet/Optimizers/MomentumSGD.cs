@@ -1,49 +1,37 @@
 ﻿using System;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class MomentumSGD : Optimizer
+    public class MomentumSGD : IOptimizer
     {
         public double LearningRate;
         public double Momentum;
 
-        private double[][] v;
+        private readonly double[] v;
 
-        public MomentumSGD(OptimizeParameter[] parameters, double learningRate = 0.01, double momentum = 0.9) : base(parameters)
+        public MomentumSGD(double learningRate = 0.01, double momentum = 0.9, int parameterLength = 0)
         {
             this.LearningRate = learningRate;
             this.Momentum = momentum;
 
-            this.v = new double[parameters.Length][];
-            for (int i = 0; i < this.v.Length; i++)
-            {
-                this.v[i] = new double[parameters[i].Param.Length];
-            }
+            this.v = new double[parameterLength];
         }
 
-        protected override void DoUpdate()
+        public IOptimizer Initialise(OptimizeParameter parameter)
         {
-#if DEBUG
-            for (int i = 0; i < this.Parameters.Length; i++)
-#else
-            Parallel.For(0, this.Parameters.Length, i =>
-#endif
-            {
-                for (int k = 0; k < this.Parameters[i].Length; k++)
-                {
-                    this.v[i][k] *= this.Momentum;
-                    this.v[i][k] -= this.LearningRate * this.Parameters[i].Grad.Data[k];
+            return new MomentumSGD(this.LearningRate, this.Momentum, parameter.Length);
+        }
 
-                    this.Parameters[i].Param.Data[k] += this.v[i][k];
-                }
+        public void Update(OptimizeParameter parameter)
+        {
+            for (int i = 0; i < parameter.Length; i++)
+            {
+                this.v[i] *= this.Momentum;
+                this.v[i] -= this.LearningRate * parameter.Grad.Data[i];
+
+                parameter.Param.Data[i] += this.v[i];
             }
-#if !DEBUG
-            );
-#endif
         }
     }
 }

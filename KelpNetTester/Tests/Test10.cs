@@ -44,9 +44,9 @@ namespace KelpNetTester.Tests
                 new Linear(N_UNITS, nVocab, name: "l4 Linear")
             );
 
-            //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
-            GradientClipping gradientClipping = new GradientClipping(model.Parameters, threshold: GRAD_CLIP);
-            SGD sgd = new SGD(model.Parameters, learningRate: 1.0);
+            double learningRate = 1.0;
+            IOptimizer[] gradientClipping = model.InitOptimizers(new GradientClipping(threshold: GRAD_CLIP));
+            SGD[] sgd = (SGD[])model.InitOptimizers(new SGD(learningRate));
 
             double wholeLen = trainData.Length;
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
@@ -93,8 +93,14 @@ namespace KelpNetTester.Tests
 
                     if (epoch >= 6)
                     {
-                        sgd.LearningRate /= 1.2;
-                        Console.WriteLine("learning rate =" + sgd.LearningRate);
+                        learningRate /= 1.2;
+
+                        for (int j = 0; j < sgd.Length; j++)
+                        {
+                            sgd[j].LearningRate = learningRate;
+                        }
+
+                        Console.WriteLine("learning rate =" + learningRate);
                     }
                 }
             }

@@ -75,7 +75,12 @@ namespace KelpNetTester.Tests
             parameters.AddRange(l3.Parameters);
             parameters.AddRange(l4.Parameters);
 
-            SGD sgd = new SGD(parameters.ToArray());
+            //手動で初期化
+            SGD[] sgd = new SGD[parameters.Count];
+            for (int i = 0; i < sgd.Length; i++)
+            {
+                sgd[i] = new SGD();
+            }
 
             Console.WriteLine("l0 for");
             Console.WriteLine(l0.Forward(NdArray.FromArray(new[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
@@ -127,7 +132,11 @@ namespace KelpNetTester.Tests
             }
             Console.WriteLine(lsum);
 
-            sgd.Update();
+            //アップデートも手動で
+            for (int i = 0; i < sgd.Length; i++)
+            {
+                sgd[i].Update(parameters[i]);
+            }
 
             Console.WriteLine("\nl0 W");
             Console.WriteLine(l0.W);

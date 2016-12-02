@@ -78,7 +78,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerの宣言を省略するとデフォルトのSGD(0.1)が使用される
-            SGD sgd = new SGD(nn.Parameters, 0.1);
+            IOptimizer[] sgd = nn.InitOptimizers(new SGD());
 
             //訓練を実施
             Trainer.Train(nn, x, t, LossFunctions.MeanSquaredError);

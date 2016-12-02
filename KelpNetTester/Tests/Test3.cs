@@ -40,7 +40,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerの宣言
-            SGD sgd = new SGD(nn.Parameters);
+            IOptimizer[] sgd = nn.InitOptimizers(new SGD());
 
             //訓練ループ
             for (int i = 0; i < EPOCH; i++)

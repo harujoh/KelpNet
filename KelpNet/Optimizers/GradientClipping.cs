@@ -1,30 +1,34 @@
 ﻿using System;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Optimizers
 {
+    //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
     [Serializable]
-    public class GradientClipping : Optimizer
+    public class GradientClipping : IOptimizer
     {
         public double Threshold;
 
-        public GradientClipping(OptimizeParameter[] parameters, double threshold) : base(parameters)
+        public GradientClipping(double threshold)
         {
             this.Threshold = threshold;
         }
 
-        protected override void DoUpdate()
+        //パラメーターがないのでクローンの必要がない
+        public IOptimizer Initialise(OptimizeParameter parameter)
+        {
+            return this;
+        }
+
+        public void Update(OptimizeParameter parameter)
         {
             //_sum_sqnorm
             double s = 0.0;
 
-            for (int i = 0; i < this.Parameters.Length; i++)
+            for (int i = 0; i < parameter.Length; i++)
             {
-                for (int j = 0; j < this.Parameters[i].Length; j++)
+                for (int j = 0; j < parameter.Length; j++)
                 {
-                    s += Math.Pow(this.Parameters[i].Grad.Data[j], 2);
+                    s += Math.Pow(parameter.Grad.Data[j], 2);
                 }
             }
 
@@ -33,24 +37,11 @@ namespace KelpNet.Optimizers
 
             if (rate < 1)
             {
-#if DEBUG
-                for (int i = 0; i < this.Parameters.Length; i++)
-#else
-                Parallel.For(0, this.Parameters.Length, i =>
-#endif
+                for (int i = 0; i < parameter.Length; i++)
                 {
-                    OptimizeParameter parameter = this.Parameters[i];
-
-                    for (int j = 0; j < parameter.Length; j++)
-                    {
-                        parameter.Grad.Data[j] *= rate;
-                    }
+                    parameter.Grad.Data[i] *= rate;
                 }
-#if !DEBUG
-                );
-#endif
             }
-
         }
     }
 }

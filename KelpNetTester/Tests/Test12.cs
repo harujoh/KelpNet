@@ -116,15 +116,14 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            Adam l1Adam = new Adam(Layer1.Parameters, 0.00003);
-            Adam l2Adam = new Adam(Layer2.Parameters, 0.00003);
-            Adam l3Adam = new Adam(Layer3.Parameters, 0.00003);
-            Adam l4Adam = new Adam(Layer4.Parameters, 0.00003);
+            IOptimizer[] l1Adam = Layer1.InitOptimizers(new Adam(0.00003));
+            IOptimizer[] l2Adam = Layer2.InitOptimizers(new Adam(0.00003));
+            IOptimizer[] l3Adam = Layer3.InitOptimizers(new Adam(0.00003));
+            IOptimizer[] l4Adam = Layer4.InitOptimizers(new Adam(0.00003));
 
-            Adam cDNI1Adam = new Adam(cDNI1.Parameters, 0.00003);
-            Adam cDNI2Adam = new Adam(cDNI2.Parameters, 0.00003);
-            Adam cDNI3Adam = new Adam(cDNI3.Parameters, 0.00003);
-
+            IOptimizer[] cDNI1Adam = cDNI1.InitOptimizers(new Adam(0.00003));
+            IOptimizer[] cDNI2Adam = cDNI2.InitOptimizers(new Adam(0.00003));
+            IOptimizer[] cDNI3Adam = cDNI3.InitOptimizers(new Adam(0.00003));
 
             for (int epoch = 0; epoch < 10; epoch++)
             {

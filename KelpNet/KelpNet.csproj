@@ -69,7 +69,7 @@
     <Compile Include="Common\Mother.cs" />
     <Compile Include="Common\NdArray.cs" />
     <Compile Include="OptimizeParameter.cs" />
-    <Compile Include="Optimizer.cs" />
+    <Compile Include="IOptimizer.cs" />
     <Compile Include="Optimizers\AdaDelta.cs" />
     <Compile Include="Optimizers\AdaGrad.cs" />
     <Compile Include="Optimizers\Adam.cs" />

@@ -42,7 +42,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言(今回はAdam)
-            Adam adam = new Adam(nn.Parameters);
+            IOptimizer[] adam = nn.InitOptimizers(new Adam());
 
             //訓練ループ
             Console.WriteLine("Training...");

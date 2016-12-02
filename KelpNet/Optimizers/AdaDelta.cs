@@ -1,59 +1,45 @@
 ﻿using System;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class AdaDelta : Optimizer
+    public class AdaDelta : IOptimizer
     {
-        private readonly double[][] msg;
-        private readonly double[][] msdx;
-
         public double rho;
         public double Epsilon;
 
-        public AdaDelta(OptimizeParameter[] parameters, double rho = 0.95, double epsilon = 1e-6) : base(parameters)
+        private readonly double[] msg;
+        private readonly double[] msdx;
+
+        public AdaDelta(double rho = 0.95, double epsilon = 1e-6, int parameterLength = 0)
         {
             this.rho = rho;
             this.Epsilon = epsilon;
 
-            this.msg = new double[parameters.Length][];
-            this.msdx = new double[parameters.Length][];
-
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                this.msg[i] = new double[parameters[i].Param.Length];
-                this.msdx[i] = new double[parameters[i].Param.Length];
-            }
+            this.msg = new double[parameterLength];
+            this.msdx = new double[parameterLength];
         }
 
-        protected override void DoUpdate()
+        public IOptimizer Initialise(OptimizeParameter parameter)
         {
-#if DEBUG
-            for (int i = 0; i < this.Parameters.Length; i++)
-#else
-            Parallel.For(0, this.Parameters.Length, i =>
-#endif
+            return new AdaDelta(this.rho, this.Epsilon, parameter.Length);
+        }
+
+        public void Update(OptimizeParameter parameter)
+        {
+            for (int i = 0; i < parameter.Length; i++)
             {
-                for (int j = 0; j < this.Parameters[i].Length; j++)
-                {
-                    double grad = this.Parameters[i].Grad.Data[j];
-                    this.msg[i][j] *= this.rho;
-                    this.msg[i][j] += (1 - this.rho) * grad * grad;
+                double grad = parameter.Grad.Data[i];
+                this.msg[i] *= this.rho;
+                this.msg[i] += (1 - this.rho) * grad * grad;
 
-                    double dx = Math.Sqrt((this.msdx[i][j] + this.Epsilon) / (this.msg[i][j] + this.Epsilon)) * grad;
+                double dx = Math.Sqrt((this.msdx[i] + this.Epsilon) / (this.msg[i] + this.Epsilon)) * grad;
 
-                    this.msdx[i][j] *= this.rho;
-                    this.msdx[i][j] += (1 - this.rho) * dx * dx;
+                this.msdx[i] *= this.rho;
+                this.msdx[i] += (1 - this.rho) * dx * dx;
 
-                    this.Parameters[i].Param.Data[j] -= dx;
-                }
+                parameter.Param.Data[i] -= dx;
             }
-#if !DEBUG
-            );
-#endif
         }
     }
 }

@@ -1,51 +1,38 @@
 ﻿using System;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class AdaGrad : Optimizer
+    public class AdaGrad : IOptimizer
     {
-        private readonly double[][] h;
-
         public double LearningRate;
         public double Epsilon;
 
-        public AdaGrad(OptimizeParameter[] parameters, double learningRate = 0.01, double epsilon = 1e-8):base(parameters)
+        private readonly double[] h;
+
+        public AdaGrad(double learningRate = 0.01, double epsilon = 1e-8, int parameterLength = 0)
         {
             this.LearningRate = learningRate;
             this.Epsilon = epsilon;
 
-            this.h = new double[parameters.Length][];
-            for (int i = 0; i < this.h.Length; i++)
-            {
-                this.h[i] = new double[parameters[i].Param.Length];
-            }
+            this.h = new double[parameterLength];
         }
 
-        protected override void DoUpdate()
+        public IOptimizer Initialise(OptimizeParameter parameter)
         {
-#if DEBUG
-            for (int i = 0; i < this.Parameters.Length; i++)
-#else
-            Parallel.For(0, this.Parameters.Length, i => 
-#endif
+            return new AdaGrad(this.LearningRate, this.Epsilon, parameter.Length);
+        }
+
+        public void Update(OptimizeParameter parameter)
+        {
+            for (int i = 0; i < parameter.Length; i++)
             {
-                for (int k = 0; k < this.Parameters[i].Length; k++)
-                {
-                    double grad = this.Parameters[i].Grad.Data[k];
+                double grad = parameter.Grad.Data[i];
 
-                    this.h[i][k] += grad * grad;
+                this.h[i] += grad * grad;
 
-                    this.Parameters[i].Param.Data[k] -= this.LearningRate * grad / (Math.Sqrt(this.h[i][k]) + this.Epsilon);
-
-                }
+                parameter.Param.Data[i] -= this.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.Epsilon);
             }
-#if !DEBUG
-            );
-#endif
         }
     }
 }
