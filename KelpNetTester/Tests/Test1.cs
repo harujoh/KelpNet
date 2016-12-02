@@ -43,7 +43,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            IOptimizer[] momentumSGD = nn.InitOptimizers(new SGD());
+            IOptimizer[] momentumSGD = nn.InitOptimizers(new MomentumSGD());
 
             //訓練ループ
             Console.WriteLine("Training...");
