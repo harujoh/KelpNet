@@ -40,7 +40,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            IOptimizer[] momentumSGD = nn.InitOptimizers(new MomentumSGD());
+            nn.SetOptimizer(new MomentumSGD());
 
             //三世代学習
             for (int epoch = 0; epoch < 3; epoch++)
@@ -58,7 +58,7 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy, momentumSGD);
+                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
                     totalLoss.Add(sumLoss);
 
                     //20回バッチを動かしたら精度をテストする

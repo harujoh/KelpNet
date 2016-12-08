@@ -3,36 +3,51 @@
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class AdaGrad : IOptimizer
+    public class AdaGrad : Optimizer
     {
         public double LearningRate;
         public double Epsilon;
 
-        private readonly double[] h;
-
-        public AdaGrad(double learningRate = 0.01, double epsilon = 1e-8, int parameterLength = 0)
+        public AdaGrad(double learningRate = 0.01, double epsilon = 1e-8)
         {
             this.LearningRate = learningRate;
             this.Epsilon = epsilon;
-
-            this.h = new double[parameterLength];
         }
 
-        public IOptimizer Initialise(OptimizeParameter parameter)
+        public override void Initilise(OptimizeParameter[] functionParameters)
         {
-            return new AdaGrad(this.LearningRate, this.Epsilon, parameter.Length);
-        }
+            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
-        public void Update(OptimizeParameter parameter)
-        {
-            for (int i = 0; i < parameter.Length; i++)
+            for (int i = 0; i < this.OptimizerParameters.Length; i++)
             {
-                double grad = parameter.Grad.Data[i];
-
-                this.h[i] += grad * grad;
-
-                parameter.Param.Data[i] -= this.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.Epsilon);
+                this.OptimizerParameters[i] = new AdaGradParameter(functionParameters[i], this);
             }
         }
     }
+
+    [Serializable]
+    class AdaGradParameter : OptimizerParameter
+    {
+        private readonly AdaGrad optimiser;
+        private readonly double[] h;
+
+        public AdaGradParameter(OptimizeParameter functionParameter, AdaGrad optimiser) : base(functionParameter)
+        {
+            this.h = new double[functionParameter.Length];
+            this.optimiser = optimiser;
+        }
+
+        public override void Update()
+        {
+            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            {
+                double grad = this.FunctionParameters.Grad.Data[i];
+
+                this.h[i] += grad * grad;
+
+                this.FunctionParameters.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.optimiser.Epsilon);
+            }
+        }
+    }
+
 }

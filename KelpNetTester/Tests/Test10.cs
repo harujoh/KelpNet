@@ -44,9 +44,10 @@ namespace KelpNetTester.Tests
                 new Linear(N_UNITS, nVocab, name: "l4 Linear")
             );
 
-            double learningRate = 1.0;
-            IOptimizer[] gradientClipping = model.InitOptimizers(new GradientClipping(threshold: GRAD_CLIP));
-            IOptimizer[] sgd = model.InitOptimizers(new SGD(learningRate));
+            //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
+            GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);
+            SGD sgd = new SGD(learningRate: 1.0);
+            model.SetOptimizer(gradientClipping, sgd);
 
             double wholeLen = trainData.Length;
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
@@ -69,7 +70,7 @@ namespace KelpNetTester.Tests
                 }
 
                 double sumLoss;
-                backNdArrays.Push(Trainer.Forward(model,x,t, LossFunctions.SoftmaxCrossEntropy, out sumLoss));
+                backNdArrays.Push(Trainer.Forward(model, x, t, LossFunctions.SoftmaxCrossEntropy, out sumLoss));
                 Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
 
                 //Run truncated BPTT
@@ -81,7 +82,7 @@ namespace KelpNetTester.Tests
                         model.Backward(backNdArrays.Pop());
                     }
 
-                    model.Update(gradientClipping, sgd);
+                    model.Update();
                     model.ResetState();
                 }
 
@@ -93,14 +94,8 @@ namespace KelpNetTester.Tests
 
                     if (epoch >= 6)
                     {
-                        learningRate /= 1.2;
-
-                        for (int j = 0; j < sgd.Length; j++)
-                        {
-                            ((SGD)sgd[j]).LearningRate = learningRate;
-                        }
-
-                        Console.WriteLine("learning rate =" + learningRate);
+                        sgd.LearningRate /= 1.2;
+                        Console.WriteLine("learning rate =" + sgd.LearningRate);
                     }
                 }
             }

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Linq;
 using KelpNet.Common;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Loss
 {
@@ -34,18 +31,11 @@ namespace KelpNet.Loss
             double[] lossList = new double[input.Length];
             NdArray[] result = new NdArray[input.Length];
 
-#if DEBUG
             for (int i = 0; i < input.Length; i++)
-#else
-            Parallel.For(0, input.Length, i =>
-#endif
             {
                 result[i] = MeanSquaredError(input[i], teachSignal[i], out lossList[i]);
             }
 
-#if !DEBUG
-            );
-#endif
             loss = lossList.Average();
 
             return result;

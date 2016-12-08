@@ -40,7 +40,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerの宣言
-            IOptimizer[] sgd = nn.InitOptimizers(new SGD());
+            nn.SetOptimizer(new SGD());
 
             //訓練ループ
             for (int i = 0; i < EPOCH; i++)
@@ -51,7 +51,7 @@ namespace KelpNetTester.Tests
                 for (int j = 0; j < N; j++)
                 {
                     //ネットワークは訓練を実行すると戻り値に誤差が返ってくる
-                    loss += Trainer.Train(nn, trainData[j], trainLabel[j], LossFunctions.MeanSquaredError, sgd);
+                    loss += Trainer.Train(nn, trainData[j], trainLabel[j], LossFunctions.MeanSquaredError);
                 }
 
                 if (i % (EPOCH / 10) == 0)

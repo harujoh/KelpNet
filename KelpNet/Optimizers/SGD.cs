@@ -3,7 +3,7 @@
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class SGD : IOptimizer
+    public class SGD : Optimizer
     {
         public double LearningRate;
 
@@ -12,17 +12,34 @@ namespace KelpNet.Optimizers
             this.LearningRate = learningRate;
         }
 
-        public IOptimizer Initialise(OptimizeParameter parameter)
+        public override void Initilise(OptimizeParameter[] functionParameters)
         {
-            return this;
-        }
+            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
-        public void Update(OptimizeParameter parameter)
-        {
-            for (int j = 0; j < parameter.Length; j++)
+            for (int i = 0; i < this.OptimizerParameters.Length; i++)
             {
-                parameter.Param.Data[j] -= this.LearningRate * parameter.Grad.Data[j];
+                this.OptimizerParameters[i] = new SGDParameter(functionParameters[i], this);
             }
         }
     }
+
+    [Serializable]
+    class SGDParameter : OptimizerParameter
+    {
+        private readonly SGD optimiser;
+
+        public SGDParameter(OptimizeParameter functionParameter, SGD optimiser) : base(functionParameter)
+        {
+            this.optimiser = optimiser;
+        }
+
+        public override void Update()
+        {
+            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            {
+                this.FunctionParameters.Param.Data[i] -= this.optimiser.LearningRate * this.FunctionParameters.Grad.Data[i];
+            }
+        }
+    }
+
 }

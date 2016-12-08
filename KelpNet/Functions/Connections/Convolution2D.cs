@@ -25,7 +25,7 @@ namespace KelpNet.Functions.Connections
             this.W = NdArray.Zeros(outputChannels, inputChannels, kSize, kSize);
             this.gW = NdArray.ZerosLike(this.W);
 
-            this.Parameters = new OptimizeParameter[noBias ? 1 : 2];
+            this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
             if (initialW == null)
             {
@@ -37,7 +37,7 @@ namespace KelpNet.Functions.Connections
                 Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
-            this.Parameters[0] = new OptimizeParameter(this.W, this.gW, this.Name + " W");
+            this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
 
             //noBias=trueでもbiasを用意して更新しない
             this.b = NdArray.Zeros(outputChannels);
@@ -50,7 +50,7 @@ namespace KelpNet.Functions.Connections
                     Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
                 }
 
-                this.Parameters[1] = new OptimizeParameter(this.b, this.gb, this.Name + " b");
+                this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
         }
 

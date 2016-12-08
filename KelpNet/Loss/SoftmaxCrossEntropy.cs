@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Linq;
 using KelpNet.Common;
-#if !DEBUG
-using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Loss
 {
@@ -33,17 +30,11 @@ namespace KelpNet.Loss
             double[] localloss = new double[input.Length];
             NdArray[] resultArray = new NdArray[input.Length];
             
-#if DEBUG
             for(int i = 0; i < input.Length; i ++)
-#else
-            Parallel.For(0, input.Length, i =>
-#endif
             {
                 resultArray[i] = SoftmaxCrossEntropy(input[i], teachSignal[i], out localloss[i]);
             }
-#if !DEBUG
-            );
-#endif
+
             loss = localloss.Average();
             return resultArray;
         }

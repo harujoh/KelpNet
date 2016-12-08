@@ -97,7 +97,7 @@ namespace KelpNetTester.Tests
             //);
 
             //optimizerを宣言
-            IOptimizer[] adaGrad = nn.InitOptimizers(new AdaGrad());
+            nn.SetOptimizer(new AdaGrad());
 
             //三世代学習
             for (int epoch = 0; epoch < 3; epoch++)
@@ -114,7 +114,7 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //学習を実行
-                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy, adaGrad);
+                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
                     totalLoss.Add(sumLoss);
 
                     //20回バッチを動かしたら精度をテストする

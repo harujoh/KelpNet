@@ -36,7 +36,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            IOptimizer[] adam = model.InitOptimizers(new Adam());
+            model.SetOptimizer(new Adam());
 
             //訓練ループ
             Console.WriteLine("Training...");
@@ -46,7 +46,7 @@ namespace KelpNetTester.Tests
 
                 double loss = ComputeLoss(model, sequences);
 
-                model.Update(adam);
+                model.Update();
 
                 model.ResetState();
 

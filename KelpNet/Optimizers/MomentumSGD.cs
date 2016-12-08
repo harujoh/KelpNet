@@ -3,35 +3,50 @@
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class MomentumSGD : IOptimizer
+    public class MomentumSGD : Optimizer
     {
         public double LearningRate;
         public double Momentum;
 
-        private readonly double[] v;
-
-        public MomentumSGD(double learningRate = 0.01, double momentum = 0.9, int parameterLength = 0)
+        public MomentumSGD( double learningRate = 0.01, double momentum = 0.9)
         {
             this.LearningRate = learningRate;
             this.Momentum = momentum;
-
-            this.v = new double[parameterLength];
         }
 
-        public IOptimizer Initialise(OptimizeParameter parameter)
+        public override void Initilise(OptimizeParameter[] functionParameters)
         {
-            return new MomentumSGD(this.LearningRate, this.Momentum, parameter.Length);
-        }
+            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
-        public void Update(OptimizeParameter parameter)
-        {
-            for (int i = 0; i < parameter.Length; i++)
+            for (int i = 0; i < this.OptimizerParameters.Length; i++)
             {
-                this.v[i] *= this.Momentum;
-                this.v[i] -= this.LearningRate * parameter.Grad.Data[i];
-
-                parameter.Param.Data[i] += this.v[i];
+                this.OptimizerParameters[i] = new MomentumSGDParameter(functionParameters[i], this);
             }
         }
     }
+
+    [Serializable]
+    class MomentumSGDParameter : OptimizerParameter
+    {
+        private readonly MomentumSGD optimiser;
+        private readonly double[] v;
+
+        public MomentumSGDParameter(OptimizeParameter functionParameter, MomentumSGD optimiser) : base(functionParameter)
+        {
+            this.v = new double[functionParameter.Length];
+            this.optimiser = optimiser;
+        }
+
+        public override void Update()
+        {
+            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            {
+                this.v[i] *= this.optimiser.Momentum;
+                this.v[i] -= this.optimiser.LearningRate * this.FunctionParameters.Grad.Data[i];
+
+                this.FunctionParameters.Param.Data[i] += this.v[i];
+            }
+        }
+    }
+
 }

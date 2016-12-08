@@ -49,7 +49,7 @@ namespace KelpNetTester.Tests
             );
 
             //optimizerを宣言
-            IOptimizer[] adam = nn.InitOptimizers(new Adam());
+            nn.SetOptimizer(new Adam());
 
             Console.WriteLine("Training Start...");
 
@@ -72,7 +72,7 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy, adam);
+                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, LossFunctions.SoftmaxCrossEntropy);
                     totalLoss.Add(sumLoss);
 
                     //結果出力

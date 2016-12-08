@@ -23,23 +23,14 @@ namespace KelpNet.Functions
 
         protected override NdArray ForwardSingle(NdArray x)
         {
-            this._prevInput.Add(new[] { new NdArray(x) });
+            this._prevInput.Add(new[] { x });
 
             return this.NeedPreviousForward(x);
         }
 
-
         protected override NdArray[] ForwardSingle(NdArray[] x)
         {
-            //コピーを格納
-            NdArray[] prevInput = new NdArray[x.Length];
-            for (int i = 0; i < prevInput.Length; i++)
-            {
-                prevInput[i] = new NdArray(x[i]);
-            }
-
-            this._prevInput.Add(prevInput);
-
+            this._prevInput.Add(x);
 
             NdArray[] prevoutput = new NdArray[x.Length];
 

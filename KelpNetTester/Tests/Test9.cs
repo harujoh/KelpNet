@@ -38,7 +38,7 @@ namespace KelpNetTester.Tests
                 new Softmax("l3 Sonftmax")
             );
 
-            IOptimizer[] adam = model.InitOptimizers(new Adam());
+            model.SetOptimizer(new Adam());
 
             List<int> s = new List<int>();
 
@@ -90,7 +90,7 @@ namespace KelpNetTester.Tests
                             model.Functions[0].Backward(g);
                         }
 
-                        model.Update(adam);
+                        model.Update();
                         s.Clear();
                     }
 

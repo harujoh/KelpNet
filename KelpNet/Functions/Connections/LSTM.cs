@@ -36,7 +36,7 @@ namespace KelpNet.Functions.Connections
 
         public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
         {
-            this.Parameters = new OptimizeParameter[12];
+            this.Parameters = new FunctionParameter[12];
 
             this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0");
             this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1");
@@ -78,20 +78,26 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                //値があればupwardへ加算
-                NdArray[] laterals0 = this.lateral0.Forward(this.hParam);
-                NdArray[] laterals1 = this.lateral1.Forward(this.hParam);
-                NdArray[] laterals2 = this.lateral2.Forward(this.hParam);
-                NdArray[] laterals3 = this.lateral3.Forward(this.hParam);
-
-                for (int j = 0; j < laterals0.Length; j++)
+                NdArray[] prevInput = new NdArray[this.hParam.Length];
+                for (int i = 0; i < prevInput.Length; i++)
                 {
-                    for (int k = 0; k < laterals0[j].Length; k++)
+                    prevInput[i] = new NdArray(this.hParam[i]);
+                }
+
+                //値があればupwardへ加算
+                NdArray[] laterals0 = this.lateral0.Forward(prevInput);
+                NdArray[] laterals1 = this.lateral1.Forward(prevInput);
+                NdArray[] laterals2 = this.lateral2.Forward(prevInput);
+                NdArray[] laterals3 = this.lateral3.Forward(prevInput);
+
+                for (int i = 0; i < laterals0.Length; i++)
+                {
+                    for (int j = 0; j < laterals0[i].Length; j++)
                     {
-                        upwards0[j].Data[k] += laterals0[j].Data[k];
-                        upwards1[j].Data[k] += laterals1[j].Data[k];
-                        upwards2[j].Data[k] += laterals2[j].Data[k];
-                        upwards3[j].Data[k] += laterals3[j].Data[k];
+                        upwards0[i].Data[j] += laterals0[i].Data[j];
+                        upwards1[i].Data[j] += laterals1[i].Data[j];
+                        upwards2[i].Data[j] += laterals2[i].Data[j];
+                        upwards3[i].Data[j] += laterals3[i].Data[j];
                     }
                 }
             }
@@ -207,7 +213,7 @@ namespace KelpNet.Functions.Connections
                 {
                     double co = Math.Tanh(lcParam[j]);
 
-                    this.gcPrev[i, j] = gh[i].Data[j] * loParam[j] * GradTanh(co) + this.gcPrev[i, j];
+                    this.gcPrev[i, j] += gh[i].Data[j] * loParam[j] * GradTanh(co);
                     ga[j] = this.gcPrev[i, j] * liParam[j] * GradTanh(laParam[j]);
                     gi[j] = this.gcPrev[i, j] * laParam[j] * GradSigmoid(liParam[j]);
                     gf[j] = this.gcPrev[i, j] * cPrev[j] * GradSigmoid(lfParam[j]);

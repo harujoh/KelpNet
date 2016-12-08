@@ -10,6 +10,7 @@ namespace KelpNet
         public string Name;
 
         public OptimizeParameter[] Parameters = { };
+        public Optimizer[] Optimizers;
 
         protected readonly int OutputCount;
         protected readonly int InputCount;
@@ -20,6 +21,16 @@ namespace KelpNet
             this.Name = name;
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
+        }
+
+        public void SetOptimizer(params Optimizer[] optimizers)
+        {
+            this.Optimizers = optimizers;
+
+            foreach (var optimizer in optimizers)
+            {
+                optimizer.Initilise(this.Parameters);
+            }
         }
 
         //外部公開用
@@ -80,6 +91,32 @@ namespace KelpNet
         public virtual NdArray Predict(NdArray input)
         {
             return this.ForwardSingle(input);
+        }
+
+        //訓練カウントを使って各Functionの傾きを補正
+        public virtual void Reduce()
+        {
+            foreach (OptimizeParameter parameter in this.Parameters)
+            {
+                parameter.Reduce();
+            }
+        }
+
+        public virtual void Update()
+        {
+            //更新実行前に訓練カウントを使って各Functionの傾きを補正
+            foreach (Optimizer optimizer in this.Optimizers)
+            {
+                optimizer.Update();
+            }
+        }
+
+        public virtual void ClearGrads()
+        {
+            foreach (OptimizeParameter parameter in this.Parameters)
+            {
+                parameter.ClearGrad();
+            }
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理

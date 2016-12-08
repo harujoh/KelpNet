@@ -68,19 +68,21 @@ namespace KelpNetTester.Tests
             }, name: "l4");
 
             //Optimizerにパラメータを登録
-            List<OptimizeParameter> parameters = new List<OptimizeParameter>();
-            parameters.AddRange(l0.Parameters);
-            parameters.AddRange(l1.Parameters);
-            parameters.AddRange(l2.Parameters);
-            parameters.AddRange(l3.Parameters);
-            parameters.AddRange(l4.Parameters);
+            OptimizeParameter[] parameters = new OptimizeParameter[10];
+            parameters[0] = l0.Parameters[0];
+            parameters[1] = l0.Parameters[1];
+            parameters[2] = l1.Parameters[0];
+            parameters[3] = l1.Parameters[1];
+            parameters[4] = l2.Parameters[0];
+            parameters[5] = l2.Parameters[1];
+            parameters[6] = l3.Parameters[0];
+            parameters[7] = l3.Parameters[1];
+            parameters[8] = l4.Parameters[0];
+            parameters[9] = l4.Parameters[1];
 
             //手動で初期化
-            SGD[] sgd = new SGD[parameters.Count];
-            for (int i = 0; i < sgd.Length; i++)
-            {
-                sgd[i] = new SGD();
-            }
+            SGD sgd = new SGD();
+            sgd.Initilise(parameters);
 
             Console.WriteLine("l0 for");
             Console.WriteLine(l0.Forward(NdArray.FromArray(new[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
@@ -132,11 +134,7 @@ namespace KelpNetTester.Tests
             }
             Console.WriteLine(lsum);
 
-            //アップデートも手動で
-            for (int i = 0; i < sgd.Length; i++)
-            {
-                sgd[i].Update(parameters[i]);
-            }
+            sgd.Update();
 
             Console.WriteLine("\nl0 W");
             Console.WriteLine(l0.W);

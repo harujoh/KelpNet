@@ -3,42 +3,56 @@
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class AdaDelta : IOptimizer
+    public class AdaDelta : Optimizer
     {
-        public double rho;
+        public double Rho;
         public double Epsilon;
 
+        public AdaDelta(double rho = 0.95, double epsilon = 1e-6)
+        {
+            this.Rho = rho;
+            this.Epsilon = epsilon;
+        }
+
+        public override void Initilise(OptimizeParameter[] functionParameters)
+        {
+            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
+
+            for (int i = 0; i < this.OptimizerParameters.Length; i++)
+            {
+                this.OptimizerParameters[i] = new AdaDeltaParameter(functionParameters[i], this);
+            }
+        }
+    }
+
+    [Serializable]
+    class AdaDeltaParameter : OptimizerParameter
+    {
         private readonly double[] msg;
         private readonly double[] msdx;
+        private readonly AdaDelta optimiser;
 
-        public AdaDelta(double rho = 0.95, double epsilon = 1e-6, int parameterLength = 0)
+        public AdaDeltaParameter(OptimizeParameter functionParameter, AdaDelta optimiser) : base(functionParameter)
         {
-            this.rho = rho;
-            this.Epsilon = epsilon;
-
-            this.msg = new double[parameterLength];
-            this.msdx = new double[parameterLength];
+            this.msg = new double[functionParameter.Length];
+            this.msdx = new double[functionParameter.Length];
+            this.optimiser = optimiser;
         }
 
-        public IOptimizer Initialise(OptimizeParameter parameter)
+        public override void Update()
         {
-            return new AdaDelta(this.rho, this.Epsilon, parameter.Length);
-        }
-
-        public void Update(OptimizeParameter parameter)
-        {
-            for (int i = 0; i < parameter.Length; i++)
+            for (int i = 0; i < this.FunctionParameters.Length; i++)
             {
-                double grad = parameter.Grad.Data[i];
-                this.msg[i] *= this.rho;
-                this.msg[i] += (1 - this.rho) * grad * grad;
+                double grad = this.FunctionParameters.Grad.Data[i];
+                this.msg[i] *= this.optimiser.Rho;
+                this.msg[i] += (1 - this.optimiser.Rho) * grad * grad;
 
-                double dx = Math.Sqrt((this.msdx[i] + this.Epsilon) / (this.msg[i] + this.Epsilon)) * grad;
+                double dx = Math.Sqrt((this.msdx[i] + this.optimiser.Epsilon) / (this.msg[i] + this.optimiser.Epsilon)) * grad;
 
-                this.msdx[i] *= this.rho;
-                this.msdx[i] += (1 - this.rho) * dx * dx;
+                this.msdx[i] *= this.optimiser.Rho;
+                this.msdx[i] += (1 - this.optimiser.Rho) * dx * dx;
 
-                parameter.Param.Data[i] -= dx;
+                this.FunctionParameters.Param.Data[i] -= dx;
             }
         }
     }

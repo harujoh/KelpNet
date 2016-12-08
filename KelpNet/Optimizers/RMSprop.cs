@@ -3,38 +3,53 @@
 namespace KelpNet.Optimizers
 {
     [Serializable]
-    public class RMSprop : IOptimizer
+    public class RMSprop : Optimizer
     {
         public double LearningRate;
         public double Alpha;
         public double Epsilon;
 
-        private readonly double[] ms;
-
-        public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8, int parameterLength = 0)
+        public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8)
         {
             this.LearningRate = learningRate;
             this.Alpha = alpha;
             this.Epsilon = epsilon;
-
-            this.ms = new double[parameterLength];
         }
 
-        public IOptimizer Initialise(OptimizeParameter parameter)
+        public override void Initilise(OptimizeParameter[] functionParameters)
         {
-            return new RMSprop(this.LearningRate, this.Alpha, this.Epsilon, parameter.Length);
-        }
+            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
-        public void Update(OptimizeParameter parameter)
-        {
-            for (int i = 0; i < parameter.Length; i++)
+            for (int i = 0; i < this.OptimizerParameters.Length; i++)
             {
-                double grad = parameter.Grad.Data[i];
-                this.ms[i] *= this.Alpha;
-                this.ms[i] += (1 - this.Alpha) * grad * grad;
-
-                parameter.Param.Data[i] -= this.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.Epsilon);
+                this.OptimizerParameters[i] = new RMSpropParameter(functionParameters[i], this);
             }
         }
     }
+
+    [Serializable]
+    class RMSpropParameter : OptimizerParameter
+    {
+        private readonly RMSprop optimiser;
+        private readonly double[] ms;
+
+        public RMSpropParameter(OptimizeParameter parameter, RMSprop optimiser) : base(parameter)
+        {
+            this.optimiser = optimiser;
+            this.ms = new double[parameter.Length];
+        }
+
+        public override void Update()
+        {
+            for (int i = 0; i < FunctionParameters.Length; i++)
+            {
+                double grad = FunctionParameters.Grad.Data[i];
+                this.ms[i] *= this.optimiser.Alpha;
+                this.ms[i] += (1 - this.optimiser.Alpha) * grad * grad;
+
+                this.FunctionParameters.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimiser.Epsilon);
+            }
+        }
+    }
+
 }

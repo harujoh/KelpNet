@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading.Tasks;
 using KelpNet.Common;
 
 namespace KelpNet
@@ -20,27 +19,18 @@ namespace KelpNet
         {
             this.Functions = functions;
 
-            //パラメーター参照用の入れ物を作成
-            List<OptimizeParameter> parameters = new List<OptimizeParameter>();
-            foreach (Function function in functions)
+            List<OptimizeParameter> result = new List<OptimizeParameter>();
+
+            for (int i = 0; i < this.Functions.Length; i++)
             {
-                parameters.AddRange(function.Parameters);
+                foreach (OptimizeParameter parameter in this.Functions[i].Parameters)
+                {
+                    result.Add(parameter);
+                }
             }
-            this.Parameters = parameters.ToArray();            
+
+            this.Parameters = result.ToArray();
         }
-
-        //入力されたテンプレートから各パラメータに対応した長さで初期化をする
-        public IOptimizer[] InitOptimizers(IOptimizer template)
-        {
-            IOptimizer[] result = new IOptimizer[this.Parameters.Length];
-
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = template.Initialise(this.Parameters[i]);
-            }
-
-            return result;
-        } 
 
         //Functionとして呼び出された時にバトンを渡す
         protected override NdArray[] ForwardSingle(NdArray[] x)
@@ -54,16 +44,18 @@ namespace KelpNet
             return this.Backward(gy);
         }
 
-
         //Forward
         public override NdArray[] Forward(NdArray[] input)
         {
-            foreach (Function function in this.Functions)
+            NdArray[][] inputData = new NdArray[this.Functions.Length + 1][];
+            inputData[0] = input;
+
+            for (int i = 0; i < this.Functions.Length; i++)
             {
-                input = function.Forward(input);
+                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
             }
 
-            return input;
+            return inputData[this.Functions.Length];
         }
 
         //Backward
@@ -81,12 +73,15 @@ namespace KelpNet
         //Forward
         public override NdArray Forward(NdArray input)
         {
-            foreach (Function function in this.Functions)
+            NdArray[] inputData = new NdArray[this.Functions.Length + 1];
+            inputData[0] = input;
+
+            for (int i = 0; i < this.Functions.Length; i++)
             {
-                input = function.Forward(input);
+                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
             }
 
-            return input;
+            return inputData[this.Functions.Length];
         }
 
         //Backward
@@ -100,44 +95,18 @@ namespace KelpNet
             return backwardResult;
         }
 
-        //訓練カウントを使って各Functionの傾きを補正
-        public void Reduce()
-        {
-            foreach (OptimizeParameter parameter in this.Parameters)
-            {
-                for (int j = 0; j < parameter.Length; j++)
-                {
-                    parameter.Grad.Data[j] /= parameter.TrainCount;
-                }
-            }
-        }
-
         //重みの更新処理
-        public void Update(params IOptimizer[][] optimizers)
+        public override void Update()
         {
             //更新実行前に訓練カウントを使って各Functionの傾きを補正
             this.Reduce();
 
-            //Optimizerの更新を実行
-            foreach (var optimizer in optimizers)
+            foreach (Optimizer optimizer in this.Optimizers)
             {
-                for(int i=0;i< this.Parameters.Length;i++)
-                {
-                    optimizer[i].Update(this.Parameters[i]);
-                }
+                optimizer.Update();
             }
 
-            //傾きとカウンタをリセット
             this.ClearGrads();
-        }
-
-        //傾きの初期化
-        public void ClearGrads()
-        {
-            foreach (OptimizeParameter parameter in this.Parameters)
-            {
-                parameter.ClearGrad();
-            }
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理
@@ -178,7 +147,7 @@ namespace KelpNet
             using (Stream stream = File.OpenWrite(fileName))
             {
                 bf.Serialize(stream, this);
-            }            
+            }
         }
 
         public static FunctionStack Load(string fileName)
