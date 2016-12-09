@@ -47,15 +47,15 @@ namespace KelpNet
         //Forward
         public override NdArray[] Forward(NdArray[] input)
         {
-            NdArray[][] inputData = new NdArray[this.Functions.Length + 1][];
-            inputData[0] = input;
+            
+            NdArray[] input_ptr = input;
 
             for (int i = 0; i < this.Functions.Length; i++)
             {
-                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
+                input_ptr = this.Functions[i].Forward(input_ptr);
             }
 
-            return inputData[this.Functions.Length];
+            return input_ptr;
         }
 
         //Backward
@@ -69,19 +69,17 @@ namespace KelpNet
             return backwardResult;
         }
 
-
         //Forward
         public override NdArray Forward(NdArray input)
         {
-            NdArray[] inputData = new NdArray[this.Functions.Length + 1];
-            inputData[0] = input;
+            NdArray input_ptr = input;
 
             for (int i = 0; i < this.Functions.Length; i++)
             {
-                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
+                input_ptr = this.Functions[i].Forward(input_ptr);
             }
 
-            return inputData[this.Functions.Length];
+            return input_ptr;
         }
 
         //Backward
