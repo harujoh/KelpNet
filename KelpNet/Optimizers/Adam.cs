@@ -18,7 +18,7 @@ namespace KelpNet.Optimizers
             this.Epsilon = epsilon;
         }
 
-        public override void Initilise(OptimizeParameter[] functionParameters)
+        public override void Initilise(FunctionParameter[] functionParameters)
         {
             this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
@@ -37,7 +37,7 @@ namespace KelpNet.Optimizers
         private readonly double[] m;
         private readonly double[] v;
 
-        public AdamParameter(OptimizeParameter parameter, Adam optimiser) : base(parameter)
+        public AdamParameter(FunctionParameter parameter, Adam optimiser) : base(parameter)
         {
             this.m = new double[parameter.Length];
             this.v = new double[parameter.Length];
@@ -45,20 +45,20 @@ namespace KelpNet.Optimizers
             this.optimiser = optimiser;
         }
 
-        public override void Update()
+        public override void UpdateFunctionParameters()
         {
             double fix1 = 1 - Math.Pow(this.optimiser.Beta1, this.optimiser.UpdateCount);
             double fix2 = 1 - Math.Pow(this.optimiser.Beta2, this.optimiser.UpdateCount);
             double lr = this.optimiser.Alpha * Math.Sqrt(fix2) / fix1;
 
-            for (int i = 0; i < FunctionParameters.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = FunctionParameters.Grad.Data[i];
+                double grad = this.FunctionParameter.Grad.Data[i];
 
                 this.m[i] += (1 - this.optimiser.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this.optimiser.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameters.Param.Data[i] -= lr * this.m[i] / (Math.Sqrt(this.v[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= lr * this.m[i] / (Math.Sqrt(this.v[i]) + this.optimiser.Epsilon);
             }
         }
     }

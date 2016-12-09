@@ -9,13 +9,13 @@ namespace KelpNet
         public long UpdateCount = 1;
         protected OptimizerParameter[] OptimizerParameters;
 
-        public abstract void Initilise(OptimizeParameter[] functionParameters);
+        public abstract void Initilise(FunctionParameter[] functionParameters);
 
         public void Update()
         {
             foreach (OptimizerParameter optimizersParameter in this.OptimizerParameters)
             {
-                optimizersParameter.Update();
+                optimizersParameter.UpdateFunctionParameters();
             }
 
             this.UpdateCount++;
@@ -26,13 +26,13 @@ namespace KelpNet
     [Serializable]
     public abstract class OptimizerParameter
     {
-        protected OptimizeParameter FunctionParameters;
+        protected FunctionParameter FunctionParameter;
 
-        protected OptimizerParameter(OptimizeParameter functionParameter)
+        protected OptimizerParameter(FunctionParameter functionParameter)
         {
-            this.FunctionParameters = functionParameter;
+            this.FunctionParameter = functionParameter;
         }
 
-        public abstract void Update();
+        public abstract void UpdateFunctionParameters();
     }
 }

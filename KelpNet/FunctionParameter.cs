@@ -4,7 +4,7 @@ using KelpNet.Common;
 namespace KelpNet
 {
     [Serializable]
-    public class OptimizeParameter
+    public class FunctionParameter
     {
         public string Name;
         public NdArray Param;
@@ -15,7 +15,7 @@ namespace KelpNet
 
         public readonly int Length = 0;
 
-        public OptimizeParameter(NdArray param, NdArray grad, string name)
+        public FunctionParameter(NdArray param, NdArray grad, string name)
         {
             this.Param = param;
             this.Grad = grad;
@@ -42,6 +42,9 @@ namespace KelpNet
         {
             //0埋め
             this.Grad.Fill(0);
+
+            //カウンタをリセット
+            this.TrainCount = 0;
         }
 
         public override string ToString()

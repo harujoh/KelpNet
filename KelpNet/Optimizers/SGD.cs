@@ -12,7 +12,7 @@ namespace KelpNet.Optimizers
             this.LearningRate = learningRate;
         }
 
-        public override void Initilise(OptimizeParameter[] functionParameters)
+        public override void Initilise(FunctionParameter[] functionParameters)
         {
             this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
@@ -28,16 +28,16 @@ namespace KelpNet.Optimizers
     {
         private readonly SGD optimiser;
 
-        public SGDParameter(OptimizeParameter functionParameter, SGD optimiser) : base(functionParameter)
+        public SGDParameter(FunctionParameter functionParameter, SGD optimiser) : base(functionParameter)
         {
             this.optimiser = optimiser;
         }
 
-        public override void Update()
+        public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                this.FunctionParameters.Param.Data[i] -= this.optimiser.LearningRate * this.FunctionParameters.Grad.Data[i];
+                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * this.FunctionParameter.Grad.Data[i];
             }
         }
     }

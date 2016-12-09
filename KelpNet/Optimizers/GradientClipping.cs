@@ -13,7 +13,7 @@ namespace KelpNet.Optimizers
             this.Threshold = threshold;
         }
 
-        public override void Initilise(OptimizeParameter[] functionParameters)
+        public override void Initilise(FunctionParameter[] functionParameters)
         {
             this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
@@ -29,19 +29,19 @@ namespace KelpNet.Optimizers
     {
         private readonly GradientClipping optimiser;
 
-        public GradientClippingParameter(OptimizeParameter functionParameter, GradientClipping optimiser) : base(functionParameter)
+        public GradientClippingParameter(FunctionParameter functionParameter, GradientClipping optimiser) : base(functionParameter)
         {
             this.optimiser = optimiser;
         }
 
-        public override void Update()
+        public override void UpdateFunctionParameters()
         {
             //_sum_sqnorm
             double s = 0.0;
 
-            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                s += Math.Pow(this.FunctionParameters.Grad.Data[i], 2);
+                s += Math.Pow(this.FunctionParameter.Grad.Data[i], 2);
             }
 
             double norm = Math.Sqrt(s);
@@ -49,9 +49,9 @@ namespace KelpNet.Optimizers
 
             if (rate < 1)
             {
-                for (int i = 0; i < this.FunctionParameters.Length; i++)
+                for (int i = 0; i < this.FunctionParameter.Length; i++)
                 {
-                    this.FunctionParameters.Grad.Data[i] *= rate;
+                    this.FunctionParameter.Grad.Data[i] *= rate;
                 }
             }
         }

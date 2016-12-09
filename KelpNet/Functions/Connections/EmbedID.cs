@@ -24,7 +24,7 @@ namespace KelpNet.Functions.Connections
                 Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
             }
 
-            this.Parameters = new[] { new OptimizeParameter(this.W, this.gW, this.Name + " W") };
+            this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
         }
 
         protected override NdArray NeedPreviousForward(NdArray x)

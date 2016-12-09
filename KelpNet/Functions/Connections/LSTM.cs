@@ -36,7 +36,7 @@ namespace KelpNet.Functions.Connections
 
         public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
         {
-            this.Parameters = new OptimizeParameter[12];
+            this.Parameters = new FunctionParameter[12];
 
             this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0");
             this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1");

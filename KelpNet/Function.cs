@@ -9,7 +9,7 @@ namespace KelpNet
     {
         public string Name;
 
-        public OptimizeParameter[] Parameters = { };
+        public FunctionParameter[] Parameters = { };
         public Optimizer[] Optimizers;
 
         protected readonly int OutputCount;
@@ -96,7 +96,7 @@ namespace KelpNet
         //訓練カウントを使って各Functionの傾きを補正
         public virtual void Reduce()
         {
-            foreach (OptimizeParameter parameter in this.Parameters)
+            foreach (FunctionParameter parameter in this.Parameters)
             {
                 parameter.Reduce();
             }
@@ -113,7 +113,7 @@ namespace KelpNet
 
         public virtual void ClearGrads()
         {
-            foreach (OptimizeParameter parameter in this.Parameters)
+            foreach (FunctionParameter parameter in this.Parameters)
             {
                 parameter.ClearGrad();
             }

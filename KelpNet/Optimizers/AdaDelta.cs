@@ -14,7 +14,7 @@ namespace KelpNet.Optimizers
             this.Epsilon = epsilon;
         }
 
-        public override void Initilise(OptimizeParameter[] functionParameters)
+        public override void Initilise(FunctionParameter[] functionParameters)
         {
             this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
@@ -32,18 +32,18 @@ namespace KelpNet.Optimizers
         private readonly double[] msdx;
         private readonly AdaDelta optimiser;
 
-        public AdaDeltaParameter(OptimizeParameter functionParameter, AdaDelta optimiser) : base(functionParameter)
+        public AdaDeltaParameter(FunctionParameter functionParameter, AdaDelta optimiser) : base(functionParameter)
         {
             this.msg = new double[functionParameter.Length];
             this.msdx = new double[functionParameter.Length];
             this.optimiser = optimiser;
         }
 
-        public override void Update()
+        public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = this.FunctionParameters.Grad.Data[i];
+                double grad = this.FunctionParameter.Grad.Data[i];
                 this.msg[i] *= this.optimiser.Rho;
                 this.msg[i] += (1 - this.optimiser.Rho) * grad * grad;
 
@@ -52,7 +52,7 @@ namespace KelpNet.Optimizers
                 this.msdx[i] *= this.optimiser.Rho;
                 this.msdx[i] += (1 - this.optimiser.Rho) * dx * dx;
 
-                this.FunctionParameters.Param.Data[i] -= dx;
+                this.FunctionParameter.Param.Data[i] -= dx;
             }
         }
     }

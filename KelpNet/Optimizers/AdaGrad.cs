@@ -14,7 +14,7 @@ namespace KelpNet.Optimizers
             this.Epsilon = epsilon;
         }
 
-        public override void Initilise(OptimizeParameter[] functionParameters)
+        public override void Initilise(FunctionParameter[] functionParameters)
         {
             this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
@@ -31,21 +31,21 @@ namespace KelpNet.Optimizers
         private readonly AdaGrad optimiser;
         private readonly double[] h;
 
-        public AdaGradParameter(OptimizeParameter functionParameter, AdaGrad optimiser) : base(functionParameter)
+        public AdaGradParameter(FunctionParameter functionParameter, AdaGrad optimiser) : base(functionParameter)
         {
             this.h = new double[functionParameter.Length];
             this.optimiser = optimiser;
         }
 
-        public override void Update()
+        public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = this.FunctionParameters.Grad.Data[i];
+                double grad = this.FunctionParameter.Grad.Data[i];
 
                 this.h[i] += grad * grad;
 
-                this.FunctionParameters.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.optimiser.Epsilon);
             }
         }
     }

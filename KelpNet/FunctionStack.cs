@@ -19,11 +19,11 @@ namespace KelpNet
         {
             this.Functions = functions;
 
-            List<OptimizeParameter> result = new List<OptimizeParameter>();
+            List<FunctionParameter> result = new List<FunctionParameter>();
 
             for (int i = 0; i < this.Functions.Length; i++)
             {
-                foreach (OptimizeParameter parameter in this.Functions[i].Parameters)
+                foreach (FunctionParameter parameter in this.Functions[i].Parameters)
                 {
                     result.Add(parameter);
                 }

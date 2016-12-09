@@ -68,7 +68,7 @@ namespace KelpNetTester.Tests
             }, name: "l4");
 
             //Optimizerにパラメータを登録
-            OptimizeParameter[] parameters = new OptimizeParameter[10];
+            FunctionParameter[] parameters = new FunctionParameter[10];
             parameters[0] = l0.Parameters[0];
             parameters[1] = l0.Parameters[1];
             parameters[2] = l1.Parameters[0];

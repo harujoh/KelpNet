@@ -14,7 +14,7 @@ namespace KelpNet.Optimizers
             this.Momentum = momentum;
         }
 
-        public override void Initilise(OptimizeParameter[] functionParameters)
+        public override void Initilise(FunctionParameter[] functionParameters)
         {
             this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
@@ -31,20 +31,20 @@ namespace KelpNet.Optimizers
         private readonly MomentumSGD optimiser;
         private readonly double[] v;
 
-        public MomentumSGDParameter(OptimizeParameter functionParameter, MomentumSGD optimiser) : base(functionParameter)
+        public MomentumSGDParameter(FunctionParameter functionParameter, MomentumSGD optimiser) : base(functionParameter)
         {
             this.v = new double[functionParameter.Length];
             this.optimiser = optimiser;
         }
 
-        public override void Update()
+        public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameters.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
                 this.v[i] *= this.optimiser.Momentum;
-                this.v[i] -= this.optimiser.LearningRate * this.FunctionParameters.Grad.Data[i];
+                this.v[i] -= this.optimiser.LearningRate * this.FunctionParameter.Grad.Data[i];
 
-                this.FunctionParameters.Param.Data[i] += this.v[i];
+                this.FunctionParameter.Param.Data[i] += this.v[i];
             }
         }
     }

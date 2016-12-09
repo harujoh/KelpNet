@@ -16,7 +16,7 @@ namespace KelpNet.Optimizers
             this.Epsilon = epsilon;
         }
 
-        public override void Initilise(OptimizeParameter[] functionParameters)
+        public override void Initilise(FunctionParameter[] functionParameters)
         {
             this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
 
@@ -33,21 +33,21 @@ namespace KelpNet.Optimizers
         private readonly RMSprop optimiser;
         private readonly double[] ms;
 
-        public RMSpropParameter(OptimizeParameter parameter, RMSprop optimiser) : base(parameter)
+        public RMSpropParameter(FunctionParameter parameter, RMSprop optimiser) : base(parameter)
         {
             this.optimiser = optimiser;
             this.ms = new double[parameter.Length];
         }
 
-        public override void Update()
+        public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < FunctionParameters.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = FunctionParameters.Grad.Data[i];
+                double grad = this.FunctionParameter.Grad.Data[i];
                 this.ms[i] *= this.optimiser.Alpha;
                 this.ms[i] += (1 - this.optimiser.Alpha) * grad * grad;
 
-                this.FunctionParameters.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimiser.Epsilon);
             }
         }
     }

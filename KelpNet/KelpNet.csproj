@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\DeepCopyHelper.cs" />
-    <Compile Include="OptimizeParameter.cs" />
+    <Compile Include="FunctionParameter.cs" />
     <Compile Include="FunctionStack.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Functions\Activations\ELU.cs" />
