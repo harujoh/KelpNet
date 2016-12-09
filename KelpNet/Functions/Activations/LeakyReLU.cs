@@ -22,7 +22,7 @@ namespace KelpNet.Functions.Activations
                 y[i] = x.Data[i] < 0 ? x.Data[i] *= this._slope : x.Data[i];
             }
 
-            return new NdArray(y, x.Shape);
+            return NdArray.Convert(y, x.Shape);
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
@@ -34,7 +34,7 @@ namespace KelpNet.Functions.Activations
                 gx[i] = prevOutput.Data[i] > 0 ? gy.Data[i] : prevOutput.Data[i] * this._slope;
             }
 
-            return new NdArray(gx, gy.Shape);
+            return NdArray.Convert(gx, gy.Shape);
         }
     }
 }

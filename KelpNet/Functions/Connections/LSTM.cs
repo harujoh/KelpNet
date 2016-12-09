@@ -26,7 +26,7 @@ namespace KelpNet.Functions.Connections
         private List<double[]>[] oParam;
         private List<double[]>[] cParam;
 
-        private NdArray[] hParam;
+        private double[][] hParam;
 
         private NdArray[] gxPrev0;
         private NdArray[] gxPrev1;
@@ -81,7 +81,7 @@ namespace KelpNet.Functions.Connections
                 NdArray[] prevInput = new NdArray[this.hParam.Length];
                 for (int i = 0; i < prevInput.Length; i++)
                 {
-                    prevInput[i] = new NdArray(this.hParam[i]);
+                    prevInput[i] = NdArray.Convert(this.hParam[i]);
                 }
 
                 //値があればupwardへ加算
@@ -131,7 +131,7 @@ namespace KelpNet.Functions.Connections
                     lo[j] = Sigmoid(r[3, j]);
 
                     cResult[j] = la[j] * li[j] + lf[j] * cPrev[j];
-                    this.hParam[i].Data[j] = lo[j] * Math.Tanh(cResult[j]);
+                    this.hParam[i][j] = lo[j] * Math.Tanh(cResult[j]);
                 }
 
                 //Backward用
@@ -141,7 +141,7 @@ namespace KelpNet.Functions.Connections
                 this.fParam[i].Add(lf);
                 this.oParam[i].Add(lo);
 
-                result[i] = this.hParam[i];
+                result[i] = NdArray.Convert(this.hParam[i]);
             }
 #if !DEBUG
             );
@@ -207,7 +207,7 @@ namespace KelpNet.Functions.Connections
                 double[] loParam = this.oParam[i][this.oParam[i].Count - 1];
                 this.oParam[i].RemoveAt(this.oParam[i].Count - 1);
 
-                double[] cPrev = this.cParam[i][this.cParam[i].Count-1];
+                double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
 
                 for (int j = 0; j < this.InputCount; j++)
                 {
@@ -254,7 +254,7 @@ namespace KelpNet.Functions.Connections
                     gx[j] += gArray3[i].Data[j];
                 }
 
-                result[i] = NdArray.FromArray(gx);
+                result[i] = NdArray.Convert(gx);
             }
 #if !DEBUG
             );
@@ -280,7 +280,7 @@ namespace KelpNet.Functions.Connections
             this.fParam = new List<double[]>[batchCount];
             this.oParam = new List<double[]>[batchCount];
             this.cParam = new List<double[]>[batchCount];
-            this.hParam = new NdArray[batchCount];
+            this.hParam = new double[batchCount][];
             this.gcPrev = new double[batchCount, this.InputCount];
 
             for (int i = 0; i < batchCount; i++)
@@ -290,7 +290,7 @@ namespace KelpNet.Functions.Connections
                 this.fParam[i] = new List<double[]>();
                 this.oParam[i] = new List<double[]>();
                 this.cParam[i] = new List<double[]>();
-                this.hParam[i] = NdArray.Zeros(this.OutputCount);
+                this.hParam[i] = new double[this.OutputCount];
             }
         }
 

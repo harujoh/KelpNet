@@ -19,7 +19,7 @@ namespace KelpNet.Functions.Activations
                 y[i] = Math.Tanh(x.Data[i]);
             }
 
-            return new NdArray(y, x.Shape);
+            return NdArray.Convert(y, x.Shape);
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
@@ -31,7 +31,7 @@ namespace KelpNet.Functions.Activations
                 gx[i] = gy.Data[i] * (1 - prevOutput.Data[i] * prevOutput.Data[i]);
             }
 
-            return new NdArray(gx, gy.Shape);
+            return NdArray.Convert(gx, gy.Shape);
         }
     }
 }

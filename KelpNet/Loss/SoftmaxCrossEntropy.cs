@@ -22,7 +22,7 @@ namespace KelpNet.Loss
 
             gx[maxIndex] -= 1;
 
-            return new NdArray(gx, input.Shape);
+            return NdArray.Convert(gx, input.Shape);
         }
 
         public static NdArray[] SoftmaxCrossEntropy(NdArray[] input, NdArray[] teachSignal, out double loss)

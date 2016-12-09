@@ -59,7 +59,7 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return new NdArray(result, new[] { input.Shape[0], outputSize, outputSize });
+            return NdArray.Convert(result, new[] { input.Shape[0], outputSize, outputSize });
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
@@ -103,7 +103,7 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return new NdArray(result, prevInput.Shape);
+            return NdArray.Convert(result, prevInput.Shape);
         }
     }
 }

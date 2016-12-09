@@ -29,17 +29,17 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            NdArray result = NdArray.Zeros(x.Length, this.OutputCount);
+            double[] result = new double[x.Length * this.OutputCount];
 
             for (int i = 0; i < x.Length; i++)
             {
                 for (int j = 0; j < this.OutputCount; j++)
                 {
-                    result.Data[i * this.OutputCount + j] = this.W.Data[(int)x.Data[i] * this.OutputCount + j];
+                    result[i * this.OutputCount + j] = this.W.Data[(int)x.Data[i] * this.OutputCount + j];
                 }
             }
 
-            return result;
+            return NdArray.Convert(result, new[] { x.Length, this.OutputCount });
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)

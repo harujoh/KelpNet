@@ -106,7 +106,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return new NdArray(result, new[] { this.OutputCount, outputSize, outputSize });
+            return NdArray.Convert(result, new[] { this.OutputCount, outputSize, outputSize });
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
@@ -167,7 +167,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return new NdArray(gx, prevInput.Shape);
+            return NdArray.Convert(gx, prevInput.Shape);
         }
     }
 }

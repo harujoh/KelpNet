@@ -42,7 +42,7 @@ namespace KelpNet.Functions.Noise
                     y[j] = x[i].Data[j] * mask[j];
                 }
 
-                result[i] = new NdArray(y, x[i].Shape);
+                result[i] = NdArray.Convert(y, x[i].Shape);
             }
 #if !DEBUG
             );
@@ -72,7 +72,7 @@ namespace KelpNet.Functions.Noise
                     gx[j] = gy[i].Data[j] * mask[j];
                 }
 
-                result[i] = new NdArray(gx, gy[i].Shape);
+                result[i] = NdArray.Convert(gx, gy[i].Shape);
             }
 #if !DEBUG
             );

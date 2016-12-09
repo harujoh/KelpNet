@@ -62,7 +62,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return NdArray.FromArray(output);
+            return NdArray.Convert(output);
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
@@ -84,7 +84,7 @@ namespace KelpNet.Functions.Connections
                 this.gb.Data[i] += gyData;
             }
 
-            return new NdArray(gxData, prevInput.Shape);
+            return NdArray.Convert(gxData, prevInput.Shape);
         }
     }
 }

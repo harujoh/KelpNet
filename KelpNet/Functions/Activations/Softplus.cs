@@ -31,7 +31,7 @@ namespace KelpNet.Functions.Activations
                 y[i] = (maxval + Math.Log(1.0 + Math.Exp(-Math.Abs(x.Data[i] * this._beta)))) * this._betaInv;
             }
 
-            return new NdArray(y, x.Shape);
+            return NdArray.Convert(y, x.Shape);
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
@@ -43,7 +43,7 @@ namespace KelpNet.Functions.Activations
                 gx[i] = (1 - 1 / (1 + Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
             }
 
-            return new NdArray(gx, gy.Shape);
+            return NdArray.Convert(gx, gy.Shape);
         }
 
     }

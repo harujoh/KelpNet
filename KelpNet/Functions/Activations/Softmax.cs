@@ -29,7 +29,7 @@ namespace KelpNet.Functions.Activations
                 y[i] /= sumval;
             }
 
-            return new NdArray(y, x.Shape);
+            return NdArray.Convert(y, x.Shape);
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
@@ -48,7 +48,7 @@ namespace KelpNet.Functions.Activations
                 gx[i] -= prevOutput.Data[i] * sumdx;
             }
 
-            return new NdArray(gx, gy.Shape);
+            return NdArray.Convert(gx, gy.Shape);
         }
     }
 }

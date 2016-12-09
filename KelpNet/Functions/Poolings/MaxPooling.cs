@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet.Common;
 
 namespace KelpNet.Functions.Poolings
@@ -20,13 +21,13 @@ namespace KelpNet.Functions.Poolings
         protected override NdArray NeedPreviousForward(NdArray input)
         {
             int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
-            NdArray result = NdArray.Zeros(input.Shape[0], outputSize, outputSize);
-            result.Fill(double.MinValue);
+            double[] result = Enumerable.Repeat(double.MinValue, input.Shape[0] * outputSize * outputSize).ToArray();
+
             int resultIndex = 0;
 
             for (int i = 0; i < input.Shape[0]; i++)
             {
-                int inputIndexOffset = i*input.Shape[1]*input.Shape[2];
+                int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
 
                 for (int y = 0; y < outputSize; y++)
                 {
@@ -45,7 +46,7 @@ namespace KelpNet.Functions.Poolings
                                     if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                     {
                                         int inputIndex = inputIndexOffset + inputIndexY * input.Shape[2] + inputIndexX;
-                                        result.Data[resultIndex] = Math.Max(result.Data[resultIndex], input.Data[inputIndex]);
+                                        result[resultIndex] = Math.Max(result[resultIndex], input.Data[inputIndex]);
                                     }
                                 }
                             }
@@ -56,7 +57,7 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return result;
+            return NdArray.Convert(result, new[] { input.Shape[0], outputSize, outputSize });
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
@@ -67,7 +68,7 @@ namespace KelpNet.Functions.Poolings
 
             for (int i = 0; i < prevInput.Shape[0]; i++)
             {
-                int prevInputIndexOffset = i*prevInput.Shape[1]*prevInput.Shape[2];
+                int prevInputIndexOffset = i * prevInput.Shape[1] * prevInput.Shape[2];
                 for (int y = 0; y < prevOutput.Shape[1]; y++)
                 {
                     for (int x = 0; x < prevOutput.Shape[2]; x++)
@@ -79,7 +80,7 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return new NdArray(result, prevInput.Shape);
+            return NdArray.Convert(result, prevInput.Shape);
         }
 
         //同じ値を複数持つ場合、左上優先にして処理を打ち切る

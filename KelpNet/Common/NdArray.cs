@@ -28,6 +28,9 @@ namespace KelpNet.Common
             this.Shape = ndArray.Shape.ToArray();
         }
 
+        //ガワだけを作る
+        private NdArray() { }
+
         public int Length
         {
             get { return this.Data.Length; }
@@ -50,9 +53,21 @@ namespace KelpNet.Common
             this.Data[this.GetIndex(indices)] = val;
         }
 
+        //データ部をコピーせずにインスタンスする
+        public static NdArray Convert(double[] data, int[] shape)
+        {
+            return new NdArray { Data = data, Shape = shape.ToArray() };
+        }
+
+        //データ部をコピーせずにインスタンスする
+        public static NdArray Convert(double[] data)
+        {
+            return new NdArray { Data = data, Shape = new[] { data.Length } };
+        }
+
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            return new NdArray(new double[baseArray.Length], baseArray.Shape);
+            return new NdArray { Data = new double[baseArray.Length], Shape = baseArray.Shape.ToArray() };
         }
 
         public static NdArray OnesLike(NdArray baseArray)
@@ -64,12 +79,12 @@ namespace KelpNet.Common
                 resutlArray[i] = 1;
             }
 
-            return new NdArray(resutlArray, baseArray.Shape);
+            return new NdArray { Data = resutlArray, Shape = baseArray.Shape.ToArray() };
         }
 
         public static NdArray Zeros(params int[] shape)
         {
-            return new NdArray(new double[ShapeToArrayLength(shape)], shape);
+            return new NdArray { Data = new double[ShapeToArrayLength(shape)], Shape = shape };
         }
 
         public static NdArray Ones(params int[] shape)
@@ -81,7 +96,7 @@ namespace KelpNet.Common
                 resutlArray[i] = 1;
             }
 
-            return new NdArray(resutlArray, shape);
+            return new NdArray { Data = resutlArray, Shape = shape };
         }
 
         private static int ShapeToArrayLength(params int[] shapes)
@@ -121,7 +136,7 @@ namespace KelpNet.Common
                 resultShape = new[] { data.Length };
             }
             else
-            {                
+            {
                 //int -> doubleの指定ミスで例外がポコポコ出るので、ここで吸収
                 if (data.GetType().GetElementType() != typeof(double))
                 {
@@ -146,7 +161,7 @@ namespace KelpNet.Common
                 }
             }
 
-            return new NdArray(resultData, resultShape);
+            return new NdArray { Data = resultData, Shape = resultShape };
         }
 
         public void Fill(double val)
@@ -278,7 +293,7 @@ namespace KelpNet.Common
                     for (int j = 0; j < CommonDivisorList.Count; j++)
                     {
                         int commonDivisor = CommonDivisorList[j];
-                        if ((i + 1)%commonDivisor == 0)
+                        if ((i + 1) % commonDivisor == 0)
                         {
                             sb.Append("]");
                             closer++;
@@ -300,7 +315,7 @@ namespace KelpNet.Common
                         for (int j = 0; j < CommonDivisorList.Count; j++)
                         {
                             int commonDivisor = CommonDivisorList[j];
-                            if ((i + 1)%commonDivisor != 0)
+                            if ((i + 1) % commonDivisor != 0)
                             {
                                 sb.Append(" ");
                             }
@@ -310,7 +325,7 @@ namespace KelpNet.Common
                     for (int j = 0; j < CommonDivisorList.Count; j++)
                     {
                         int commonDivisor = CommonDivisorList[j];
-                        if ((i + 1)%commonDivisor == 0)
+                        if ((i + 1) % commonDivisor == 0)
                         {
                             sb.Append("[");
                         }
