@@ -231,15 +231,14 @@ namespace KelpNet.Common
                 }
             }
 
-
             //配列の約数を取得
-            List<int> CommonDivisorList = new List<int>();
+            int[] commonDivisorList = new int[this.Shape.Length];
 
             //一個目は手動取得
-            CommonDivisorList.Add(this.Shape[this.Shape.Length - 1]);
+            commonDivisorList[0] = this.Shape[this.Shape.Length - 1];
             for (int i = 1; i < this.Shape.Length; i++)
             {
-                CommonDivisorList.Add(CommonDivisorList[CommonDivisorList.Count - 1] * this.Shape[this.Shape.Length - i - 1]);
+                commonDivisorList[i] = commonDivisorList[i - 1] * this.Shape[this.Shape.Length - i - 1];
             }
 
             //先頭の括弧
@@ -290,9 +289,8 @@ namespace KelpNet.Common
                 //約数を調査してピッタリなら括弧を出力
                 if (i != this.Length - 1)
                 {
-                    for (int j = 0; j < CommonDivisorList.Count; j++)
+                    foreach (int commonDivisor in commonDivisorList)
                     {
-                        int commonDivisor = CommonDivisorList[j];
                         if ((i + 1) % commonDivisor == 0)
                         {
                             sb.Append("]");
@@ -302,7 +300,7 @@ namespace KelpNet.Common
 
                     sb.Append(" ");
 
-                    if ((i + 1) % CommonDivisorList[0] == 0)
+                    if ((i + 1) % commonDivisorList[0] == 0)
                     {
                         //閉じ括弧分だけ改行を追加
                         for (int j = 0; j < closer; j++)
@@ -312,9 +310,8 @@ namespace KelpNet.Common
                         closer = 0;
 
                         //括弧前のインデント
-                        for (int j = 0; j < CommonDivisorList.Count; j++)
+                        foreach (int commonDivisor in commonDivisorList)
                         {
-                            int commonDivisor = CommonDivisorList[j];
                             if ((i + 1) % commonDivisor != 0)
                             {
                                 sb.Append(" ");
@@ -322,9 +319,8 @@ namespace KelpNet.Common
                         }
                     }
 
-                    for (int j = 0; j < CommonDivisorList.Count; j++)
+                    foreach (int commonDivisor in commonDivisorList)
                     {
-                        int commonDivisor = CommonDivisorList[j];
                         if ((i + 1) % commonDivisor == 0)
                         {
                             sb.Append("[");

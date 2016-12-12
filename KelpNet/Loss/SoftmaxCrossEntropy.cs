@@ -4,7 +4,7 @@ using KelpNet.Common;
 
 namespace KelpNet.Loss
 {
-    public class SoftmaxCrossEntropy : LossFunction
+    public class SoftmaxCrossEntropy : ILossFunction
     {
         public NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss)
         {

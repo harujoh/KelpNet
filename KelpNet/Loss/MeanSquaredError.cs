@@ -4,7 +4,7 @@ using KelpNet.Common;
 
 namespace KelpNet.Loss
 {
-    public class MeanSquaredError : LossFunction
+    public class MeanSquaredError : ILossFunction
     {
         public NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss)
         {

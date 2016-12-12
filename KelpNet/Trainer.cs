@@ -18,12 +18,12 @@ namespace KelpNet
             return function.Forward(NdArray.FromArray(input));
         }
 
-        public static NdArray[] Forward(Function function, Array[] input, Array[] teach, LossFunction lossFunction, out double sumLoss)
+        public static NdArray[] Forward(Function function, Array[] input, Array[] teach, ILossFunction lossFunction, out double sumLoss)
         {
             return lossFunction.Evaluate(function.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
         }
 
-        public static NdArray Forward(Function function, Array input, Array teach, LossFunction lossFunction, out double sumLoss)
+        public static NdArray Forward(Function function, Array input, Array teach, ILossFunction lossFunction, out double sumLoss)
         {
             return lossFunction.Evaluate(function.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
         }
@@ -39,7 +39,7 @@ namespace KelpNet
         }
 
         //バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, Array input, Array teach, LossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, Array input, Array teach, ILossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
             double sumLoss;
@@ -59,7 +59,7 @@ namespace KelpNet
             return sumLoss;
         }
 
-        public static double Train(FunctionStack functionStack, Array[] input, Array[] teach, LossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, Array[] input, Array[] teach, ILossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
             double sumLoss;
@@ -80,7 +80,7 @@ namespace KelpNet
         }
 
         //非バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, LossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, ILossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
             double sumLoss;
