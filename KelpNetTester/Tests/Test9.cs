@@ -43,6 +43,7 @@ namespace KelpNetTester.Tests
             List<int> s = new List<int>();
 
             Console.WriteLine("Train Start.");
+            SoftmaxCrossEntropy softmaxCrossEntropy = new SoftmaxCrossEntropy();
             for (int epoch = 0; epoch < TRAINING_EPOCHS; epoch++)
             {
                 NdArray h = NdArray.Zeros(N_UNITS);
@@ -76,7 +77,7 @@ namespace KelpNetTester.Tests
                             NdArray h2 = model.Functions[3].Forward(h);
 
                             double loss;
-                            tmp.Push(LossFunctions.SoftmaxCrossEntropy(h2, NdArray.FromArray(new[] { tx }), out loss));
+                            tmp.Push(softmaxCrossEntropy.Evaluate(h2, NdArray.FromArray(new[] { tx }), out loss));
                             accumloss += loss;
                         }
 

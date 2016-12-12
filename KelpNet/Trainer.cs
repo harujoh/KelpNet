@@ -8,10 +8,6 @@ namespace KelpNet
     //主にArray->NdArrayの型変換を担う
     public class Trainer
     {
-        //ロス関数のデリゲート宣言
-        public delegate NdArray[] LossFunction(NdArray[] input, NdArray[] teachSignal, out double loss);
-        public delegate NdArray SingleLossFunction(NdArray input, NdArray teachSignal, out double loss);
-
         public static NdArray[] Forward(Function function, Array[] input)
         {
             return function.Forward(NdArray.FromArray(input));
@@ -24,12 +20,12 @@ namespace KelpNet
 
         public static NdArray[] Forward(Function function, Array[] input, Array[] teach, LossFunction lossFunction, out double sumLoss)
         {
-            return lossFunction(function.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
+            return lossFunction.Evaluate(function.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
         }
 
-        public static NdArray Forward(Function function, Array input, Array teach, SingleLossFunction lossFunction, out double sumLoss)
+        public static NdArray Forward(Function function, Array input, Array teach, LossFunction lossFunction, out double sumLoss)
         {
-            return lossFunction(function.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
+            return lossFunction.Evaluate(function.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
         }
 
         public static NdArray[] Backward(Function function, Array[] input)
@@ -43,13 +39,13 @@ namespace KelpNet
         }
 
         //バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, Array input, Array teach, SingleLossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, Array input, Array teach, LossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
             double sumLoss;
 
             //Forwardのバッチを実行
-            NdArray lossResult = lossFunction(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
+            NdArray lossResult = lossFunction.Evaluate(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
 
             //Backwardのバッチを実行
             functionStack.Backward(lossResult);
@@ -69,7 +65,7 @@ namespace KelpNet
             double sumLoss;
 
             //Forwardのバッチを実行
-            NdArray[] lossResult = lossFunction(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
+            NdArray[] lossResult = lossFunction.Evaluate(functionStack.Forward(NdArray.FromArray(input)), NdArray.FromArray(teach), out sumLoss);
 
             //Backwardのバッチを実行
             functionStack.Backward(lossResult);
@@ -84,13 +80,13 @@ namespace KelpNet
         }
 
         //非バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, SingleLossFunction lossFunction, bool isUpdate = true)
+        public static double Train(FunctionStack functionStack, NdArray input, NdArray teach, LossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
             double sumLoss;
 
             //Forwardを実行
-            NdArray lossResult = lossFunction(functionStack.Forward(input), teach, out sumLoss);
+            NdArray lossResult = lossFunction.Evaluate(functionStack.Forward(input), teach, out sumLoss);
 
             //Backwardを実行
             functionStack.Backward(lossResult);

@@ -81,7 +81,7 @@ namespace KelpNetTester.Tests
                 }
 
                 double sumLoss;
-                backNdArrays.Push(Trainer.Forward(model, x, t, LossFunctions.MeanSquaredError, out sumLoss));
+                backNdArrays.Push(Trainer.Forward(model, x, t, new MeanSquaredError(), out sumLoss));
                 totalLoss.Add(sumLoss);
             }
 

@@ -52,7 +52,7 @@ namespace KelpNetTester.Tests
                 for (int j = 0; j < trainData.Length; j++)
                 {
                     //訓練実行時にロス関数を記述
-                    Trainer.Train(nn, trainData[j], trainLabel[j], LossFunctions.SoftmaxCrossEntropy);
+                    Trainer.Train(nn, trainData[j], trainLabel[j], new SoftmaxCrossEntropy());
                 }
             }
 

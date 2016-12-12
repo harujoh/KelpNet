@@ -171,7 +171,7 @@ namespace KelpNetTester.Tests
 
                     //第一層用のcDNIの学習を実行
                     double cDNI1loss = 0;
-                    NdArray[] DNI1lossResult = LossFunctions.MeanSquaredError(cDNI1Result, layer2BackwardResult, out cDNI1loss);
+                    NdArray[] DNI1lossResult = new MeanSquaredError().Evaluate(cDNI1Result, layer2BackwardResult, out cDNI1loss);
 
                     cDNI1.Backward(DNI1lossResult);
                     cDNI1.Update();
@@ -192,7 +192,7 @@ namespace KelpNetTester.Tests
 
                     //第二層用のcDNIの学習を実行
                     double cDNI2loss = 0;
-                    NdArray[] DNI2lossResult = LossFunctions.MeanSquaredError(cDNI2Result, layer3BackwardResult, out cDNI2loss);
+                    NdArray[] DNI2lossResult = new MeanSquaredError().Evaluate(cDNI2Result, layer3BackwardResult, out cDNI2loss);
 
                     cDNI2.Backward(DNI2lossResult);
                     cDNI2.Update();
@@ -204,7 +204,7 @@ namespace KelpNetTester.Tests
 
                     //第四層の傾きを取得
                     double sumLoss = 0;
-                    NdArray[] lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(layer3ResultDataSet.Label), out sumLoss);
+                    NdArray[] lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, NdArray.FromArray(layer3ResultDataSet.Label), out sumLoss);
 
                     //第四層を更新
                     NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);
@@ -214,7 +214,7 @@ namespace KelpNetTester.Tests
 
                     //第三層用のcDNIの学習を実行
                     double cDNI3loss = 0;
-                    NdArray[] DNI3lossResult = LossFunctions.MeanSquaredError(cDNI3Result, layer4BackwardResult, out cDNI3loss);
+                    NdArray[] DNI3lossResult = new MeanSquaredError().Evaluate(cDNI3Result, layer4BackwardResult, out cDNI3loss);
 
                     cDNI3.Backward(DNI3lossResult);
                     cDNI3.Update();

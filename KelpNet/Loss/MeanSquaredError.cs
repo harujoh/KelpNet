@@ -4,9 +4,9 @@ using KelpNet.Common;
 
 namespace KelpNet.Loss
 {
-    public partial class LossFunctions
+    public class MeanSquaredError : LossFunction
     {
-        public static NdArray MeanSquaredError(NdArray input, NdArray teachSignal, out double loss)
+        public NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss)
         {
             loss = 0.0;
 
@@ -26,14 +26,14 @@ namespace KelpNet.Loss
             return NdArray.Convert(diff, teachSignal.Shape);
         }
 
-        public static NdArray[] MeanSquaredError(NdArray[] input, NdArray[] teachSignal, out double loss)
+        public NdArray[] Evaluate(NdArray[] input, NdArray[] teachSignal, out double loss)
         {
             double[] lossList = new double[input.Length];
             NdArray[] result = new NdArray[input.Length];
 
             for (int i = 0; i < input.Length; i++)
             {
-                result[i] = MeanSquaredError(input[i], teachSignal[i], out lossList[i]);
+                result[i] = this.Evaluate(input[i], teachSignal[i], out lossList[i]);
             }
 
             loss = lossList.Average();

@@ -70,7 +70,7 @@ namespace KelpNetTester.Tests
                 }
 
                 double sumLoss;
-                backNdArrays.Push(Trainer.Forward(model, x, t, LossFunctions.SoftmaxCrossEntropy, out sumLoss));
+                backNdArrays.Push(Trainer.Forward(model, x, t, new SoftmaxCrossEntropy(), out sumLoss));
                 Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
 
                 //Run truncated BPTT
@@ -124,7 +124,7 @@ namespace KelpNetTester.Tests
                 }
 
                 double sumLoss;
-                Trainer.Forward(predictModel, x, t, LossFunctions.SoftmaxCrossEntropy, out sumLoss);
+                Trainer.Forward(predictModel, x, t, new SoftmaxCrossEntropy(), out sumLoss);
                 totalLoss.Add(sumLoss);
             }
 

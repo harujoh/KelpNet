@@ -4,9 +4,9 @@ using KelpNet.Common;
 
 namespace KelpNet.Loss
 {
-    public partial class LossFunctions
+    public class SoftmaxCrossEntropy : LossFunction
     {
-        public static NdArray SoftmaxCrossEntropy(NdArray input, NdArray teachSignal, out double loss)
+        public NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss)
         {
             int maxIndex = (int)Math.Max(teachSignal.Data.Max(), 0.0);
 
@@ -25,21 +25,21 @@ namespace KelpNet.Loss
             return NdArray.Convert(gx, input.Shape);
         }
 
-        public static NdArray[] SoftmaxCrossEntropy(NdArray[] input, NdArray[] teachSignal, out double loss)
+        public NdArray[] Evaluate(NdArray[] input, NdArray[] teachSignal, out double loss)
         {
             double[] localloss = new double[input.Length];
             NdArray[] resultArray = new NdArray[input.Length];
             
             for(int i = 0; i < input.Length; i ++)
             {
-                resultArray[i] = SoftmaxCrossEntropy(input[i], teachSignal[i], out localloss[i]);
+                resultArray[i] = this.Evaluate(input[i], teachSignal[i], out localloss[i]);
             }
 
             loss = localloss.Average();
             return resultArray;
         }
 
-        static double[] SoftmaxLog(double[] x)
+        private double[] SoftmaxLog(double[] x)
         {
             double[] result = new double[x.Length];
 

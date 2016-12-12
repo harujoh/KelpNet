@@ -148,7 +148,7 @@ namespace KelpNetTester.Tests
 
                     //第一層用のDNIの学習を実行
                     double DNI1loss;
-                    NdArray[] DNI1lossResult = LossFunctions.MeanSquaredError(DNI1Result, layer2BackwardResult, out DNI1loss);
+                    NdArray[] DNI1lossResult = new MeanSquaredError().Evaluate(DNI1Result, layer2BackwardResult, out DNI1loss);
                     DNI1.Backward(DNI1lossResult);
                     DNI1.Update();
                     DNI1totalLoss.Add(DNI1loss);
@@ -165,7 +165,7 @@ namespace KelpNetTester.Tests
 
                     //第二層用のDNIの学習を実行
                     double DNI2loss;
-                    NdArray[] DNI2lossResult = LossFunctions.MeanSquaredError(DNI2Result, layer3BackwardResult, out DNI2loss);
+                    NdArray[] DNI2lossResult = new MeanSquaredError().Evaluate(DNI2Result, layer3BackwardResult, out DNI2loss);
                     DNI2.Backward(DNI2lossResult);
                     DNI2.Update();
                     DNI2totalLoss.Add(DNI2loss);
@@ -175,7 +175,7 @@ namespace KelpNetTester.Tests
 
                     //第四層の傾きを取得
                     double sumLoss;
-                    NdArray[] lossResult = LossFunctions.SoftmaxCrossEntropy(layer4ForwardResult, NdArray.FromArray(datasetX.Label), out sumLoss);
+                    NdArray[] lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, NdArray.FromArray(datasetX.Label), out sumLoss);
 
                     //第四層を更新
                     NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);
@@ -184,7 +184,7 @@ namespace KelpNetTester.Tests
 
                     //第三層用のDNIの学習を実行
                     double DNI3loss;
-                    NdArray[] DNI3lossResult = LossFunctions.MeanSquaredError(DNI3Result, layer4BackwardResult, out DNI3loss);
+                    NdArray[] DNI3lossResult = new MeanSquaredError().Evaluate(DNI3Result, layer4BackwardResult, out DNI3loss);
                     DNI3.Backward(DNI3lossResult);
                     DNI3.Update();
                     DNI3totalLoss.Add(DNI3loss);
