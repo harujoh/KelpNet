@@ -49,17 +49,18 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            //バイアスを最初からコピーして入れておく
+            //最初からバイアスをコピーして入れておく
             double[] output = this.b.Data.ToArray();
+            int indexOffset = 0;
 
             for (int i = 0; i < this.OutputCount; i++)
             {
-                int indexOffset = this.InputCount * i;
-
                 for (int j = 0; j < this.InputCount; j++)
                 {
                     output[i] += x.Data[j] * this.W.Data[indexOffset + j];
                 }
+
+                indexOffset += this.InputCount;
             }
 
             return NdArray.Convert(output);
@@ -68,10 +69,10 @@ namespace KelpNet.Functions.Connections
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
         {
             double[] gxData = new double[this.InputCount];
+            int indexOffset = 0;
 
             for (int i = 0; i < gy.Length; i++)
             {
-                int indexOffset = this.InputCount * i;
                 double gyData = gy.Data[i];
 
                 for (int j = 0; j < this.InputCount; j++)
@@ -82,6 +83,7 @@ namespace KelpNet.Functions.Connections
                 }
 
                 this.gb.Data[i] += gyData;
+                indexOffset += this.InputCount;
             }
 
             return NdArray.Convert(gxData, prevInput.Shape);

@@ -42,9 +42,9 @@ namespace KelpNet
         public virtual NdArray[] Backward(NdArray[] gy)
         {
             //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
-            for (int i = 0; i < this.Parameters.Length; i++)
+            foreach (FunctionParameter parameter in this.Parameters)
             {
-                this.Parameters[i].TrainCount++;
+                parameter.TrainCount++;
             }
 
             return this.BackwardSingle(gy);
@@ -63,9 +63,9 @@ namespace KelpNet
 
         public virtual NdArray Backward(NdArray gy)
         {
-            for (int i = 0; i < this.Parameters.Length; i++)
+            foreach (FunctionParameter parameter in this.Parameters)
             {
-                this.Parameters[i].TrainCount++;
+                parameter.TrainCount++;
             }
 
             return this.BackwardSingle(gy);

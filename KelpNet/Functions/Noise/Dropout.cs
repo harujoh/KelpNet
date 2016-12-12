@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Noise
     public class Dropout : Function
     {
         private readonly double dropoutRatio;
-        private readonly List<double[]> MaskStack = new List<double[]>();
+        private readonly List<double[]> maskStack = new List<double[]>();
 
         public Dropout(double dropoutRatio = 0.5, string name = "Dropout") : base(name)
         {
@@ -47,7 +47,7 @@ namespace KelpNet.Functions.Noise
 #if !DEBUG
             );
 #endif
-            this.MaskStack.Add(mask);
+            this.maskStack.Add(mask);
 
             return result;
         }
@@ -56,8 +56,8 @@ namespace KelpNet.Functions.Noise
         {
             NdArray[] result = new NdArray[gy.Length];
 
-            double[] mask = this.MaskStack[this.MaskStack.Count-1];
-            this.MaskStack.RemoveAt(this.MaskStack.Count - 1);
+            double[] mask = this.maskStack[this.maskStack.Count-1];
+            this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
 #if DEBUG
             for (int i = 0; i < gy.Length; i++)

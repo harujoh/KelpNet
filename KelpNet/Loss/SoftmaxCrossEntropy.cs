@@ -10,7 +10,7 @@ namespace KelpNet.Loss
         {
             int maxIndex = (int)Math.Max(teachSignal.Data.Max(), 0.0);
 
-            double[] logY = SoftmaxLog(input.Data);
+            double[] logY = this.SoftmaxLog(input.Data);
             loss = -logY[maxIndex];
 
             double[] gx = new double[logY.Length];

@@ -92,7 +92,6 @@ namespace KelpNet
             functionStack.Backward(lossResult);
 
             //更新
-            //更新
             if (isUpdate)
             {
                 functionStack.Update();
