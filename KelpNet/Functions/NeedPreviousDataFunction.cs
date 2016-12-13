@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using KelpNet.Common;
-#if !DEBUG
 using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Functions
 {
@@ -18,7 +16,7 @@ namespace KelpNet.Functions
         protected abstract NdArray NeedPreviousForward(NdArray x);
         protected abstract NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput);
 
-        protected NeedPreviousDataFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
+        protected NeedPreviousDataFunction(string name, bool isParallel = true, int inputCount = 0, int oututCount = 0) : base(name, isParallel, inputCount, oututCount)
         {
         }
 
@@ -37,17 +35,20 @@ namespace KelpNet.Functions
 
             NdArray[] prevoutput = new NdArray[x.Length];
 
-#if DEBUG
-            for(int i = 0; i < x.Length; i ++)
-#else
-            Parallel.For(0, x.Length, i =>
-#endif
+            if (IsParallel)
             {
-                prevoutput[i] = this.NeedPreviousForward(x[i]);
+                Parallel.For(0, x.Length, i =>
+                {
+                    prevoutput[i] = this.NeedPreviousForward(x[i]);
+                });
             }
-#if !DEBUG
-            );
-#endif
+            else
+            {
+                for (int i = 0; i < x.Length; i++)
+                {
+                    prevoutput[i] = this.NeedPreviousForward(x[i]);
+                }
+            }
 
             this._prevOutput.Add(prevoutput);
 
@@ -75,17 +76,20 @@ namespace KelpNet.Functions
 
             NdArray[] result = new NdArray[gy.Length];
 
-#if DEBUG
-            for (int i = 0; i < gy.Length; i++)
-#else
-            Parallel.For(0, gy.Length, i =>
-#endif
+            if (IsParallel)
             {
-                result[i] = this.NeedPreviousBackward(gy[i], prevInput[i], prevOutput[i]);
+                Parallel.For(0, gy.Length, i =>
+                {
+                    result[i] = this.NeedPreviousBackward(gy[i], prevInput[i], prevOutput[i]);
+                });
             }
-#if !DEBUG
-            );
-#endif
+            else
+            {
+                for (int i = 0; i < gy.Length; i++)
+                {
+                    result[i] = this.NeedPreviousBackward(gy[i], prevInput[i], prevOutput[i]);
+                }
+            }
 
             return result;
         }
@@ -98,17 +102,22 @@ namespace KelpNet.Functions
         public override NdArray[] Predict(NdArray[] x)
         {
             NdArray[] prevoutput = new NdArray[x.Length];
-#if DEBUG
-            for(int i = 0; i < x.Length; i ++)
-#else
-            Parallel.For(0, x.Length, i =>
-#endif
+
+            if (IsParallel)
             {
-                prevoutput[i] = this.NeedPreviousForward(x[i]);
+                Parallel.For(0, x.Length, i =>
+                {
+                    prevoutput[i] = this.NeedPreviousForward(x[i]);
+                });
             }
-#if !DEBUG
-            );
-#endif
+            else
+            {
+                for (int i = 0; i < x.Length; i++)
+                {
+                    prevoutput[i] = this.NeedPreviousForward(x[i]);
+                }
+            }
+
             return prevoutput;
         }
     }

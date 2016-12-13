@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Poolings
         private int _stride;
         private int _pad;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling") : base(name)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling", bool isParallel = true) : base(name, isParallel)
         {
             this._kSize = ksize;
             this._stride = stride;

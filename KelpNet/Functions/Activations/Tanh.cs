@@ -6,7 +6,7 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Tanh : NeedPreviousOutputFunction
     {
-        public Tanh(string name = "Tanh") : base(name)
+        public Tanh(string name = "Tanh", bool isParallel = true) : base(name, isParallel)
         {
         }
 

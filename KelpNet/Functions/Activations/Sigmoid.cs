@@ -6,7 +6,7 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Sigmoid : NeedPreviousOutputFunction
     {
-        public Sigmoid(string name = "Sigmoid") : base(name)
+        public Sigmoid(string name = "Sigmoid", bool isParallel = true) : base(name, isParallel)
         {
         }
 

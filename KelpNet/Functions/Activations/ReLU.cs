@@ -6,7 +6,7 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class ReLU : NeedPreviousOutputFunction
     {
-        public ReLU(string name = "ReLU") : base(name)
+        public ReLU(string name = "ReLU", bool isParallel = true) : base(name, isParallel)
         {
         }
 

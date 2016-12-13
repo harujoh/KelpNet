@@ -8,7 +8,7 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU") : base(name)
+        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isParallel = true) : base(name,isParallel)
         {
             this._slope = slope;
         }

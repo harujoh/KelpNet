@@ -1,8 +1,6 @@
 ﻿using System;
 using KelpNet.Common;
-#if !DEBUG
 using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Functions.Normalization
 {
@@ -29,7 +27,7 @@ namespace KelpNet.Functions.Normalization
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "BatchNorm") : base(name)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "BatchNorm", bool isParallel = true) : base(name, isParallel)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;
@@ -85,23 +83,33 @@ namespace KelpNet.Functions.Normalization
 
             //結果を計算
             this.Xhat = new double[x.Length, this.ChannelSize];
-#if DEBUG
-            for (int i = 0; i < x.Length; i++)
-#else
-            Parallel.For(0, x.Length, i =>
-#endif
-            {
-                y[i] = NdArray.ZerosLike(x[i]);
 
-                for (int j = 0; j < this.ChannelSize; j++)
+            if (IsParallel)
+            {
+                Parallel.For(0, x.Length, i =>
                 {
-                    this.Xhat[i, j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
-                    y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i, j] + this.Beta.Data[j];
+                    y[i] = NdArray.ZerosLike(x[i]);
+
+                    for (int j = 0; j < this.ChannelSize; j++)
+                    {
+                        this.Xhat[i, j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
+                        y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i, j] + this.Beta.Data[j];
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < x.Length; i++)
+                {
+                    y[i] = NdArray.ZerosLike(x[i]);
+
+                    for (int j = 0; j < this.ChannelSize; j++)
+                    {
+                        this.Xhat[i, j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
+                        y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i, j] + this.Beta.Data[j];
+                    }
                 }
             }
-#if !DEBUG
-            );
-#endif
 
             //パラメータを更新
             if (this.IsTrain)
@@ -171,11 +179,7 @@ namespace KelpNet.Functions.Normalization
             this.gBeta.Fill(0);
             this.gGamma.Fill(0);
 
-#if DEBUG
             for (int i = 0; i < this.ChannelSize; i++)
-#else
-            Parallel.For(0, this.ChannelSize, i =>
-#endif
             {
                 for (int j = 0; j < gy.Length; j++)
                 {
@@ -183,18 +187,11 @@ namespace KelpNet.Functions.Normalization
                     this.gGamma.Data[i] += gy[j].Data[i] * this.Xhat[j, i];
                 }
             }
-#if !DEBUG
-            );
-#endif
 
             if (!this.IsTrain)
             {
                 // 学習なし
-#if DEBUG
                 for (int i = 0; i < this.ChannelSize; i++)
-#else
-                Parallel.For(0, this.ChannelSize, i =>
-#endif
                 {
                     double gs = this.Gamma.Data[i] / this.Std[i];
                     this.gMean.Data[i] = -gs * this.gBeta.Data[i];
@@ -205,19 +202,12 @@ namespace KelpNet.Functions.Normalization
                         gx[j].Data[i] = gs * gy[j].Data[i];
                     }
                 }
-#if !DEBUG
-                );
-#endif
             }
             else
             {
                 int m = gy.Length;
 
-#if DEBUG
                 for (int i = 0; i < this.ChannelSize; i++)
-#else
-                Parallel.For(0, this.ChannelSize, i =>
-#endif
                 {
                     double gs = this.Gamma.Data[i] / this.Std[i];
 
@@ -228,9 +218,6 @@ namespace KelpNet.Functions.Normalization
                         gx[j].Data[i] = gs * (gy[j].Data[i] - val);
                     }
                 }
-#if !DEBUG
-                );
-#endif
             }
 
             return gx;

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using KelpNet.Common;
-#if !DEBUG
 using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Functions.Noise
 {
@@ -13,7 +11,7 @@ namespace KelpNet.Functions.Noise
         private readonly double dropoutRatio;
         private readonly List<double[]> maskStack = new List<double[]>();
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout") : base(name)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isParallel = true) : base(name, isParallel)
         {
             this.dropoutRatio = dropoutRatio;
         }
@@ -29,24 +27,35 @@ namespace KelpNet.Functions.Noise
                 mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
 
-#if DEBUG
-            for (int i = 0; i < x.Length; i++)
-#else
-            Parallel.For(0, x.Length, i =>
-#endif
+            if (IsParallel)
             {
-                double[] y = new double[x[i].Length];
-
-                for (int j = 0; j < mask.Length; j++)
+                Parallel.For(0, x.Length, i =>
                 {
-                    y[j] = x[i].Data[j] * mask[j];
-                }
+                    double[] y = new double[x[i].Length];
 
-                result[i] = NdArray.Convert(y, x[i].Shape);
+                    for (int j = 0; j < mask.Length; j++)
+                    {
+                        y[j] = x[i].Data[j] * mask[j];
+                    }
+
+                    result[i] = NdArray.Convert(y, x[i].Shape);
+                });
             }
-#if !DEBUG
-            );
-#endif
+            else
+            {
+                for (int i = 0; i < x.Length; i++)
+                {
+                    double[] y = new double[x[i].Length];
+
+                    for (int j = 0; j < mask.Length; j++)
+                    {
+                        y[j] = x[i].Data[j] * mask[j];
+                    }
+
+                    result[i] = NdArray.Convert(y, x[i].Shape);
+                }
+            }
+
             this.maskStack.Add(mask);
 
             return result;
@@ -56,27 +65,37 @@ namespace KelpNet.Functions.Noise
         {
             NdArray[] result = new NdArray[gy.Length];
 
-            double[] mask = this.maskStack[this.maskStack.Count-1];
+            double[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
-#if DEBUG
-            for (int i = 0; i < gy.Length; i++)
-#else
-            Parallel.For(0, gy.Length, i =>
-#endif
+            if (IsParallel)
             {
-                double[] gx = new double[gy[i].Length];
-
-                for (int j = 0; j < mask.Length; j++)
+                Parallel.For(0, gy.Length, i =>
                 {
-                    gx[j] = gy[i].Data[j] * mask[j];
-                }
+                    double[] gx = new double[gy[i].Length];
 
-                result[i] = NdArray.Convert(gx, gy[i].Shape);
+                    for (int j = 0; j < mask.Length; j++)
+                    {
+                        gx[j] = gy[i].Data[j] * mask[j];
+                    }
+
+                    result[i] = NdArray.Convert(gx, gy[i].Shape);
+                });
             }
-#if !DEBUG
-            );
-#endif
+            else
+            {
+                for (int i = 0; i < gy.Length; i++)
+                {
+                    double[] gx = new double[gy[i].Length];
+
+                    for (int j = 0; j < mask.Length; j++)
+                    {
+                        gx[j] = gy[i].Data[j] * mask[j];
+                    }
+
+                    result[i] = NdArray.Convert(gx, gy[i].Shape);
+                }
+            }
 
             return result;
         }

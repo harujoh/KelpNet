@@ -30,9 +30,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack model = new FunctionStack(
-                new Linear(1, 5, name: "Linear l1"),
-                new LSTM(5, 5, name: "LSTM l2"),
-                new Linear(5, 1, name: "Linear l3")
+                new Linear(1, 5, name: "Linear l1", isParallel: false),
+                new LSTM(5, 5, name: "LSTM l2", isParallel: false),
+                new Linear(5, 1, name: "Linear l3", isParallel: false)
             );
 
             //optimizerを宣言

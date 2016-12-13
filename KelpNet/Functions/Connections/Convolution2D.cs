@@ -16,7 +16,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _stride;
         private readonly int _pad;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isParallel = true) : base(name, inputChannels, outputChannels, isParallel)
         {
             this._kSize = kSize;
             this._stride = stride;
@@ -61,37 +61,37 @@ namespace KelpNet.Functions.Connections
             double[] result = new double[this.OutputCount * outputSize * outputSize];
             int resultIndex = 0;
 
-            for (int i = 0; i < this.OutputCount; i++)
+            for (int och = 0; och < this.OutputCount; och++)
             {
                 //Wインデックス用
-                int outChOffset = i * this.InputCount * this._kSize * this._kSize;
+                int outChOffset = och * this.InputCount * this._kSize * this._kSize;
 
-                for (int y = 0; y < outputSize; y++)
+                for (int oy = 0; oy < outputSize; oy++)
                 {
-                    for (int x = 0; x < outputSize; x++)
+                    for (int ox = 0; ox < outputSize; ox++)
                     {
-                        for (int j = 0; j < input.Shape[0]; j++)
+                        for (int ich = 0; ich < input.Shape[0]; ich++)
                         {
                             //Wインデックス用
-                            int inChOffset = j * this._kSize * this._kSize;
+                            int inChOffset = ich * this._kSize * this._kSize;
 
                             //inputインデックス用
-                            int inputOffset = j * input.Shape[1] * input.Shape[2];
+                            int inputOffset = ich * input.Shape[1] * input.Shape[2];
 
-                            for (int dy = 0; dy < this._kSize; dy++)
+                            for (int ky = 0; ky < this._kSize; ky++)
                             {
-                                int inputIndexY = y * this._stride + dy - this._pad;
+                                int iy = oy * this._stride + ky - this._pad;
 
-                                if (inputIndexY >= 0 && inputIndexY < input.Shape[1])
+                                if (iy >= 0 && iy < input.Shape[1])
                                 {
-                                    for (int dx = 0; dx < this._kSize; dx++)
+                                    for (int kx = 0; kx < this._kSize; kx++)
                                     {
-                                        int inputIndexX = x * this._stride + dx - this._pad;
+                                        int ix = ox * this._stride + kx - this._pad;
 
-                                        if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
+                                        if (ix >= 0 && ix < input.Shape[2])
                                         {
-                                            int wIndex = outChOffset + inChOffset + dy * this._kSize + dx;
-                                            int inputIndex = inputOffset + inputIndexY * input.Shape[2] + inputIndexX;
+                                            int wIndex = outChOffset + inChOffset + ky * this._kSize + kx;
+                                            int inputIndex = inputOffset + iy * input.Shape[2] + ix;
 
                                             result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
                                         }
@@ -100,7 +100,7 @@ namespace KelpNet.Functions.Connections
                             }
                         }
 
-                        result[resultIndex] += this.b.Data[i];
+                        result[resultIndex] += this.b.Data[och];
                         resultIndex++;
                     }
                 }
@@ -115,42 +115,42 @@ namespace KelpNet.Functions.Connections
 
             int gyIndex = 0;
 
-            for (int i = 0; i < gy.Shape[0]; i++)
+            for (int och = 0; och < gy.Shape[0]; och++)
             {
                 //gWインデックス用
-                int outChOffset = i * this.InputCount * this._kSize * this._kSize;
+                int outChOffset = och * this.InputCount * this._kSize * this._kSize;
 
-                for (int y = 0; y < gy.Shape[1]; y++)
+                for (int oy = 0; oy < gy.Shape[1]; oy++)
                 {
-                    for (int x = 0; x < gy.Shape[2]; x++)
+                    for (int ox = 0; ox < gy.Shape[2]; ox++)
                     {
-                        double gyData = gy.Data[gyIndex];
+                        double gyData = gy.Data[gyIndex++]; //gyIndex = ch * x * y
 
-                        for (int j = 0; j < prevInput.Shape[0]; j++)
+                        for (int ich = 0; ich < prevInput.Shape[0]; ich++)
                         {
                             //gWインデックス用
-                            int inChOffset = j * this._kSize * this._kSize;
+                            int inChOffset = ich * this._kSize * this._kSize;
 
                             //inputインデックス用
-                            int inputOffset = j * prevInput.Shape[1] * prevInput.Shape[2];
+                            int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
 
-                            for (int dy = 0; dy < this._kSize; dy++)
+                            for (int ky = 0; ky < this._kSize; ky++)
                             {
-                                int indexY = y * this._stride + dy - this._pad;
+                                int iy = oy * this._stride + ky - this._pad;
 
-                                if (indexY >= 0 && indexY < prevInput.Shape[1])
+                                if (iy >= 0 && iy < prevInput.Shape[1])
                                 {
-                                    for (int dx = 0; dx < this._kSize; dx++)
+                                    for (int kx = 0; kx < this._kSize; kx++)
                                     {
-                                        int indexX = x * this._stride + dx - this._pad;
+                                        int ix = ox * this._stride + kx - this._pad;
 
-                                        if (indexX >= 0 && indexX < prevInput.Shape[2])
+                                        if (ix >= 0 && ix < prevInput.Shape[2])
                                         {
                                             //WとgWのshapeは等しい
-                                            int wIndex = outChOffset + inChOffset + dy * this._kSize + dx;
+                                            int wIndex = outChOffset + inChOffset + ky * this._kSize + kx;
 
                                             //prevInputとgxのshapeは等しい
-                                            int inputIndex = inputOffset + indexY * prevInput.Shape[2] + indexX;
+                                            int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix;
 
                                             this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
 
@@ -161,8 +161,7 @@ namespace KelpNet.Functions.Connections
                             }
                         }
 
-                        this.gb.Data[i] += gyData;
-                        gyIndex++;
+                        this.gb.Data[och] += gyData;
                     }
                 }
             }

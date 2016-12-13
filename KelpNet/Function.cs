@@ -7,6 +7,8 @@ namespace KelpNet
     [Serializable]
     public abstract class Function
     {
+        protected bool IsParallel;
+
         public string Name;
 
         public FunctionParameter[] Parameters = { };
@@ -16,11 +18,17 @@ namespace KelpNet
         protected readonly int InputCount;
 
         //コンストラクタ
-        protected Function(string name, int inputCount = 0, int oututCount = 0)
+        protected Function(string name, bool isParallel = true, int inputCount = 0, int oututCount = 0)
         {
             this.Name = name;
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
+#if DEBUG
+            //デバッグ時は並列処理を行わない
+            this.IsParallel = false;
+#else
+            this.IsParallel = isParallel;
+#endif
         }
 
         public void SetOptimizer(params Optimizer[] optimizers)

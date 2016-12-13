@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Activations
         private readonly double _beta;
         private readonly double _betaInv;
 
-        public Softplus(double beta = 1.0, string name = "Softplus") : base(name)
+        public Softplus(double beta = 1.0, string name = "Softplus", bool isParallel = true) : base(name, isParallel)
         {
             this._beta = beta;
             this._betaInv = 1.0 / beta;

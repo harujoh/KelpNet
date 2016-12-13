@@ -8,7 +8,7 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _alpha;
 
-        public ELU(double alpha = 1.0, string name = "ELU", int batchCount = 1) : base(name)
+        public ELU(double alpha = 1.0, string name = "ELU", bool isParallel = true) : base(name, isParallel)
         {
             this._alpha = alpha;
         }

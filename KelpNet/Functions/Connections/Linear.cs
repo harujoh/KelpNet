@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear", bool isParallel = true) : base(name, inputCount, outputCount,isParallel)
         {
             this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);

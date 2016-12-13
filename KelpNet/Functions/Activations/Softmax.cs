@@ -7,7 +7,7 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Softmax : NeedPreviousOutputFunction
     {
-        public Softmax(string name = "Softmax") : base(name)
+        public Softmax(string name = "Softmax", bool isParallel = true) : base(name, isParallel)
         {
         }
 

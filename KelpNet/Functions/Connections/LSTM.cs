@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using KelpNet.Common;
-#if !DEBUG
 using System.Threading.Tasks;
-#endif
 
 namespace KelpNet.Functions.Connections
 {
@@ -34,14 +32,14 @@ namespace KelpNet.Functions.Connections
         private NdArray[] gxPrev3;
         private double[,] gcPrev;
 
-        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
+        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM", bool isParallel = true) : base(name, isParallel, inSize, outSize)
         {
             this.Parameters = new FunctionParameter[12];
 
-            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0");
-            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1");
-            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2");
-            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3");
+            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0", isParallel: isParallel);
+            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1", isParallel: isParallel);
+            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2", isParallel: isParallel);
+            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3", isParallel: isParallel);
             this.Parameters[0] = this.upward0.Parameters[0];
             this.Parameters[1] = this.upward0.Parameters[1];
             this.Parameters[2] = this.upward1.Parameters[0];
@@ -52,10 +50,10 @@ namespace KelpNet.Functions.Connections
             this.Parameters[7] = this.upward3.Parameters[1];
 
             //lateralはBiasは無し
-            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0");
-            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1");
-            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2");
-            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3");
+            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0", isParallel: isParallel);
+            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1", isParallel: isParallel);
+            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2", isParallel: isParallel);
+            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3", isParallel: isParallel);
             this.Parameters[8] = this.lateral0.Parameters[0];
             this.Parameters[9] = this.lateral1.Parameters[0];
             this.Parameters[10] = this.lateral2.Parameters[0];
@@ -81,10 +79,9 @@ namespace KelpNet.Functions.Connections
                 NdArray[] prevInput = new NdArray[this.hParam.Length];
                 for (int i = 0; i < prevInput.Length; i++)
                 {
-                    prevInput[i] = NdArray.Convert(this.hParam[i]);
+                    prevInput[i] = NdArray.FromArray(this.hParam[i]);
                 }
 
-                //値があればupwardへ加算
                 NdArray[] laterals0 = this.lateral0.Forward(prevInput);
                 NdArray[] laterals1 = this.lateral1.Forward(prevInput);
                 NdArray[] laterals2 = this.lateral2.Forward(prevInput);
@@ -102,50 +99,86 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-#if DEBUG
-            for (int i = 0; i < x.Length; i++)
-#else
-            Parallel.For(0, x.Length, i =>
-#endif
+            if (IsParallel)
             {
-                if (this.cParam[i].Count == 0)
+                Parallel.For(0, x.Length, i =>
                 {
-                    this.cParam[i].Add(new double[this.OutputCount]);
-                }
+                    if (this.cParam[i].Count == 0)
+                    {
+                        this.cParam[i].Add(new double[this.OutputCount]);
+                    }
 
-                //再配置
-                double[,] r = this.ExtractGates(upwards0[i].Data, upwards1[i].Data, upwards2[i].Data, upwards3[i].Data);
+                    //再配置
+                    double[,] r = this.ExtractGates(upwards0[i].Data, upwards1[i].Data, upwards2[i].Data, upwards3[i].Data);
 
-                double[] la = new double[this.OutputCount];
-                double[] li = new double[this.OutputCount];
-                double[] lf = new double[this.OutputCount];
-                double[] lo = new double[this.OutputCount];
-                double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
-                double[] cResult = new double[cPrev.Length];
+                    double[] la = new double[this.OutputCount];
+                    double[] li = new double[this.OutputCount];
+                    double[] lf = new double[this.OutputCount];
+                    double[] lo = new double[this.OutputCount];
+                    double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
+                    double[] cResult = new double[cPrev.Length];
 
-                for (int j = 0; j < this.hParam[i].Length; j++)
-                {
-                    la[j] = Math.Tanh(r[0, j]);
-                    li[j] = Sigmoid(r[1, j]);
-                    lf[j] = Sigmoid(r[2, j]);
-                    lo[j] = Sigmoid(r[3, j]);
+                    for (int j = 0; j < this.hParam[i].Length; j++)
+                    {
+                        la[j] = Math.Tanh(r[0, j]);
+                        li[j] = Sigmoid(r[1, j]);
+                        lf[j] = Sigmoid(r[2, j]);
+                        lo[j] = Sigmoid(r[3, j]);
 
-                    cResult[j] = la[j] * li[j] + lf[j] * cPrev[j];
-                    this.hParam[i][j] = lo[j] * Math.Tanh(cResult[j]);
-                }
+                        cResult[j] = la[j] * li[j] + lf[j] * cPrev[j];
+                        this.hParam[i][j] = lo[j] * Math.Tanh(cResult[j]);
+                    }
 
-                //Backward用
-                this.cParam[i].Add(cResult);
-                this.aParam[i].Add(la);
-                this.iParam[i].Add(li);
-                this.fParam[i].Add(lf);
-                this.oParam[i].Add(lo);
+                    //Backward用
+                    this.cParam[i].Add(cResult);
+                    this.aParam[i].Add(la);
+                    this.iParam[i].Add(li);
+                    this.fParam[i].Add(lf);
+                    this.oParam[i].Add(lo);
 
-                result[i] = NdArray.Convert(this.hParam[i]);
+                    result[i] = NdArray.Convert(this.hParam[i]);
+                });
             }
-#if !DEBUG
-            );
-#endif
+            else
+            {
+                for (int i = 0; i < x.Length; i++)
+                {
+                    if (this.cParam[i].Count == 0)
+                    {
+                        this.cParam[i].Add(new double[this.OutputCount]);
+                    }
+
+                    //再配置
+                    double[,] r = this.ExtractGates(upwards0[i].Data, upwards1[i].Data, upwards2[i].Data, upwards3[i].Data);
+
+                    double[] la = new double[this.OutputCount];
+                    double[] li = new double[this.OutputCount];
+                    double[] lf = new double[this.OutputCount];
+                    double[] lo = new double[this.OutputCount];
+                    double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
+                    double[] cResult = new double[cPrev.Length];
+
+                    for (int j = 0; j < this.hParam[i].Length; j++)
+                    {
+                        la[j] = Math.Tanh(r[0, j]);
+                        li[j] = Sigmoid(r[1, j]);
+                        lf[j] = Sigmoid(r[2, j]);
+                        lo[j] = Sigmoid(r[3, j]);
+
+                        cResult[j] = la[j] * li[j] + lf[j] * cPrev[j];
+                        this.hParam[i][j] = lo[j] * Math.Tanh(cResult[j]);
+                    }
+
+                    //Backward用
+                    this.cParam[i].Add(cResult);
+                    this.aParam[i].Add(la);
+                    this.iParam[i].Add(li);
+                    this.fParam[i].Add(lf);
+                    this.oParam[i].Add(lo);
+
+                    result[i] = NdArray.FromArray(this.hParam[i]);
+                }
+            }
 
             return result;
         }
@@ -181,86 +214,107 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-#if DEBUG
-            for (int i = 0; i < gh.Length; i++)
-#else
-            Parallel.For(0, gh.Length, i =>
-#endif
+            if (IsParallel)
             {
-                double[] ga = new double[this.InputCount];
-                double[] gi = new double[this.InputCount];
-                double[] gf = new double[this.InputCount];
-                double[] go = new double[this.InputCount];
-
-                double[] lcParam = this.cParam[i][this.cParam[i].Count - 1];
-                this.cParam[i].RemoveAt(this.cParam[i].Count - 1);
-
-                double[] laParam = this.aParam[i][this.aParam[i].Count - 1];
-                this.aParam[i].RemoveAt(this.aParam[i].Count - 1);
-
-                double[] liParam = this.iParam[i][this.iParam[i].Count - 1];
-                this.iParam[i].RemoveAt(this.iParam[i].Count - 1);
-
-                double[] lfParam = this.fParam[i][this.fParam[i].Count - 1];
-                this.fParam[i].RemoveAt(this.fParam[i].Count - 1);
-
-                double[] loParam = this.oParam[i][this.oParam[i].Count - 1];
-                this.oParam[i].RemoveAt(this.oParam[i].Count - 1);
-
-                double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
-
-                for (int j = 0; j < this.InputCount; j++)
+                Parallel.For(0, gh.Length, i =>
                 {
-                    double co = Math.Tanh(lcParam[j]);
+                    this.CalcgxPrev(gh[i].Data, i);
+                });
 
-                    this.gcPrev[i, j] += gh[i].Data[j] * loParam[j] * GradTanh(co);
-                    ga[j] = this.gcPrev[i, j] * liParam[j] * GradTanh(laParam[j]);
-                    gi[j] = this.gcPrev[i, j] * laParam[j] * GradSigmoid(liParam[j]);
-                    gf[j] = this.gcPrev[i, j] * cPrev[j] * GradSigmoid(lfParam[j]);
-                    go[j] = gh[i].Data[j] * co * GradSigmoid(loParam[j]);
+                NdArray[] gArray0 = this.upward0.Backward(this.gxPrev0);
+                NdArray[] gArray1 = this.upward1.Backward(this.gxPrev1);
+                NdArray[] gArray2 = this.upward2.Backward(this.gxPrev2);
+                NdArray[] gArray3 = this.upward3.Backward(this.gxPrev3);
 
-                    this.gcPrev[i, j] *= lfParam[j];
+                Parallel.For(0, gh.Length, i =>
+                {
+                    double[] gx = new double[this.InputCount];
+
+                    for (int j = 0; j < gx.Length; j++)
+                    {
+                        gx[j] += gArray0[i].Data[j];
+                        gx[j] += gArray1[i].Data[j];
+                        gx[j] += gArray2[i].Data[j];
+                        gx[j] += gArray3[i].Data[j];
+                    }
+
+                    result[i] = NdArray.Convert(gx);
+                });
+            }
+            else
+            {
+                for (int i = 0; i < gh.Length; i++)
+                {
+                    this.CalcgxPrev(gh[i].Data, i);
                 }
 
-                NdArray[] r = this.RestoreGates(ga, gi, gf, go);
+                NdArray[] gArray0 = this.upward0.Backward(this.gxPrev0);
+                NdArray[] gArray1 = this.upward1.Backward(this.gxPrev1);
+                NdArray[] gArray2 = this.upward2.Backward(this.gxPrev2);
+                NdArray[] gArray3 = this.upward3.Backward(this.gxPrev3);
 
-                this.gxPrev0[i] = r[0];
-                this.gxPrev1[i] = r[1];
-                this.gxPrev2[i] = r[2];
-                this.gxPrev3[i] = r[3];
-            }
-#if !DEBUG
-            );
-#endif
-
-            NdArray[] gArray0 = this.upward0.Backward(this.gxPrev0);
-            NdArray[] gArray1 = this.upward1.Backward(this.gxPrev1);
-            NdArray[] gArray2 = this.upward2.Backward(this.gxPrev2);
-            NdArray[] gArray3 = this.upward3.Backward(this.gxPrev3);
-
-#if DEBUG
-            for (int i = 0; i < gh.Length; i++)
-#else
-            Parallel.For(0, gh.Length, i =>
-#endif
-            {
-                double[] gx = new double[this.InputCount];
-
-                for (int j = 0; j < gx.Length; j++)
+                for (int i = 0; i < gh.Length; i++)
                 {
-                    gx[j] += gArray0[i].Data[j];
-                    gx[j] += gArray1[i].Data[j];
-                    gx[j] += gArray2[i].Data[j];
-                    gx[j] += gArray3[i].Data[j];
-                }
+                    double[] gx = new double[this.InputCount];
 
-                result[i] = NdArray.Convert(gx);
+                    for (int j = 0; j < gx.Length; j++)
+                    {
+                        gx[j] += gArray0[i].Data[j];
+                        gx[j] += gArray1[i].Data[j];
+                        gx[j] += gArray2[i].Data[j];
+                        gx[j] += gArray3[i].Data[j];
+                    }
+
+                    result[i] = NdArray.Convert(gx);
+                }
             }
-#if !DEBUG
-            );
-#endif
 
             return result;
+        }
+
+        public void CalcgxPrev(double[] gh, int i)
+        {
+            double[] ga = new double[this.InputCount];
+            double[] gi = new double[this.InputCount];
+            double[] gf = new double[this.InputCount];
+            double[] go = new double[this.InputCount];
+
+            double[] lcParam = this.cParam[i][this.cParam[i].Count - 1];
+            this.cParam[i].RemoveAt(this.cParam[i].Count - 1);
+
+            double[] laParam = this.aParam[i][this.aParam[i].Count - 1];
+            this.aParam[i].RemoveAt(this.aParam[i].Count - 1);
+
+            double[] liParam = this.iParam[i][this.iParam[i].Count - 1];
+            this.iParam[i].RemoveAt(this.iParam[i].Count - 1);
+
+            double[] lfParam = this.fParam[i][this.fParam[i].Count - 1];
+            this.fParam[i].RemoveAt(this.fParam[i].Count - 1);
+
+            double[] loParam = this.oParam[i][this.oParam[i].Count - 1];
+            this.oParam[i].RemoveAt(this.oParam[i].Count - 1);
+
+            double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
+
+            for (int j = 0; j < this.InputCount; j++)
+            {
+                double co = Math.Tanh(lcParam[j]);
+
+                this.gcPrev[i, j] += gh[j] * loParam[j] * GradTanh(co);
+                ga[j] = this.gcPrev[i, j] * liParam[j] * GradTanh(laParam[j]);
+                gi[j] = this.gcPrev[i, j] * laParam[j] * GradSigmoid(liParam[j]);
+                gf[j] = this.gcPrev[i, j] * cPrev[j] * GradSigmoid(lfParam[j]);
+                go[j] = gh[j] * co * GradSigmoid(loParam[j]);
+
+                this.gcPrev[i, j] *= lfParam[j];
+            }
+
+            NdArray[] r = this.RestoreGates(ga, gi, gf, go);
+
+            this.gxPrev0[i] = r[0];
+            this.gxPrev1[i] = r[1];
+            this.gxPrev2[i] = r[2];
+            this.gxPrev3[i] = r[3];
         }
 
         public override void ResetState()

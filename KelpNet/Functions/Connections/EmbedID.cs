@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Connections
         public NdArray W;
         public NdArray gW;
 
-        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID") : base(name, inputCount, outputCount)
+        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID", bool isParallel = true) : base(name, inputCount, outputCount, isParallel)
         {
             this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
