@@ -21,9 +21,9 @@ namespace KelpNet
 
             List<FunctionParameter> result = new List<FunctionParameter>();
 
-            for (int i = 0; i < this.Functions.Length; i++)
+            foreach (Function function in this.Functions)
             {
-                foreach (FunctionParameter parameter in this.Functions[i].Parameters)
+                foreach (FunctionParameter parameter in function.Parameters)
                 {
                     result.Add(parameter);
                 }
