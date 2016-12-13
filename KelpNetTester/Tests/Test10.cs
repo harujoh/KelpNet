@@ -59,18 +59,17 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < jump * N_EPOCH; i++)
             {
-
-                int[][] x = new int[BATCH_SIZE][];
-                int[][] t = new int[BATCH_SIZE][];
+                NdArray[] x = new NdArray[BATCH_SIZE];
+                NdArray[] t = new NdArray[BATCH_SIZE];
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {
-                    x[j] = new[] { trainData[(int)((jump * j + i) % wholeLen)] };
-                    t[j] = new[] { trainData[(int)((jump * j + i + 1) % wholeLen)] };
+                    x[j] = NdArray.FromArray(new[] { trainData[(int)((jump * j + i) % wholeLen)] });
+                    t[j] = NdArray.FromArray(new[] { trainData[(int)((jump * j + i + 1) % wholeLen)] });
                 }
 
                 double sumLoss;
-                backNdArrays.Push(Trainer.Forward(model, x, t, new SoftmaxCrossEntropy(), out sumLoss));
+                backNdArrays.Push(new SoftmaxCrossEntropy().Evaluate(model.Forward(x), t, out sumLoss));
                 Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
 
                 //Run truncated BPTT
@@ -114,17 +113,17 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < dataset.Length - 1; i++)
             {
-                int[][] x = new int[BATCH_SIZE][];
-                int[][] t = new int[BATCH_SIZE][];
+                NdArray[] x = new NdArray[BATCH_SIZE];
+                NdArray[] t = new NdArray[BATCH_SIZE];
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {
-                    x[j] = new[] { dataset[j + i] };
-                    t[j] = new[] { dataset[j + i + 1] };
+                    x[j] = NdArray.FromArray(new[] { dataset[j + i] });
+                    t[j] = NdArray.FromArray(new[] { dataset[j + i + 1] });
                 }
 
                 double sumLoss;
-                Trainer.Forward(predictModel, x, t, new SoftmaxCrossEntropy(), out sumLoss);
+                new SoftmaxCrossEntropy().Evaluate(predictModel.Forward(x), t, out sumLoss);
                 totalLoss.Add(sumLoss);
             }
 

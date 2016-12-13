@@ -24,7 +24,6 @@ namespace KelpNet
             this.Length = this.Param.Length;
         }
 
-
         //傾きの補正
         public void Reduce()
         {

@@ -67,8 +67,8 @@ namespace KelpNetTester.Tests
         {
             //全体での誤差を集計
             List<double> totalLoss = new List<double>();
-            double[][] x = new double[MINI_BATCH_SIZE][];
-            double[][] t = new double[MINI_BATCH_SIZE][];
+            NdArray[] x = new NdArray[MINI_BATCH_SIZE];
+            NdArray[] t = new NdArray[MINI_BATCH_SIZE];
 
             Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
 
@@ -76,12 +76,12 @@ namespace KelpNetTester.Tests
             {
                 for (int j = 0; j < MINI_BATCH_SIZE; j++)
                 {
-                    x[j] = new[] { sequences[j].Data[i] };
-                    t[j] = new[] { sequences[j].Data[i + 1] };
+                    x[j] = NdArray.FromArray(new[] { sequences[j].Data[i] });
+                    t[j] = NdArray.FromArray(new[] { sequences[j].Data[i + 1] });
                 }
 
                 double sumLoss;
-                backNdArrays.Push(Trainer.Forward(model, x, t, new MeanSquaredError(), out sumLoss));
+                backNdArrays.Push(new MeanSquaredError().Evaluate(model.Forward(x), t, out sumLoss));
                 totalLoss.Add(sumLoss);
             }
 

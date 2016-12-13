@@ -211,7 +211,7 @@ namespace KelpNetTester.Tests
                         MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        double accuracy = Trainer.Accuracy(nn, NdArray.FromArray(datasetY.Data), datasetY.Label);
+                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }
