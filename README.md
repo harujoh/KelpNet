@@ -46,6 +46,7 @@ Apache License 2.0
 　・Softplus
 - Connections:
 　・Convolution2D
+　・Deconvolution2D
 　・EmbedID
 　・Linear
 　・LSTM
