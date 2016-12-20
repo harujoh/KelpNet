@@ -37,7 +37,7 @@ namespace KelpNet
 
             foreach (var optimizer in optimizers)
             {
-                optimizer.Initilise(this.Parameters);
+                optimizer.AddFunctionParameters(this.Parameters);
             }
         }
 

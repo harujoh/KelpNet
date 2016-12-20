@@ -14,13 +14,11 @@ namespace KelpNet.Optimizers
             this.Momentum = momentum;
         }
 
-        public override void Initilise(FunctionParameter[] functionParameters)
+        internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
         {
-            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
-
-            for (int i = 0; i < this.OptimizerParameters.Length; i++)
+            foreach (FunctionParameter functionParameter in functionParameters)
             {
-                this.OptimizerParameters[i] = new MomentumSGDParameter(functionParameters[i], this);
+                this.OptimizerParameters.Add(new MomentumSGDParameter(functionParameter, this));
             }
         }
     }

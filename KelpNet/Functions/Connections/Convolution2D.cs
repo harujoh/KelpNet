@@ -124,7 +124,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int ox = 0; ox < gy.Shape[2]; ox++)
                     {
-                        double gyData = gy.Data[gyIndex++]; //gyIndex = ch * x * y
+                        double gyData = gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
 
                         for (int ich = 0; ich < prevInput.Shape[0]; ich++)
                         {

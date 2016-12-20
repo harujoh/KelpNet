@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace KelpNet
 {
@@ -7,15 +8,15 @@ namespace KelpNet
     public abstract class Optimizer
     {
         public long UpdateCount = 1;
-        protected OptimizerParameter[] OptimizerParameters;
+        protected List<OptimizerParameter> OptimizerParameters = new List<OptimizerParameter>();
 
-        public abstract void Initilise(FunctionParameter[] functionParameters);
+        internal abstract void AddFunctionParameters(FunctionParameter[] functionParameters);
 
         public void Update()
         {
-            foreach (OptimizerParameter optimizersParameter in this.OptimizerParameters)
+            for (int i = 0; i < this.OptimizerParameters.Count; i++)
             {
-                optimizersParameter.UpdateFunctionParameters();
+                this.OptimizerParameters[i].UpdateFunctionParameters();
             }
 
             this.UpdateCount++;

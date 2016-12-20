@@ -18,13 +18,11 @@ namespace KelpNet.Optimizers
             this.Epsilon = epsilon;
         }
 
-        public override void Initilise(FunctionParameter[] functionParameters)
+        internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
         {
-            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
-
-            for (int i = 0; i < this.OptimizerParameters.Length; i++)
+            foreach (FunctionParameter functionParameter in functionParameters)
             {
-                this.OptimizerParameters[i] = new AdamParameter(functionParameters[i], this);
+                this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
             }
         }
     }

@@ -12,13 +12,11 @@ namespace KelpNet.Optimizers
             this.LearningRate = learningRate;
         }
 
-        public override void Initilise(FunctionParameter[] functionParameters)
+        internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
         {
-            this.OptimizerParameters = new OptimizerParameter[functionParameters.Length];
-
-            for (int i = 0; i < this.OptimizerParameters.Length; i++)
+            foreach (FunctionParameter functionParameter in functionParameters)
             {
-                this.OptimizerParameters[i] = new SGDParameter(functionParameters[i], this);
+                this.OptimizerParameters.Add(new SGDParameter(functionParameter, this));
             }
         }
     }

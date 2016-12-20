@@ -67,22 +67,15 @@ namespace KelpNetTester.Tests
                 0.08390063,-0.03253863,0.0311571,0.08088892,-0.07267931
             }, name: "l4");
 
-            //Optimizerにパラメータを登録
-            FunctionParameter[] parameters = new FunctionParameter[10];
-            parameters[0] = l0.Parameters[0];
-            parameters[1] = l0.Parameters[1];
-            parameters[2] = l1.Parameters[0];
-            parameters[3] = l1.Parameters[1];
-            parameters[4] = l2.Parameters[0];
-            parameters[5] = l2.Parameters[1];
-            parameters[6] = l3.Parameters[0];
-            parameters[7] = l3.Parameters[1];
-            parameters[8] = l4.Parameters[0];
-            parameters[9] = l4.Parameters[1];
 
-            //手動で初期化
+            //FunctionにOptimiserを設定
             SGD sgd = new SGD();
-            sgd.Initilise(parameters);
+            l0.SetOptimizer(sgd);
+            l1.SetOptimizer(sgd);
+            l2.SetOptimizer(sgd);
+            l3.SetOptimizer(sgd);
+            l4.SetOptimizer(sgd);
+
 
             Console.WriteLine("l0 for");
             Console.WriteLine(l0.Forward(NdArray.FromArray(new[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
