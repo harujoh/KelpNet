@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet.Common;
 
-namespace KelpNet
+namespace KelpNet.Common.Functions
 {
     [Serializable]
     public class FunctionParameter

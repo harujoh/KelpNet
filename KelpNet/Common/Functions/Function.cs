@@ -1,7 +1,7 @@
 ﻿using System;
-using KelpNet.Common;
+using KelpNet.Common.Optimizers;
 
-namespace KelpNet
+namespace KelpNet.Common.Functions
 {
     //FunctionStackに積み上げるFunctionの基底クラス
     [Serializable]
@@ -35,7 +35,7 @@ namespace KelpNet
         {
             this.Optimizers = optimizers;
 
-            foreach (var optimizer in optimizers)
+            foreach (Optimizer optimizer in optimizers)
             {
                 optimizer.AddFunctionParameters(this.Parameters);
             }

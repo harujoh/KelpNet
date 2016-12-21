@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet;
 using KelpNet.Common;
+using KelpNet.Common.Tools;
+using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Normalization;
@@ -30,9 +31,9 @@ namespace KelpNetTester.Tests
         class ResultDataSet
         {
             public NdArray[] Result;
-            public int[][] Label;
+            public NdArray[] Label;
 
-            public ResultDataSet(NdArray[] result, int[][] label)
+            public ResultDataSet(NdArray[] result, NdArray[] label)
             {
                 this.Result = result;
                 this.Label = label;
@@ -40,17 +41,18 @@ namespace KelpNetTester.Tests
 
             public NdArray[] GetTrainData()
             {
-                //第一層の傾きを取得
-                double[][] train = new double[BATCH_DATA_COUNT][];
+                NdArray[] train = new NdArray[BATCH_DATA_COUNT];
 
                 for (int k = 0; k < BATCH_DATA_COUNT; k++)
                 {
-                    train[k] = new double[256 + 10];
-                    train[k][256 + this.Label[k][0]] = 1.0;
-                    Buffer.BlockCopy(this.Result[k].Data, 0, train[k], 0, sizeof(double) * 256);
+                    double[] tmp = new double[256 + 10];
+                    tmp[256 + (int)this.Label[k].Data[0]] = 1.0;
+                    Buffer.BlockCopy(this.Result[k].Data, 0, tmp, 0, sizeof(double) * 256);
+
+                    train[k] = new NdArray(tmp, new[] { 256 + 10 });
                 }
 
-                return NdArray.FromArray(train);
+                return train;
             }
         }
 
@@ -102,14 +104,14 @@ namespace KelpNetTester.Tests
             );
 
             FunctionStack cDNI2 = new FunctionStack(
-                new Linear(256+10, 1024, name: "cDNI2 Linear1"),
+                new Linear(256 + 10, 1024, name: "cDNI2 Linear1"),
                 new BatchNormalization(1024, name: "cDNI2 Nrom1"),
                 new ReLU(name: "cDNI2 ReLU1"),
                 new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI2 Linear3")
             );
 
             FunctionStack cDNI3 = new FunctionStack(
-                new Linear(256+10, 1024, name: "cDNI3 Linear1"),
+                new Linear(256 + 10, 1024, name: "cDNI3 Linear1"),
                 new BatchNormalization(1024, name: "cDNI3 Nrom1"),
                 new ReLU(name: "cDNI3 ReLU1"),
                 new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI3 Linear3")
@@ -146,7 +148,7 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    NdArray[] layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
+                    NdArray[] layer1ForwardResult = Layer1.Forward(datasetX.Data);
                     ResultDataSet layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX.Label);
 
                     ////第一層の傾きを取得
@@ -162,7 +164,7 @@ namespace KelpNetTester.Tests
                     ResultDataSet layer2ResultDataSet = new ResultDataSet(layer2ForwardResult, layer1ResultDataSet.Label);
 
                     //第二層の傾きを取得
-                    NdArray[] cDNI2Result =cDNI2.Forward(layer2ResultDataSet.GetTrainData());
+                    NdArray[] cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
                     //第二層を更新
                     NdArray[] layer2BackwardResult = Layer2.Backward(cDNI2Result);
@@ -204,7 +206,7 @@ namespace KelpNetTester.Tests
 
                     //第四層の傾きを取得
                     double sumLoss = 0;
-                    NdArray[] lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, NdArray.FromArray(layer3ResultDataSet.Label), out sumLoss);
+                    NdArray[] lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, layer3ResultDataSet.Label, out sumLoss);
 
                     //第四層を更新
                     NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);

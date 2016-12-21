@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using KelpNet.Common;
+using KelpNet.Common.Functions;
+using KelpNet.Common.Optimizers;
+using KelpNet.Common.Tools;
 
-namespace KelpNet
+namespace KelpNet.Functions
 {
     //層を積み上げるこのライブラリのメインとなるクラス
     //一回のForward、Backward、Updateで同時に実行される関数の集まり

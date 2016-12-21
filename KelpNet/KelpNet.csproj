@@ -43,10 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\DeepCopyHelper.cs" />
-    <Compile Include="FunctionParameter.cs" />
-    <Compile Include="FunctionStack.cs" />
-    <Compile Include="Function.cs" />
+    <Compile Include="Common\Tools\DeepCopyHelper.cs" />
+    <Compile Include="Common\Functions\FunctionParameter.cs" />
+    <Compile Include="Functions\FunctionStack.cs" />
+    <Compile Include="Common\Functions\Function.cs" />
     <Compile Include="Functions\Activations\ELU.cs" />
     <Compile Include="Functions\Activations\LeakyReLU.cs" />
     <Compile Include="Functions\Activations\ReLU.cs" />
@@ -64,14 +64,14 @@
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="Functions\NeedPreviousDataFunction.cs" />
-    <Compile Include="ILossFunction.cs" />
+    <Compile Include="Common\Loss\ILossFunction.cs" />
     <Compile Include="Loss\MeanSquaredError.cs" />
     <Compile Include="Loss\SoftmaxCrossEntropy.cs" />
     <Compile Include="Functions\Poolings\AveragePooling.cs" />
     <Compile Include="Functions\Poolings\MaxPooling.cs" />
     <Compile Include="Common\Mother.cs" />
     <Compile Include="Common\NdArray.cs" />
-    <Compile Include="Optimizer.cs" />
+    <Compile Include="Common\Optimizers\Optimizer.cs" />
     <Compile Include="Optimizers\AdaDelta.cs" />
     <Compile Include="Optimizers\AdaGrad.cs" />
     <Compile Include="Optimizers\Adam.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="Optimizers\RMSprop.cs" />
     <Compile Include="Optimizers\SGD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Trainer.cs" />
+    <Compile Include="Common\Tools\Trainer.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

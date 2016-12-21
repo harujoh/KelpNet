@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet;
+using KelpNet.Common.Tools;
+using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using KelpNet.Common;
 using MNISTLoader;
 
@@ -10,43 +8,53 @@ namespace KelpNetTester
     {
         readonly MnistDataLoader mnistDataLoader = new MnistDataLoader();
 
-        private double[][,,] X;
-        private int[][] Tx;
+        private NdArray[] X;
+        private NdArray[] Tx;
 
-        private double[][,,] Y;
-        private int[][] Ty;
+        private NdArray[] Y;
+        private NdArray[] Ty;
 
         public MnistData()
         {
             //トレーニングデータ
-            this.X = new double[this.mnistDataLoader.TrainData.Length][,,];
+            this.X = new NdArray[this.mnistDataLoader.TrainData.Length];
             //トレーニングデータラベル
-            this.Tx = new int[this.mnistDataLoader.TrainData.Length][];
+            this.Tx = new NdArray[this.mnistDataLoader.TrainData.Length];
 
             for (int i = 0; i < this.mnistDataLoader.TrainData.Length; i++)
             {
-                this.X[i] = new double[1, 28, 28];
-                Buffer.BlockCopy(this.mnistDataLoader.TrainData[i].Select(val => val / 255.0).ToArray(), 0, this.X[i], 0, sizeof(double) *this.X[i].Length);
-                this.Tx[i] = new [] { (int)this.mnistDataLoader.TrainLabel[i] };
+                double[] x = new double[28 * 28];
+                for (int j = 0; j < this.mnistDataLoader.TrainData[i].Length; j++)
+                {
+                    x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0;
+                }
+                this.X[i] = new NdArray(x, new[] { 1, 28, 28 });
+
+                this.Tx[i] = NdArray.FromArray(new[] { (int)this.mnistDataLoader.TrainLabel[i] });
             }
 
             //教師データ
-            this.Y = new double[this.mnistDataLoader.TeachData.Length][,,];
+            this.Y = new NdArray[this.mnistDataLoader.TeachData.Length];
             //教師データラベル
-            this.Ty = new int[this.mnistDataLoader.TeachData.Length][];
-            
+            this.Ty = new NdArray[this.mnistDataLoader.TeachData.Length];
+
             for (int i = 0; i < this.mnistDataLoader.TeachData.Length; i++)
             {
-                this.Y[i] = new double[1, 28, 28];
-                Buffer.BlockCopy(this.mnistDataLoader.TeachData[i].Select(val => val / 255.0).ToArray(), 0, this.Y[i], 0, sizeof(double) *this.Y[i].Length);
-                this.Ty[i] = new[] { (int)this.mnistDataLoader.TeachLabel[i] };
+                double[] y = new double[28 * 28];
+                for (int j = 0; j < this.mnistDataLoader.TeachData[i].Length; j++)
+                {
+                    y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0;
+                }
+                this.Y[i] = new NdArray(y, new[] { 1, 28, 28 });
+
+                this.Ty[i] = NdArray.FromArray(new[] { (int)this.mnistDataLoader.TeachLabel[i] });
             }
         }
 
         public MnistDataSet GetRandomYSet(int dataCount)
         {
-            List<double[,,]> listY = new List<double[,,]>();
-            List<int[]> listTy = new List<int[]>();
+            List<NdArray> listY = new List<NdArray>();
+            List<NdArray> listTy = new List<NdArray>();
 
             for (int j = 0; j < dataCount; j++)
             {
@@ -56,13 +64,13 @@ namespace KelpNetTester
                 listTy.Add(this.Ty[index]);
             }
 
-            return new MnistDataSet(listY.ToArray(),listTy.ToArray());
+            return new MnistDataSet(listY.ToArray(), listTy.ToArray());
         }
 
         public MnistDataSet GetRandomXSet(int dataCount)
         {
-            List<double[,,]> listX = new List<double[,,]>();
-            List<int[]> listTx = new List<int[]>();
+            List<NdArray> listX = new List<NdArray>();
+            List<NdArray> listTx = new List<NdArray>();
 
             for (int j = 0; j < dataCount; j++)
             {
@@ -78,10 +86,10 @@ namespace KelpNetTester
 
     public class MnistDataSet
     {
-        public Array[] Data;
-        public int[][] Label;
+        public NdArray[] Data;
+        public NdArray[] Label;
 
-        public MnistDataSet(Array[] data, int[][] label)
+        public MnistDataSet(NdArray[] data, NdArray[] label)
         {
             this.Data = data;
             this.Label = label;

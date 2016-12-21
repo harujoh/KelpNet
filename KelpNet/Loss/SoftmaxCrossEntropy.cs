@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using KelpNet.Common;
+using KelpNet.Common.Loss;
 
 namespace KelpNet.Loss
 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using KelpNet.Common;
 using System.Threading.Tasks;
+using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Noise
 {

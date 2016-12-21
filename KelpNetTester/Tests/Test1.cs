@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
-using KelpNet;
 using KelpNet.Common;
+using KelpNet.Common.Tools;
+using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
@@ -60,7 +61,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (double[] input in trainData)
             {
-                NdArray result = Trainer.Predict(nn, input);
+                NdArray result = nn.Predict(NdArray.FromArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
@@ -74,7 +75,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (double[] input in trainData)
             {
-                NdArray result = Trainer.Predict(testnn, input);
+                NdArray result = testnn.Predict(NdArray.FromArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet;
 using KelpNet.Common;
+using KelpNet.Functions;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
@@ -124,7 +124,6 @@ namespace KelpNetTester.Tests
             Console.WriteLine(seq);
         }
 
-
         static double predict_sequence(FunctionStack model, List<double> input_seq)
         {
             model.ResetState();
@@ -133,7 +132,7 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < input_seq.Count; i++)
             {
-                result = Trainer.Predict(model, new[] { input_seq[i] });
+                result = model.Predict(NdArray.FromArray(new[] {input_seq[i]}));
             }
 
             return result.Data[0];

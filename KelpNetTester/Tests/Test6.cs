@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using KelpNet;
+using KelpNet.Common.Tools;
+using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;

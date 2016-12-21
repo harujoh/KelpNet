@@ -1,6 +1,7 @@
 ﻿using System;
-using KelpNet;
 using KelpNet.Common;
+using KelpNet.Common.Tools;
+using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
@@ -62,7 +63,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (double[] val in trainData)
             {
-                NdArray result = Trainer.Predict(nn, val);
+                NdArray result = nn.Predict(NdArray.FromArray(val));
                 Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5?1:0) + " " + result);
 
             }

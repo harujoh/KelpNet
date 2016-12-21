@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet;
 using KelpNet.Common;
+using KelpNet.Common.Tools;
+using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Normalization;
@@ -127,7 +128,7 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    NdArray[] layer1ForwardResult = Layer1.Forward(NdArray.FromArray(datasetX.Data));
+                    NdArray[] layer1ForwardResult = Layer1.Forward(datasetX.Data);
 
                     //第一層の傾きを取得
                     NdArray[] DNI1Result = DNI1.Forward(layer1ForwardResult);
@@ -175,7 +176,7 @@ namespace KelpNetTester.Tests
 
                     //第四層の傾きを取得
                     double sumLoss;
-                    NdArray[] lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, NdArray.FromArray(datasetX.Label), out sumLoss);
+                    NdArray[] lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, datasetX.Label, out sumLoss);
 
                     //第四層を更新
                     NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);

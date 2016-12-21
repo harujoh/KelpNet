@@ -1,5 +1,7 @@
 ﻿using System;
-using KelpNet;
+using KelpNet.Common;
+using KelpNet.Common.Tools;
+using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
@@ -66,7 +68,7 @@ namespace KelpNetTester.Tests
 
             foreach (double[] val in trainData)
             {
-                Console.WriteLine(val[0] + ":" + Trainer.Predict(nn,val).Data[0]);
+                Console.WriteLine(val[0] + ":" + nn.Predict(NdArray.FromArray(val)).Data[0]);
             }
         }
     }

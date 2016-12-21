@@ -1,6 +1,7 @@
 ﻿using System;
 using KelpNet.Common;
 using System.Threading.Tasks;
+using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Normalization
 {
@@ -9,16 +10,22 @@ namespace KelpNet.Functions.Normalization
     public class BatchNormalization : Function
     {
         private bool IsTrain;
+
         private readonly NdArray Gamma;
         private readonly NdArray gGamma;
+
         private readonly NdArray Beta;
         private readonly NdArray gBeta;
+
         private readonly double Decay;
         private readonly double Eps;
+
         private readonly NdArray AvgMean;
-        private readonly NdArray AvgVar;
         private readonly NdArray gMean;
+
+        private readonly NdArray AvgVar;
         private readonly NdArray gVariance;
+
         private double[] Std;
         private double[,] Xhat;
 
@@ -88,26 +95,14 @@ namespace KelpNet.Functions.Normalization
             {
                 Parallel.For(0, x.Length, i =>
                 {
-                    y[i] = NdArray.ZerosLike(x[i]);
-
-                    for (int j = 0; j < this.ChannelSize; j++)
-                    {
-                        this.Xhat[i, j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
-                        y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i, j] + this.Beta.Data[j];
-                    }
+                    y[i] = NdArray.Convert(this.CalcY(i, x[i]), x[i].Shape);
                 });
             }
             else
             {
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i] = NdArray.ZerosLike(x[i]);
-
-                    for (int j = 0; j < this.ChannelSize; j++)
-                    {
-                        this.Xhat[i, j] = (x[i].Data[j] - this.Mean[j]) / this.Std[j];
-                        y[i].Data[j] = this.Gamma.Data[j] * this.Xhat[i, j] + this.Beta.Data[j];
-                    }
+                    y[i] = NdArray.Convert(this.CalcY(i, x[i]), x[i].Shape);
                 }
             }
 
@@ -127,6 +122,19 @@ namespace KelpNet.Functions.Normalization
                     this.Variance[i] *= (1 - this.Decay) * adjust; // reuse buffer as a temporary
                     this.AvgVar.Data[i] += this.Variance[i];
                 }
+            }
+
+            return y;
+        }
+
+        double[] CalcY(int i, NdArray x)
+        {
+            double[] y = new double[x.Length];
+
+            for (int j = 0; j < this.ChannelSize; j++)
+            {
+                this.Xhat[i, j] = (x.Data[j] - this.Mean[j]) / this.Std[j];
+                y[j] = this.Gamma.Data[j] * this.Xhat[i, j] + this.Beta.Data[j];
             }
 
             return y;
@@ -188,34 +196,35 @@ namespace KelpNet.Functions.Normalization
                 }
             }
 
-            if (!this.IsTrain)
+            if (this.IsTrain)
             {
-                // 学習なし
+                // 学習あり
+                int m = gy.Length;
+
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    double gs = this.Gamma.Data[i] / this.Std[i];
-                    this.gMean.Data[i] = -gs * this.gBeta.Data[i];
-                    this.gVariance.Data[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
+                    double gs = this.Gamma.Data[i]/this.Std[i];
 
                     for (int j = 0; j < gy.Length; j++)
                     {
-                        gx[j].Data[i] = gs * gy[j].Data[i];
+                        double val = (this.Xhat[j, i]*this.gGamma.Data[i] + this.gBeta.Data[i])/m;
+
+                        gx[j].Data[i] = gs*(gy[j].Data[i] - val);
                     }
                 }
             }
             else
             {
-                int m = gy.Length;
-
+                // 学習なし
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    double gs = this.Gamma.Data[i] / this.Std[i];
+                    double gs = this.Gamma.Data[i]/this.Std[i];
+                    this.gMean.Data[i] = -gs*this.gBeta.Data[i];
+                    this.gVariance.Data[i] = -0.5*this.Gamma.Data[i]/this.AvgVar.Data[i]*this.gGamma.Data[i];
 
                     for (int j = 0; j < gy.Length; j++)
                     {
-                        double val = (this.Xhat[j, i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
-
-                        gx[j].Data[i] = gs * (gy[j].Data[i] - val);
+                        gx[j].Data[i] = gs*gy[j].Data[i];
                     }
                 }
             }

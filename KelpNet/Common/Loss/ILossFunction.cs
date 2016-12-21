@@ -1,6 +1,4 @@
-﻿using KelpNet.Common;
-
-namespace KelpNet
+﻿namespace KelpNet.Common.Loss
 {
     public interface ILossFunction
     {
