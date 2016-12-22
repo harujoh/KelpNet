@@ -44,7 +44,7 @@ namespace KelpNetTester
             //Test11のDNIをcDNIとした
             //Test12.Run();
 
-            //Test11のDNIをcDNIとした
+            //Deconvolution2Dのテスト
             //Test13.Run();
 
             //Linearの分割実行
