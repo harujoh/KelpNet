@@ -7,30 +7,55 @@ namespace KelpNet.Common.Tools
 {
     public class NdArrayConverter
     {
-        public static Bitmap NdArray2Image(NdArray input)
+        public static NdArray Image2NdArray(Bitmap input)
         {
-            Bitmap result = new Bitmap(1, 1);
+            int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
+            NdArray result = NdArray.Zeros(bitcount, input.Height, input.Width);
 
-            if (input.Shape.Length == 2)
+            BitmapData bmpdat = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly, input.PixelFormat);
+            byte[] imageData = new byte[bmpdat.Stride * bmpdat.Height];
+
+            Marshal.Copy(bmpdat.Scan0, imageData, 0, imageData.Length);
+
+            for (int y = 0; y < input.Height; y++)
             {
-                result = CreateMono(input.Data, input.Shape[0], input.Shape[1]);
-            }
-            else if (input.Shape.Length == 3)
-            {
-                if (input.Shape[0] == 1)
+                for (int x = 0; x < input.Width; x++)
                 {
-                    result = CreateMono(input.Data, input.Shape[1], input.Shape[2]);
-                }
-                else if (input.Shape[0] == 3)
-                {
-                    result = new Bitmap(input.Shape[1], input.Shape[2], PixelFormat.Format24bppRgb);
+                    for (int ch = 0; ch < bitcount; ch++)
+                    {
+                        result.Data[ch * input.Height * input.Width + y * input.Width + x] =
+                            imageData[y * bmpdat.Stride + x * bitcount + ch];
+                    }
                 }
             }
 
             return result;
         }
 
-        static Bitmap CreateMono(double[] data, int width, int height)
+        public static Bitmap NdArray2Image(NdArray input)
+        {
+            Bitmap result = new Bitmap(1, 1);
+
+            if (input.Shape.Length == 2)
+            {
+                result = CreateMonoImage(input.Data, input.Shape[0], input.Shape[1]);
+            }
+            else if (input.Shape.Length == 3)
+            {
+                if (input.Shape[0] == 1)
+                {
+                    result = CreateMonoImage(input.Data, input.Shape[1], input.Shape[2]);
+                }
+                else if (input.Shape[0] == 3)
+                {
+                    result = CreateColorImage(input.Data, input.Shape[1], input.Shape[2]);
+                }
+            }
+
+            return result;
+        }
+
+        static Bitmap CreateMonoImage(double[] data, int width, int height)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
 
@@ -60,6 +85,34 @@ namespace KelpNet.Common.Tools
 
             return result;
         }
+
+        static Bitmap CreateColorImage(double[] data, int width, int height)
+        {
+            Bitmap result = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            int bitcount = Image.GetPixelFormatSize(result.PixelFormat) / 8;
+
+            BitmapData bmpdat = result.LockBits(new Rectangle(0, 0, result.Width, result.Height), ImageLockMode.WriteOnly, result.PixelFormat);
+
+            byte[] resultData = new byte[bmpdat.Stride * height];
+
+            double datamax = data.Max();
+
+            for (int y = 0; y < result.Height; y++)
+            {
+                for (int x = 0; x < result.Width; x++)
+                {
+                    resultData[y * bmpdat.Stride + x * bitcount + 0] = (byte)(data[0 * height * width + y * width + x] / datamax * 255);
+                    resultData[y * bmpdat.Stride + x * bitcount + 1] = (byte)(data[1 * height * width + y * width + x] / datamax * 255);
+                    resultData[y * bmpdat.Stride + x * bitcount + 2] = (byte)(data[2 * height * width + y * width + x] / datamax * 255);
+                }
+            }
+
+            Marshal.Copy(resultData, 0, bmpdat.Scan0, resultData.Length);
+            result.UnlockBits(bmpdat);
+
+            return result;
+        }
+
     }
 
 }
