@@ -50,6 +50,7 @@
     <Compile Include="Tests\Test12.cs" />
     <Compile Include="Tests\Test10.cs" />
     <Compile Include="Tests\Test11.cs" />
+    <Compile Include="Tests\Test13.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />

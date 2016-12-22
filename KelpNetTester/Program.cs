@@ -44,6 +44,9 @@ namespace KelpNetTester
             //Test11のDNIをcDNIとした
             //Test12.Run();
 
+            //Test11のDNIをcDNIとした
+            //Test13.Run();
+
             //Linearの分割実行
             //TestX.Run();
 
