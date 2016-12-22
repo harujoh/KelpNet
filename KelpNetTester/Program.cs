@@ -1,15 +1,17 @@
 ﻿using System;
+using WindowsFormsApplication1;
 using KelpNetTester.Tests;
 
 namespace KelpNetTester
 {
     class Program
     {
+        [STAThread]
         //実行したいテストのコメントを外して下さい
         static void Main(string[] args)
         {
             //MLPによるXORの学習
-            Test1.Run();
+            //Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -44,8 +46,8 @@ namespace KelpNetTester
             //Test11のDNIをcDNIとした
             //Test12.Run();
 
-            //Deconvolution2Dのテスト
-            //Test13.Run();
+            //Deconvolution2Dのテスト(Winform)
+            //new Test13().ShowDialog();
 
             //Linearの分割実行
             //TestX.Run();
