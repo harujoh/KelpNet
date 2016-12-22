@@ -35,25 +35,23 @@ namespace KelpNet.Common.Tools
 
         public static Bitmap NdArray2Image(NdArray input)
         {
-            Bitmap result = new Bitmap(1, 1);
-
             if (input.Shape.Length == 2)
             {
-                result = CreateMonoImage(input.Data, input.Shape[0], input.Shape[1]);
+                return CreateMonoImage(input.Data, input.Shape[0], input.Shape[1]);
             }
             else if (input.Shape.Length == 3)
             {
                 if (input.Shape[0] == 1)
                 {
-                    result = CreateMonoImage(input.Data, input.Shape[1], input.Shape[2]);
+                    return CreateMonoImage(input.Data, input.Shape[1], input.Shape[2]);
                 }
                 else if (input.Shape[0] == 3)
                 {
-                    result = CreateColorImage(input.Data, input.Shape[1], input.Shape[2]);
+                    return CreateColorImage(input.Data, input.Shape[1], input.Shape[2]);
                 }
             }
 
-            return result;
+            return null;
         }
 
         static Bitmap CreateMonoImage(double[] data, int width, int height)

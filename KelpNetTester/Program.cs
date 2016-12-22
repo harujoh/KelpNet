@@ -1,5 +1,4 @@
 ﻿using System;
-using WindowsFormsApplication1;
 using KelpNetTester.Tests;
 
 namespace KelpNetTester

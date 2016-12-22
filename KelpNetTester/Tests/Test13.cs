@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using KelpNet.Common;
 using KelpNet.Common.Tools;
@@ -11,7 +7,7 @@ using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
 
-namespace WindowsFormsApplication1
+namespace KelpNetTester.Tests
 {
     public partial class Test13 : Form
     {
@@ -23,20 +19,20 @@ namespace WindowsFormsApplication1
 
         public Test13()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
             ClientSize = new Size(128*4, 128*4);
 
             //目標とするフィルタを作成（実践であればココは不明な値となる）
-            decon_core = new Deconvolution2D(1, 1, 15, 1, 7)
+            this.decon_core = new Deconvolution2D(1, 1, 15, 1, 7)
             {
                 W = { Data = MakeOneCore() }
             };
 
-            model = new Deconvolution2D(1, 1, 15, 1, 7);
+            this.model = new Deconvolution2D(1, 1, 15, 1, 7);
 
-            optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
-            model.SetOptimizer(optimizer);
+            this.optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
+            this.model.SetOptimizer(this.optimizer);
         }
 
         static NdArray getRandomImage(int N = 1, int img_w = 128, int img_h = 128)
@@ -83,21 +79,21 @@ namespace WindowsFormsApplication1
                 NdArray img_p = getRandomImage();
 
                 //目標とするフィルタで学習用の画像を出力
-                NdArray img_core = decon_core.Forward(img_p);
+                NdArray img_core = this.decon_core.Forward(img_p);
 
-                model.ClearGrads();
+                this.model.ClearGrads();
 
                 //未学習のフィルタで画像を出力
-                NdArray img_y = model.Forward(img_p);
+                NdArray img_y = this.model.Forward(img_p);
 
                 this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y);
 
                 double loss;
-                NdArray gy = meanSquaredError.Evaluate(img_y, img_core, out loss);
+                NdArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);
 
-                model.Backward(gy);
+                this.model.Backward(gy);
 
-                model.Update();
+                this.model.Update();
 
                 this.Text = "[epoch" + this.counter + "] Loss : " + loss.ToString("f4");
 
