@@ -7,6 +7,7 @@ namespace KelpNet.Common.Tools
 {
     public class NdArrayConverter
     {
+        //Bitmapは [RGBRGB...]でデータが格納されているが多くの機械学習は[RR..GG..BB..]を前提にしているため入れ替えを行っている
         public static NdArray Image2NdArray(Bitmap input)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
