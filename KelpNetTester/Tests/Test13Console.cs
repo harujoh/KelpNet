@@ -31,7 +31,7 @@ namespace KelpNetTester.Tests
             //目標とするフィルタで学習用の画像を出力
             NdArray img_core = decon_core.Forward(img_p);
 
-            //移植元では同じ教育画像だけで教育しているが、こちらの方が実践に近いと思う
+            //移植元では同じ教育画像で教育しているが、より実践に近い学習に変更
             for (int i = 0; i < 31; i++)
             {
                 model.ClearGrads();

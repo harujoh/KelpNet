@@ -21,7 +21,7 @@ namespace KelpNetTester.Tests
         {
             this.InitializeComponent();
 
-            ClientSize = new Size(128*4, 128*4);
+            ClientSize = new Size(128 * 4, 128 * 4);
 
             //目標とするフィルタを作成（実践であればココは不明な値となる）
             this.decon_core = new Deconvolution2D(1, 1, 15, 1, 7)
@@ -43,7 +43,7 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < img_p.Length; i++)
             {
                 img_p[i] = Mother.Dice.Next(0, 10000);
-                img_p[i] = img_p[i] < 10 ? 255 : 0;                
+                img_p[i] = img_p[i] < 10 ? 255 : 0;
             }
 
             return new NdArray(img_p, new[] { N, img_h, img_w });
@@ -72,7 +72,7 @@ namespace KelpNetTester.Tests
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            //移植元では同じ教育画像だけで教育しているが、こちらの方が実践に近いと思う
+            //移植元では同じ教育画像で教育しているが、より実践に近い学習に変更
             if (this.counter < 11)
             {
                 //ランダムに点が打たれた画像を生成
