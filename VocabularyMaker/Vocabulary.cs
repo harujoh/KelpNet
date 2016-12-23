@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -21,7 +22,7 @@ namespace VocabularyMaker
             string strText = sr.ReadToEnd();
             sr.Close();
 
-            string[] replace = strText.Replace("\r\n", "<EOS>").Trim().Split(' ');
+            string[] replace = strText.Replace("\r\n","\n").Replace("\n", "<EOS>").Trim().Split(new[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 
             //ダブリを除いて辞書に追加
             this.Data.AddRange(replace);
