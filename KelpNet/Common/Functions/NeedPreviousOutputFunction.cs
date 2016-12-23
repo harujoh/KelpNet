@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions
+namespace KelpNet.Common.Functions
 {
     //前回の入出力を自動的に扱うクラステンプレート
     [Serializable]

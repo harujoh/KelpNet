@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
@@ -141,29 +139,6 @@ namespace KelpNet.Functions
             }
 
             return input;
-        }
-
-        public void Save(string fileName)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-
-            using (Stream stream = File.OpenWrite(fileName))
-            {
-                bf.Serialize(stream, this);
-            }
-        }
-
-        public static FunctionStack Load(string fileName)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            FunctionStack result;
-
-            using (Stream stream = File.OpenRead(fileName))
-            {
-                result = (FunctionStack)bf.Deserialize(stream);
-            }
-
-            return result;
         }
 
         //コピーを作成するメソッド

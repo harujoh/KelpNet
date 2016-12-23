@@ -67,10 +67,10 @@ namespace KelpNetTester.Tests
             }
 
             //学習の終わったネットワークを保存
-            nn.Save("test.nn");
+            ModelIO.Save(nn, "test.nn");
 
             //学習の終わったネットワークを読み込み
-            FunctionStack testnn = FunctionStack.Load("test.nn");
+            FunctionStack testnn = ModelIO.Load("test.nn");
 
             Console.WriteLine("Test Start...");
             foreach (double[] input in trainData)
