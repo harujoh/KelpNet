@@ -21,7 +21,7 @@ namespace VocabularyMaker
             string strText = sr.ReadToEnd();
             sr.Close();
 
-            string[] replace = strText.Replace("\n", "<EOS>").Trim().Split();
+            string[] replace = strText.Replace("\r\n", "<EOS>").Trim().Split(' ');
 
             //ダブリを除いて辞書に追加
             this.Data.AddRange(replace);
