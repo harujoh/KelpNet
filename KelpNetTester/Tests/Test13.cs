@@ -31,7 +31,7 @@ namespace KelpNetTester.Tests
 
             this.model = new Deconvolution2D(1, 1, 15, 1, 7);
 
-            this.optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
+            this.optimizer = new SGD(learningRate: 0.01); //大きいと発散する
             this.model.SetOptimizer(this.optimizer);
         }
 
@@ -42,8 +42,8 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < img_p.Length; i++)
             {
-                img_p[i] = Mother.Dice.Next(0, 1000);
-                if(img_p[i] != 990) img_p[i] = img_p[i] > 990 ? 1 : 0;
+                img_p[i] = Mother.Dice.Next(0, 10000);
+                img_p[i] = img_p[i] < 10 ? 255 : 0;                
             }
 
             return new NdArray(img_p, new[] { N, img_h, img_w });
