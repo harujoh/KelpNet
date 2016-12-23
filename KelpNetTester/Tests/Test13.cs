@@ -73,7 +73,7 @@ namespace KelpNetTester.Tests
         private void timer1_Tick(object sender, EventArgs e)
         {
             //移植元では同じ教育画像だけで教育しているが、こちらの方が実践に近いと思う
-            if (this.counter < 31)
+            if (this.counter < 11)
             {
                 //ランダムに点が打たれた画像を生成
                 NdArray img_p = getRandomImage();
