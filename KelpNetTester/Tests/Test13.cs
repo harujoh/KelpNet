@@ -1,38 +1,53 @@
 ﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
 using KelpNet.Common;
-using KelpNet.Common.Tools;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
-    public partial class Test13 : Form
+    //ある学習済みフィルタで出力された画像を元に、そのフィルタと同等のフィルタを獲得する
+    //コンソール版
+    //移植元 : http://qiita.com/samacoba/items/958c02f455ca5f3a475d
+    class Test13
     {
-        Deconvolution2D model;
-        private Deconvolution2D decon_core;
-        private SGD optimizer;
-        MeanSquaredError meanSquaredError = new MeanSquaredError();
-        private int counter = 0;
-
-        public Test13()
+        public static void Run()
         {
-            this.InitializeComponent();
-
-            ClientSize = new Size(128 * 4, 128 * 4);
-
             //目標とするフィルタを作成（実践であればココは不明な値となる）
-            this.decon_core = new Deconvolution2D(1, 1, 15, 1, 7)
+            Deconvolution2D decon_core = new Deconvolution2D(1, 1, 15, 1, 7)
             {
                 W = { Data = MakeOneCore() }
             };
 
-            this.model = new Deconvolution2D(1, 1, 15, 1, 7);
+            Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7);
 
-            this.optimizer = new SGD(learningRate: 0.01); //大きいと発散する
-            this.model.SetOptimizer(this.optimizer);
+            SGD optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
+            model.SetOptimizer(optimizer);
+            MeanSquaredError meanSquaredError = new MeanSquaredError();
+
+            //ランダムに点が打たれた画像を生成
+            NdArray img_p = getRandomImage();
+
+            //目標とするフィルタで学習用の画像を出力
+            NdArray img_core = decon_core.Forward(img_p);
+
+            //移植元では同じ教育画像で教育しているが、より実践に近い学習に変更
+            for (int i = 0; i < 31; i++)
+            {
+                model.ClearGrads();
+
+                //未学習のフィルタで画像を出力
+                NdArray img_y = model.Forward(img_p);
+
+                double loss;
+                NdArray gy = meanSquaredError.Evaluate(img_y, img_core, out loss);
+
+                model.Backward(gy);
+
+                model.Update();
+
+                Console.WriteLine("epoch" + i + " : " + loss);
+            }
         }
 
         static NdArray getRandomImage(int N = 1, int img_w = 128, int img_h = 128)
@@ -42,8 +57,8 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < img_p.Length; i++)
             {
-                img_p[i] = Mother.Dice.Next(0, 10000);
-                img_p[i] = img_p[i] < 10 ? 255 : 0;
+                img_p[i] = Mother.Dice.Next(0, 1000);
+                img_p[i] = img_p[i] > 999 ? 0 : 1;
             }
 
             return new NdArray(img_p, new[] { N, img_h, img_w });
@@ -68,42 +83,6 @@ namespace KelpNetTester.Tests
             }
 
             return core;
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            //移植元では同じ教育画像で教育しているが、より実践に近い学習に変更
-            if (this.counter < 11)
-            {
-                //ランダムに点が打たれた画像を生成
-                NdArray img_p = getRandomImage();
-
-                //目標とするフィルタで学習用の画像を出力
-                NdArray img_core = this.decon_core.Forward(img_p);
-
-                this.model.ClearGrads();
-
-                //未学習のフィルタで画像を出力
-                NdArray img_y = this.model.Forward(img_p);
-
-                this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y);
-
-                double loss;
-                NdArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);
-
-                this.model.Backward(gy);
-
-                this.model.Update();
-
-                this.Text = "[epoch" + this.counter + "] Loss : " + loss.ToString("f4");
-
-                this.counter++;
-            }
-            else
-            {
-                this.timer1.Enabled = false;
-            }
-
         }
     }
 }

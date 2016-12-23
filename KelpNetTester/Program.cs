@@ -46,7 +46,7 @@ namespace KelpNetTester
             //Test12.Run();
 
             //Deconvolution2Dのテスト(Winform)
-            //new Test13().ShowDialog();
+            //new Test13WinForm().ShowDialog();
 
             //Linearの分割実行
             //TestX.Run();

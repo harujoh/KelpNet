@@ -1,6 +1,6 @@
 ﻿namespace KelpNetTester.Tests
 {
-    partial class Test13
+    partial class Test13WinForm
     {
         /// <summary>
         /// 必要なデザイナー変数です。

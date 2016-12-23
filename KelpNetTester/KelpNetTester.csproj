@@ -52,13 +52,13 @@
     <Compile Include="Tests\Test12.cs" />
     <Compile Include="Tests\Test10.cs" />
     <Compile Include="Tests\Test11.cs" />
-    <Compile Include="Tests\Test13.cs">
+    <Compile Include="Tests\Test13WinForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Tests\Test13.Designer.cs">
-      <DependentUpon>Test13.cs</DependentUpon>
+    <Compile Include="Tests\Test13WinForm.Designer.cs">
+      <DependentUpon>Test13WinForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Tests\Test13Console.cs" />
+    <Compile Include="Tests\Test13.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />
@@ -88,8 +88,8 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Tests\Test13.resx">
-      <DependentUpon>Test13.cs</DependentUpon>
+    <EmbeddedResource Include="Tests\Test13WinForm.resx">
+      <DependentUpon>Test13WinForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
