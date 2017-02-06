@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MNistLoader", "MNISTLoader\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocabularyMaker", "VocabularyMaker\VocabularyMaker.csproj", "{97349E4B-E378-40D2-A712-8922D5F80406}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNetWaifu2x", "KelpNetWaifu2x\KelpNetWaifu2x.csproj", "{30EAE301-9B83-467A-867C-42D26CAE7CEA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{97349E4B-E378-40D2-A712-8922D5F80406}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97349E4B-E378-40D2-A712-8922D5F80406}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97349E4B-E378-40D2-A712-8922D5F80406}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30EAE301-9B83-467A-867C-42D26CAE7CEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30EAE301-9B83-467A-867C-42D26CAE7CEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30EAE301-9B83-467A-867C-42D26CAE7CEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30EAE301-9B83-467A-867C-42D26CAE7CEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
