@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Common\Tools\DeepCopyHelper.cs" />
     <Compile Include="Common\Functions\FunctionParameter.cs" />
+    <Compile Include="Common\Tools\Initializer.cs" />
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Common\Tools\NdArrayConverter.cs" />
     <Compile Include="Functions\FunctionStack.cs" />

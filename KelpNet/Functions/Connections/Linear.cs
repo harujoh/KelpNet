@@ -2,6 +2,7 @@
 using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
+using KelpNet.Common.Tools;
 
 namespace KelpNet.Functions.Connections
 {
@@ -23,7 +24,7 @@ namespace KelpNet.Functions.Connections
 
             if (initialW == null)
             {
-                InitWeight(this.W);
+                Initializer.InitWeight(this.W);
             }
             else
             {
@@ -58,10 +59,8 @@ namespace KelpNet.Functions.Connections
             {
                 for (int j = 0; j < this.InputCount; j++)
                 {
-                    output[i] += x.Data[j] * this.W.Data[indexOffset + j];
+                    output[i] += x.Data[j] * this.W.Data[indexOffset++];
                 }
-
-                indexOffset += this.InputCount;
             }
 
             return NdArray.Convert(output);
@@ -75,16 +74,13 @@ namespace KelpNet.Functions.Connections
             for (int i = 0; i < gy.Length; i++)
             {
                 double gyData = gy.Data[i];
+                this.gb.Data[i] += gyData;
 
                 for (int j = 0; j < this.InputCount; j++)
                 {
-                    this.gW.Data[indexOffset + j] += prevInput.Data[j] * gyData;
-
-                    gxData[j] += this.W.Data[indexOffset + j] * gyData;
+                    this.gW.Data[indexOffset] += prevInput.Data[j] * gyData;
+                    gxData[j] += this.W.Data[indexOffset++] * gyData;
                 }
-
-                this.gb.Data[i] += gyData;
-                indexOffset += this.InputCount;
             }
 
             return NdArray.Convert(gxData, prevInput.Shape);

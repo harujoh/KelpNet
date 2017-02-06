@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Drawing;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
+using KelpNet.Common.Tools;
 
 namespace KelpNet.Functions.Connections
 {
@@ -13,24 +15,52 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        private readonly int _kSize;
+        private readonly int _kWidth;
+        private readonly int _kHeight;
         private readonly int _stride;
-        private readonly int _pad;
+        private readonly int _padX;
+        private readonly int _padY;
 
         public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isParallel = true) : base(name, inputChannels, outputChannels, isParallel)
         {
-            this._kSize = kSize;
+            this._kWidth = kSize;
+            this._kHeight = kSize;
             this._stride = stride;
-            this._pad = pad;
-
-            this.W = NdArray.Zeros(outputChannels, inputChannels, kSize, kSize);
-            this.gW = NdArray.ZerosLike(this.W);
+            this._padX = pad;
+            this._padY = pad;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
+            this.initialize(initialW, initialb);
+        }
+
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize = new Size(), int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isParallel = true) : base(name, inputChannels, outputChannels, isParallel)
+        {
+            if (kSize == Size.Empty)
+                kSize = new Size(0, 0);
+
+            if (pad == Size.Empty)
+                pad = new Size(0, 0);
+
+            this._kWidth = kSize.Width;
+            this._kHeight = kSize.Height;
+            this._stride = stride;
+            this._padX = pad.Width;
+            this._padY = pad.Height;
+
+            this.Parameters = new FunctionParameter[noBias ? 1 : 2];
+
+            this.initialize(initialW, initialb);
+        }
+
+        void initialize(double[,,,] initialW = null, double[] initialb = null)
+        {
+            this.W = NdArray.Zeros(OutputCount, InputCount, this._kHeight, this._kWidth);
+            this.gW = NdArray.ZerosLike(this.W);
+
             if (initialW == null)
             {
-                InitWeight(this.W);
+                Initializer.InitWeight(this.W);
             }
             else
             {
@@ -41,10 +71,10 @@ namespace KelpNet.Functions.Connections
             this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
 
             //noBias=trueでもbiasを用意して更新しない
-            this.b = NdArray.Zeros(outputChannels);
+            this.b = NdArray.Zeros(OutputCount);
             this.gb = NdArray.ZerosLike(this.b);
 
-            if (!noBias)
+            if (this.Parameters.Length > 1)
             {
                 if (initialb != null)
                 {
@@ -57,41 +87,42 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray NeedPreviousForward(NdArray input)
         {
-            int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
+            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
+            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
 
-            double[] result = new double[this.OutputCount * outputSize * outputSize];
+            double[] result = new double[this.OutputCount * outputHeight * outputWidth];
             int resultIndex = 0;
 
             for (int och = 0; och < this.OutputCount; och++)
             {
                 //Wインデックス用
-                int outChOffset = och * this.InputCount * this._kSize * this._kSize;
+                int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
 
-                for (int oy = 0; oy < outputSize; oy++)
+                for (int oy = 0; oy < outputHeight; oy++)
                 {
-                    for (int ox = 0; ox < outputSize; ox++)
+                    for (int ox = 0; ox < outputWidth; ox++)
                     {
                         for (int ich = 0; ich < input.Shape[0]; ich++)
                         {
                             //Wインデックス用
-                            int inChOffset = ich * this._kSize * this._kSize;
+                            int inChOffset = ich * this._kHeight * this._kWidth;
 
                             //inputインデックス用
                             int inputOffset = ich * input.Shape[1] * input.Shape[2];
 
-                            for (int ky = 0; ky < this._kSize; ky++)
+                            for (int ky = 0; ky < this._kHeight; ky++)
                             {
-                                int iy = oy * this._stride + ky - this._pad;
+                                int iy = oy * this._stride + ky - this._padY;
 
                                 if (iy >= 0 && iy < input.Shape[1])
                                 {
-                                    for (int kx = 0; kx < this._kSize; kx++)
+                                    for (int kx = 0; kx < this._kWidth; kx++)
                                     {
-                                        int ix = ox * this._stride + kx - this._pad;
+                                        int ix = ox * this._stride + kx - this._padX;
 
                                         if (ix >= 0 && ix < input.Shape[2])
                                         {
-                                            int wIndex = outChOffset + inChOffset + ky * this._kSize + kx;
+                                            int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
                                             int inputIndex = inputOffset + iy * input.Shape[2] + ix;
 
                                             result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
@@ -107,7 +138,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return NdArray.Convert(result, new[] { this.OutputCount, outputSize, outputSize });
+            return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth });
         }
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
@@ -119,7 +150,7 @@ namespace KelpNet.Functions.Connections
             for (int och = 0; och < gy.Shape[0]; och++)
             {
                 //gWインデックス用
-                int outChOffset = och * this.InputCount * this._kSize * this._kSize;
+                int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
 
                 for (int oy = 0; oy < gy.Shape[1]; oy++)
                 {
@@ -130,25 +161,25 @@ namespace KelpNet.Functions.Connections
                         for (int ich = 0; ich < prevInput.Shape[0]; ich++)
                         {
                             //gWインデックス用
-                            int inChOffset = ich * this._kSize * this._kSize;
+                            int inChOffset = ich * this._kHeight * this._kWidth;
 
                             //inputインデックス用
                             int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
 
-                            for (int ky = 0; ky < this._kSize; ky++)
+                            for (int ky = 0; ky < this._kHeight; ky++)
                             {
-                                int iy = oy * this._stride + ky - this._pad;
+                                int iy = oy * this._stride + ky - this._padY;
 
                                 if (iy >= 0 && iy < prevInput.Shape[1])
                                 {
-                                    for (int kx = 0; kx < this._kSize; kx++)
+                                    for (int kx = 0; kx < this._kWidth; kx++)
                                     {
-                                        int ix = ox * this._stride + kx - this._pad;
+                                        int ix = ox * this._stride + kx - this._padX;
 
                                         if (ix >= 0 && ix < prevInput.Shape[2])
                                         {
                                             //WとgWのshapeは等しい
-                                            int wIndex = outChOffset + inChOffset + ky * this._kSize + kx;
+                                            int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
 
                                             //prevInputとgxのshapeは等しい
                                             int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix;

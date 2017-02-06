@@ -1,6 +1,7 @@
 ﻿using System;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
+using KelpNet.Common.Tools;
 
 namespace KelpNet.Functions.Connections
 {
@@ -30,7 +31,7 @@ namespace KelpNet.Functions.Connections
 
             if (initialW == null)
             {
-                InitWeight(this.W);
+                Initializer.InitWeight(this.W);
             }
             else
             {
