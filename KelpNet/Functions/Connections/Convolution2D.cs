@@ -31,7 +31,7 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.initialize(initialW, initialb);
+            this.Initialize(initialW, initialb);
         }
 
         public Convolution2D(int inputChannels, int outputChannels, Size kSize = new Size(), int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isParallel = true) : base(name, inputChannels, outputChannels, isParallel)
@@ -50,10 +50,10 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.initialize(initialW, initialb);
+            this.Initialize(initialW, initialb);
         }
 
-        void initialize(double[,,,] initialW = null, double[] initialb = null)
+        void Initialize(double[,,,] initialW = null, double[] initialb = null)
         {
             this.W = NdArray.Zeros(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);

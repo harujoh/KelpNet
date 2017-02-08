@@ -86,7 +86,7 @@ namespace KelpNetWaifu2x
 
         private void button3_Click(object sender, EventArgs e)
         {
-            SaveFileDialog sfd = new SaveFileDialog()
+            SaveFileDialog sfd = new SaveFileDialog
             {
                 Filter = "pngファイル(*.png)|*.png|すべてのファイル(*.*)|*.*",
                 FileName = "result.png"

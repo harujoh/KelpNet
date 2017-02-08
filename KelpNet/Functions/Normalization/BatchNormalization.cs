@@ -91,19 +91,9 @@ namespace KelpNet.Functions.Normalization
             //結果を計算
             this.Xhat = new double[x.Length, this.ChannelSize];
 
-            if (IsParallel)
+            for (int i = 0; i < x.Length; i++)
             {
-                Parallel.For(0, x.Length, i =>
-                {
-                    y[i] = NdArray.Convert(this.CalcY(i, x[i]), x[i].Shape);
-                });
-            }
-            else
-            {
-                for (int i = 0; i < x.Length; i++)
-                {
-                    y[i] = NdArray.Convert(this.CalcY(i, x[i]), x[i].Shape);
-                }
+                y[i] = NdArray.Convert(this.CalcY(i, x[i]), x[i].Shape);
             }
 
             //パラメータを更新
