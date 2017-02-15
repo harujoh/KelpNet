@@ -10,42 +10,53 @@ namespace KelpNet.Functions.Activations
         private readonly double _beta;
         private readonly double _betaInv;
 
-        public Softplus(double beta = 1.0, string name = "Softplus", bool isParallel = true) : base(name, isParallel)
+        public Softplus(double beta = 1.0, string name = "Softplus") : base(name)
         {
             this._beta = beta;
             this._betaInv = 1.0 / beta;
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Length];
+            double[] y = new double[x.Data.Length];
 
-            for (int i = 0; i < y.Length; i++)
+            for (int b = 0; b < x.BatchCount; b++)
             {
-                y[i] = x.Data[i] * this._beta;
+                for (int i = 0; i < x.Length; i++)
+                {
+                    y[i + b * x.Length] = x.Data[i + b * x.Length] * this._beta;
+                }
+
+                double maxval = y[b * x.Length];
+                for (int i = 1; i < x.Length; i++)
+                {
+                    if (maxval < y[i + b * x.Length])
+                    {
+                        maxval = y[i + b * x.Length];
+                    }
+                }
+
+                for (int i = 0; i < x.Length; i++)
+                {
+                    y[i + b * x.Length] = (maxval + Math.Log(1.0 + Math.Exp(-Math.Abs(x.Data[i + b * x.Length] * this._beta)))) * this._betaInv;
+                }
+
             }
 
-            double maxval = Math.Max(y.Max(), 0);
-
-            for (int i = 0; i < y.Length; i++)
-            {
-                y[i] = (maxval + Math.Log(1.0 + Math.Exp(-Math.Abs(x.Data[i] * this._beta)))) * this._betaInv;
-            }
-
-            return NdArray.Convert(y, x.Shape);
+            return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Length];
+            double[] gx = new double[gy.Data.Length];
 
             for (int i = 0; i < gx.Length; i++)
             {
                 gx[i] = (1 - 1 / (1 + Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
             }
 
-            return NdArray.Convert(gx, gy.Shape);
+            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
-
     }
 }
+

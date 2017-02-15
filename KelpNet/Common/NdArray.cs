@@ -9,7 +9,7 @@ namespace KelpNet.Common
     //NumpyのNdArrayを模したクラス
     //N次元のArrayクラスを入力に取り、内部的には1次元配列として保持する事で動作を模倣している
     [Serializable]
-    public struct NdArray
+    public class NdArray
     {
         public double[] Data;
         public int[] Shape;
@@ -29,28 +29,11 @@ namespace KelpNet.Common
         }
 
         //ガワだけを作る
-        //private NdArray() { }
-
-        public int Length
-        {
-            get { return this.Data.Length; }
-        }
+        protected NdArray() { }
 
         public int Rank
         {
             get { return this.Shape.Length; }
-        }
-
-        //繰り返し呼び出されるシーンでは使用しないこと
-        public double Get(params int[] indices)
-        {
-            return this.Data[this.GetIndex(indices)];
-        }
-
-        //繰り返し呼び出されるシーンでは使用しないこと
-        public void Set(int[] indices, double val)
-        {
-            this.Data[this.GetIndex(indices)] = val;
         }
 
         //データ部をコピーせずにインスタンスする
@@ -67,12 +50,12 @@ namespace KelpNet.Common
 
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            return new NdArray { Data = new double[baseArray.Length], Shape = baseArray.Shape.ToArray() };
+            return new NdArray { Data = new double[baseArray.Data.Length], Shape = baseArray.Shape.ToArray() };
         }
 
         public static NdArray OnesLike(NdArray baseArray)
         {
-            double[] resutlArray = new double[baseArray.Length];
+            double[] resutlArray = new double[baseArray.Data.Length];
 
             for (int i = 0; i < resutlArray.Length; i++)
             {
@@ -99,25 +82,13 @@ namespace KelpNet.Common
             return new NdArray { Data = resutlArray, Shape = shape };
         }
 
-        private static int ShapeToArrayLength(params int[] shapes)
+        protected static int ShapeToArrayLength(params int[] shapes)
         {
             int result = 1;
 
             foreach (int shape in shapes)
             {
                 result *= shape;
-            }
-
-            return result;
-        }
-
-        public static NdArray[] FromArray(Array[] data)
-        {
-            NdArray[] result = new NdArray[data.Length];
-
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = FromArray(data[i]);
             }
 
             return result;
@@ -248,7 +219,7 @@ namespace KelpNet.Common
             }
 
             int closer = 0;
-            for (int i = 0; i < this.Length; i++)
+            for (int i = 0; i < this.Data.Length; i++)
             {
                 string[] divStr;
                 if (isExponential)
@@ -287,7 +258,7 @@ namespace KelpNet.Common
                 }
 
                 //約数を調査してピッタリなら括弧を出力
-                if (i != this.Length - 1)
+                if (i != this.Data.Length - 1)
                 {
                     foreach (int commonDivisor in commonDivisorList)
                     {

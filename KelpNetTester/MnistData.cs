@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using KelpNet.Common;
 using MNISTLoader;
 
@@ -53,43 +53,43 @@ namespace KelpNetTester
 
         public MnistDataSet GetRandomYSet(int dataCount)
         {
-            List<NdArray> listY = new List<NdArray>();
-            List<NdArray> listTy = new List<NdArray>();
+            BatchArray listY = new BatchArray(new[] { 1, 28, 28 }, dataCount);
+            BatchArray listTy = new BatchArray(new[] { 1 }, dataCount);
 
             for (int j = 0; j < dataCount; j++)
             {
                 int index = Mother.Dice.Next(this.Y.Length);
 
-                listY.Add(this.Y[index]);
-                listTy.Add(this.Ty[index]);
+                Buffer.BlockCopy(this.Y[index].Data, 0, listY.Data, sizeof(double) * j * listY.Length, sizeof(double) * listY.Length);
+                listTy.Data[j] = this.Ty[index].Data[0];
             }
 
-            return new MnistDataSet(listY.ToArray(), listTy.ToArray());
+            return new MnistDataSet(listY, listTy);
         }
 
         public MnistDataSet GetRandomXSet(int dataCount)
         {
-            List<NdArray> listX = new List<NdArray>();
-            List<NdArray> listTx = new List<NdArray>();
+            BatchArray listX = new BatchArray(new[] { 1, 28, 28 }, dataCount);
+            BatchArray listTx = new BatchArray(new[] { 1 }, dataCount);
 
             for (int j = 0; j < dataCount; j++)
             {
                 int index = Mother.Dice.Next(this.X.Length);
 
-                listX.Add(this.X[index]);
-                listTx.Add(this.Tx[index]);
+                Buffer.BlockCopy(this.X[index].Data, 0, listX.Data, sizeof(double) * j * listX.Length, sizeof(double) * listX.Length);
+                listTx.Data[j] = this.Tx[index].Data[0];
             }
 
-            return new MnistDataSet(listX.ToArray(), listTx.ToArray());
+            return new MnistDataSet(listX, listTx);
         }
     }
 
     public class MnistDataSet
     {
-        public NdArray[] Data;
-        public NdArray[] Label;
+        public BatchArray Data;
+        public BatchArray Label;
 
-        public MnistDataSet(NdArray[] data, NdArray[] label)
+        public MnistDataSet(BatchArray data, BatchArray label)
         {
             this.Data = data;
             this.Label = label;

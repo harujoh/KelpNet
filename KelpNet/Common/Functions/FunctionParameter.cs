@@ -20,13 +20,13 @@ namespace KelpNet.Common.Functions
             this.Grad = grad;
             this.Name = name;
 
-            this.Length = this.Param.Length;
+            this.Length = this.Param.Data.Length;
         }
 
         //傾きの補正
         public void Reduce()
         {
-            for (int j = 0; j < this.Grad.Length; j++)
+            for (int j = 0; j < this.Grad.Data.Length; j++)
             {
                 this.Grad.Data[j] /= this.TrainCount;
             }

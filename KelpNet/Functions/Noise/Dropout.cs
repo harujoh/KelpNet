@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -12,15 +11,16 @@ namespace KelpNet.Functions.Noise
         private readonly double dropoutRatio;
         private readonly List<double[]> maskStack = new List<double[]>();
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isParallel = true) : base(name, isParallel)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout") : base(name)
         {
             this.dropoutRatio = dropoutRatio;
         }
 
-        protected override NdArray[] ForwardSingle(NdArray[] x)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
-            NdArray[] result = new NdArray[x.Length];
-            double[] mask = new double[x[0].Length];
+            //BatchArray result = new NdArray[x.Length];
+            double[] result = new double[x.Data.Length];
+            double[] mask = new double[x.Length];
             double scale = 1.0 / (1.0 - this.dropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)
@@ -28,81 +28,40 @@ namespace KelpNet.Functions.Noise
                 mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
 
-            if (IsParallel)
+            for (int b = 0; b < x.BatchCount; b++)
             {
-                Parallel.For(0, x.Length, i =>
+                for (int i = 0; i < mask.Length; i++)
                 {
-                    double[] y = new double[x[i].Length];
-
-                    for (int j = 0; j < mask.Length; j++)
-                    {
-                        y[j] = x[i].Data[j] * mask[j];
-                    }
-
-                    result[i] = NdArray.Convert(y, x[i].Shape);
-                });
-            }
-            else
-            {
-                for (int i = 0; i < x.Length; i++)
-                {
-                    double[] y = new double[x[i].Length];
-
-                    for (int j = 0; j < mask.Length; j++)
-                    {
-                        y[j] = x[i].Data[j] * mask[j];
-                    }
-
-                    result[i] = NdArray.Convert(y, x[i].Shape);
+                    result[i + b * x.Length] = x.Data[i + b * x.Length] * mask[i];
                 }
+
+                //result[b] = NdArray.Convert(result, x.Shape);
             }
 
             this.maskStack.Add(mask);
 
-            return result;
+            return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray[] BackwardSingle(NdArray[] gy)
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
-            NdArray[] result = new NdArray[gy.Length];
-
+            double[] result = new double[gy.Data.Length];
             double[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
-            if (IsParallel)
+            for (int b = 0; b < gy.BatchCount; b++)
             {
-                Parallel.For(0, gy.Length, i =>
+                for (int j = 0; j < mask.Length; j++)
                 {
-                    double[] gx = new double[gy[i].Length];
-
-                    for (int j = 0; j < mask.Length; j++)
-                    {
-                        gx[j] = gy[i].Data[j] * mask[j];
-                    }
-
-                    result[i] = NdArray.Convert(gx, gy[i].Shape);
-                });
-            }
-            else
-            {
-                for (int i = 0; i < gy.Length; i++)
-                {
-                    double[] gx = new double[gy[i].Length];
-
-                    for (int j = 0; j < mask.Length; j++)
-                    {
-                        gx[j] = gy[i].Data[j] * mask[j];
-                    }
-
-                    result[i] = NdArray.Convert(gx, gy[i].Shape);
+                    result[j + b * gy.Length] = gy.Data[j + b * gy.Length] * mask[j];
                 }
             }
 
-            return result;
+            return BatchArray.Convert(result, gy.Shape, gy.BatchCount);
         }
 
         //Predict時に何もしない
-        public override NdArray[] Predict(NdArray[] input)
+        public override BatchArray Predict(BatchArray input)
         {
             return input;
         }

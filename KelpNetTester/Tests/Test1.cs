@@ -38,9 +38,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(2, 2, name: "l1 Linear",isParallel:false),
-                new Sigmoid(name: "l1 Sigmoid", isParallel: false),
-                new Linear(2, 2, name: "l2 Linear", isParallel: false)
+                new Linear(2, 2, name: "l1 Linear"),
+                new Sigmoid(name: "l1 Sigmoid"),
+                new Linear(2, 2, name: "l2 Linear")
             );
 
             //optimizerを宣言
@@ -61,7 +61,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (double[] input in trainData)
             {
-                NdArray result = nn.Predict(NdArray.FromArray(input));
+                NdArray result = nn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
@@ -75,11 +75,10 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (double[] input in trainData)
             {
-                NdArray result = testnn.Predict(NdArray.FromArray(input));
+                NdArray result = testnn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
-
         }
     }
 }

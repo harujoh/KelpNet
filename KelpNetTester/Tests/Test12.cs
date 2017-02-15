@@ -30,29 +30,26 @@ namespace KelpNetTester.Tests
 
         class ResultDataSet
         {
-            public NdArray[] Result;
-            public NdArray[] Label;
+            public readonly BatchArray Result;
+            public readonly BatchArray Label;
 
-            public ResultDataSet(NdArray[] result, NdArray[] label)
+            public ResultDataSet(BatchArray result, BatchArray label)
             {
                 this.Result = result;
                 this.Label = label;
             }
 
-            public NdArray[] GetTrainData()
+            public BatchArray GetTrainData()
             {
-                NdArray[] train = new NdArray[BATCH_DATA_COUNT];
+                double[] tmp = new double[(256 + 10) * BATCH_DATA_COUNT];
 
                 for (int k = 0; k < BATCH_DATA_COUNT; k++)
                 {
-                    double[] tmp = new double[256 + 10];
-                    tmp[256 + (int)this.Label[k].Data[0]] = 1.0;
-                    Buffer.BlockCopy(this.Result[k].Data, 0, tmp, 0, sizeof(double) * 256);
-
-                    train[k] = new NdArray(tmp, new[] { 256 + 10 });
+                    tmp[256 + (int)this.Label.Data[k * this.Label.Length] + k * (256 + 10)] = 1.0;
+                    Buffer.BlockCopy(this.Result.Data, sizeof(double) * k * this.Result.Length, tmp, sizeof(double) * k * (256 + 10), sizeof(double) * 256);
                 }
 
-                return train;
+                return BatchArray.Convert(tmp, new[] { 256 + 10 }, BATCH_DATA_COUNT);
             }
         }
 
@@ -148,11 +145,11 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    NdArray[] layer1ForwardResult = Layer1.Forward(datasetX.Data);
+                    BatchArray layer1ForwardResult = Layer1.Forward(datasetX.Data);
                     ResultDataSet layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX.Label);
 
                     ////第一層の傾きを取得
-                    NdArray[] cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
+                    BatchArray cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
 
                     //第一層を更新
                     Layer1.Backward(cDNI1Result);
@@ -160,20 +157,20 @@ namespace KelpNetTester.Tests
 
 
                     //第二層を実行
-                    NdArray[] layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
+                    BatchArray layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
                     ResultDataSet layer2ResultDataSet = new ResultDataSet(layer2ForwardResult, layer1ResultDataSet.Label);
 
                     //第二層の傾きを取得
-                    NdArray[] cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
+                    BatchArray cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
                     //第二層を更新
-                    NdArray[] layer2BackwardResult = Layer2.Backward(cDNI2Result);
+                    BatchArray layer2BackwardResult = Layer2.Backward(cDNI2Result);
                     Layer2.Update();
 
 
                     //第一層用のcDNIの学習を実行
                     double cDNI1loss = 0;
-                    NdArray[] DNI1lossResult = new MeanSquaredError().Evaluate(cDNI1Result, layer2BackwardResult, out cDNI1loss);
+                    BatchArray DNI1lossResult = new MeanSquaredError().Evaluate(cDNI1Result, layer2BackwardResult, out cDNI1loss);
 
                     cDNI1.Backward(DNI1lossResult);
                     cDNI1.Update();
@@ -181,20 +178,20 @@ namespace KelpNetTester.Tests
 
 
                     //第三層を実行
-                    NdArray[] layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
+                    BatchArray layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
                     ResultDataSet layer3ResultDataSet = new ResultDataSet(layer3ForwardResult, layer2ResultDataSet.Label);
 
                     //第三層の傾きを取得
-                    NdArray[] cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
+                    BatchArray cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
 
                     //第三層を更新
-                    NdArray[] layer3BackwardResult = Layer3.Backward(cDNI3Result);
+                    BatchArray layer3BackwardResult = Layer3.Backward(cDNI3Result);
                     Layer3.Update();
 
 
                     //第二層用のcDNIの学習を実行
                     double cDNI2loss = 0;
-                    NdArray[] DNI2lossResult = new MeanSquaredError().Evaluate(cDNI2Result, layer3BackwardResult, out cDNI2loss);
+                    BatchArray DNI2lossResult = new MeanSquaredError().Evaluate(cDNI2Result, layer3BackwardResult, out cDNI2loss);
 
                     cDNI2.Backward(DNI2lossResult);
                     cDNI2.Update();
@@ -202,21 +199,21 @@ namespace KelpNetTester.Tests
 
 
                     //第四層を実行
-                    NdArray[] layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
+                    BatchArray layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
 
                     //第四層の傾きを取得
                     double sumLoss = 0;
-                    NdArray[] lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, layer3ResultDataSet.Label, out sumLoss);
+                    BatchArray lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, layer3ResultDataSet.Label, out sumLoss);
 
                     //第四層を更新
-                    NdArray[] layer4BackwardResult = Layer4.Backward(lossResult);
+                    BatchArray layer4BackwardResult = Layer4.Backward(lossResult);
                     Layer4.Update();
                     totalLoss.Add(sumLoss);
 
 
                     //第三層用のcDNIの学習を実行
                     double cDNI3loss = 0;
-                    NdArray[] DNI3lossResult = new MeanSquaredError().Evaluate(cDNI3Result, layer4BackwardResult, out cDNI3loss);
+                    BatchArray DNI3lossResult = new MeanSquaredError().Evaluate(cDNI3Result, layer4BackwardResult, out cDNI3loss);
 
                     cDNI3.Backward(DNI3lossResult);
                     cDNI3.Update();

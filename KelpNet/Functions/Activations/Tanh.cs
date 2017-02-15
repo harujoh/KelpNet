@@ -7,32 +7,32 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Tanh : NeedPreviousOutputFunction
     {
-        public Tanh(string name = "Tanh", bool isParallel = true) : base(name, isParallel)
+        public Tanh(string name = "Tanh") : base(name)
         {
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Length];
+            double[] y = new double[x.Data.Length];
 
             for (int i = 0; i < y.Length; i++)
             {
                 y[i] = Math.Tanh(x.Data[i]);
             }
 
-            return NdArray.Convert(y, x.Shape);
+            return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Length];
+            double[] gx = new double[gy.Data.Length];
 
             for (int i = 0; i < gx.Length; i++)
             {
                 gx[i] = gy.Data[i] * (1 - prevOutput.Data[i] * prevOutput.Data[i]);
             }
 
-            return NdArray.Convert(gx, gy.Shape);
+            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

@@ -115,7 +115,7 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //学習を実行
-                    double sumLoss = Trainer.BatchTrain(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
                     totalLoss.Add(sumLoss);
 
                     //20回バッチを動かしたら精度をテストする

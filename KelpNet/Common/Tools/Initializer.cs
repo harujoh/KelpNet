@@ -11,7 +11,7 @@ namespace KelpNet.Common.Tools
             int fanIn = GetFans(array.Shape);
             double s = localScale * Math.Sqrt(2.0 / fanIn);
 
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Data.Length; i++)
             {
                 array.Data[i] = Normal(s) * masterScale;
             }

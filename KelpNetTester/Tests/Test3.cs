@@ -68,7 +68,7 @@ namespace KelpNetTester.Tests
 
             foreach (double[] val in trainData)
             {
-                Console.WriteLine(val[0] + ":" + nn.Predict(NdArray.FromArray(val)).Data[0]);
+                Console.WriteLine(val[0] + ":" + nn.Predict(new BatchArray(val)).Data[0]);
             }
         }
     }

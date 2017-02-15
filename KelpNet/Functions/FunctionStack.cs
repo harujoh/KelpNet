@@ -34,21 +34,21 @@ namespace KelpNet.Functions
         }
 
         //Functionとして呼び出された時にバトンを渡す
-        protected override NdArray[] ForwardSingle(NdArray[] x)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
             return this.Forward(x);
         }
 
         //Functionとして呼び出された時にバトンを渡す
-        protected override NdArray[] BackwardSingle(NdArray[] gy)
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
             return this.Backward(gy);
         }
 
         //Forward
-        public override NdArray[] Forward(NdArray[] input)
+        public override BatchArray Forward(BatchArray input)
         {
-            NdArray[][] inputData = new NdArray[this.Functions.Length + 1][];
+            BatchArray[] inputData = new BatchArray[this.Functions.Length + 1];
             inputData[0] = input;
 
             for (int i = 0; i < this.Functions.Length; i++)
@@ -60,33 +60,7 @@ namespace KelpNet.Functions
         }
 
         //Backward
-        public override NdArray[] Backward(NdArray[] backwardResult)
-        {
-            for (int i = this.Functions.Length - 1; i >= 0; i--)
-            {
-                backwardResult = this.Functions[i].Backward(backwardResult);
-            }
-
-            return backwardResult;
-        }
-
-
-        //Forward
-        public override NdArray Forward(NdArray input)
-        {
-            NdArray[] inputData = new NdArray[this.Functions.Length + 1];
-            inputData[0] = input;
-
-            for (int i = 0; i < this.Functions.Length; i++)
-            {
-                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
-            }
-
-            return inputData[this.Functions.Length];
-        }
-
-        //Backward
-        public override NdArray Backward(NdArray backwardResult)
+        public override BatchArray Backward(BatchArray backwardResult)
         {
             for (int i = this.Functions.Length - 1; i >= 0; i--)
             {
@@ -120,7 +94,7 @@ namespace KelpNet.Functions
         }
 
         //予想を実行する
-        public override NdArray[] Predict(NdArray[] forwardResult)
+        public override BatchArray Predict(BatchArray forwardResult)
         {
             foreach (Function function in this.Functions)
             {
@@ -128,17 +102,6 @@ namespace KelpNet.Functions
             }
 
             return forwardResult;
-        }
-
-        //予想を実行する[非バッチ]
-        public override NdArray Predict(NdArray input)
-        {
-            foreach (Function function in this.Functions)
-            {
-                input = function.Predict(input);
-            }
-
-            return input;
         }
 
         //コピーを作成するメソッド

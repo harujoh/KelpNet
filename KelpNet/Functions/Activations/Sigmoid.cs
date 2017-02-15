@@ -7,32 +7,32 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Sigmoid : NeedPreviousOutputFunction
     {
-        public Sigmoid(string name = "Sigmoid", bool isParallel = true) : base(name, isParallel)
+        public Sigmoid(string name = "Sigmoid") : base(name)
         {
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Length];
+            double[] y = new double[x.Data.Length];
 
-            for (int i = 0; i < x.Length; i++)
+            for (int i = 0; i < x.Data.Length; i++)
             {
                 y[i] = 1 / (1 + Math.Exp(-x.Data[i]));
             }
 
-            return NdArray.Convert(y, x.Shape);
+            return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Length];
+            double[] gx = new double[gy.Data.Length];
 
-            for (int i = 0; i < gy.Length; i++)
+            for (int i = 0; i < gy.Data.Length; i++)
             {
                 gx[i] = gy.Data[i] * prevOutput.Data[i] * (1 - prevOutput.Data[i]);
             }
 
-            return NdArray.Convert(gx, gy.Shape);
+            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

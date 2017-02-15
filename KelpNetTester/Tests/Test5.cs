@@ -66,16 +66,16 @@ namespace KelpNetTester.Tests
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
                 l2, //new Convolution2D(1, 2, 3, initialW: initial_W1, initialb: initial_b1),
-                new ReLU(name: "l2 ReLU",isParallel:false),
+                new ReLU(name: "l2 ReLU"),
                 //new AveragePooling(2, 2),
-                new MaxPooling(2, 2, name: "l2 Pooling", isParallel: false),
-                new Convolution2D(2, 2, 2, initialW: initial_W2, initialb: initial_b2, name: "l3 Conv2D", isParallel: false),
-                new ReLU(name: "l3 ReLU", isParallel: false),
+                new MaxPooling(2, 2, name: "l2 Pooling"),
+                new Convolution2D(2, 2, 2, initialW: initial_W2, initialb: initial_b2, name: "l3 Conv2D"),
+                new ReLU(name: "l3 ReLU"),
                 //new AveragePooling(2, 2),
-                new MaxPooling(2, 2, name: "l3 Pooling", isParallel: false),
-                new Linear(8, 2, initialW: initial_W3, initialb: initial_b3, name: "l4 Linear", isParallel: false),
-                new ReLU(name: "l4 ReLU", isParallel: false),
-                new Linear(2, 2, initialW: initial_W4, initialb: initial_b4, name: "l5 Linear", isParallel: false)
+                new MaxPooling(2, 2, name: "l3 Pooling"),
+                new Linear(8, 2, initialW: initial_W3, initialb: initial_b3, name: "l4 Linear"),
+                new ReLU(name: "l4 ReLU"),
+                new Linear(2, 2, initialW: initial_W4, initialb: initial_b4, name: "l5 Linear")
             );
 
             //optimizerの宣言を省略するとデフォルトのSGD(0.1)が使用される

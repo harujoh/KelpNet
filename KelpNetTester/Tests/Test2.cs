@@ -18,7 +18,7 @@ namespace KelpNetTester.Tests
             const int learningCount = 10000;
 
             //訓練データ
-            double[][] trainData = 
+            double[][] trainData =
             {
                 new[] { 0.0, 0.0 },
                 new[] { 1.0, 0.0 },
@@ -27,7 +27,7 @@ namespace KelpNetTester.Tests
             };
 
             //訓練データラベル
-            double[][] trainLabel = 
+            double[][] trainLabel =
             {
                 new[] { 0.0 },
                 new[] { 1.0 },
@@ -37,9 +37,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(2, 2, name: "l1 Linear", isParallel: false),
-                new ReLU(name: "l1 ReLU", isParallel: false),
-                new Linear(2, 1, name: "l2 Linear", isParallel: false)
+                new Linear(2, 2, name: "l1 Linear"),
+                new ReLU(name: "l1 ReLU"),
+                new Linear(2, 1, name: "l2 Linear")
             );
 
             //optimizerを宣言(今回はAdam)
@@ -63,8 +63,8 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (double[] val in trainData)
             {
-                NdArray result = nn.Predict(NdArray.FromArray(val));
-                Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5?1:0) + " " + result);
+                NdArray result = nn.Predict(new BatchArray(val));
+                Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5 ? 1 : 0) + " " + result);
 
             }
         }

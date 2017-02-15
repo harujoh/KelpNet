@@ -9,33 +9,33 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isParallel = true) : base(name,isParallel)
+        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU") : base(name)
         {
             this._slope = slope;
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Length];
+            double[] y = new double[x.Data.Length];
 
-            for (int i = 0; i < x.Length; i++)
+            for (int i = 0; i < x.Data.Length; i++)
             {
                 y[i] = x.Data[i] < 0 ? x.Data[i] *= this._slope : x.Data[i];
             }
 
-            return NdArray.Convert(y, x.Shape);
+            return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Length];
+            double[] gx = new double[gy.Data.Length];
 
-            for (int i = 0; i < gx.Length; i++)
+            for (int i = 0; i < gy.Data.Length; i++)
             {
                 gx[i] = prevOutput.Data[i] > 0 ? gy.Data[i] : prevOutput.Data[i] * this._slope;
             }
 
-            return NdArray.Convert(gx, gy.Shape);
+            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

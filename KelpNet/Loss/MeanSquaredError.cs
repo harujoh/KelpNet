@@ -7,39 +7,31 @@ namespace KelpNet.Loss
 {
     public class MeanSquaredError : ILossFunction
     {
-        public NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss)
+        public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out double loss)
         {
-            loss = 0.0;
+            double[] lossList = new double[input.BatchCount];
+            double[] result = new double[teachSignal.Data.Length];
 
-            double[] diff = new double[teachSignal.Length];
-            double coeff = 2.0 / diff.Length;
-
-            for (int i = 0; i < input.Length; i++)
+            for (int b = 0; b < input.BatchCount; b++)
             {
-                diff[i] = input.Data[i] - teachSignal.Data[i];
-                loss += Math.Pow(diff[i], 2);
+                loss = 0.0;
 
-                diff[i] *= coeff;
-            }
+                double coeff = 2.0 / teachSignal.Length;
 
-            loss /= diff.Length;
+                for (int i = 0; i < input.Length; i++)
+                {
+                    result[i + b * teachSignal.Length] = input.Data[i + b * input.Length] - teachSignal.Data[i + b * teachSignal.Length];
+                    loss += Math.Pow(result[i + b * teachSignal.Length], 2);
 
-            return NdArray.Convert(diff, teachSignal.Shape);
-        }
+                    result[i + b * teachSignal.Length] *= coeff;
+                }
 
-        public NdArray[] Evaluate(NdArray[] input, NdArray[] teachSignal, out double loss)
-        {
-            double[] lossList = new double[input.Length];
-            NdArray[] result = new NdArray[input.Length];
-
-            for (int i = 0; i < input.Length; i++)
-            {
-                result[i] = this.Evaluate(input[i], teachSignal[i], out lossList[i]);
+                lossList[b] = loss / teachSignal.Length;
             }
 
             loss = lossList.Average();
 
-            return result;
+            return BatchArray.Convert(result, teachSignal.Shape, teachSignal.BatchCount);
         }
     }
 }

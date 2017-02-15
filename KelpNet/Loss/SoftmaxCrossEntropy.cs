@@ -7,59 +7,61 @@ namespace KelpNet.Loss
 {
     public class SoftmaxCrossEntropy : ILossFunction
     {
-        public NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss)
+        public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out double loss)
         {
-            int maxIndex = (int)Math.Max(teachSignal.Data.Max(), 0.0);
+            double[] localloss = new double[input.BatchCount];
+            double[] gx = new double[input.Data.Length];
 
-            double[] logY = this.SoftmaxLog(input.Data);
-            loss = -logY[maxIndex];
-
-            double[] gx = new double[logY.Length];
-
-            for (int i = 0; i < logY.Length; i++)
+            for (int b = 0; b < input.BatchCount; b++)
             {
-                gx[i] = Math.Exp(logY[i]);
-            }
+                double maxIndex = 0;
 
-            gx[maxIndex] -= 1;
+                for (int i = 0; i < teachSignal.Length; i++)
+                {
+                    if (maxIndex < teachSignal.Data[i + b * teachSignal.Length])
+                    {
+                        maxIndex = teachSignal.Data[i + b * teachSignal.Length];
+                    }
+                }
 
-            return NdArray.Convert(gx, input.Shape);
-        }
+                double[] logY = new double[input.Length];
+                double[] y = new double[input.Length];
+                double m = input.Data[b * input.Length];
 
-        public NdArray[] Evaluate(NdArray[] input, NdArray[] teachSignal, out double loss)
-        {
-            double[] localloss = new double[input.Length];
-            NdArray[] resultArray = new NdArray[input.Length];
-            
-            for(int i = 0; i < input.Length; i ++)
-            {
-                resultArray[i] = this.Evaluate(input[i], teachSignal[i], out localloss[i]);
+                for (int i = 1; i < input.Length; i++)
+                {
+                    if (m < input.Data[i + b * input.Length])
+                    {
+                        m = input.Data[i + b * input.Length];
+                    }
+                }
+
+                for (int i = 0; i < input.Length; i++)
+                {
+                    y[i] = Math.Exp(input.Data[i + b * input.Length] - m);
+                }
+
+                m += Math.Log(y.Sum());
+
+                for (int i = 0; i < input.Length; i++)
+                {
+                    logY[i] = input.Data[i + b * input.Length] - m;
+                }
+
+                localloss[b] = -logY[(int)maxIndex];
+
+
+                for (int i = 0; i < logY.Length; i++)
+                {
+                    gx[i + b * input.Length] = Math.Exp(logY[i]);
+                }
+
+                gx[(int)maxIndex + b * input.Length] -= 1;
             }
 
             loss = localloss.Average();
-            return resultArray;
-        }
 
-        private double[] SoftmaxLog(double[] x)
-        {
-            double[] result = new double[x.Length];
-
-            double[] y = new double[x.Length];
-            double m = x.Max();
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                y[i] = Math.Exp(x[i] - m);
-            }
-
-            m += Math.Log(y.Sum());
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                result[i] = x[i] - m;
-            }
-
-            return result;
+            return BatchArray.Convert(gx, input.Shape, input.BatchCount);
         }
     }
 }

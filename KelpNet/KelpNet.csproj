@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\BatchArray.cs" />
     <Compile Include="Common\Tools\DeepCopyHelper.cs" />
     <Compile Include="Common\Functions\FunctionParameter.cs" />
     <Compile Include="Common\Tools\Initializer.cs" />

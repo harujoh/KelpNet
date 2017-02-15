@@ -21,7 +21,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isParallel = true) : base(name, inputChannels, outputChannels, isParallel)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -31,10 +31,10 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.initialize(initialW, initialb);
+            this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize = new Size(), int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isParallel = true) : base(name, inputChannels, outputChannels, isParallel)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize = new Size(), int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name, inputChannels, outputChannels)
         {
             if (kSize == Size.Empty)
                 kSize = new Size(0, 0);
@@ -50,10 +50,10 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.initialize(initialW, initialb);
+            this.Initialize(initialW, initialb);
         }
 
-        void initialize(double[,,,] initialW = null, double[] initialb = null)
+        void Initialize(double[,,,] initialW = null, double[] initialb = null)
         {
             this.W = NdArray.Zeros(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
@@ -85,120 +85,127 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        protected override NdArray NeedPreviousForward(NdArray input)
+        protected override BatchArray NeedPreviousForward(BatchArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
 
-            double[] result = new double[this.OutputCount * outputHeight * outputWidth];
-            int resultIndex = 0;
+            double[] result = new double[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
 
-            for (int och = 0; och < this.OutputCount; och++)
+            for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
             {
-                //Wインデックス用
-                int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+                int resultIndex = batchCounter * this.OutputCount * outputHeight * outputWidth;
 
-                for (int oy = 0; oy < outputHeight; oy++)
+                for (int och = 0; och < this.OutputCount; och++)
                 {
-                    for (int ox = 0; ox < outputWidth; ox++)
+                    //Wインデックス用
+                    int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+
+                    for (int oy = 0; oy < outputHeight; oy++)
                     {
-                        for (int ich = 0; ich < input.Shape[0]; ich++)
+                        for (int ox = 0; ox < outputWidth; ox++)
                         {
-                            //Wインデックス用
-                            int inChOffset = ich * this._kHeight * this._kWidth;
-
-                            //inputインデックス用
-                            int inputOffset = ich * input.Shape[1] * input.Shape[2];
-
-                            for (int ky = 0; ky < this._kHeight; ky++)
+                            for (int ich = 0; ich < input.Shape[0]; ich++)
                             {
-                                int iy = oy * this._stride + ky - this._padY;
+                                //Wインデックス用
+                                int inChOffset = ich * this._kHeight * this._kWidth;
 
-                                if (iy >= 0 && iy < input.Shape[1])
+                                //inputインデックス用
+                                int inputOffset = ich * input.Shape[1] * input.Shape[2];
+
+                                for (int ky = 0; ky < this._kHeight; ky++)
                                 {
-                                    for (int kx = 0; kx < this._kWidth; kx++)
+                                    int iy = oy * this._stride + ky - this._padY;
+
+                                    if (iy >= 0 && iy < input.Shape[1])
                                     {
-                                        int ix = ox * this._stride + kx - this._padX;
-
-                                        if (ix >= 0 && ix < input.Shape[2])
+                                        for (int kx = 0; kx < this._kWidth; kx++)
                                         {
-                                            int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
-                                            int inputIndex = inputOffset + iy * input.Shape[2] + ix;
+                                            int ix = ox * this._stride + kx - this._padX;
 
-                                            result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
+                                            if (ix >= 0 && ix < input.Shape[2])
+                                            {
+                                                int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
+                                                int inputIndex = inputOffset + iy * input.Shape[2] + ix + batchCounter * input.Length;
+
+                                                result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        result[resultIndex] += this.b.Data[och];
-                        resultIndex++;
+                            result[resultIndex] += this.b.Data[och];
+                            resultIndex++;
+                        }
                     }
                 }
             }
 
-            return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth });
+            return BatchArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
-            double[] gx = new double[prevInput.Length];
+            double[] gx = new double[prevInput.Data.Length];
 
-            int gyIndex = 0;
-
-            for (int och = 0; och < gy.Shape[0]; och++)
+            for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
             {
-                //gWインデックス用
-                int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+                int gyIndex = batchCounter * gy.Length;
 
-                for (int oy = 0; oy < gy.Shape[1]; oy++)
+                for (int och = 0; och < gy.Shape[0]; och++)
                 {
-                    for (int ox = 0; ox < gy.Shape[2]; ox++)
+                    //gWインデックス用
+                    int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+
+                    for (int oy = 0; oy < gy.Shape[1]; oy++)
                     {
-                        double gyData = gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
-
-                        for (int ich = 0; ich < prevInput.Shape[0]; ich++)
+                        for (int ox = 0; ox < gy.Shape[2]; ox++)
                         {
-                            //gWインデックス用
-                            int inChOffset = ich * this._kHeight * this._kWidth;
+                            double gyData = gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
 
-                            //inputインデックス用
-                            int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
-
-                            for (int ky = 0; ky < this._kHeight; ky++)
+                            for (int ich = 0; ich < prevInput.Shape[0]; ich++)
                             {
-                                int iy = oy * this._stride + ky - this._padY;
+                                //gWインデックス用
+                                int inChOffset = ich * this._kHeight * this._kWidth;
 
-                                if (iy >= 0 && iy < prevInput.Shape[1])
+                                //inputインデックス用
+                                int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
+
+                                for (int ky = 0; ky < this._kHeight; ky++)
                                 {
-                                    for (int kx = 0; kx < this._kWidth; kx++)
+                                    int iy = oy * this._stride + ky - this._padY;
+
+                                    if (iy >= 0 && iy < prevInput.Shape[1])
                                     {
-                                        int ix = ox * this._stride + kx - this._padX;
-
-                                        if (ix >= 0 && ix < prevInput.Shape[2])
+                                        for (int kx = 0; kx < this._kWidth; kx++)
                                         {
-                                            //WとgWのshapeは等しい
-                                            int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
+                                            int ix = ox * this._stride + kx - this._padX;
 
-                                            //prevInputとgxのshapeは等しい
-                                            int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix;
+                                            if (ix >= 0 && ix < prevInput.Shape[2])
+                                            {
+                                                //WとgWのshapeは等しい
+                                                int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
 
-                                            this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
+                                                //prevInputとgxのshapeは等しい
+                                                int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix + batchCounter * prevInput.Length;
 
-                                            gx[inputIndex] += this.W.Data[wIndex] * gyData;
+                                                this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
+
+                                                gx[inputIndex] += this.W.Data[wIndex] * gyData;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        this.gb.Data[och] += gyData;
+                            this.gb.Data[och] += gyData;
+                        }
                     }
                 }
             }
 
-            return NdArray.Convert(gx, prevInput.Shape);
+            return BatchArray.Convert(gx, prevInput.Shape, prevInput.BatchCount);
         }
     }
 }

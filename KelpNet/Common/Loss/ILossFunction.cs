@@ -2,7 +2,6 @@
 {
     public interface ILossFunction
     {
-        NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss);
-        NdArray[] Evaluate(NdArray[] input, NdArray[] teachSignal, out double loss);
+        BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out double loss);
     }
 }

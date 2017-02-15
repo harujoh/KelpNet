@@ -35,7 +35,7 @@ namespace KelpNetTester.Tests
             this.model.SetOptimizer(this.optimizer);
         }
 
-        static NdArray getRandomImage(int N = 1, int img_w = 128, int img_h = 128)
+        static BatchArray getRandomImage(int N = 1, int img_w = 128, int img_h = 128)
         {
             // ランダムに0.1％の点を作る
             double[] img_p = new double[N * img_w * img_h];
@@ -46,7 +46,7 @@ namespace KelpNetTester.Tests
                 img_p[i] = img_p[i] < 10 ? 255 : 0;
             }
 
-            return new NdArray(img_p, new[] { N, img_h, img_w });
+            return new BatchArray(img_p, new[] { N, img_h, img_w }, 1);
         }
 
         //１つの球状の模様を作成（ガウスですが）
@@ -76,20 +76,21 @@ namespace KelpNetTester.Tests
             if (this.counter < 11)
             {
                 //ランダムに点が打たれた画像を生成
-                NdArray img_p = getRandomImage();
+                BatchArray img_p = new BatchArray(getRandomImage());
 
                 //目標とするフィルタで学習用の画像を出力
-                NdArray img_core = this.decon_core.Forward(img_p);
+                BatchArray img_core = this.decon_core.Forward(img_p);
 
                 this.model.ClearGrads();
 
                 //未学習のフィルタで画像を出力
-                NdArray img_y = this.model.Forward(img_p);
+                BatchArray img_y = this.model.Forward(img_p);
 
+                //img_yを暗黙的にNdArrayとして使用
                 this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y);
 
                 double loss;
-                NdArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);
+                BatchArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);
 
                 this.model.Backward(gy);
 

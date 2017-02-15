@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -15,7 +14,7 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear", bool isParallel = true) : base(name, inputCount, outputCount,isParallel)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name, inputCount, outputCount)
         {
             this.W = NdArray.Zeros(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
@@ -49,41 +48,48 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            //最初からバイアスをコピーして入れておく
-            double[] output = this.b.Data.ToArray();
-            int indexOffset = 0;
+            double[] output = new double[OutputCount * x.BatchCount];
 
-            for (int i = 0; i < this.OutputCount; i++)
+            for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
-                for (int j = 0; j < this.InputCount; j++)
+                for (int i = 0; i < this.OutputCount; i++)
                 {
-                    output[i] += x.Data[j] * this.W.Data[indexOffset++];
+                    output[i + batchCount * this.OutputCount] += this.b.Data[i];
+
+                    for (int j = 0; j < this.InputCount; j++)
+                    {
+                        output[i + batchCount * this.OutputCount] += x.Data[j + batchCount * x.Length] * this.W.Data[i * this.InputCount + j];
+                    }
                 }
             }
 
-            return NdArray.Convert(output);
+            return BatchArray.Convert(output, new[] { OutputCount }, x.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
-            double[] gxData = new double[this.InputCount];
-            int indexOffset = 0;
+            double[] gxData = new double[prevInput.Data.Length];
 
-            for (int i = 0; i < gy.Length; i++)
+            for (int b = 0; b < gy.BatchCount; b++)
             {
-                double gyData = gy.Data[i];
-                this.gb.Data[i] += gyData;
+                int indexOffset = 0;
 
-                for (int j = 0; j < this.InputCount; j++)
+                for (int i = 0; i < gy.Length; i++)
                 {
-                    this.gW.Data[indexOffset] += prevInput.Data[j] * gyData;
-                    gxData[j] += this.W.Data[indexOffset++] * gyData;
+                    double gyData = gy.Data[i + b * gy.Length];
+                    this.gb.Data[i] += gyData;
+
+                    for (int j = 0; j < this.InputCount; j++)
+                    {
+                        this.gW.Data[indexOffset] += prevInput.Data[j + b * prevInput.Length] * gyData;
+                        gxData[j + b * prevInput.Length] += this.W.Data[indexOffset++] * gyData;
+                    }
                 }
             }
 
-            return NdArray.Convert(gxData, prevInput.Shape);
+            return BatchArray.Convert(gxData, prevInput.Shape, prevInput.BatchCount);
         }
     }
 }

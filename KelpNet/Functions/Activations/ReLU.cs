@@ -7,32 +7,32 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class ReLU : NeedPreviousOutputFunction
     {
-        public ReLU(string name = "ReLU", bool isParallel = true) : base(name, isParallel)
+        public ReLU(string name = "ReLU") : base(name)
         {
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Length];
+            double[] y = new double[x.Data.Length];
 
-            for (int i = 0; i < x.Length; i++)
+            for (int i = 0; i < x.Data.Length; i++)
             {
                 y[i] = Math.Max(0, x.Data[i]);
             }
 
-            return NdArray.Convert(y, x.Shape);
+            return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Length];
+            double[] gx = new double[gy.Data.Length];
 
-            for (int i = 0; i < gy.Length; i++)
+            for (int i = 0; i < gy.Data.Length; i++)
             {
                 gx[i] = prevOutput.Data[i] > 0 ? gy.Data[i] : 0;
             }
 
-            return NdArray.Convert(gx, gy.Shape);
+            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }
