@@ -33,10 +33,13 @@ TwitterID: harujoh
 
 ## License
 - KelpNet
+
 Apache License 2.0
 
 - Cloo
+
 MIT License
+
 https://sourceforge.net/projects/cloo/
 
 ##実装済み関数
