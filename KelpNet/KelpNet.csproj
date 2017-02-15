@@ -86,7 +86,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Tools\Trainer.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Cloo\Cloo.csproj">
+      <Project>{656e96ce-2587-4ccc-a4db-06d36267133a}</Project>
+      <Name>Cloo</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

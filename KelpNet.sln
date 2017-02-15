@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocabularyMaker", "Vocabula
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNetWaifu2x", "KelpNetWaifu2x\KelpNetWaifu2x.csproj", "{30EAE301-9B83-467A-867C-42D26CAE7CEA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloo", "Cloo\Cloo.csproj", "{656E96CE-2587-4CCC-A4DB-06D36267133A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{30EAE301-9B83-467A-867C-42D26CAE7CEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30EAE301-9B83-467A-867C-42D26CAE7CEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30EAE301-9B83-467A-867C-42D26CAE7CEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{656E96CE-2587-4CCC-A4DB-06D36267133A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
