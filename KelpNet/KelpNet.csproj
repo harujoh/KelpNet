@@ -36,6 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,6 +50,7 @@
     <Compile Include="Common\Tools\Initializer.cs" />
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Common\Tools\NdArrayConverter.cs" />
+    <Compile Include="Common\Weaver.cs" />
     <Compile Include="Functions\FunctionStack.cs" />
     <Compile Include="Common\Functions\Function.cs" />
     <Compile Include="Functions\Activations\ELU.cs" />

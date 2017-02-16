@@ -1,4 +1,5 @@
 ﻿using System;
+using Cloo;
 using KelpNet.Common.Optimizers;
 
 namespace KelpNet.Common.Functions
@@ -15,12 +16,22 @@ namespace KelpNet.Common.Functions
         protected readonly int OutputCount;
         protected readonly int InputCount;
 
+        protected bool IsGpu;
+
+        [NonSerialized]
+        public ComputeKernel ForwardKernel;
+
+        [NonSerialized]
+        public ComputeKernel BackwardKernel;
+
         //コンストラクタ
-        protected Function(string name, int inputCount = 0, int oututCount = 0)
+        protected Function(string name, int inputCount = 0, int oututCount = 0, bool isGpu = true)
         {
             this.Name = name;
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
+
+            this.IsGpu = isGpu;
         }
 
         public void SetOptimizer(params Optimizer[] optimizers)
