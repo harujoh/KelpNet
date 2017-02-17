@@ -116,7 +116,7 @@ __kernel void MaxPoolingForward(
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
             double[] result = Enumerable.Repeat(double.MinValue, input.Shape[0] * outputHeight * outputWidth  * input.BatchCount).ToArray();
 
-            //if (!IsGpu)
+            if (!IsGpu)
             {
                 for (int b = 0; b < input.BatchCount; b++)
                 {
@@ -155,38 +155,38 @@ __kernel void MaxPoolingForward(
                     }
                 }
             }
-            //else
-            //{
-            //    ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data);
-            //    ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result);
+            else
+            {
+                ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data);
+                ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result);
 
-            //    ForwardKernel.SetMemoryArgument(0, gpuX);
-            //    ForwardKernel.SetMemoryArgument(1, gpuY);
-            //    ForwardKernel.SetValueArgument(2, outputHeight);
-            //    ForwardKernel.SetValueArgument(3, outputWidth);
-            //    ForwardKernel.SetValueArgument(4, this._kHeight);
-            //    ForwardKernel.SetValueArgument(5, this._kWidth);
-            //    ForwardKernel.SetValueArgument(6, this._stride);
-            //    ForwardKernel.SetValueArgument(7, this._padY);
-            //    ForwardKernel.SetValueArgument(8, this._padX);
-            //    ForwardKernel.SetValueArgument(9, input.Shape[0]);
-            //    ForwardKernel.SetValueArgument(10, input.Shape[1]);
-            //    ForwardKernel.SetValueArgument(11, input.Shape[2]);
+                ForwardKernel.SetMemoryArgument(0, gpuX);
+                ForwardKernel.SetMemoryArgument(1, gpuY);
+                ForwardKernel.SetValueArgument(2, outputHeight);
+                ForwardKernel.SetValueArgument(3, outputWidth);
+                ForwardKernel.SetValueArgument(4, this._kHeight);
+                ForwardKernel.SetValueArgument(5, this._kWidth);
+                ForwardKernel.SetValueArgument(6, this._stride);
+                ForwardKernel.SetValueArgument(7, this._padY);
+                ForwardKernel.SetValueArgument(8, this._padX);
+                ForwardKernel.SetValueArgument(9, input.Shape[0]);
+                ForwardKernel.SetValueArgument(10, input.Shape[1]);
+                ForwardKernel.SetValueArgument(11, input.Shape[2]);
 
-            //    Weaver.CommandQueue.Execute
-            //    (
-            //        ForwardKernel,
-            //        null,
-            //        new long[] { input.BatchCount},
-            //        null,
-            //        null
-            //    );
+                Weaver.CommandQueue.Execute
+                (
+                    ForwardKernel,
+                    null,
+                    new long[] { input.BatchCount },
+                    null,
+                    null
+                );
 
-            //    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
+                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
 
-            //    gpuX.Dispose();
-            //    gpuY.Dispose();
-            //}
+                gpuX.Dispose();
+                gpuY.Dispose();
+            }
 
             return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
