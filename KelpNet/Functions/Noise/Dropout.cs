@@ -69,29 +69,27 @@ __kernel void DropoutForward(
             }
             else
             {
-                ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data);
-                ComputeBuffer<double> gpuMask = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask);
-                ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, result);
+                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
+                using (ComputeBuffer<double> gpuMask = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
+                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, result))
+                {
+                    ForwardKernel.SetMemoryArgument(0, gpuX);
+                    ForwardKernel.SetMemoryArgument(1, gpuMask);
+                    ForwardKernel.SetMemoryArgument(2, gpuY);
+                    ForwardKernel.SetValueArgument(3, x.Length);
+                    ForwardKernel.SetValueArgument(4, mask.Length);
 
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuMask);
-                ForwardKernel.SetMemoryArgument(2, gpuY);
-                ForwardKernel.SetValueArgument(3, x.Length);
-                ForwardKernel.SetValueArgument(4, mask.Length);
+                    Weaver.CommandQueue.Execute
+                        (
+                            ForwardKernel,
+                            null,
+                            new long[] { x.BatchCount },
+                            null,
+                            null
+                        );
 
-                Weaver.CommandQueue.Execute
-                (
-                    ForwardKernel,
-                    null,
-                    new long[] { x.BatchCount },
-                    null,
-                    null
-                );
-
-                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
-
-                gpuX.Dispose();
-                gpuY.Dispose();
+                    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
+                }
             }
 
             this.maskStack.Add(mask);

@@ -65,7 +65,7 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        protected override BatchArray ForwardSingle(BatchArray x)//x
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
             //計算用パラメータの取得
             if (this.IsTrain)
@@ -149,7 +149,7 @@ namespace KelpNet.Functions.Normalization
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gy)//gy
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
             double[] gx = new double[gy.BatchCount * this.ChannelSize];
 

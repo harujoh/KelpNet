@@ -53,6 +53,9 @@ namespace KelpNet.Functions.Connections
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, ForwardKernelName);
                 //BackwardKernel = Weaver.CreateKernel("", "");
+
+                ForwardKernel.SetValueArgument(4, this.OutputCount);
+                ForwardKernel.SetValueArgument(5, this.InputCount);
             }
         }
 
@@ -93,41 +96,34 @@ __kernel void LinearForward(
 
                         for (int j = 0; j < this.InputCount; j++)
                         {
-                            y[i + batchCount * this.OutputCount] += x.Data[j + batchCount * this.InputCount] *
-                                                                       this.W.Data[i * this.InputCount + j];
+                            y[i + batchCount * this.OutputCount] += x.Data[j + batchCount * this.InputCount] * this.W.Data[i * this.InputCount + j];
                         }
                     }
                 }
             }
             else
             {
-                ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data);
-                ComputeBuffer<double> gpuW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data);
-                ComputeBuffer<double> gpub = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data);
-                ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y);
+                using(ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
+                using(ComputeBuffer<double> gpuW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
+                using(ComputeBuffer<double> gpub = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data))
+                using(ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
+                {
+                    ForwardKernel.SetMemoryArgument(0, gpuX);
+                    ForwardKernel.SetMemoryArgument(1, gpuW);
+                    ForwardKernel.SetMemoryArgument(2, gpub);
+                    ForwardKernel.SetMemoryArgument(3, gpuY);
 
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuW);
-                ForwardKernel.SetMemoryArgument(2, gpub);
-                ForwardKernel.SetMemoryArgument(3, gpuY);
-                ForwardKernel.SetValueArgument(4, this.OutputCount);
-                ForwardKernel.SetValueArgument(5, this.InputCount);
+                    Weaver.CommandQueue.Execute
+                        (
+                            ForwardKernel,
+                            null,
+                            new long[] {x.BatchCount, OutputCount},
+                            null,
+                            null
+                        );
 
-                Weaver.CommandQueue.Execute
-                (
-                    ForwardKernel,
-                    null,
-                    new long[] { x.BatchCount, OutputCount },
-                    null,
-                    null
-                );
-
-                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref y, true, null);
-
-                gpuX.Dispose();
-                gpuW.Dispose();
-                gpub.Dispose();
-                gpuY.Dispose();
+                    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref y, true, null);
+                }
             }
 
             return BatchArray.Convert(y, new[] { OutputCount }, x.BatchCount);

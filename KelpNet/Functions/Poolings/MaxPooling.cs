@@ -53,6 +53,11 @@ namespace KelpNet.Functions.Poolings
         {
             ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, ForwardKernelName);
             //BackwardKernel = Weaver.CreateKernel("", "");
+            ForwardKernel.SetValueArgument(7, this._kHeight);
+            ForwardKernel.SetValueArgument(8, this._kWidth);
+            ForwardKernel.SetValueArgument(9, this._stride);
+            ForwardKernel.SetValueArgument(10, this._padY);
+            ForwardKernel.SetValueArgument(11, this._padX);
         }
 
         const string ForwardKernelName = "MaxPoolingForward";
@@ -63,10 +68,10 @@ __kernel void MaxPoolingForward(
 	__global double *gpuX,
 	__global double *gpuY,
     int outputHeight, int outputWidth,
+    int inputShape0, int inputShape1, int inputShape2,    
     int kHeight, int kWidth,
     int stride,
-    int padY,int padX,
-    int inputShape0, int inputShape1, int inputShape2)
+    int padY, int padX)
 {
 	int b = get_global_id(0);
 
@@ -157,35 +162,28 @@ __kernel void MaxPoolingForward(
             }
             else
             {
-                ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data);
-                ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result);
+                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
+                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
+                {
+                    ForwardKernel.SetMemoryArgument(0, gpuX);
+                    ForwardKernel.SetMemoryArgument(1, gpuY);
+                    ForwardKernel.SetValueArgument(2, outputHeight);
+                    ForwardKernel.SetValueArgument(3, outputWidth);
+                    ForwardKernel.SetValueArgument(4, input.Shape[0]);
+                    ForwardKernel.SetValueArgument(5, input.Shape[1]);
+                    ForwardKernel.SetValueArgument(6, input.Shape[2]);
 
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuY);
-                ForwardKernel.SetValueArgument(2, outputHeight);
-                ForwardKernel.SetValueArgument(3, outputWidth);
-                ForwardKernel.SetValueArgument(4, this._kHeight);
-                ForwardKernel.SetValueArgument(5, this._kWidth);
-                ForwardKernel.SetValueArgument(6, this._stride);
-                ForwardKernel.SetValueArgument(7, this._padY);
-                ForwardKernel.SetValueArgument(8, this._padX);
-                ForwardKernel.SetValueArgument(9, input.Shape[0]);
-                ForwardKernel.SetValueArgument(10, input.Shape[1]);
-                ForwardKernel.SetValueArgument(11, input.Shape[2]);
+                    Weaver.CommandQueue.Execute
+                        (
+                            ForwardKernel,
+                            null,
+                            new long[] {input.BatchCount},
+                            null,
+                            null
+                        );
 
-                Weaver.CommandQueue.Execute
-                (
-                    ForwardKernel,
-                    null,
-                    new long[] { input.BatchCount },
-                    null,
-                    null
-                );
-
-                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
-
-                gpuX.Dispose();
-                gpuY.Dispose();
+                    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
+                }
             }
 
             return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
