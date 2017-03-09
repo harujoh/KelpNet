@@ -74,42 +74,34 @@ __kernel void MaxPoolingForward(
     int padY, int padX)
 {
 	int b = get_global_id(0);
+	int i = get_global_id(1) / (outputHeight * outputWidth);
+    int y = (get_global_id(1) % (outputHeight * outputWidth)) / outputWidth;
+    int x = (get_global_id(1) % (outputHeight * outputWidth)) % outputWidth;
 
-    int resultIndex = b * inputShape0 * outputHeight * outputWidth;
+    int resultIndex = b * inputShape0 * outputHeight * outputWidth + i * outputHeight * outputWidth + y * outputWidth + x;
     int inputLength = inputShape0 * inputShape1 * inputShape2;
 
-    for (int i = 0; i < inputShape0; i++)
+    int inputIndexOffset = i * inputShape1 * inputShape2;
+
+    for (int dy = 0; dy < kHeight; dy++)
     {
-        int inputIndexOffset = i * inputShape1 * inputShape2;
+        int inputIndexY = y * stride + dy - padY;
 
-        for (int y = 0; y < outputHeight; y++)
+        if (inputIndexY >= 0 && inputIndexY < inputShape1)
         {
-            for (int x = 0; x < outputWidth; x++)
+            for (int dx = 0; dx < kWidth; dx++)
             {
-                for (int dy = 0; dy < kHeight; dy++)
+                int inputIndexX = x * stride + dx - padX;
+
+                if (inputIndexX >= 0 && inputIndexX < inputShape2)
                 {
-                    int inputIndexY = y * stride + dy - padY;
+                    int inputIndex = inputIndexOffset + inputIndexY * inputShape2 + inputIndexX + b * inputLength;
 
-                    if (inputIndexY >= 0 && inputIndexY < inputShape1)
+                    if(gpuY[resultIndex] < gpuX[inputIndex])
                     {
-                        for (int dx = 0; dx < kWidth; dx++)
-                        {
-                            int inputIndexX = x * stride + dx - padX;
-
-                            if (inputIndexX >= 0 && inputIndexX < inputShape2)
-                            {
-                                int inputIndex = inputIndexOffset + inputIndexY * inputShape2 + inputIndexX + b * inputLength;
-
-                                if(gpuY[resultIndex] < gpuX[inputIndex])
-                                {
-                                    gpuY[resultIndex] = gpuX[inputIndex];
-                                }
-                            }
-                        }
+                        gpuY[resultIndex] = gpuX[inputIndex];
                     }
                 }
-
-                resultIndex++;
             }
         }
     }
@@ -177,7 +169,7 @@ __kernel void MaxPoolingForward(
                         (
                             ForwardKernel,
                             null,
-                            new long[] {input.BatchCount},
+                            new long[] {input.BatchCount, input.Shape[0] * outputHeight * outputWidth },
                             null,
                             null
                         );

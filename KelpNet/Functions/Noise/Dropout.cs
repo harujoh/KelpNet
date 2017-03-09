@@ -32,16 +32,11 @@ __kernel void DropoutForward(
 	__global double *gpuX,
 	__global double *mask,
 	__global double *gpuY,
-    int xLength,
     int maskLength)
 {
-	int b = get_global_id(0);
-    int offset = b * xLength;
+	int i = get_global_id(0);
 
-    for (int i = offset; i < maskLength + offset; i++)
-    {
-        gpuY[i] = gpuX[i] * mask[i - offset];
-    }
+    gpuY[i] = gpuX[i] * mask[i % maskLength];
 }";
 
         protected override BatchArray ForwardSingle(BatchArray x)
@@ -57,14 +52,9 @@ __kernel void DropoutForward(
 
             if (!IsGpu)
             {
-                for (int b = 0; b < x.BatchCount; b++)
+                for (int i = 0; i < x.Data.Length; i++)
                 {
-                    int offset = b * x.Length;
-
-                    for (int i = offset; i < mask.Length + offset; i++)
-                    {
-                        result[i] = x.Data[i] * mask[i - offset];
-                    }
+                    result[i] = x.Data[i] * mask[i % mask.Length];
                 }
             }
             else
@@ -76,14 +66,13 @@ __kernel void DropoutForward(
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuMask);
                     ForwardKernel.SetMemoryArgument(2, gpuY);
-                    ForwardKernel.SetValueArgument(3, x.Length);
-                    ForwardKernel.SetValueArgument(4, mask.Length);
+                    ForwardKernel.SetValueArgument(3, mask.Length);
 
                     Weaver.CommandQueue.Execute
                         (
                             ForwardKernel,
                             null,
-                            new long[] { x.BatchCount },
+                            new long[] { x.Data.Length },
                             null,
                             null
                         );

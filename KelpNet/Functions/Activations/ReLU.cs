@@ -28,14 +28,7 @@ __kernel void ReLUForward(
 {
 	int i = get_global_id(0);
 
-    if(gpuX[i] > 0)
-    {
-        gpuY[i] = gpuX[i];
-    }
-    else
-    {
-        gpuY[i] = 0;
-    }
+    gpuY[i] = step(0, gpuX[i]) * gpuX[i];
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
