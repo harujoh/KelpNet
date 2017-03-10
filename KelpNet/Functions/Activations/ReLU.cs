@@ -13,12 +13,11 @@ namespace KelpNet.Functions.Activations
             //カーネルを作成
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, ForwardKernelName);
-                //BackwardKernel = Weaver.CreateKernel("", "");
+                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "ReLUForward");
+                //BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "ReLUBackward");
             }
         }
 
-        const string ForwardKernelName = "ReLUForward";
         const string ForwardKernelSource =
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable

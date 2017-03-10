@@ -51,7 +51,7 @@ namespace KelpNet.Functions.Poolings
 
         void initGPU()
         {
-            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, ForwardKernelName);
+            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
             //BackwardKernel = Weaver.CreateKernel("", "");
             ForwardKernel.SetValueArgument(7, this._kHeight);
             ForwardKernel.SetValueArgument(8, this._kWidth);
@@ -60,7 +60,6 @@ namespace KelpNet.Functions.Poolings
             ForwardKernel.SetValueArgument(11, this._padX);
         }
 
-        const string ForwardKernelName = "MaxPoolingForward";
         const string ForwardKernelSource =
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable

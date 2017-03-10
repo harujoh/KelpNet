@@ -19,12 +19,11 @@ namespace KelpNet.Functions.Noise
             //カーネルを作成
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, ForwardKernelName);
+                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "DropoutForward");
                 //BackwardKernel = Weaver.CreateKernel("", "");
             }
         }
 
-        const string ForwardKernelName = "DropoutForward";
         const string ForwardKernelSource =
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
