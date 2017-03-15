@@ -20,7 +20,7 @@ namespace KelpNet.Functions.Activations
 
             for (int i = 0; i < x.Length; i++)
             {
-                y[i] = x.Data[i] < 0 ? x.Data[i] *= this._slope : x.Data[i];
+                y[i] = x.Data[i] < 0 ? x.Data[i] * this._slope : x.Data[i];
             }
 
             return NdArray.Convert(y, x.Shape);
