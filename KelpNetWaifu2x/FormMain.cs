@@ -35,6 +35,8 @@ namespace KelpNetWaifu2x
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
+                int layerCounter = 1;
+
                 var json = DynamicJson.Parse(File.ReadAllText(ofd.FileName));
 
                 List<Function> functionList = new List<Function>();
@@ -59,8 +61,8 @@ namespace KelpNetWaifu2x
                     }
 
                     //padを行い入力と出力画像のサイズを合わせる
-                    functionList.Add(new Convolution2D((int)data["nInputPlane"], (int)data["nOutputPlane"], (int)data["kW"], pad: (int)data["kW"] / 2, initialW: weightData, initialb: (double[])data["bias"]));
-                    functionList.Add(new LeakyReLU(0.1));
+                    functionList.Add(new Convolution2D((int)data["nInputPlane"], (int)data["nOutputPlane"], (int)data["kW"], pad: (int)data["kW"] / 2, initialW: weightData, initialb: (double[])data["bias"],name: "Convolution2D l" + layerCounter++));
+                    functionList.Add(new LeakyReLU(0.1,name: "LeakyReLU l" + layerCounter++));
                 }
 
                 nn = new FunctionStack(functionList.ToArray());
