@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -21,6 +22,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _stride;
         private readonly int _padX;
         private readonly int _padY;
+        private readonly bool _noBias;
 
         public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name, inputChannels, outputChannels)
         {
@@ -29,6 +31,7 @@ namespace KelpNet.Functions.Connections
             this._stride = stride;
             this._padX = pad;
             this._padY = pad;
+            this._noBias = noBias;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
@@ -86,13 +89,6 @@ namespace KelpNet.Functions.Connections
             if (IsGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "Convolution2DForward");
-                ForwardKernel.SetValueArgument(9, this._stride);
-                ForwardKernel.SetValueArgument(10, this._padX);
-                ForwardKernel.SetValueArgument(11, this._padY);
-                ForwardKernel.SetValueArgument(12, this._kHeight);
-                ForwardKernel.SetValueArgument(13, this._kWidth);
-                ForwardKernel.SetValueArgument(14, this.OutputCount);
-                ForwardKernel.SetValueArgument(15, this.InputCount);
 
                 //BackwardKernel = Weaver.CreateKernel("", "");
 
@@ -103,22 +99,21 @@ namespace KelpNet.Functions.Connections
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 __kernel void Convolution2DForward(
-	__global double *gpuX,
-	__global double *gpuW, 
-	__global double *gpub, 
+	__global const double *gpuX,
+	__global const double *gpuW, 
 	__global double *gpuY,
-    int inputShape1,
-    int inputShape2,
-    int inputLength,
-    int outputWidth,
-    int outputHeight,
-    int stride,
-	int padX,
-	int padY,
-	int kHeight,
-	int kWidth,
-	int OutputCount,
-	int InputCount)
+    const int inputShape1,
+    const int inputShape2,
+    const int inputLength,
+    const int outputWidth,
+    const int outputHeight,
+    const int stride,
+	const int padX,
+	const int padY,
+	const int kHeight,
+	const int kWidth,
+	const int OutputCount,
+	const int InputCount)
 {
 	int batchCounter = get_global_id(0);
 	int och = get_global_id(1) / (outputHeight * outputWidth);
@@ -156,8 +151,6 @@ __kernel void Convolution2DForward(
             }
         }
     }
-
-    gpuY[resultIndex] += gpub[och];
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
@@ -221,32 +214,51 @@ __kernel void Convolution2DForward(
             }
             else
             {
+                if (!this._noBias)
+                {
+                    int size = outputHeight*outputWidth;
+                    for (int och = 0; och < this.OutputCount; och++)
+                    {
+                        double[] bias = Enumerable.Repeat(this.b.Data[och], size).ToArray();
+
+                        for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
+                        {
+                            Array.Copy(bias, 0, result, batchCount * this.OutputCount * size + och * size, size);
+                        }
+                    }
+                }
+
                 using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
                 using (ComputeBuffer<double> gpuW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
-                using (ComputeBuffer<double> gpub = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data))
                 using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuW);
-                    ForwardKernel.SetMemoryArgument(2, gpub);
-                    ForwardKernel.SetMemoryArgument(3, gpuY);
-                    ForwardKernel.SetValueArgument(4, input.Shape[1]);
-                    ForwardKernel.SetValueArgument(5, input.Shape[2]);
-                    ForwardKernel.SetValueArgument(6, input.Length);
-                    ForwardKernel.SetValueArgument(7, outputWidth);
-                    ForwardKernel.SetValueArgument(8, outputHeight);
+                    ForwardKernel.SetMemoryArgument(2, gpuY);
+                    ForwardKernel.SetValueArgument(3, input.Shape[1]);
+                    ForwardKernel.SetValueArgument(4, input.Shape[2]);
+                    ForwardKernel.SetValueArgument(5, input.Length);
+                    ForwardKernel.SetValueArgument(6, outputWidth);
+                    ForwardKernel.SetValueArgument(7, outputHeight);
+                    ForwardKernel.SetValueArgument(8, this._stride);
+                    ForwardKernel.SetValueArgument(9, this._padX);
+                    ForwardKernel.SetValueArgument(10, this._padY);
+                    ForwardKernel.SetValueArgument(11, this._kHeight);
+                    ForwardKernel.SetValueArgument(12, this._kWidth);
+                    ForwardKernel.SetValueArgument(13, this.OutputCount);
+                    ForwardKernel.SetValueArgument(14, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                     (
                         ForwardKernel,
                         null,
-                        new long[] { input.BatchCount, OutputCount * outputHeight * outputWidth},
+                        new long[] { input.BatchCount, OutputCount * outputHeight * outputWidth },
                         null,
                         null
                     );
 
+                    Weaver.CommandQueue.Finish();
                     Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
-
                 }
             }
 

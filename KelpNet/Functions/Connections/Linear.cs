@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        private bool noBias;
+        private readonly bool noBias;
 
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name, inputCount, outputCount)
         {
@@ -55,12 +55,7 @@ namespace KelpNet.Functions.Connections
             if (IsGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LinearForward");
-                ForwardKernel.SetValueArgument(3, this.OutputCount);
-                ForwardKernel.SetValueArgument(4, this.InputCount);
-
                 BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LinearBackward");
-                BackwardKernel.SetValueArgument(6, this.OutputCount);
-                BackwardKernel.SetValueArgument(7, this.InputCount);
             }
         }
 
@@ -68,11 +63,11 @@ namespace KelpNet.Functions.Connections
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 __kernel void LinearForward(
-	__global double *gpuX,
-	__global double *gpuW, 
+	__global const double *gpuX,
+	__global const double *gpuW, 
 	__global double *gpuY,
-	int OutputCount,
-	int InputCount)
+	const int OutputCount,
+	const int InputCount)
 {
 	int batchCount = get_global_id(0);
 	int i = get_global_id(1);
@@ -119,6 +114,8 @@ __kernel void LinearForward(
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuW);
                     ForwardKernel.SetMemoryArgument(2, gpuY);
+                    ForwardKernel.SetValueArgument(3, this.OutputCount);
+                    ForwardKernel.SetValueArgument(4, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                         (
@@ -129,6 +126,7 @@ __kernel void LinearForward(
                             null
                         );
 
+                    Weaver.CommandQueue.Finish();
                     Weaver.CommandQueue.ReadFromBuffer(gpuY, ref y, true, null);
                 }
             }
@@ -140,27 +138,27 @@ __kernel void LinearForward(
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 __kernel void LinearBackward(
-	__global double *gpugY,
-	__global double *gpuX,
-	__global double *gpuW, 
-	__global double *gpugW, 
-	__global double *gpugb, 
-	__global double *gpugX, 
-	int OutputCount,
-	int InputCount)
+	__global const double *gpugY,
+	__global const double *gpuX,
+	__global const double *gpuW, 
+	__global       double *gpugW, 
+	__global       double *gpugb, 
+	__global       double *gpugX, 
+	         const int OutputCount,
+	         const int InputCount)
 {
 	int b = get_global_id(0);
-	int i = get_global_id(1);
 
-    int indexOffset = i * InputCount;
-
-    double gyData = gpugY[i + b * OutputCount];
-    gpugb[i] += gyData;
-
-    for (int j = 0; j < InputCount; j++)
+    for (int i = 0; i < OutputCount; i++)
     {
-        gpugW[indexOffset] += gpuX[j + b * InputCount] * gyData;
-        gpugX[j + b * InputCount] += gpuW[indexOffset + j] * gyData;
+        double gyData = gpugY[i + b * OutputCount];
+        gpugb[i] += gyData;
+
+        for (int j = 0; j < InputCount; j++)
+        {
+            gpugW[i * InputCount + j] += gpuX[j + b * InputCount] * gyData;
+            gpugX[j + b * InputCount] += gpuW[i * InputCount + j] * gyData;
+        }
     }
 }";
 
@@ -168,12 +166,10 @@ __kernel void LinearBackward(
         {
             double[] gxData = new double[prevInput.Data.Length];
 
-            if (!IsGpu)
+            if (IsGpu)
             {
                 for (int b = 0; b < gy.BatchCount; b++)
                 {
-                    int indexOffset = 0;
-
                     for (int i = 0; i < this.OutputCount; i++)
                     {
                         double gyData = gy.Data[i + b * this.OutputCount];
@@ -181,8 +177,8 @@ __kernel void LinearBackward(
 
                         for (int j = 0; j < this.InputCount; j++)
                         {
-                            this.gW.Data[indexOffset] += prevInput.Data[j + b * this.InputCount] * gyData;
-                            gxData[j + b * this.InputCount] += this.W.Data[indexOffset++] * gyData;
+                            this.gW.Data[i * this.InputCount + j] += prevInput.Data[j + b * this.InputCount] * gyData;
+                            gxData[j + b * this.InputCount] += this.W.Data[i * this.InputCount + j] * gyData;
                         }
                     }
                 }
@@ -202,21 +198,23 @@ __kernel void LinearBackward(
                     BackwardKernel.SetMemoryArgument(3, gpugW);
                     BackwardKernel.SetMemoryArgument(4, gpugb);
                     BackwardKernel.SetMemoryArgument(5, gpugX);
+                    BackwardKernel.SetValueArgument(6, this.OutputCount);
+                    BackwardKernel.SetValueArgument(7, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                         (
                             BackwardKernel,
                             null,
-                            new long[] { gy.BatchCount, OutputCount },
+                            new long[] { gy.BatchCount },
                             null,
                             null
                         );
 
+                    Weaver.CommandQueue.Finish();
                     Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
                     Weaver.CommandQueue.ReadFromBuffer(gpugb, ref this.gb.Data, true, null);
                     Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gxData, true, null);
                 }
-
             }
 
             return BatchArray.Convert(gxData, prevInput.Shape, prevInput.BatchCount);

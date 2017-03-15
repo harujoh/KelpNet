@@ -143,40 +143,6 @@ namespace KelpNet.Common
             }
         }
 
-        //N次元のIndexから１次元のIndexを取得する
-        private int GetIndex(params int[] indices)
-        {
-#if DEBUG
-            if (this.Shape.Length != indices.Length)
-            {
-                throw new Exception("次元数がマッチしていません");
-            }
-#endif
-
-            int index = 0;
-
-            for (int i = 0; i < indices.Length; i++)
-            {
-#if DEBUG
-                if (this.Shape[i] <= indices[i])
-                {
-                    throw new Exception(i + "次元の添字が範囲を超えています");
-                }
-#endif
-
-                int rankOffset = 1;
-
-                for (int j = i + 1; j < this.Shape.Length; j++)
-                {
-                    rankOffset *= this.Shape[j];
-                }
-
-                index += indices[i] * rankOffset;
-            }
-
-            return index;
-        }
-
         //Numpyっぽく値を文字列に変換して出力する
         public override string ToString()
         {
@@ -314,6 +280,5 @@ namespace KelpNet.Common
         {
             return DeepCopyHelper.DeepCopy(this);
         }
-
     }
 }

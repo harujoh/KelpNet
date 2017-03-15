@@ -28,8 +28,8 @@ namespace KelpNet.Functions.Noise
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 __kernel void DropoutForward(
-	__global double *gpuX,
-	__global double *mask,
+	__global const double *gpuX,
+	__global const double *mask,
 	__global double *gpuY,
     int maskLength)
 {
@@ -76,6 +76,7 @@ __kernel void DropoutForward(
                             null
                         );
 
+                    Weaver.CommandQueue.Finish();
                     Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
                 }
             }

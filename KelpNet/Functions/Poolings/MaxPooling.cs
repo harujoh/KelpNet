@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Cloo;
@@ -8,13 +9,18 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Poolings
 {
     [Serializable]
-    public class MaxPooling : NeedPreviousDataFunction
+    public class MaxPooling : Function
     {
         private int _kWidth;
         private int _kHeight;
         private int _padX;
         private int _padY;
         private int _stride;
+
+        private readonly List<int[]> _outputIndicesList = new List<int[]>();
+        private int[] _prevInputShape;
+        private int _prevInputDataLength;
+        private int _prevInputBatchCount;
 
         public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling") : base(name)
         {
@@ -53,24 +59,19 @@ namespace KelpNet.Functions.Poolings
         {
             ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
             //BackwardKernel = Weaver.CreateKernel("", "");
-            ForwardKernel.SetValueArgument(7, this._kHeight);
-            ForwardKernel.SetValueArgument(8, this._kWidth);
-            ForwardKernel.SetValueArgument(9, this._stride);
-            ForwardKernel.SetValueArgument(10, this._padY);
-            ForwardKernel.SetValueArgument(11, this._padX);
         }
 
         const string ForwardKernelSource =
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 __kernel void MaxPoolingForward(
-	__global double *gpuX,
-	__global double *gpuY,
-    int outputHeight, int outputWidth,
-    int inputShape0, int inputShape1, int inputShape2,    
-    int kHeight, int kWidth,
-    int stride,
-    int padY, int padX)
+	__global const double *gpuX,
+	__global int *gpuYindex,
+    const int outputHeight, const int outputWidth,
+    const int inputShape0, const int inputShape1, const int inputShape2,    
+    const int kHeight, const int kWidth,
+    const int stride,
+    const int padY, const int padX)
 {
 	int b = get_global_id(0);
 	int i = get_global_id(1) / (outputHeight * outputWidth);
@@ -81,6 +82,8 @@ __kernel void MaxPoolingForward(
     int inputLength = inputShape0 * inputShape1 * inputShape2;
 
     int inputIndexOffset = i * inputShape1 * inputShape2;
+
+    double maxVal = -DBL_MAX;
 
     for (int dy = 0; dy < kHeight; dy++)
     {
@@ -96,21 +99,25 @@ __kernel void MaxPoolingForward(
                 {
                     int inputIndex = inputIndexOffset + inputIndexY * inputShape2 + inputIndexX + b * inputLength;
 
-                    if(gpuY[resultIndex] < gpuX[inputIndex])
+                    if (maxVal < gpuX[inputIndex])
                     {
-                        gpuY[resultIndex] = gpuX[inputIndex];
+                        maxVal = gpuX[inputIndex];
+                        gpuYindex[resultIndex] = inputIndex;
                     }
                 }
             }
         }
     }
 }";
-
-        protected override BatchArray NeedPreviousForward(BatchArray input)
+        protected override BatchArray ForwardSingle(BatchArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
-            double[] result = Enumerable.Repeat(double.MinValue, input.Shape[0] * outputHeight * outputWidth  * input.BatchCount).ToArray();
+            double[] result = Enumerable.Repeat(double.MinValue, input.Shape[0] * outputHeight * outputWidth * input.BatchCount).ToArray();
+            int[] outputIndices = new int[result.Length];
+            this._prevInputShape = input.Shape.ToArray();
+            this._prevInputDataLength = input.Data.Length;
+            this._prevInputBatchCount = input.BatchCount;
 
             if (!IsGpu)
             {
@@ -126,6 +133,7 @@ __kernel void MaxPoolingForward(
                         {
                             for (int x = 0; x < outputWidth; x++)
                             {
+                                double maxVal = double.MinValue;
                                 for (int dy = 0; dy < this._kHeight; dy++)
                                 {
                                     int inputIndexY = y * this._stride + dy - this._padY;
@@ -139,7 +147,11 @@ __kernel void MaxPoolingForward(
                                             if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
                                             {
                                                 int inputIndex = inputIndexOffset + inputIndexY * input.Shape[2] + inputIndexX + b * input.Length;
-                                                result[resultIndex] = Math.Max(result[resultIndex], input.Data[inputIndex]);
+                                                if (maxVal < input.Data[inputIndex])
+                                                {
+                                                    maxVal = input.Data[inputIndex];
+                                                    outputIndices[resultIndex] = inputIndex;
+                                                }
                                             }
                                         }
                                     }
@@ -154,15 +166,20 @@ __kernel void MaxPoolingForward(
             else
             {
                 using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
+                using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, outputIndices))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
-                    ForwardKernel.SetMemoryArgument(1, gpuY);
+                    ForwardKernel.SetMemoryArgument(1, gpuYIndex);
                     ForwardKernel.SetValueArgument(2, outputHeight);
                     ForwardKernel.SetValueArgument(3, outputWidth);
                     ForwardKernel.SetValueArgument(4, input.Shape[0]);
                     ForwardKernel.SetValueArgument(5, input.Shape[1]);
                     ForwardKernel.SetValueArgument(6, input.Shape[2]);
+                    ForwardKernel.SetValueArgument(7, this._kHeight);
+                    ForwardKernel.SetValueArgument(8, this._kWidth);
+                    ForwardKernel.SetValueArgument(9, this._stride);
+                    ForwardKernel.SetValueArgument(10, this._padY);
+                    ForwardKernel.SetValueArgument(11, this._padX);
 
                     Weaver.CommandQueue.Execute
                         (
@@ -173,67 +190,33 @@ __kernel void MaxPoolingForward(
                             null
                         );
 
-                    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpuYIndex, ref outputIndices, true, null);
                 }
             }
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = input.Data[outputIndices[i]];
+            }
+            this._outputIndicesList.Add(outputIndices);
 
             return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
-            double[] result = new double[prevInput.Data.Length];
+            int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
+            this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);
 
-            for (int b = 0; b < gy.BatchCount; b++)
+            double[] result = new double[this._prevInputDataLength];
+
+            for (int i = 0; i < gy.Data.Length; i++)
             {
-                int index = b * gy.Length;
-
-                for (int i = 0; i < prevInput.Shape[0]; i++)
-                {
-                    int prevInputIndexOffset = i * prevInput.Shape[1] * prevInput.Shape[2];
-
-                    for (int y = 0; y < prevOutput.Shape[1]; y++)
-                    {
-                        for (int x = 0; x < prevOutput.Shape[2]; x++)
-                        {
-                            //前回の入力値と出力値を比較して、同じ値のものを見つける
-                            this.SetResult(prevInputIndexOffset, y, x, gy.Data[index], prevInput, prevOutput.Data[index], b, ref result);
-                            index++;
-                        }
-                    }
-                }
+                result[outputIndices[i]] = gy.Data[i];
             }
 
-            return BatchArray.Convert(result, prevInput.Shape, prevInput.BatchCount);
-        }
-
-        //同じ値を複数持つ場合、左上優先にして処理を打ち切る
-        //他のライブラリの実装では乱数を取って同じ値の中からどれかを選ぶ物が多い
-        void SetResult(int prevInputIndexOffset, int y, int x, double data, BatchArray prevInput, double prevOutputData, int b, ref double[] result)
-        {
-            for (int dy = 0; dy < this._kHeight; dy++)
-            {
-                int outputIndexY = y * this._stride + dy - this._padY;
-
-                if (outputIndexY >= 0 && outputIndexY < prevInput.Shape[1])
-                {
-                    for (int dx = 0; dx < this._kWidth; dx++)
-                    {
-                        int outputIndexX = x * this._stride + dx - this._padX;
-
-                        if (outputIndexX >= 0 && outputIndexX < prevInput.Shape[2])
-                        {
-                            int prevInputIndex = prevInputIndexOffset + outputIndexY * prevInput.Shape[2] + outputIndexX + b * prevInput.Length;
-
-                            if (prevInput.Data[prevInputIndex].Equals(prevOutputData))
-                            {
-                                result[prevInputIndex] = data;
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
+            return BatchArray.Convert(result, this._prevInputShape, this._prevInputBatchCount);
         }
     }
 }
