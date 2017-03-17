@@ -10,7 +10,7 @@ namespace KelpNetTester
         static void Main(string[] args)
         {
             //MLPによるXORの学習
-            //Test1.Run();
+            Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -22,7 +22,7 @@ namespace KelpNetTester
             //Test4.Run();
             
             //エクセルCNNの再現
-            Test5.Run();
+            //Test5.Run();
 
             //5層CNNによるMNISTの学習
             //Test6.Run();
