@@ -73,10 +73,10 @@ __kernel void MaxPoolingForward(
     const int stride,
     const int padY, const int padX)
 {
-	int b = get_global_id(0);
-	int i = get_global_id(1) / (outputHeight * outputWidth);
-    int y = (get_global_id(1) % (outputHeight * outputWidth)) / outputWidth;
-    int x = (get_global_id(1) % (outputHeight * outputWidth)) % outputWidth;
+	int b = get_global_id(0) / inputShape0;
+	int i = get_global_id(0) % inputShape0;
+    int y = get_global_id(1);
+    int x = get_global_id(2);
 
     int resultIndex = b * inputShape0 * outputHeight * outputWidth + i * outputHeight * outputWidth + y * outputWidth + x;
     int inputLength = inputShape0 * inputShape1 * inputShape2;
@@ -166,7 +166,7 @@ __kernel void MaxPoolingForward(
             else
             {
                 using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
-                using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, outputIndices))
+                using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly, outputIndices))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuYIndex);
@@ -185,7 +185,7 @@ __kernel void MaxPoolingForward(
                         (
                             ForwardKernel,
                             null,
-                            new long[] {input.BatchCount, input.Shape[0] * outputHeight * outputWidth },
+                            new long[] {input.BatchCount* input.Shape[0],  outputHeight , outputWidth },
                             null,
                             null
                         );

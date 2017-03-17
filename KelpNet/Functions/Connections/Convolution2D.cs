@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Linq;
 using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -101,6 +100,7 @@ namespace KelpNet.Functions.Connections
 __kernel void Convolution2DForward(
 	__global const double *gpuX,
 	__global const double *gpuW, 
+	__global const double *gpub, 
 	__global double *gpuY,
     const int inputShape1,
     const int inputShape2,
@@ -115,14 +115,16 @@ __kernel void Convolution2DForward(
 	const int OutputCount,
 	const int InputCount)
 {
-	int batchCounter = get_global_id(0);
-	int och = get_global_id(1) / (outputHeight * outputWidth);
-    int oy = (get_global_id(1) % (outputHeight * outputWidth)) / outputWidth;
-    int ox = (get_global_id(1) % (outputHeight * outputWidth)) % outputWidth;
+	int batchCounter = get_global_id(0)/ OutputCount;
+	int och = get_global_id(0) % OutputCount;
+    int oy = get_global_id(1);
+    int ox = get_global_id(2);
 
     int outChOffset = och * InputCount * kHeight * kWidth;
 
     int resultIndex = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox;
+
+    double localResult = 0.0;
 
     for (int ich = 0; ich < InputCount; ich++)
     {
@@ -145,12 +147,14 @@ __kernel void Convolution2DForward(
                         int wIndex = outChOffset + inChOffset + ky * kWidth + kx;
                         int inputIndex = inputOffset + iy * inputShape2 + ix + batchCounter * inputLength;
 
-                        gpuY[resultIndex] += gpuX[inputIndex] * gpuW[wIndex];
+                        localResult += gpuX[inputIndex] * gpuW[wIndex];
                     }
                 }
             }
         }
     }
+
+    gpuY[resultIndex] = localResult + gpub[och];
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
@@ -214,45 +218,33 @@ __kernel void Convolution2DForward(
             }
             else
             {
-                if (!this._noBias)
-                {
-                    int size = outputHeight*outputWidth;
-                    for (int och = 0; och < this.OutputCount; och++)
-                    {
-                        double[] bias = Enumerable.Repeat(this.b.Data[och], size).ToArray();
-
-                        for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
-                        {
-                            Array.Copy(bias, 0, result, batchCount * this.OutputCount * size + och * size, size);
-                        }
-                    }
-                }
-
                 using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
                 using (ComputeBuffer<double> gpuW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
+                using (ComputeBuffer<double> gpub = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data))
+                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly, result))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuW);
-                    ForwardKernel.SetMemoryArgument(2, gpuY);
-                    ForwardKernel.SetValueArgument(3, input.Shape[1]);
-                    ForwardKernel.SetValueArgument(4, input.Shape[2]);
-                    ForwardKernel.SetValueArgument(5, input.Length);
-                    ForwardKernel.SetValueArgument(6, outputWidth);
-                    ForwardKernel.SetValueArgument(7, outputHeight);
-                    ForwardKernel.SetValueArgument(8, this._stride);
-                    ForwardKernel.SetValueArgument(9, this._padX);
-                    ForwardKernel.SetValueArgument(10, this._padY);
-                    ForwardKernel.SetValueArgument(11, this._kHeight);
-                    ForwardKernel.SetValueArgument(12, this._kWidth);
-                    ForwardKernel.SetValueArgument(13, this.OutputCount);
-                    ForwardKernel.SetValueArgument(14, this.InputCount);
+                    ForwardKernel.SetMemoryArgument(2, gpub);
+                    ForwardKernel.SetMemoryArgument(3, gpuY);
+                    ForwardKernel.SetValueArgument(4, input.Shape[1]);
+                    ForwardKernel.SetValueArgument(5, input.Shape[2]);
+                    ForwardKernel.SetValueArgument(6, input.Length);
+                    ForwardKernel.SetValueArgument(7, outputWidth);
+                    ForwardKernel.SetValueArgument(8, outputHeight);
+                    ForwardKernel.SetValueArgument(9, this._stride);
+                    ForwardKernel.SetValueArgument(10, this._padX);
+                    ForwardKernel.SetValueArgument(11, this._padY);
+                    ForwardKernel.SetValueArgument(12, this._kHeight);
+                    ForwardKernel.SetValueArgument(13, this._kWidth);
+                    ForwardKernel.SetValueArgument(14, this.OutputCount);
+                    ForwardKernel.SetValueArgument(15, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                     (
                         ForwardKernel,
                         null,
-                        new long[] { input.BatchCount, OutputCount * outputHeight * outputWidth },
+                        new long[] { input.BatchCount * OutputCount, outputHeight, outputWidth },
                         null,
                         null
                     );

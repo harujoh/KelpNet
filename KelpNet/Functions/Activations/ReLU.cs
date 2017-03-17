@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -22,32 +23,35 @@ namespace KelpNet.Functions.Activations
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 __kernel void ReLUForward(
-	__global const double *gpuX,
 	__global double *gpuY)
 {
 	int i = get_global_id(0);
 
-    gpuY[i] = max(0.0, gpuX[i]);
+    if(gpuY[i] < 0.0)
+    {
+        gpuY[i] = 0.0;
+    }
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Data.Length];
+            double[] y = x.Data.ToArray();
 
             if (!IsGpu)
             {
                 for (int i = 0; i < x.Data.Length; i++)
                 {
-                    y[i] = Math.Max(0, x.Data[i]);
+                    if (y[i] < 0)
+                    {
+                        y[i] = 0;
+                    }
                 }
             }
             else
             {
-                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, y))
+                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
                 {
-                    ForwardKernel.SetMemoryArgument(0, gpuX);
-                    ForwardKernel.SetMemoryArgument(1, gpuY);
+                    ForwardKernel.SetMemoryArgument(0, gpuY);
 
                     Weaver.CommandQueue.Execute
                         (
