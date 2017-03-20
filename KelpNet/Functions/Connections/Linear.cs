@@ -148,17 +148,15 @@ __kernel void LinearBackward(
 	         const int InputCount)
 {
 	int b = get_global_id(0);
+    int i = get_global_id(1);
 
-    for (int i = 0; i < OutputCount; i++)
+    double gyData = gpugY[i + b * OutputCount];
+    gpugb[i] += gyData;
+
+    for (int j = 0; j < InputCount; j++)
     {
-        double gyData = gpugY[i + b * OutputCount];
-        gpugb[i] += gyData;
-
-        for (int j = 0; j < InputCount; j++)
-        {
-            gpugW[i * InputCount + j] += gpuX[j + b * InputCount] * gyData;
-            gpugX[j + b * InputCount] += gpuW[i * InputCount + j] * gyData;
-        }
+        gpugW[i * InputCount + j] += gpuX[j + b * InputCount] * gyData;
+        gpugX[j + b * InputCount] += gpuW[i * InputCount + j] * gyData;
     }
 }";
 
@@ -205,7 +203,7 @@ __kernel void LinearBackward(
                         (
                             BackwardKernel,
                             null,
-                            new long[] { gy.BatchCount },
+                            new long[] { gy.BatchCount , this.OutputCount },
                             null,
                             null
                         );
