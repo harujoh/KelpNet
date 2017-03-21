@@ -137,6 +137,21 @@ __kernel void LinearForward(
         const string BackwardKernelSource =
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
+
+double atom_add_double(__global double* const address, const double value)
+{
+  long oldval, newval, readback;
+  
+  *(double*)&oldval = *address;
+  *(double*)&newval = (*(double*)&oldval + value);
+  while ((readback = atom_cmpxchg((__global long*)address, oldval, newval)) != oldval) {
+    oldval = readback;
+    *(double*)&newval = (*(double*)&oldval + value);
+  }
+  return *(double*)&oldval;
+}
+
 __kernel void LinearBackward(
 	__global const double *gpugY,
 	__global const double *gpuX,
@@ -147,24 +162,23 @@ __kernel void LinearBackward(
 	         const int OutputCount,
 	         const int InputCount)
 {
-	int b = get_global_id(0);
+    int b = get_global_id(0);
     int i = get_global_id(1);
 
-    double gyData = gpugY[i + b * OutputCount];
-    gpugb[i] += gyData;
+    atom_add_double(&gpugb[i], gpugY[i + b * OutputCount]);
 
     for (int j = 0; j < InputCount; j++)
     {
-        gpugW[i * InputCount + j] += gpuX[j + b * InputCount] * gyData;
-        gpugX[j + b * InputCount] += gpuW[i * InputCount + j] * gyData;
+        atom_add_double(&gpugW[i * InputCount + j], gpuX[j + b * InputCount] * gpugY[i + b * OutputCount]);
+        atom_add_double(&gpugX[j + b * InputCount], gpuW[i * InputCount + j] * gpugY[i + b * OutputCount]);
     }
-}";
-
+}
+";
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             double[] gxData = new double[prevInput.Data.Length];
 
-            if (IsGpu)
+            if (!IsGpu)
             {
                 for (int b = 0; b < gy.BatchCount; b++)
                 {
@@ -203,7 +217,7 @@ __kernel void LinearBackward(
                         (
                             BackwardKernel,
                             null,
-                            new long[] { gy.BatchCount , this.OutputCount },
+                            new long[] { gy.BatchCount, this.OutputCount },
                             null,
                             null
                         );
