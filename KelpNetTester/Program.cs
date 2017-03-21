@@ -10,7 +10,7 @@ namespace KelpNetTester
         static void Main(string[] args)
         {
             //MLPによるXORの学習
-            Test1.Run();
+            //Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -20,12 +20,12 @@ namespace KelpNetTester
 
             //MLPによるMNIST（手書き文字）の学習
             //Test4.Run();
-            
+
             //エクセルCNNの再現
             //Test5.Run();
 
             //5層CNNによるMNISTの学習
-            //Test6.Run();
+            Test6.Run();
 
             //BatchNormを使った15層MLPによるMNISTの学習
             //Test7.Run();
@@ -47,6 +47,9 @@ namespace KelpNetTester
 
             //Deconvolution2Dのテスト(Winform)
             //new Test13WinForm().ShowDialog();
+
+            //MLPによるMNIST（手書き文字）の学習
+            //Test14.Run();
 
             //Linearの分割実行
             //TestX.Run();

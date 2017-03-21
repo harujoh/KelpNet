@@ -58,6 +58,8 @@ namespace KelpNet.Functions.Poolings
         void initGPU()
         {
             ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
+
+            //メモリ転送のみの為不要
             //BackwardKernel = Weaver.CreateKernel("", "");
         }
 

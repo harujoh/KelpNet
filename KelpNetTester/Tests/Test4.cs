@@ -52,7 +52,7 @@ namespace KelpNetTester.Tests
                 List<double> totalLoss = new List<double>();
 
                 //何回バッチを実行するか
-                for (int i = 1; i < TRAIN_DATA_COUNT+1; i++)
+                for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
 
                     //訓練データからランダムにデータを取得
@@ -71,7 +71,7 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("local loss " + sumLoss);
 
                         Console.WriteLine("\nTesting...");
-                        
+
                         //テストデータからランダムにデータを取得
                         MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 

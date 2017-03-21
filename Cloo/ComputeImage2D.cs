@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -65,7 +65,7 @@ namespace Cloo
                 try
                 {
                     ComputeErrorCode error = ComputeErrorCode.Success;
-                    Handle = CL10.CreateImage2D(
+                    Handle = CL12.CreateImage2D(
                         context.Handle,
                         flags,
                         &format,
@@ -99,7 +99,7 @@ namespace Cloo
             : base(context, flags)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateImage2D(context.Handle, flags, ref format, new IntPtr(width), new IntPtr(height), new IntPtr(rowPitch), data, out error);
+            Handle = CL12.CreateImage2D(context.Handle, flags, ref format, new IntPtr(width), new IntPtr(height), new IntPtr(rowPitch), data, out error);
             ComputeException.ThrowOnError(error);
 
             Init();
@@ -127,7 +127,7 @@ namespace Cloo
         public static ComputeImage2D CreateFromGLRenderbuffer(ComputeContext context, ComputeMemoryFlags flags, int renderbufferId)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            CLMemoryHandle image = CL10.CreateFromGLRenderbuffer(context.Handle, flags, renderbufferId, out error);
+            CLMemoryHandle image = CL12.CreateFromGLRenderbuffer(context.Handle, flags, renderbufferId, out error);
             ComputeException.ThrowOnError(error);
 
             return new ComputeImage2D(image, context, flags);
@@ -145,7 +145,7 @@ namespace Cloo
         public static ComputeImage2D CreateFromGLTexture2D(ComputeContext context, ComputeMemoryFlags flags, int textureTarget, int mipLevel, int textureId)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            CLMemoryHandle image = CL10.CreateFromGLTexture2D(context.Handle, flags, textureTarget, mipLevel, textureId, out error);
+            CLMemoryHandle image = CL12.CreateFromGLTexture2D(context.Handle, flags, textureTarget, mipLevel, textureId, out error);
             ComputeException.ThrowOnError(error);
 
             return new ComputeImage2D(image, context, flags);

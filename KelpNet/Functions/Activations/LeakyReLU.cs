@@ -76,7 +76,7 @@ __kernel void LeakyReLUForward(
         const string BackwardKernelSource =
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-__kernel void ReLUBackward(
+__kernel void LeakyReLUBackward(
 	__global double *gpuY,
   	   const double slope,
 	__global double *gpugX)

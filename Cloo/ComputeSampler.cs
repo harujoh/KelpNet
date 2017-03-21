@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -108,7 +108,7 @@ namespace Cloo
         public ComputeSampler(ComputeContext context, bool normalizedCoords, ComputeImageAddressing addressing, ComputeImageFiltering filtering)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateSampler(context.Handle, normalizedCoords, addressing, filtering, out error);
+            Handle = CL12.CreateSampler(context.Handle, normalizedCoords, addressing, filtering, out error);
             ComputeException.ThrowOnError(error);
 
             SetID(Handle.Value);
@@ -135,7 +135,7 @@ namespace Cloo
             if (Handle.IsValid)
             {
                 Trace.WriteLine("Dispose " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
-                CL10.ReleaseSampler(Handle);
+                CL12.ReleaseSampler(Handle);
                 Handle.Invalidate();
             }
         }

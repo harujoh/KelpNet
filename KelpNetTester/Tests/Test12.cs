@@ -148,7 +148,7 @@ namespace KelpNetTester.Tests
                     BatchArray layer1ForwardResult = Layer1.Forward(datasetX.Data);
                     ResultDataSet layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX.Label);
 
-                    ////第一層の傾きを取得
+                    //第一層の傾きを取得
                     BatchArray cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
 
                     //第一層を更新

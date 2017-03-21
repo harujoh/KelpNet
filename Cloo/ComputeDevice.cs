@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -190,31 +190,31 @@ namespace Cloo
         public long GlobalMemorySize { get { return globalMemorySize; } }
 
         /// <summary>
-        /// Gets the maximum <see /> value that the <see cref="ComputeDevice"/> supports in pixels.
+        /// Gets the maximum <see cref="ComputeImage2D.Height"/> value that the <see cref="ComputeDevice"/> supports in pixels.
         /// </summary>
         /// <value> The minimum value is 8192 if <see cref="ComputeDevice.ImageSupport"/> is <c>true</c>. </value>
         public long Image2DMaxHeight { get { return image2DMaxHeight; } }
 
         /// <summary>
-        /// Gets the maximum <see /> value that the <see cref="ComputeDevice"/> supports in pixels.
+        /// Gets the maximum <see cref="ComputeImage2D.Width"/> value that the <see cref="ComputeDevice"/> supports in pixels.
         /// </summary>
         /// <value> The minimum value is 8192 if <see cref="ComputeDevice.ImageSupport"/> is <c>true</c>. </value>
         public long Image2DMaxWidth { get { return image2DMaxWidth; } }
 
         /// <summary>
-        /// Gets the maximum <see /> value that the <see cref="ComputeDevice"/> supports in pixels.
+        /// Gets the maximum <see cref="ComputeImage3D.Depth"/> value that the <see cref="ComputeDevice"/> supports in pixels.
         /// </summary>
         /// <value> The minimum value is 2048 if <see cref="ComputeDevice.ImageSupport"/> is <c>true</c>. </value>
         public long Image3DMaxDepth { get { return image3DMaxDepth; } }
 
         /// <summary>
-        /// Gets the maximum <see /> value that the <see cref="ComputeDevice"/> supports in pixels.
+        /// Gets the maximum <see cref="ComputeImage3D.Height"/> value that the <see cref="ComputeDevice"/> supports in pixels.
         /// </summary>
         /// <value> The minimum value is 2048 if <see cref="ComputeDevice.ImageSupport"/> is <c>true</c>. </value>
         public long Image3DMaxHeight { get { return image3DMaxHeight; } }
 
         /// <summary>
-        /// Gets the maximum <see /> value that the <see cref="ComputeDevice"/> supports in pixels.
+        /// Gets the maximum <see cref="ComputeImage3D.Width"/> value that the <see cref="ComputeDevice"/> supports in pixels.
         /// </summary>
         /// <value> The minimum value is 2048 if <see cref="ComputeDevice.ImageSupport"/> is <c>true</c>. </value>
         public long Image3DMaxWidth { get { return image3DMaxWidth; } }
@@ -298,9 +298,9 @@ namespace Cloo
         public long MaxWorkItemDimensions { get { return maxWorkItemDimensions; } }
 
         /// <summary>
-        /// Gets the maximum number of work-items that can be specified in each dimension of the <paramref /> argument of <see cref="ComputeCommandQueue.Execute"/>.
+        /// Gets the maximum number of work-items that can be specified in each dimension of the <paramref name="globalWorkSize"/> argument of <see cref="ComputeCommandQueue.Execute"/>.
         /// </summary>
-        /// <value> The maximum number of work-items that can be specified in each dimension of the <paramref /> argument of <see cref="ComputeCommandQueue.Execute"/>. </value>
+        /// <value> The maximum number of work-items that can be specified in each dimension of the <paramref name="globalWorkSize"/> argument of <see cref="ComputeCommandQueue.Execute"/>. </value>
         public ReadOnlyCollection<long> MaxWorkItemSizes { get { return maxWorkItemSizes; } }
 
         /// <summary>
@@ -580,7 +580,7 @@ namespace Cloo
             maxSamplers = GetInfo<uint>(ComputeDeviceInfo.MaxSamplers);
             maxWorkGroupSize = (long)GetInfo<IntPtr>(ComputeDeviceInfo.MaxWorkGroupSize);
             maxWorkItemDimensions = GetInfo<uint>(ComputeDeviceInfo.MaxWorkItemDimensions);
-            maxWorkItemSizes = new ReadOnlyCollection<long>(ComputeTools.ConvertArray(GetArrayInfo<CLDeviceHandle, ComputeDeviceInfo, IntPtr>(Handle, ComputeDeviceInfo.MaxWorkItemSizes, CL10.GetDeviceInfo)));
+            maxWorkItemSizes = new ReadOnlyCollection<long>(ComputeTools.ConvertArray(GetArrayInfo<CLDeviceHandle, ComputeDeviceInfo, IntPtr>(Handle, ComputeDeviceInfo.MaxWorkItemSizes, CL12.GetDeviceInfo)));
             maxWriteImageArgs = GetInfo<uint>(ComputeDeviceInfo.MaxWriteImageArguments);
             memBaseAddrAlign = GetInfo<uint>(ComputeDeviceInfo.MemoryBaseAddressAlignment);
             minDataTypeAlignSize = GetInfo<uint>(ComputeDeviceInfo.MinDataTypeAlignmentSize);
@@ -607,17 +607,17 @@ namespace Cloo
 
         private bool GetBoolInfo(ComputeDeviceInfo paramName)
         {
-            return GetBoolInfo<CLDeviceHandle, ComputeDeviceInfo>(Handle, paramName, CL10.GetDeviceInfo);
+            return GetBoolInfo<CLDeviceHandle, ComputeDeviceInfo>(Handle, paramName, CL12.GetDeviceInfo);
         }
 
         private NativeType GetInfo<NativeType>(ComputeDeviceInfo paramName) where NativeType : struct
         {
-            return GetInfo<CLDeviceHandle, ComputeDeviceInfo, NativeType>(Handle, paramName, CL10.GetDeviceInfo);
+            return GetInfo<CLDeviceHandle, ComputeDeviceInfo, NativeType>(Handle, paramName, CL12.GetDeviceInfo);
         }
 
         private string GetStringInfo(ComputeDeviceInfo paramName)
         {
-            return GetStringInfo<CLDeviceHandle, ComputeDeviceInfo>(Handle, paramName, CL10.GetDeviceInfo);
+            return GetStringInfo<CLDeviceHandle, ComputeDeviceInfo>(Handle, paramName, CL12.GetDeviceInfo);
         }
 
         #endregion

@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -45,7 +45,7 @@ namespace Cloo
         /// </summary>
         public static void Unload()
         {
-            ComputeErrorCode error = CL10.UnloadCompiler();
+            ComputeErrorCode error = CL12.UnloadCompiler();
             ComputeException.ThrowOnError(error);
         }
 
