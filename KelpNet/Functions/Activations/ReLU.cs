@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Activations
             if (IsGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "ReLUForward");
-                //BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "ReLUBackward");
+                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "ReLUBackward");
             }
         }
 
@@ -70,13 +70,54 @@ __kernel void ReLUForward(
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
+        const string BackwardKernelSource =
+@"
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+__kernel void ReLUBackward(
+	__global double *gpuY,
+	__global double *gpugX)
+{
+	int i = get_global_id(0);
+
+    if(gpuY[i] <= 0.0)
+    {
+        gpugX[i] = 0.0;
+    }
+}";
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Data.Length];
+            double[] gx = gy.Data.ToArray();
 
-            for (int i = 0; i < gy.Data.Length; i++)
+            if (!IsGpu)
             {
-                gx[i] = prevOutput.Data[i] > 0 ? gy.Data[i] : 0;
+                for (int i = 0; i < gy.Data.Length; i++)
+                {
+                    if (prevOutput.Data[i] <= 0)
+                    {
+                        gx[i] = 0.0;
+                    }
+                }
+            }
+            else
+            {
+                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
+                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, gx))
+                {
+                    BackwardKernel.SetMemoryArgument(0, gpuY);
+                    BackwardKernel.SetMemoryArgument(1, gpugX);
+
+                    Weaver.CommandQueue.Execute
+                        (
+                            BackwardKernel,
+                            null,
+                            new long[] { gy.Data.Length },
+                            null,
+                            null
+                        );
+
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
+                }
             }
 
             return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);

@@ -88,9 +88,7 @@ namespace KelpNet.Functions.Connections
             if (IsGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "Convolution2DForward");
-
-                //BackwardKernel = Weaver.CreateKernel("", "");
-
+                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "Convolution2DBackward");
             }
         }
 
@@ -257,63 +255,192 @@ __kernel void Convolution2DForward(
             return BatchArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount);
         }
 
+
+        const string BackwardKernelSource =
+@"
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
+
+double atom_add_double(__global double* const address, const double value)
+{
+  long oldval, newval, readback;
+  
+  *(double*)&oldval = *address;
+  *(double*)&newval = (*(double*)&oldval + value);
+  while ((readback = atom_cmpxchg((__global long*)address, oldval, newval)) != oldval) {
+    oldval = readback;
+    *(double*)&newval = (*(double*)&oldval + value);
+  }
+  return *(double*)&oldval;
+}
+
+__kernel void Convolution2DBackward(
+	__global const double *gpugY,
+	__global const double *gpuX,
+	__global const double *gpuW, 
+	__global       double *gpugW, 
+	__global       double *gpugb, 
+	__global       double *gpugX, 
+	const int OutputCount,
+	const int InputCount,
+    const int gyShape0,
+    const int gyShape1,
+    const int gyShape2,
+    const int prevInputShape0,
+    const int prevInputShape1,
+    const int prevInputShape2,
+    const int prevInputLength,
+    const int stride,
+	const int padX,
+	const int padY,
+	const int kHeight,
+	const int kWidth)
+{
+	int batchCounter = get_global_id(0) / gyShape0;
+	int och = get_global_id(0) % gyShape0;
+    int oy = get_global_id(1);
+    int ox = get_global_id(2);
+
+    double gyData = gpugY[batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox];
+    int outChOffset = och * InputCount * kHeight * kWidth;
+
+    for (int ich = 0; ich < prevInputShape0; ich++)
+    {
+        int inChOffset = ich * kHeight * kWidth;
+
+        int inputOffset = ich * prevInputShape1 * prevInputShape2;
+
+        for (int ky = 0; ky < kHeight; ky++)
+        {
+            int iy = oy * stride + ky - padY;
+
+            if (iy >= 0 && iy < prevInputShape1)
+            {
+                for (int kx = 0; kx < kWidth; kx++)
+                {
+                    int ix = ox * stride + kx - padX;
+
+                    if (ix >= 0 && ix < prevInputShape2)
+                    {
+                        int wIndex = outChOffset + inChOffset + ky * kWidth + kx;
+                        int inputIndex = inputOffset + iy * prevInputShape2 + ix + batchCounter * prevInputLength;
+
+                        atom_add_double(&gpugW[wIndex], gpuX[inputIndex] * gyData);
+                        atom_add_double(&gpugX[inputIndex], gpuW[wIndex] * gyData);
+                    }
+                }
+            }
+        }
+    }
+
+    atom_add_double(&gpugb[och], gyData);
+}";
+
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             double[] gx = new double[prevInput.Data.Length];
 
-            for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
+            if (!IsGpu)
             {
-                int gyIndex = batchCounter * gy.Length;
+                int gyIndex = 0;
 
-                for (int och = 0; och < gy.Shape[0]; och++)
+                for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
                 {
-                    //gWインデックス用
-                    int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
-
-                    for (int oy = 0; oy < gy.Shape[1]; oy++)
+                    for (int och = 0; och < gy.Shape[0]; och++)
                     {
-                        for (int ox = 0; ox < gy.Shape[2]; ox++)
+                        //gWインデックス用
+                        int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+
+                        for (int oy = 0; oy < gy.Shape[1]; oy++)
                         {
-                            double gyData = gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
-
-                            for (int ich = 0; ich < prevInput.Shape[0]; ich++)
+                            for (int ox = 0; ox < gy.Shape[2]; ox++)
                             {
-                                //gWインデックス用
-                                int inChOffset = ich * this._kHeight * this._kWidth;
+                                double gyData = gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
 
-                                //inputインデックス用
-                                int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
-
-                                for (int ky = 0; ky < this._kHeight; ky++)
+                                for (int ich = 0; ich < prevInput.Shape[0]; ich++)
                                 {
-                                    int iy = oy * this._stride + ky - this._padY;
+                                    //gWインデックス用
+                                    int inChOffset = ich * this._kHeight * this._kWidth;
 
-                                    if (iy >= 0 && iy < prevInput.Shape[1])
+                                    //inputインデックス用
+                                    int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
+
+                                    for (int ky = 0; ky < this._kHeight; ky++)
                                     {
-                                        for (int kx = 0; kx < this._kWidth; kx++)
+                                        int iy = oy * this._stride + ky - this._padY;
+
+                                        if (iy >= 0 && iy < prevInput.Shape[1])
                                         {
-                                            int ix = ox * this._stride + kx - this._padX;
-
-                                            if (ix >= 0 && ix < prevInput.Shape[2])
+                                            for (int kx = 0; kx < this._kWidth; kx++)
                                             {
-                                                //WとgWのshapeは等しい
-                                                int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
+                                                int ix = ox * this._stride + kx - this._padX;
 
-                                                //prevInputとgxのshapeは等しい
-                                                int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix + batchCounter * prevInput.Length;
+                                                if (ix >= 0 && ix < prevInput.Shape[2])
+                                                {
+                                                    //WとgWのshapeは等しい
+                                                    int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
 
-                                                this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
+                                                    //prevInputとgxのshapeは等しい
+                                                    int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix + batchCounter * prevInput.Length;
 
-                                                gx[inputIndex] += this.W.Data[wIndex] * gyData;
+                                                    this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
+
+                                                    gx[inputIndex] += this.W.Data[wIndex] * gyData;
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            this.gb.Data[och] += gyData;
+                                this.gb.Data[och] += gyData;
+                            }
                         }
                     }
+                }
+            }
+            else
+            {
+                using (ComputeBuffer<double> gpugY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
+                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevInput.Data))
+                using (ComputeBuffer<double> gpuW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
+                using (ComputeBuffer<double> gpugW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
+                using (ComputeBuffer<double> gpugb = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gb.Data))
+                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
+                {
+                    BackwardKernel.SetMemoryArgument(0, gpugY);
+                    BackwardKernel.SetMemoryArgument(1, gpuX);
+                    BackwardKernel.SetMemoryArgument(2, gpuW);
+                    BackwardKernel.SetMemoryArgument(3, gpugW);
+                    BackwardKernel.SetMemoryArgument(4, gpugb);
+                    BackwardKernel.SetMemoryArgument(5, gpugX);
+                    BackwardKernel.SetValueArgument(6, this.OutputCount);
+                    BackwardKernel.SetValueArgument(7, this.InputCount);
+                    BackwardKernel.SetValueArgument(8, gy.Shape[0]);
+                    BackwardKernel.SetValueArgument(9, gy.Shape[1]);
+                    BackwardKernel.SetValueArgument(10, gy.Shape[2]);
+                    BackwardKernel.SetValueArgument(11, prevInput.Shape[0]);
+                    BackwardKernel.SetValueArgument(12, prevInput.Shape[1]);
+                    BackwardKernel.SetValueArgument(13, prevInput.Shape[2]);
+                    BackwardKernel.SetValueArgument(14, prevInput.Length);
+                    BackwardKernel.SetValueArgument(15, this._stride);
+                    BackwardKernel.SetValueArgument(16, this._padX);
+                    BackwardKernel.SetValueArgument(17, this._padY);
+                    BackwardKernel.SetValueArgument(18, this._kHeight);
+                    BackwardKernel.SetValueArgument(19, this._kWidth);
+
+                    Weaver.CommandQueue.Execute
+                    (
+                        BackwardKernel,
+                        null,
+                        new long[] { gy.BatchCount * gy.Shape[0], gy.Shape[1], gy.Shape[2] },
+                        null,
+                        null
+                    );
+
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
+                    Weaver.CommandQueue.ReadFromBuffer(gpugb, ref this.gb.Data, true, null);
+                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
                 }
             }
 
