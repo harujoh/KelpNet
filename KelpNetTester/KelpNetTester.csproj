@@ -61,7 +61,6 @@
       <DependentUpon>Test13WinForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Tests\Test13.cs" />
-    <Compile Include="Tests\Test14.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />
