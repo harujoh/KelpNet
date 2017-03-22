@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -265,6 +265,7 @@ namespace Cloo
         /// <summary> </summary>
         MemoryBaseAddressAlignment = 0x1019,
         /// <summary> </summary>
+        [Obsolete("Deprecated in OpenCL 1.2.")]
         MinDataTypeAlignmentSize = 0x101A,
         /// <summary> </summary>
         SingleFPConfig = 0x101B,

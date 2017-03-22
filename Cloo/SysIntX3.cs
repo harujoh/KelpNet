@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

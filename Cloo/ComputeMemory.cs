@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -112,7 +112,7 @@ namespace Cloo
             if (Handle.IsValid)
             {
                 Trace.WriteLine("Dispose " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
-                CL10.ReleaseMemObject(Handle);
+                CL12.ReleaseMemObject(Handle);
                 Handle.Invalidate();
             }
         }

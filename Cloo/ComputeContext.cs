@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -149,7 +149,7 @@ namespace Cloo
             callback = notify;
 
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateContext(propertyArray, handleCount, deviceHandles, notify, notifyDataPtr, out error);
+            Handle = CL12.CreateContext(propertyArray, handleCount, deviceHandles, notify, notifyDataPtr, out error);
             ComputeException.ThrowOnError(error);
             
             SetID(Handle.Value);
@@ -175,7 +175,7 @@ namespace Cloo
             callback = notify;
 
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateContextFromType(propertyArray, deviceType, notify, userDataPtr, out error);
+            Handle = CL12.CreateContextFromType(propertyArray, deviceType, notify, userDataPtr, out error);
             ComputeException.ThrowOnError(error);
 
             SetID(Handle.Value);
@@ -208,7 +208,7 @@ namespace Cloo
             if (Handle.IsValid)
             {
                 Trace.WriteLine("Dispose " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
-                CL10.ReleaseContext(Handle);
+                CL12.ReleaseContext(Handle);
                 Handle.Invalidate();
             }
         }
@@ -219,7 +219,7 @@ namespace Cloo
 
         private ReadOnlyCollection<ComputeDevice> GetDevices()
         {
-            List<CLDeviceHandle> deviceHandles = new List<CLDeviceHandle>(GetArrayInfo<CLContextHandle, ComputeContextInfo, CLDeviceHandle>(Handle, ComputeContextInfo.Devices, CL10.GetContextInfo));
+            List<CLDeviceHandle> deviceHandles = new List<CLDeviceHandle>(GetArrayInfo<CLContextHandle, ComputeContextInfo, CLDeviceHandle>(Handle, ComputeContextInfo.Devices, CL12.GetContextInfo));
             List<ComputeDevice> devices = new List<ComputeDevice>();
             foreach (ComputePlatform platform in ComputePlatform.Platforms)
             {

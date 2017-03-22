@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -98,7 +98,7 @@ namespace Cloo
             SetID(Handle.Value);
 
             context = program.Context;
-            functionName = GetStringInfo<CLKernelHandle, ComputeKernelInfo>(Handle, ComputeKernelInfo.FunctionName, CL10.GetKernelInfo);
+            functionName = GetStringInfo<CLKernelHandle, ComputeKernelInfo>(Handle, ComputeKernelInfo.FunctionName, CL12.GetKernelInfo);
             this.program = program;
 
             Trace.WriteLine("Create " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
@@ -107,7 +107,7 @@ namespace Cloo
         internal ComputeKernel(string functionName, ComputeProgram program)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateKernel(program.Handle, functionName, out error);
+            Handle = CL12.CreateKernel(program.Handle, functionName, out error);
             ComputeException.ThrowOnError(error);
 
             SetID(Handle.Value);
@@ -126,60 +126,60 @@ namespace Cloo
         /// <summary>
         /// Gets the amount of local memory in bytes used by the <see cref="ComputeKernel"/>.
         /// </summary>
-        /// <param name="device"> One of the <see />s. </param>
+        /// <param name="device"> One of the <see cref="ComputeKernel.Program.Device"/>s. </param>
         /// <returns> The amount of local memory in bytes used by the <see cref="ComputeKernel"/>. </returns>
         public long GetLocalMemorySize(ComputeDevice device)
         {
             return GetInfo<CLKernelHandle, CLDeviceHandle, ComputeKernelWorkGroupInfo, long>(
-                Handle, device.Handle, ComputeKernelWorkGroupInfo.LocalMemorySize, CL10.GetKernelWorkGroupInfo);
+                Handle, device.Handle, ComputeKernelWorkGroupInfo.LocalMemorySize, CL12.GetKernelWorkGroupInfo);
         }
 
         /// <summary>
         /// Gets the compile work-group size specified by the <c>__attribute__((reqd_work_group_size(X, Y, Z)))</c> qualifier.
         /// </summary>
-        /// <param name="device"> One of the <see />s. </param>
+        /// <param name="device"> One of the <see cref="ComputeKernel.Program.Device"/>s. </param>
         /// <returns> The compile work-group size specified by the <c>__attribute__((reqd_work_group_size(X, Y, Z)))</c> qualifier. If no such qualifier is specified, (0, 0, 0) is returned. </returns>
         public long[] GetCompileWorkGroupSize(ComputeDevice device)
         {
             return ComputeTools.ConvertArray(
                 GetArrayInfo<CLKernelHandle, CLDeviceHandle, ComputeKernelWorkGroupInfo, IntPtr>(
-                    Handle, device.Handle, ComputeKernelWorkGroupInfo.CompileWorkGroupSize, CL10.GetKernelWorkGroupInfo));
+                    Handle, device.Handle, ComputeKernelWorkGroupInfo.CompileWorkGroupSize, CL12.GetKernelWorkGroupInfo));
         }
 
         /// <summary>
         /// Gets the preferred multiple of workgroup size for launch. 
         /// </summary>
-        /// <param name="device"> One of the <see />s. </param>
+        /// <param name="device"> One of the <see cref="ComputeKernel.Program.Device"/>s. </param>
         /// <returns> The preferred multiple of workgroup size for launch. </returns>
         /// <remarks> The returned value is a performance hint. Specifying a workgroup size that is not a multiple of the value returned by this query as the value of the local work size argument to ComputeCommandQueue.Execute will not fail to enqueue the kernel for execution unless the work-group size specified is larger than the device maximum. </remarks>
         /// <remarks> Requires OpenCL 1.1. </remarks>
         public long GetPreferredWorkGroupSizeMultiple(ComputeDevice device)
         {
             return (long)GetInfo<CLKernelHandle, CLDeviceHandle, ComputeKernelWorkGroupInfo, IntPtr>(
-                Handle, device.Handle, ComputeKernelWorkGroupInfo.PreferredWorkGroupSizeMultiple, CL10.GetKernelWorkGroupInfo);
+                Handle, device.Handle, ComputeKernelWorkGroupInfo.PreferredWorkGroupSizeMultiple, CL12.GetKernelWorkGroupInfo);
         }
 
         /// <summary>
         /// Gets the minimum amount of memory, in bytes, used by each work-item in the kernel.
         /// </summary>
-        /// <param name="device"> One of the <see />s. </param>
+        /// <param name="device"> One of the <see cref="ComputeKernel.Program.Device"/>s. </param>
         /// <returns> The minimum amount of memory, in bytes, used by each work-item in the kernel. </returns>
         /// <remarks> The returned value may include any private memory needed by an implementation to execute the kernel, including that used by the language built-ins and variable declared inside the kernel with the <c>__private</c> or <c>private</c> qualifier. </remarks>
         public long GetPrivateMemorySize(ComputeDevice device)
         {
             return GetInfo<CLKernelHandle, CLDeviceHandle, ComputeKernelWorkGroupInfo, long>(
-                Handle, device.Handle, ComputeKernelWorkGroupInfo.PrivateMemorySize, CL10.GetKernelWorkGroupInfo);
+                Handle, device.Handle, ComputeKernelWorkGroupInfo.PrivateMemorySize, CL12.GetKernelWorkGroupInfo);
         }
 
         /// <summary>
         /// Gets the maximum work-group size that can be used to execute the <see cref="ComputeKernel"/> on a <see cref="ComputeDevice"/>.
         /// </summary>
-        /// <param name="device"> One of the <see />s. </param>
+        /// <param name="device"> One of the <see cref="ComputeKernel.Program.Device"/>s. </param>
         /// <returns> The maximum work-group size that can be used to execute the <see cref="ComputeKernel"/> on <paramref name="device"/>. </returns>
         public long GetWorkGroupSize(ComputeDevice device)
         {
             return (long)GetInfo<CLKernelHandle, CLDeviceHandle, ComputeKernelWorkGroupInfo, IntPtr>(
-                    Handle, device.Handle, ComputeKernelWorkGroupInfo.WorkGroupSize, CL10.GetKernelWorkGroupInfo);
+                    Handle, device.Handle, ComputeKernelWorkGroupInfo.WorkGroupSize, CL12.GetKernelWorkGroupInfo);
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace Cloo
         /// </remarks>
         public void SetArgument(int index, IntPtr dataSize, IntPtr dataAddr)
         {
-            ComputeErrorCode error = CL10.SetKernelArg(Handle, index, dataSize, dataAddr);
+            ComputeErrorCode error = CL12.SetKernelArg(Handle, index, dataSize, dataAddr);
             ComputeException.ThrowOnError(error);
         }
 
@@ -269,7 +269,7 @@ namespace Cloo
             if (Handle.IsValid)
             {
                 Trace.WriteLine("Dispose " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
-                CL10.ReleaseKernel(Handle);
+                CL12.ReleaseKernel(Handle);
                 Handle.Invalidate();
             }
         }

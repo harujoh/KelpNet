@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -98,19 +98,19 @@ namespace Cloo.Bindings
         {
             if (platform.Extensions.Contains("cl_ext_device_fission"))
             {
-                clCreateSubDevicesEXT = (Delegates.clCreateSubDevicesEXT)Marshal.GetDelegateForFunctionPointer(CL10.GetExtensionFunctionAddress("clCreateSubDevicesEXT"), typeof(Delegates.clCreateSubDevicesEXT));
-                clReleaseDeviceEXT = (Delegates.clReleaseDeviceEXT)Marshal.GetDelegateForFunctionPointer(CL10.GetExtensionFunctionAddress("clReleaseDeviceEXT"), typeof(Delegates.clReleaseDeviceEXT));
-                clRetainDeviceEXT = (Delegates.clRetainDeviceEXT)Marshal.GetDelegateForFunctionPointer(CL10.GetExtensionFunctionAddress("clRetainDeviceEXT"), typeof(Delegates.clRetainDeviceEXT));
+                clCreateSubDevicesEXT = (Delegates.clCreateSubDevicesEXT)Marshal.GetDelegateForFunctionPointer(CL12.GetExtensionFunctionAddress("clCreateSubDevicesEXT"), typeof(Delegates.clCreateSubDevicesEXT));
+                clReleaseDeviceEXT = (Delegates.clReleaseDeviceEXT)Marshal.GetDelegateForFunctionPointer(CL12.GetExtensionFunctionAddress("clReleaseDeviceEXT"), typeof(Delegates.clReleaseDeviceEXT));
+                clRetainDeviceEXT = (Delegates.clRetainDeviceEXT)Marshal.GetDelegateForFunctionPointer(CL12.GetExtensionFunctionAddress("clRetainDeviceEXT"), typeof(Delegates.clRetainDeviceEXT));
             }
 
             if (platform.Extensions.Contains("cl_ext_migrate_memobject")) 
-                clEnqueueMigrateMemObjectEXT = (Delegates.clEnqueueMigrateMemObjectEXT)Marshal.GetDelegateForFunctionPointer(CL10.GetExtensionFunctionAddress("clEnqueueMigrateMemObjectEXT"), typeof(Delegates.clEnqueueMigrateMemObjectEXT));
+                clEnqueueMigrateMemObjectEXT = (Delegates.clEnqueueMigrateMemObjectEXT)Marshal.GetDelegateForFunctionPointer(CL12.GetExtensionFunctionAddress("clEnqueueMigrateMemObjectEXT"), typeof(Delegates.clEnqueueMigrateMemObjectEXT));
             
             if (platform.Extensions.Contains("cl_khr_gl_sharing"))
-                clGetGLContextInfoKHR = (Delegates.clGetGLContextInfoKHR)Marshal.GetDelegateForFunctionPointer(CL10.GetExtensionFunctionAddress("clGetGLContextInfoKHR"), typeof(Delegates.clGetGLContextInfoKHR));
+                clGetGLContextInfoKHR = (Delegates.clGetGLContextInfoKHR)Marshal.GetDelegateForFunctionPointer(CL12.GetExtensionFunctionAddress("clGetGLContextInfoKHR"), typeof(Delegates.clGetGLContextInfoKHR));
 
             //if (platform.Extensions.Contains("cl_khr_icd"))
-            //    clIcdGetPlatformIDsKHR = (Delegates.clIcdGetPlatformIDsKHR)Marshal.GetDelegateForFunctionPointer(CL10.GetExtensionFunctionAddress("clIcdGetPlatformIDsKHR"), typeof(Delegates.clIcdGetPlatformIDsKHR));
+            //    clIcdGetPlatformIDsKHR = (Delegates.clIcdGetPlatformIDsKHR)Marshal.GetDelegateForFunctionPointer(CL12.GetExtensionFunctionAddress("clIcdGetPlatformIDsKHR"), typeof(Delegates.clIcdGetPlatformIDsKHR));
         }
 
         internal static class Delegates

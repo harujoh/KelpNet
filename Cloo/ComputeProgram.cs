@@ -2,7 +2,7 @@
 
 /*
 
-Copyright (c) 2009 - 2011 Fatjon Sakiqi
+Copyright (c) 2009 - 2013 Fatjon Sakiqi
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -95,9 +95,9 @@ namespace Cloo
         }
 
         /// <summary>
-        /// Gets the <see cref="ComputeProgram"/> build options as specified in <paramref /> argument of <see cref="ComputeProgram.Build"/>.
+        /// Gets the <see cref="ComputeProgram"/> build options as specified in <paramref name="options"/> argument of <see cref="ComputeProgram.Build"/>.
         /// </summary>
-        /// <value> The <see cref="ComputeProgram"/> build options as specified in <paramref /> argument of <see cref="ComputeProgram.Build"/>. </value>
+        /// <value> The <see cref="ComputeProgram"/> build options as specified in <paramref name="options"/> argument of <see cref="ComputeProgram.Build"/>. </value>
         public string BuildOptions { get { return buildOptions; } }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Cloo
         /// Gets a read-only collection of <see cref="ComputeDevice"/>s associated with the <see cref="ComputeProgram"/>.
         /// </summary>
         /// <value> A read-only collection of <see cref="ComputeDevice"/>s associated with the <see cref="ComputeProgram"/>. </value>
-        /// <remarks> This collection is a subset of <see />. </remarks>
+        /// <remarks> This collection is a subset of <see cref="ComputeProgram.Context.Devices"/>. </remarks>
         public ReadOnlyCollection<ComputeDevice> Devices { get { return devices; } }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Cloo
         public ComputeProgram(ComputeContext context, string source)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateProgramWithSource(context.Handle, 1, new string[] { source }, null, out error);
+            Handle = CL12.CreateProgramWithSource(context.Handle, 1, new string[] { source }, null, out error);
             ComputeException.ThrowOnError(error);
 
             SetID(Handle.Value);
@@ -153,7 +153,7 @@ namespace Cloo
         public ComputeProgram(ComputeContext context, string[] source)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateProgramWithSource(
+            Handle = CL12.CreateProgramWithSource(
                 context.Handle,
                 source.Length,
                 source,
@@ -197,7 +197,7 @@ namespace Cloo
                     binariesLengths[i] = new IntPtr(binaries[i].Length);
                 }
 
-                Handle = CL10.CreateProgramWithBinary(
+                Handle = CL12.CreateProgramWithBinary(
                     context.Handle,
                     count,
                     deviceHandles,
@@ -240,7 +240,7 @@ namespace Cloo
             buildOptions = (options != null) ? options : "";
             buildNotify = notify;
 
-            ComputeErrorCode error = CL10.BuildProgram(Handle, handleCount, deviceHandles, options, buildNotify, notifyDataPtr);
+            ComputeErrorCode error = CL12.BuildProgram(Handle, handleCount, deviceHandles, options, buildNotify, notifyDataPtr);
             ComputeException.ThrowOnError(error);
         }
 
@@ -255,11 +255,11 @@ namespace Cloo
             int kernelsCount = 0;
             CLKernelHandle[] kernelHandles;
 
-            ComputeErrorCode error = CL10.CreateKernelsInProgram(Handle, 0, null, out kernelsCount);
+            ComputeErrorCode error = CL12.CreateKernelsInProgram(Handle, 0, null, out kernelsCount);
             ComputeException.ThrowOnError(error);
 
             kernelHandles = new CLKernelHandle[kernelsCount];
-            error = CL10.CreateKernelsInProgram(Handle, kernelsCount, kernelHandles, out kernelsCount);
+            error = CL12.CreateKernelsInProgram(Handle, kernelsCount, kernelHandles, out kernelsCount);
             ComputeException.ThrowOnError(error);
 
             for (int i = 0; i < kernelsCount; i++)
@@ -284,7 +284,7 @@ namespace Cloo
         /// <returns> The build log of the <see cref="ComputeProgram"/> for <paramref name="device"/>. </returns>
         public string GetBuildLog(ComputeDevice device)
         {
-            return GetStringInfo<CLProgramHandle, CLDeviceHandle, ComputeProgramBuildInfo>(Handle, device.Handle, ComputeProgramBuildInfo.BuildLog, CL10.GetProgramBuildInfo);
+            return GetStringInfo<CLProgramHandle, CLDeviceHandle, ComputeProgramBuildInfo>(Handle, device.Handle, ComputeProgramBuildInfo.BuildLog, CL12.GetProgramBuildInfo);
         }
 
         /// <summary>
@@ -294,7 +294,7 @@ namespace Cloo
         /// <returns> The <see cref="ComputeProgramBuildStatus"/> of the <see cref="ComputeProgram"/> for <paramref name="device"/>. </returns>
         public ComputeProgramBuildStatus GetBuildStatus(ComputeDevice device)
         {
-            return (ComputeProgramBuildStatus)GetInfo<CLProgramHandle, CLDeviceHandle, ComputeProgramBuildInfo, uint>(Handle, device.Handle, ComputeProgramBuildInfo.Status, CL10.GetProgramBuildInfo);
+            return (ComputeProgramBuildStatus)GetInfo<CLProgramHandle, CLDeviceHandle, ComputeProgramBuildInfo, uint>(Handle, device.Handle, ComputeProgramBuildInfo.Status, CL12.GetProgramBuildInfo);
         }
 
         #endregion
@@ -311,7 +311,7 @@ namespace Cloo
             if (Handle.IsValid)
             {
                 Trace.WriteLine("Dispose " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
-                CL10.ReleaseProgram(Handle);
+                CL12.ReleaseProgram(Handle);
                 Handle.Invalidate();
             }
         }
@@ -322,7 +322,7 @@ namespace Cloo
 
         private ReadOnlyCollection<byte[]> GetBinaries()
         {
-            IntPtr[] binaryLengths = GetArrayInfo<CLProgramHandle, ComputeProgramInfo, IntPtr>(Handle, ComputeProgramInfo.BinarySizes, CL10.GetProgramInfo);
+            IntPtr[] binaryLengths = GetArrayInfo<CLProgramHandle, ComputeProgramInfo, IntPtr>(Handle, ComputeProgramInfo.BinarySizes, CL12.GetProgramInfo);
 
             GCHandle[] binariesGCHandles = new GCHandle[binaryLengths.Length];
             IntPtr[] binariesPtrs = new IntPtr[binaryLengths.Length];
@@ -340,7 +340,7 @@ namespace Cloo
                 }
 
                 IntPtr sizeRet;
-                ComputeErrorCode error = CL10.GetProgramInfo(Handle, ComputeProgramInfo.Binaries, new IntPtr(binariesPtrs.Length * IntPtr.Size), binariesPtrsGCHandle.AddrOfPinnedObject(), out sizeRet);
+                ComputeErrorCode error = CL12.GetProgramInfo(Handle, ComputeProgramInfo.Binaries, new IntPtr(binariesPtrs.Length * IntPtr.Size), binariesPtrsGCHandle.AddrOfPinnedObject(), out sizeRet);
                 ComputeException.ThrowOnError(error);
             }
             finally
