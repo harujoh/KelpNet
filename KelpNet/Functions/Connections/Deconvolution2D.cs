@@ -56,7 +56,7 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray input)
+        protected override BatchArray NeedPreviousForward(BatchArray input, bool isGpu)
         {
             int outputSize = (input.Shape[2] - 1) * this._subSample + this._kSize - this._trim * 2;
 
@@ -115,7 +115,7 @@ namespace KelpNet.Functions.Connections
             return BatchArray.Convert(result, new[] { this.OutputCount, outputSize, outputSize }, input.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
         {
             double[] gx = new double[prevInput.Data.Length];
 

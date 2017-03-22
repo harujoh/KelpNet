@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Poolings
             this._stride = stride;
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray input)
+        protected override BatchArray NeedPreviousForward(BatchArray input, bool isGpu)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
@@ -83,7 +83,7 @@ namespace KelpNet.Functions.Poolings
             return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput, bool isGpu)
         {
             double[] result = new double[prevInput.Data.Length];
             double m = this._kHeight * this._kWidth;

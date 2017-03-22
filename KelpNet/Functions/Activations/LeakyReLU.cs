@@ -11,12 +11,12 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU") : base(name)
+        public LeakyReLU(double slope = 0.2, bool isGpu = true, string name = "LeakyReLU") : base(name)
         {
             this._slope = slope;
 
             //カーネルを作成
-            if (IsGpu)
+            if (isGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LeakyReLUForward");
                 BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LeakyReLUBackward");
@@ -38,11 +38,11 @@ __kernel void LeakyReLUForward(
     }
 }";
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
         {
             double[] y = x.Data.ToArray();
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 for (int i = 0; i < x.Data.Length; i++)
                 {
@@ -76,7 +76,7 @@ __kernel void LeakyReLUForward(
         const string BackwardKernelSource =
 @"
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-__kernel void ReLUBackward(
+__kernel void LeakyReLUBackward(
 	__global double *gpuY,
   	   const double slope,
 	__global double *gpugX)
@@ -89,11 +89,11 @@ __kernel void ReLUBackward(
     }
 }";
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput, bool isGpu)
         {
             double[] gx = gy.Data.ToArray();
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 for (int i = 0; i < gy.Data.Length; i++)
                 {
@@ -109,7 +109,7 @@ __kernel void ReLUBackward(
                 using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, gx))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpuY);
-                    ForwardKernel.SetValueArgument(1, this._slope);
+                    BackwardKernel.SetValueArgument(1, this._slope);
                     BackwardKernel.SetMemoryArgument(2, gpugX);
 
                     Weaver.CommandQueue.Execute

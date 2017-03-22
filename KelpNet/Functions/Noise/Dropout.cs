@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -12,15 +13,15 @@ namespace KelpNet.Functions.Noise
         private readonly double dropoutRatio;
         private readonly List<double[]> maskStack = new List<double[]>();
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout") : base(name)
+        public Dropout(double dropoutRatio = 0.5, bool isGpu = true, string name = "Dropout") : base(name)
         {
             this.dropoutRatio = dropoutRatio;
 
             //カーネルを作成
-            if (IsGpu)
+            if (isGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "DropoutForward");
-                //BackwardKernel = Weaver.CreateKernel("", "");
+                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "DropoutBackward");
             }
         }
 
@@ -38,7 +39,7 @@ __kernel void DropoutForward(
     gpuY[i] = gpuX[i] * mask[i % maskLength];
 }";
 
-        protected override BatchArray ForwardSingle(BatchArray x)
+        protected override BatchArray ForwardSingle(BatchArray x, bool isGpu)
         {
             double[] result = new double[x.Data.Length];
             double[] mask = new double[x.Length];
@@ -49,7 +50,7 @@ __kernel void DropoutForward(
                 mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 for (int i = 0; i < x.Data.Length; i++)
                 {
@@ -86,28 +87,65 @@ __kernel void DropoutForward(
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gy)
+        const string BackwardKernelSource =
+@"
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+__kernel void DropoutBackward(
+	__global const double *mask,
+	__global double *gpugX,
+    int gyLength)
+{
+	int b = get_global_id(0);
+	int j = get_global_id(1);
+
+    gpugX[j + b * gyLength] *= mask[j];
+}";
+
+        protected override BatchArray BackwardSingle(BatchArray gy, bool isGpu)
         {
-            double[] result = new double[gy.Data.Length];
+            double[] result = gy.Data.ToArray();
             double[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
-            for (int b = 0; b < gy.BatchCount; b++)
+            if (!isGpu)
             {
-                for (int j = 0; j < mask.Length; j++)
+                for (int b = 0; b < gy.BatchCount; b++)
                 {
-                    result[j + b * gy.Length] = gy.Data[j + b * gy.Length] * mask[j];
+                    for (int j = 0; j < mask.Length; j++)
+                    {
+                        result[j + b * gy.Length] *= mask[j];
+                    }
                 }
             }
+            else
+            {
+                using (ComputeBuffer<double> gpuMask = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
+                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
+                {
+                    BackwardKernel.SetMemoryArgument(0, gpuMask);
+                    BackwardKernel.SetMemoryArgument(1, gpugX);
+                    BackwardKernel.SetValueArgument(2, gy.Length);
 
+                    Weaver.CommandQueue.Execute
+                    (
+                        BackwardKernel,
+                        null,
+                        new long[] { gy.BatchCount, mask.Length },
+                        null,
+                        null
+                    );
+
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref result, true, null);
+                }
+            }
             return BatchArray.Convert(result, gy.Shape, gy.BatchCount);
         }
 
         //Predict時に何もしない
-        public override BatchArray Predict(BatchArray input)
+        public override BatchArray Predict(BatchArray input, bool isGpu = true)
         {
             return input;
         }
-
     }
 }

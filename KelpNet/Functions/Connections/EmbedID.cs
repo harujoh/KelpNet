@@ -29,7 +29,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
         {
             double[] result = new double[x.Data.Length * this.OutputCount];
 
@@ -47,7 +47,7 @@ namespace KelpNet.Functions.Connections
             return BatchArray.Convert(result, new[] { x.Length, this.OutputCount },x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
         {
             for (int b = 0; b < gy.BatchCount; b++)
             {

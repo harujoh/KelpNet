@@ -22,7 +22,7 @@ namespace KelpNet.Functions.Poolings
         private int _prevInputDataLength;
         private int _prevInputBatchCount;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling") : base(name)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0, bool isGpu = true, string name = "MaxPooling") : base(name)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -31,13 +31,13 @@ namespace KelpNet.Functions.Poolings
             this._stride = stride;
 
             //カーネルを作成
-            if (IsGpu)
+            if (isGpu)
             {
                 initGPU();
             }
         }
 
-        public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "MaxPooling") : base(name)
+        public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), bool isGpu = true, string name = "MaxPooling") : base(name)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -49,7 +49,7 @@ namespace KelpNet.Functions.Poolings
             this._stride = stride;
 
             //カーネルを作成
-            if (IsGpu)
+            if (isGpu)
             {
                 initGPU();
             }
@@ -58,6 +58,8 @@ namespace KelpNet.Functions.Poolings
         void initGPU()
         {
             ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
+
+            //メモリ転送のみの為不要
             //BackwardKernel = Weaver.CreateKernel("", "");
         }
 
@@ -109,7 +111,7 @@ __kernel void MaxPoolingForward(
         }
     }
 }";
-        protected override BatchArray ForwardSingle(BatchArray input)
+        protected override BatchArray ForwardSingle(BatchArray input, bool isGpu)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
@@ -119,7 +121,7 @@ __kernel void MaxPoolingForward(
             this._prevInputDataLength = input.Data.Length;
             this._prevInputBatchCount = input.BatchCount;
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 for (int b = 0; b < input.BatchCount; b++)
                 {
@@ -204,7 +206,7 @@ __kernel void MaxPoolingForward(
             return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gy)
+        protected override BatchArray BackwardSingle(BatchArray gy, bool isGpu)
         {
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);

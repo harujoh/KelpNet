@@ -17,7 +17,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear") : base(name, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear", bool isGpu = true) : base(name, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = NdArray.Zeros(outputCount, inputCount);
@@ -52,7 +52,7 @@ namespace KelpNet.Functions.Connections
             }
 
             //カーネルを作成
-            if (IsGpu)
+            if (isGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LinearForward");
                 BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LinearBackward");
@@ -78,11 +78,11 @@ __kernel void LinearForward(
     }
 }";
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
         {
             double[] y = new double[OutputCount * x.BatchCount];
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
                 {
@@ -174,11 +174,11 @@ __kernel void LinearBackward(
     }
 }
 ";
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
         {
             double[] gxData = new double[prevInput.Data.Length];
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 for (int b = 0; b < gy.BatchCount; b++)
                 {

@@ -21,23 +21,21 @@ namespace KelpNet.Functions.Connections
         private readonly int _stride;
         private readonly int _padX;
         private readonly int _padY;
-        private readonly bool _noBias;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, bool isGpu = true, string name = "Conv2D") : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
             this._stride = stride;
             this._padX = pad;
             this._padY = pad;
-            this._noBias = noBias;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.Initialize(initialW, initialb);
+            this.Initialize(initialW, initialb, isGpu);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D") : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, bool isGpu = true, string name = "Conv2D") : base(name, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -50,10 +48,10 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.Initialize(initialW, initialb);
+            this.Initialize(initialW, initialb, isGpu);
         }
 
-        void Initialize(double[,,,] initialW = null, double[] initialb = null)
+        void Initialize(double[,,,] initialW = null, double[] initialb = null, bool isGpu = true)
         {
             this.W = NdArray.Zeros(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
@@ -85,7 +83,7 @@ namespace KelpNet.Functions.Connections
             }
 
             //カーネルを作成
-            if (IsGpu)
+            if (isGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "Convolution2DForward");
                 BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "Convolution2DBackward");
@@ -113,7 +111,7 @@ __kernel void Convolution2DForward(
 	const int OutputCount,
 	const int InputCount)
 {
-	int batchCounter = get_global_id(0)/ OutputCount;
+	int batchCounter = get_global_id(0) / OutputCount;
 	int och = get_global_id(0) % OutputCount;
     int oy = get_global_id(1);
     int ox = get_global_id(2);
@@ -155,14 +153,14 @@ __kernel void Convolution2DForward(
     gpuY[resultIndex] = localResult + gpub[och];
 }";
 
-        protected override BatchArray NeedPreviousForward(BatchArray input)
+        protected override BatchArray NeedPreviousForward(BatchArray input, bool isGpu)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
 
             double[] result = new double[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
                 {
@@ -336,11 +334,11 @@ __kernel void Convolution2DBackward(
     atom_add_double(&gpugb[och], gyData);
 }";
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
         {
             double[] gx = new double[prevInput.Data.Length];
 
-            if (!IsGpu)
+            if (!isGpu)
             {
                 int gyIndex = 0;
 

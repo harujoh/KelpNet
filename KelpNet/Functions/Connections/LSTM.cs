@@ -60,7 +60,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters[11] = this.lateral3.Parameters[0];
         }
 
-        protected override BatchArray ForwardSingle(BatchArray x)
+        protected override BatchArray ForwardSingle(BatchArray x, bool isGpu)
         {
             BatchArray[] upwards = new BatchArray[4];
             upwards[0] = this.upward0.Forward(x);
@@ -137,7 +137,7 @@ namespace KelpNet.Functions.Connections
             return new BatchArray(this.hParam, new[] { OutputCount }, x.BatchCount);
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gh)
+        protected override BatchArray BackwardSingle(BatchArray gh, bool isGpu)
         {
             if (this.gxPrev0 == null)
             {

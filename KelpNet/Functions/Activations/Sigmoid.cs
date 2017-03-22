@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Activations
         {
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
         {
             double[] y = new double[x.Data.Length];
 
@@ -23,7 +23,7 @@ namespace KelpNet.Functions.Activations
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput, bool isGpu)
         {
             double[] gx = new double[gy.Data.Length];
 

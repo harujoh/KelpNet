@@ -46,6 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Benchmarker\BenchDataMaker.cs" />
+    <Compile Include="Benchmarker\SingleBenchmark.cs" />
     <Compile Include="MnistData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
