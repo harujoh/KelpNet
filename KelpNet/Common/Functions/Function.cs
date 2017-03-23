@@ -9,6 +9,7 @@ namespace KelpNet.Common.Functions
     public abstract class Function
     {
         public string Name;
+        public bool IsGpu;
 
         public FunctionParameter[] Parameters = { };
         public Optimizer[] Optimizers;
@@ -23,11 +24,13 @@ namespace KelpNet.Common.Functions
         public ComputeKernel BackwardKernel;
 
         //コンストラクタ
-        protected Function(string name, int inputCount = 0, int oututCount = 0)
+        protected Function(string name, bool isGpu = false, int inputCount = 0, int oututCount = 0)
         {
             this.Name = name;
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
+
+            this.IsGpu = isGpu;
         }
 
         public void SetOptimizer(params Optimizer[] optimizers)
@@ -41,12 +44,12 @@ namespace KelpNet.Common.Functions
         }
 
         //外部公開用
-        public virtual BatchArray Forward(BatchArray x, bool isGpu = true)
+        public virtual BatchArray Forward(BatchArray x)
         {
-            return this.ForwardSingle(x, isGpu);
+            return this.ForwardSingle(x);
         }
 
-        public virtual BatchArray Backward(BatchArray gy, bool isGpu = true)
+        public virtual BatchArray Backward(BatchArray gy)
         {
             //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
             foreach (FunctionParameter parameter in this.Parameters)
@@ -54,18 +57,18 @@ namespace KelpNet.Common.Functions
                 parameter.TrainCount++;
             }
 
-            return this.BackwardSingle(gy, isGpu);
+            return this.BackwardSingle(gy);
         }
 
         //通常であれば非バッチ呼び出しを仮想とするが、
         //バッチ専用関数がスタンダードで非バッチ関数がイレギュラーであるため
-        protected abstract BatchArray ForwardSingle(BatchArray x, bool isGpu);
-        protected abstract BatchArray BackwardSingle(BatchArray gy, bool isGpu);
+        protected abstract BatchArray ForwardSingle(BatchArray x);
+        protected abstract BatchArray BackwardSingle(BatchArray gy);
 
         //評価関数
-        public virtual BatchArray Predict(BatchArray input, bool isGpu = true)
+        public virtual BatchArray Predict(BatchArray input)
         {
-            return this.ForwardSingle(input, isGpu);
+            return this.ForwardSingle(input);
         }
 
         //訓練カウントを使って各Functionの傾きを補正

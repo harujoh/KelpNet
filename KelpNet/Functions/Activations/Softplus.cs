@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -10,13 +9,13 @@ namespace KelpNet.Functions.Activations
         private readonly double _beta;
         private readonly double _betaInv;
 
-        public Softplus(double beta = 1.0, string name = "Softplus") : base(name)
+        public Softplus(double beta = 1.0, string name = "Softplus", bool isGpu = false) : base(name, isGpu)
         {
             this._beta = beta;
             this._betaInv = 1.0 / beta;
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             double[] y = new double[x.Data.Length];
 
@@ -46,7 +45,7 @@ namespace KelpNet.Functions.Activations
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
             double[] gx = new double[gy.Data.Length];
 

@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _slope;
 
-        public LeakyReLU(double slope = 0.2, bool isGpu = true, string name = "LeakyReLU") : base(name)
+        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isGpu = false) : base(name, isGpu)
         {
             this._slope = slope;
 
@@ -38,11 +38,11 @@ __kernel void LeakyReLUForward(
     }
 }";
 
-        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             double[] y = x.Data.ToArray();
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int i = 0; i < x.Data.Length; i++)
                 {
@@ -89,11 +89,11 @@ __kernel void LeakyReLUBackward(
     }
 }";
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
             double[] gx = gy.Data.ToArray();
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int i = 0; i < gy.Data.Length; i++)
                 {

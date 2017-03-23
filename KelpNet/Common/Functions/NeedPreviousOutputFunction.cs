@@ -10,33 +10,33 @@ namespace KelpNet.Common.Functions
         //後入れ先出しリスト
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
-        protected abstract BatchArray NeedPreviousForward(BatchArray x, bool isGpu);
-        protected abstract BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput, bool isGpu);
+        protected abstract BatchArray NeedPreviousForward(BatchArray x);
+        protected abstract BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput);
 
-        protected NeedPreviousOutputFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
+        protected NeedPreviousOutputFunction(string name, bool isGpu = false, int inputCount = 0, int oututCount = 0) : base(name, isGpu, inputCount, oututCount)
         {
         }
 
-        protected override BatchArray ForwardSingle(BatchArray x, bool isGpu)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
-            BatchArray prevoutput = this.NeedPreviousForward(x, isGpu);
+            BatchArray prevoutput = this.NeedPreviousForward(x);
 
             this._prevOutput.Add(prevoutput);
 
             return prevoutput;
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gy, bool isGpu)
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
             BatchArray prevOutput = this._prevOutput[this._prevOutput.Count - 1];
             this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
 
-            return this.NeedPreviousBackward(gy, prevOutput, isGpu);
+            return this.NeedPreviousBackward(gy, prevOutput);
         }
 
-        public override BatchArray Predict(BatchArray x, bool isGpu = true)
+        public override BatchArray Predict(BatchArray x)
         {
-            return this.NeedPreviousForward(x, isGpu);
+            return this.NeedPreviousForward(x);
         }
     }
 }

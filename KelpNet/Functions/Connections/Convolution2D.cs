@@ -22,7 +22,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, bool isGpu = true, string name = "Conv2D") : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isGpu = false) : base(name, isGpu, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb, isGpu);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, bool isGpu = true, string name = "Conv2D") : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isGpu = false) : base(name, isGpu, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -51,7 +51,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb, isGpu);
         }
 
-        void Initialize(double[,,,] initialW = null, double[] initialb = null, bool isGpu = true)
+        void Initialize(double[,,,] initialW = null, double[] initialb = null, bool isGpu = false)
         {
             this.W = NdArray.Zeros(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
@@ -153,14 +153,14 @@ __kernel void Convolution2DForward(
     gpuY[resultIndex] = localResult + gpub[och];
 }";
 
-        protected override BatchArray NeedPreviousForward(BatchArray input, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
 
             double[] result = new double[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
                 {
@@ -334,11 +334,11 @@ __kernel void Convolution2DBackward(
     atom_add_double(&gpugb[och], gyData);
 }";
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             double[] gx = new double[prevInput.Data.Length];
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 int gyIndex = 0;
 

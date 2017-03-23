@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNetTester.Benchmarker;
 using KelpNetTester.Tests;
 
 namespace KelpNetTester
@@ -53,6 +54,9 @@ namespace KelpNetTester
 
             //Linearの分割実行
             //TestX.Run();
+
+            //ベンチマーク
+            //SingleBenchmark.Run();
 
             Console.WriteLine("Test Done...");
             Console.Read();

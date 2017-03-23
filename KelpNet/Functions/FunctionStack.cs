@@ -34,19 +34,19 @@ namespace KelpNet.Functions
         }
 
         //Functionとして呼び出された時にバトンを渡す
-        protected override BatchArray ForwardSingle(BatchArray x, bool isGpu)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
-            return this.Forward(x, isGpu);
+            return this.Forward(x);
         }
 
         //Functionとして呼び出された時にバトンを渡す
-        protected override BatchArray BackwardSingle(BatchArray gy, bool isGpu)
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
-            return this.Backward(gy, isGpu);
+            return this.Backward(gy);
         }
 
         //Forward
-        public override BatchArray Forward(BatchArray input, bool isGpu = true)
+        public override BatchArray Forward(BatchArray input)
         {
             BatchArray[] inputData = new BatchArray[this.Functions.Length + 1];
             inputData[0] = input;
@@ -60,7 +60,7 @@ namespace KelpNet.Functions
         }
 
         //Backward
-        public override BatchArray Backward(BatchArray backwardResult, bool isGpu = true)
+        public override BatchArray Backward(BatchArray backwardResult)
         {
             for (int i = this.Functions.Length - 1; i >= 0; i--)
             {
@@ -94,11 +94,11 @@ namespace KelpNet.Functions
         }
 
         //予想を実行する
-        public override BatchArray Predict(BatchArray forwardResult, bool isGpu = true)
+        public override BatchArray Predict(BatchArray forwardResult)
         {
             foreach (Function function in this.Functions)
             {
-                forwardResult = function.Predict(forwardResult, isGpu);
+                forwardResult = function.Predict(forwardResult);
             }
 
             return forwardResult;

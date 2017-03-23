@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Connections
         public NdArray W;
         public NdArray gW;
 
-        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID") : base(name, inputCount, outputCount)
+        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID", bool isGpu = false) : base(name, isGpu, inputCount, outputCount)
         {
             this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
@@ -29,7 +29,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             double[] result = new double[x.Data.Length * this.OutputCount];
 
@@ -44,10 +44,10 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return BatchArray.Convert(result, new[] { x.Length, this.OutputCount },x.BatchCount);
+            return BatchArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             for (int b = 0; b < gy.BatchCount; b++)
             {
@@ -55,7 +55,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int j = 0; j < this.OutputCount; j++)
                     {
-                        this.gW.Data[(int)prevInput.Data[i+b * prevInput.Length] * this.OutputCount + j] += gy.Data[i + j + b * gy.Length];
+                        this.gW.Data[(int)prevInput.Data[i + b * prevInput.Length] * this.OutputCount + j] += gy.Data[i + j + b * gy.Length];
                     }
                 }
             }

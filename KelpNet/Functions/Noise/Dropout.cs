@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Noise
         private readonly double dropoutRatio;
         private readonly List<double[]> maskStack = new List<double[]>();
 
-        public Dropout(double dropoutRatio = 0.5, bool isGpu = true, string name = "Dropout") : base(name)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = false) : base(name, isGpu)
         {
             this.dropoutRatio = dropoutRatio;
 
@@ -39,7 +39,7 @@ __kernel void DropoutForward(
     gpuY[i] = gpuX[i] * mask[i % maskLength];
 }";
 
-        protected override BatchArray ForwardSingle(BatchArray x, bool isGpu)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
             double[] result = new double[x.Data.Length];
             double[] mask = new double[x.Length];
@@ -50,7 +50,7 @@ __kernel void DropoutForward(
                 mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int i = 0; i < x.Data.Length; i++)
                 {
@@ -101,13 +101,13 @@ __kernel void DropoutBackward(
     gpugX[j + b * gyLength] *= mask[j];
 }";
 
-        protected override BatchArray BackwardSingle(BatchArray gy, bool isGpu)
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
             double[] result = gy.Data.ToArray();
             double[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int b = 0; b < gy.BatchCount; b++)
                 {
@@ -143,7 +143,7 @@ __kernel void DropoutBackward(
         }
 
         //Predict時に何もしない
-        public override BatchArray Predict(BatchArray input, bool isGpu = true)
+        public override BatchArray Predict(BatchArray input)
         {
             return input;
         }

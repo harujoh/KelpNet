@@ -18,7 +18,7 @@ namespace KelpNet.Functions.Connections
         private int _subSample;
         private int _trim;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Deconv2D") : base(name, inputChannels, outputChannels)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Deconv2D", bool isGpu = false) : base(name,isGpu, inputChannels, outputChannels)
         {
             this._kSize = kSize;
             this._subSample = subSample;
@@ -56,7 +56,7 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray input, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray input)
         {
             int outputSize = (input.Shape[2] - 1) * this._subSample + this._kSize - this._trim * 2;
 
@@ -115,13 +115,12 @@ namespace KelpNet.Functions.Connections
             return BatchArray.Convert(result, new[] { this.OutputCount, outputSize, outputSize }, input.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             double[] gx = new double[prevInput.Data.Length];
 
-            for (int b = 0; b < gy.BatchCount; b++)
+            for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
             {
-
                 for (int och = 0; och < this.gW.Shape[0]; och++)
                 {
                     //Wインデックス用
@@ -150,9 +149,9 @@ namespace KelpNet.Functions.Connections
                                         int gyx = px * this._subSample + gwx - this._trim;
 
                                         int gwIndex = outChOffset + inChOffset + gwy * this.gW.Shape[3] + gwx;
-                                        int gyIndex = inputOffset + gyy * gy.Shape[2] + gyx + b * gy.Length;
+                                        int gyIndex = inputOffset + gyy * gy.Shape[2] + gyx + batchCount * gy.Length;
 
-                                        int pInIndex = pinputOffset + py * prevInput.Shape[2] + px + b * prevInput.Length;
+                                        int pInIndex = pinputOffset + py * prevInput.Shape[2] + px + batchCount * prevInput.Length;
 
                                         if (gyy >= 0 && gyy < gy.Shape[1] &&
                                             gyx >= 0 && gyx < gy.Shape[2])
@@ -170,7 +169,7 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int ox = 0; ox < gy.Shape[2]; ox++)
                         {
-                            int gyIndex = inputOffset + oy * gy.Shape[2] + ox + b * gy.Length;
+                            int gyIndex = inputOffset + oy * gy.Shape[2] + ox + batchCount * gy.Length;
                             this.gb.Data[och] += gy.Data[gyIndex];
                         }
                     }

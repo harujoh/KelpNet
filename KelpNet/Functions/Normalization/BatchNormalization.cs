@@ -65,7 +65,7 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        protected override BatchArray ForwardSingle(BatchArray x, bool isGpu)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
             //計算用パラメータの取得
             if (this.IsTrain)
@@ -149,7 +149,7 @@ namespace KelpNet.Functions.Normalization
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gy, bool isGpu)
+        protected override BatchArray BackwardSingle(BatchArray gy)
         {
             double[] gx = new double[gy.BatchCount * this.ChannelSize];
 
@@ -201,7 +201,7 @@ namespace KelpNet.Functions.Normalization
             return BatchArray.Convert(gx, new[] { this.ChannelSize }, gy.BatchCount);
         }
 
-        public override BatchArray Predict(BatchArray input, bool isGpu = true)
+        public override BatchArray Predict(BatchArray input)
         {
             BatchArray result;
 
@@ -210,14 +210,14 @@ namespace KelpNet.Functions.Normalization
                 //Predictはトレーニングしない
                 this.IsTrain = false;
 
-                result = this.ForwardSingle(input, isGpu);
+                result = this.ForwardSingle(input);
 
                 //フラグをリセット
                 this.IsTrain = true;
             }
             else
             {
-                result = this.ForwardSingle(input, isGpu);
+                result = this.ForwardSingle(input);
             }
 
             return result;

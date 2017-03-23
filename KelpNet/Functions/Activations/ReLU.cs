@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class ReLU : NeedPreviousOutputFunction
     {
-        public ReLU(bool isGpu = true, string name = "ReLU") : base(name)
+        public ReLU(string name = "ReLU",bool isGpu = true) : base(name, isGpu)
         {
             //カーネルを作成
             if (isGpu)
@@ -33,11 +33,11 @@ __kernel void ReLUForward(
     }
 }";
 
-        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             double[] y = x.Data.ToArray();
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int i = 0; i < x.Data.Length; i++)
                 {
@@ -84,11 +84,11 @@ __kernel void ReLUBackward(
         gpugX[i] = 0.0;
     }
 }";
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
             double[] gx = gy.Data.ToArray();
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int i = 0; i < gy.Data.Length; i++)
                 {

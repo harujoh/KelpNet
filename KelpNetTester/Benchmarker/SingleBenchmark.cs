@@ -3,6 +3,7 @@ using System.Diagnostics;
 using KelpNet.Common;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
+using KelpNet.Functions.Noise;
 using KelpNet.Functions.Poolings;
 
 namespace KelpNetTester.Benchmarker
@@ -24,25 +25,26 @@ namespace KelpNetTester.Benchmarker
 
             Console.WriteLine("◆" + linear.Name);
             sw.Start();
-            linear.Forward(inputArray, false);
+            linear.Forward(inputArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Cpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            linear.Backward(gradArray, false);
+            linear.Backward(gradArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Cpu] : " + sw.ElapsedTicks);
 
+            linear.IsGpu = true;
             sw.Restart();
-            linear.Forward(inputArray, true);
+            linear.Forward(inputArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Gpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            linear.Backward(gradArray, true);
+            linear.Backward(gradArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Gpu] : " + sw.ElapsedTicks);
@@ -52,25 +54,25 @@ namespace KelpNetTester.Benchmarker
 
             Console.WriteLine("\n◆" + relu.Name);
             sw.Restart();
-            relu.Forward(inputArray, false);
+            relu.Forward(inputArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Cpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            relu.Backward(gradArray, false);
+            relu.Backward(gradArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Cpu] : " + sw.ElapsedTicks);
-
+            relu.IsGpu = true;
             sw.Restart();
-            relu.Forward(inputArray, true);
+            relu.Forward(inputArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Gpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            relu.Backward(gradArray, true);
+            relu.Backward(gradArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Gpu] : " + sw.ElapsedTicks);
@@ -80,25 +82,26 @@ namespace KelpNetTester.Benchmarker
 
             Console.WriteLine("\n◆" + leakyRelu.Name);
             sw.Restart();
-            leakyRelu.Forward(inputArray, false);
+            leakyRelu.Forward(inputArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Cpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            leakyRelu.Backward(gradArray, false);
+            leakyRelu.Backward(gradArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Cpu] : " + sw.ElapsedTicks);
 
+            leakyRelu.IsGpu = true;
             sw.Restart();
-            leakyRelu.Forward(inputArray, true);
+            leakyRelu.Forward(inputArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Gpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            leakyRelu.Backward(gradArray, true);
+            leakyRelu.Backward(gradArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Gpu] : " + sw.ElapsedTicks);
@@ -111,25 +114,26 @@ namespace KelpNetTester.Benchmarker
 
             Console.WriteLine("\n◆" + maxPooling.Name);
             sw.Restart();
-            var gradImageArray = maxPooling.Forward(inputImageArray, false);
+            var gradImageArray = maxPooling.Forward(inputImageArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Cpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            maxPooling.Backward(gradImageArray, false);
+            maxPooling.Backward(gradImageArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Cpu] : " + sw.ElapsedTicks);
 
+            maxPooling.IsGpu = true;
             sw.Restart();
-            gradImageArray = maxPooling.Forward(inputImageArray, true);
+            gradImageArray = maxPooling.Forward(inputImageArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Gpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            maxPooling.Backward(gradImageArray, true);
+            maxPooling.Backward(gradImageArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Gpu] : " + sw.ElapsedTicks);
@@ -139,28 +143,59 @@ namespace KelpNetTester.Benchmarker
 
             Console.WriteLine("\n◆" + conv2d.Name);
             sw.Restart();
-            gradImageArray = conv2d.Forward(inputImageArray, false);
+            gradImageArray = conv2d.Forward(inputImageArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Cpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            conv2d.Backward(gradImageArray, false);
+            conv2d.Backward(gradImageArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Cpu] : " + sw.ElapsedTicks);
 
+            conv2d.IsGpu = true;
             sw.Restart();
-            gradImageArray = conv2d.Forward(inputImageArray, true);
+            gradImageArray = conv2d.Forward(inputImageArray);
             sw.Stop();
 
             Console.WriteLine("Forward [Gpu] : " + sw.ElapsedTicks);
 
             sw.Restart();
-            conv2d.Backward(gradImageArray, true);
+            conv2d.Backward(gradImageArray);
             sw.Stop();
 
             Console.WriteLine("Backward[Gpu] : " + sw.ElapsedTicks);
+
+            //Dropout
+            var dropout = new Dropout();
+
+            Console.WriteLine("\n◆" + dropout.Name);
+            sw.Restart();
+            dropout.Forward(inputArray);
+            sw.Stop();
+
+            Console.WriteLine("Forward [Cpu] : " + sw.ElapsedTicks);
+
+            sw.Restart();
+            dropout.Backward(gradArray);
+            sw.Stop();
+
+            Console.WriteLine("Backward[Cpu] : " + sw.ElapsedTicks);
+
+            dropout.IsGpu = true;
+            sw.Restart();
+            dropout.Forward(inputArray);
+            sw.Stop();
+
+            Console.WriteLine("Forward [Gpu] : " + sw.ElapsedTicks);
+
+            sw.Restart();
+            dropout.Backward(gradArray);
+            sw.Stop();
+
+            Console.WriteLine("Backward[Gpu] : " + sw.ElapsedTicks);
+
         }
     }
 }

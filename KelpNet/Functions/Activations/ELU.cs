@@ -9,12 +9,12 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _alpha;
 
-        public ELU(double alpha = 1.0, string name = "ELU") : base(name)
+        public ELU(double alpha = 1.0, string name = "ELU", bool isGpu = false) : base(name, isGpu)
         {
             this._alpha = alpha;
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             double[] result = new double[x.Data.Length];
 
@@ -26,7 +26,7 @@ namespace KelpNet.Functions.Activations
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
         {
             double[] result = new double[gy.Data.Length];
 

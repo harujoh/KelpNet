@@ -7,11 +7,11 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Tanh : NeedPreviousOutputFunction
     {
-        public Tanh(string name = "Tanh") : base(name)
+        public Tanh(string name = "Tanh", bool isGpu = false) : base(name, isGpu)
         {
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             double[] y = new double[x.Data.Length];
 
@@ -23,7 +23,7 @@ namespace KelpNet.Functions.Activations
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
             double[] gx = new double[gy.Data.Length];
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -32,14 +33,14 @@ namespace KelpNet.Functions.Connections
         BatchArray gxPrev3;
         double[] gcPrev;
 
-        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
+        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM", bool isGpu = false) : base(name, isGpu, inSize, outSize)
         {
             this.Parameters = new FunctionParameter[12];
 
-            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0");
-            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1");
-            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2");
-            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3");
+            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward0");
+            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward1");
+            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward2");
+            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward3");
             this.Parameters[0] = this.upward0.Parameters[0];
             this.Parameters[1] = this.upward0.Parameters[1];
             this.Parameters[2] = this.upward1.Parameters[0];
@@ -50,17 +51,17 @@ namespace KelpNet.Functions.Connections
             this.Parameters[7] = this.upward3.Parameters[1];
 
             //lateralはBiasは無し
-            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0");
-            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1");
-            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2");
-            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3");
+            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral0");
+            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral1");
+            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral2");
+            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral3");
             this.Parameters[8] = this.lateral0.Parameters[0];
             this.Parameters[9] = this.lateral1.Parameters[0];
             this.Parameters[10] = this.lateral2.Parameters[0];
             this.Parameters[11] = this.lateral3.Parameters[0];
         }
 
-        protected override BatchArray ForwardSingle(BatchArray x, bool isGpu)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
             BatchArray[] upwards = new BatchArray[4];
             upwards[0] = this.upward0.Forward(x);
@@ -137,8 +138,10 @@ namespace KelpNet.Functions.Connections
             return new BatchArray(this.hParam, new[] { OutputCount }, x.BatchCount);
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gh, bool isGpu)
+        protected override BatchArray BackwardSingle(BatchArray gh)
         {
+            double[] lgh = gh.Data.ToArray();
+
             if (this.gxPrev0 == null)
             {
                 //値がなければ初期化
@@ -156,10 +159,10 @@ namespace KelpNet.Functions.Connections
 
                 for (int j = 0; j < gh.BatchCount * OutputCount; j++)
                 {
-                    gh.Data[j] += ghPre0.Data[j];
-                    gh.Data[j] += ghPre1.Data[j];
-                    gh.Data[j] += ghPre2.Data[j];
-                    gh.Data[j] += ghPre3.Data[j];
+                    lgh[j] += ghPre0.Data[j];
+                    lgh[j] += ghPre1.Data[j];
+                    lgh[j] += ghPre2.Data[j];
+                    lgh[j] += ghPre3.Data[j];
                 }
             }
 
@@ -191,11 +194,11 @@ namespace KelpNet.Functions.Connections
 
                     double co = Math.Tanh(lcParam[prevOutputIndex]);
 
-                    this.gcPrev[prevInputIndex] += gh.Data[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
+                    this.gcPrev[prevInputIndex] += lgh[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
                     gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
                     gParam[j + InputCount * 1] = this.gcPrev[prevInputIndex] * laParam[prevOutputIndex] * GradSigmoid(liParam[prevOutputIndex]);
                     gParam[j + InputCount * 2] = this.gcPrev[prevInputIndex] * cPrev[prevOutputIndex] * GradSigmoid(lfParam[prevOutputIndex]);
-                    gParam[j + InputCount * 3] = gh.Data[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
+                    gParam[j + InputCount * 3] = lgh[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
 
                     this.gcPrev[prevInputIndex] *= lfParam[prevOutputIndex];
                 }

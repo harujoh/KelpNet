@@ -17,7 +17,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear", bool isGpu = true) : base(name, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear", bool isGpu = false) : base(name, isGpu, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = NdArray.Zeros(outputCount, inputCount);
@@ -78,11 +78,11 @@ __kernel void LinearForward(
     }
 }";
 
-        protected override BatchArray NeedPreviousForward(BatchArray x, bool isGpu)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             double[] y = new double[OutputCount * x.BatchCount];
 
-            if (!isGpu)
+            if (!IsGpu)
             {
                 for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
                 {
@@ -174,23 +174,23 @@ __kernel void LinearBackward(
     }
 }
 ";
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, bool isGpu)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             double[] gxData = new double[prevInput.Data.Length];
 
-            if (!isGpu)
+            if (!IsGpu)
             {
-                for (int b = 0; b < gy.BatchCount; b++)
+                for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
                 {
                     for (int i = 0; i < this.OutputCount; i++)
                     {
-                        double gyData = gy.Data[i + b * this.OutputCount];
+                        double gyData = gy.Data[i + batchCount * this.OutputCount];
                         this.gb.Data[i] += gyData;
 
                         for (int j = 0; j < this.InputCount; j++)
                         {
-                            this.gW.Data[i * this.InputCount + j] += prevInput.Data[j + b * this.InputCount] * gyData;
-                            gxData[j + b * this.InputCount] += this.W.Data[i * this.InputCount + j] * gyData;
+                            this.gW.Data[i * this.InputCount + j] += prevInput.Data[j + batchCount * this.InputCount] * gyData;
+                            gxData[j + batchCount * this.InputCount] += this.W.Data[i * this.InputCount + j] * gyData;
                         }
                     }
                 }
