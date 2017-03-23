@@ -48,15 +48,14 @@ namespace KelpNet.Functions
         //Forward
         public override BatchArray Forward(BatchArray input)
         {
-            BatchArray[] inputData = new BatchArray[this.Functions.Length + 1];
-            inputData[0] = input;
+            BatchArray result = this.Functions[0].Forward(input);
 
-            for (int i = 0; i < this.Functions.Length; i++)
+            for (int i = 1; i < this.Functions.Length; i++)
             {
-                inputData[i + 1] = this.Functions[i].Forward(inputData[i]);
+                result = this.Functions[i].Forward(result);
             }
 
-            return inputData[this.Functions.Length];
+            return result;
         }
 
         //Backward

@@ -49,9 +49,6 @@ namespace KelpNetTester
             //Deconvolution2Dのテスト(Winform)
             //new Test13WinForm().ShowDialog();
 
-            //MLPによるMNIST（手書き文字）の学習
-            //Test14.Run();
-
             //Linearの分割実行
             //TestX.Run();
 
