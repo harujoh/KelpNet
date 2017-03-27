@@ -14,7 +14,7 @@ namespace KelpNet.Functions.Poolings
         private int _padX;
         private int _stride;
 
-        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling") : base(name)
+        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling", bool isGpu = true) : base(name, isGpu)
         {
             this._kWidth = ksize;
             this._kHeight = ksize;
@@ -23,7 +23,7 @@ namespace KelpNet.Functions.Poolings
             this._stride = stride;
         }
 
-        public AveragePooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "AvgPooling") : base(name)
+        public AveragePooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "AvgPooling", bool isGpu = true) : base(name, isGpu)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -33,6 +33,10 @@ namespace KelpNet.Functions.Poolings
             this._padY = pad.Height;
             this._padX = pad.Width;
             this._stride = stride;
+        }
+
+        public override void InitKernel()
+        {
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray input)

@@ -13,7 +13,7 @@ namespace KelpNet.Common.Functions
         protected abstract BatchArray NeedPreviousForward(BatchArray x);
         protected abstract BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput);
 
-        protected NeedPreviousInputFunction(string name, bool isGpu = false, int inputCount = 0, int oututCount = 0) : base(name, isGpu, inputCount, oututCount)
+        protected NeedPreviousInputFunction(string name, bool isGpu, int inputCount = 0, int oututCount = 0) : base(name, isGpu, inputCount, oututCount)
         {
         }
 

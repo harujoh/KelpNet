@@ -18,7 +18,7 @@ namespace KelpNet.Functions.Connections
         private int _subSample;
         private int _trim;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Deconv2D", bool isGpu = false) : base(name,isGpu, inputChannels, outputChannels)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Deconv2D", bool isGpu = true) : base(name,isGpu, inputChannels, outputChannels)
         {
             this._kSize = kSize;
             this._subSample = subSample;
@@ -54,6 +54,10 @@ namespace KelpNet.Functions.Connections
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
+        }
+
+        public override void InitKernel()
+        {
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray input)

@@ -11,16 +11,15 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isGpu = false) : base(name, isGpu)
+        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isGpu = true) : base(name, isGpu)
         {
             this._slope = slope;
+        }
 
-            //カーネルを作成
-            if (isGpu)
-            {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LeakyReLUForward");
-                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LeakyReLUBackward");
-            }
+        public override void InitKernel()
+        {
+            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LeakyReLUForward");
+            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LeakyReLUBackward");
         }
 
         const string ForwardKernelSource =

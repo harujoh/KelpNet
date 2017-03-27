@@ -7,7 +7,11 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Sigmoid : NeedPreviousOutputFunction
     {
-        public Sigmoid(string name = "Sigmoid", bool isGpu = false) : base(name, isGpu)
+        public Sigmoid(string name = "Sigmoid", bool isGpu = true) : base(name, isGpu)
+        {
+        }
+
+        public override void InitKernel()
         {
         }
 

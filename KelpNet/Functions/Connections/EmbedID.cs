@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Connections
         public NdArray W;
         public NdArray gW;
 
-        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID", bool isGpu = false) : base(name, isGpu, inputCount, outputCount)
+        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID", bool isGpu = true) : base(name, isGpu, inputCount, outputCount)
         {
             this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
@@ -27,6 +27,10 @@ namespace KelpNet.Functions.Connections
             }
 
             this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
+        }
+
+        public override void InitKernel()
+        {
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray x)

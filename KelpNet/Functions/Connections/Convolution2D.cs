@@ -22,7 +22,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isGpu = false) : base(name, isGpu, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isGpu = true) : base(name, isGpu, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb, isGpu);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isGpu = false) : base(name, isGpu, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Conv2D", bool isGpu = true) : base(name, isGpu, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -51,7 +51,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb, isGpu);
         }
 
-        void Initialize(double[,,,] initialW = null, double[] initialb = null, bool isGpu = false)
+        void Initialize(double[,,,] initialW = null, double[] initialb = null, bool isGpu = true)
         {
             this.W = NdArray.Zeros(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
@@ -82,12 +82,12 @@ namespace KelpNet.Functions.Connections
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
 
-            //カーネルを作成
-            if (isGpu)
-            {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "Convolution2DForward");
-                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "Convolution2DBackward");
-            }
+        }
+
+        public override void InitKernel()
+        {
+            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "Convolution2DForward");
+            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "Convolution2DBackward");
         }
 
         const string ForwardKernelSource =

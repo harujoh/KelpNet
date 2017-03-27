@@ -7,7 +7,11 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Softmax : NeedPreviousOutputFunction
     {
-        public Softmax(string name = "Softmax", bool isGpu = false) : base(name, isGpu)
+        public Softmax(string name = "Softmax", bool isGpu = true) : base(name, isGpu)
+        {
+        }
+
+        public override void InitKernel()
         {
         }
 

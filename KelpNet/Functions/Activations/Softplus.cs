@@ -9,10 +9,14 @@ namespace KelpNet.Functions.Activations
         private readonly double _beta;
         private readonly double _betaInv;
 
-        public Softplus(double beta = 1.0, string name = "Softplus", bool isGpu = false) : base(name, isGpu)
+        public Softplus(double beta = 1.0, string name = "Softplus", bool isGpu = true) : base(name, isGpu)
         {
             this._beta = beta;
             this._betaInv = 1.0 / beta;
+        }
+
+        public override void InitKernel()
+        {
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray x)

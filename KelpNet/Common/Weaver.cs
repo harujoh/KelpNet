@@ -5,37 +5,62 @@ using Cloo;
 
 namespace KelpNet.Common
 {
+    /// <summary>
+    /// The types of devices.
+    /// </summary>
+    [Flags]
+    public enum ComputeDeviceTypes : long
+    {
+        /// <summary> </summary>
+        Default = 1 << 0,
+        /// <summary> </summary>
+        Cpu = 1 << 1,
+        /// <summary> </summary>
+        Gpu = 1 << 2,
+        /// <summary> </summary>
+        Accelerator = 1 << 3,
+        /// <summary> </summary>
+        All = 0xFFFFFFFF
+    }
+
     //GPU関連の処理を担うマネージャー
-    class Weaver
+    public class Weaver
     {
         public static ComputeContext Context;
         private static ComputeDevice[] Devices;
-        public  static ComputeCommandQueue CommandQueue;
+        public static ComputeCommandQueue CommandQueue;
+        public static int DeviceIndex;
+        public static bool Enable;
+        public static ComputePlatform Platform;
 
-        static Weaver()
+        public static void Initialize(ComputeDeviceTypes selectedComputeDeviceTypes, int platformId = 0, int deviceIndex = 0)
         {
-            ComputePlatform platform = ComputePlatform.Platforms[0];
+            Platform = ComputePlatform.Platforms[platformId];
 
-            Devices = platform
+            Devices = Platform
                 .Devices
-                .Where(d => d.Type == ComputeDeviceTypes.Gpu)
+                .Where(d => (long)d.Type == (long)selectedComputeDeviceTypes)
                 .ToArray();
 
             Context = new ComputeContext(
                 Devices,
-                new ComputeContextPropertyList(platform),
+                new ComputeContextPropertyList(Platform),
                 null,
                 IntPtr.Zero
-            );
+                );
 
             CommandQueue = new ComputeCommandQueue(
                 Context,
-                Devices[0],
+                Devices[DeviceIndex],
                 ComputeCommandQueueFlags.None
-            );
+                );
+
+            DeviceIndex = deviceIndex;
+
+            Enable = true;
         }
 
-        public static ComputeKernel CreateKernel(string source,string kernelName)
+        public static ComputeKernel CreateKernel(string source, string kernelName)
         {
             ComputeProgram program = new ComputeProgram(Context, source);
 
@@ -45,7 +70,7 @@ namespace KelpNet.Common
             }
             catch
             {
-                MessageBox.Show(program.GetBuildLog(Devices[0]));
+                MessageBox.Show(program.GetBuildLog(Devices[DeviceIndex]));
             }
 
             return program.CreateKernel(kernelName);

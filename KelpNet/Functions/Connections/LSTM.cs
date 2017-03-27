@@ -33,7 +33,7 @@ namespace KelpNet.Functions.Connections
         BatchArray gxPrev3;
         double[] gcPrev;
 
-        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM", bool isGpu = false) : base(name, isGpu, inSize, outSize)
+        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM", bool isGpu = true) : base(name, isGpu, inSize, outSize)
         {
             this.Parameters = new FunctionParameter[12];
 
@@ -59,6 +59,10 @@ namespace KelpNet.Functions.Connections
             this.Parameters[9] = this.lateral1.Parameters[0];
             this.Parameters[10] = this.lateral2.Parameters[0];
             this.Parameters[11] = this.lateral3.Parameters[0];
+        }
+
+        public override void InitKernel()
+        {
         }
 
         protected override BatchArray ForwardSingle(BatchArray x)

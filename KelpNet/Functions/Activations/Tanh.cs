@@ -7,7 +7,11 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Tanh : NeedPreviousOutputFunction
     {
-        public Tanh(string name = "Tanh", bool isGpu = false) : base(name, isGpu)
+        public Tanh(string name = "Tanh", bool isGpu = true) : base(name, isGpu)
+        {
+        }
+
+        public override void InitKernel()
         {
         }
 

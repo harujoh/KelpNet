@@ -24,13 +24,23 @@ namespace KelpNet.Common.Functions
         public ComputeKernel BackwardKernel;
 
         //コンストラクタ
-        protected Function(string name, bool isGpu = false, int inputCount = 0, int oututCount = 0)
+        protected Function(string name, bool isGpu, int inputCount = 0, int oututCount = 0)
         {
             this.Name = name;
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
 
-            this.IsGpu = isGpu;
+            this.IsGpu = isGpu && Weaver.Enable;
+
+            //カーネルを作成
+            if (isGpu)
+            {
+                this.InitKernel();
+            }
+        }
+
+        virtual public void InitKernel()
+        {            
         }
 
         public void SetOptimizer(params Optimizer[] optimizers)

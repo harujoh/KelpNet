@@ -9,9 +9,13 @@ namespace KelpNet.Functions.Activations
     {
         private readonly double _alpha;
 
-        public ELU(double alpha = 1.0, string name = "ELU", bool isGpu = false) : base(name, isGpu)
+        public ELU(double alpha = 1.0, string name = "ELU", bool isGpu = true) : base(name, isGpu)
         {
             this._alpha = alpha;
+        }
+
+        public override void InitKernel()
+        {
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray x)

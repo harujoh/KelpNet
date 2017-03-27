@@ -17,7 +17,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear", bool isGpu = false) : base(name, isGpu, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = "Linear", bool isGpu = true) : base(name, isGpu, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = NdArray.Zeros(outputCount, inputCount);
@@ -50,13 +50,12 @@ namespace KelpNet.Functions.Connections
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
+        }
 
-            //カーネルを作成
-            if (isGpu)
-            {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LinearForward");
-                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LinearBackward");
-            }
+        public override void InitKernel()
+        {
+            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LinearForward");
+            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LinearBackward");
         }
 
         const string ForwardKernelSource =

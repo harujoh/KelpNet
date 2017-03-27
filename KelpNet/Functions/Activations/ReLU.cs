@@ -11,12 +11,12 @@ namespace KelpNet.Functions.Activations
     {
         public ReLU(string name = "ReLU",bool isGpu = true) : base(name, isGpu)
         {
-            //カーネルを作成
-            if (isGpu)
-            {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "ReLUForward");
-                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "ReLUBackward");
-            }
+        }
+
+        public override void InitKernel()
+        {
+            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "ReLUForward");
+            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "ReLUBackward");
         }
 
         const string ForwardKernelSource =

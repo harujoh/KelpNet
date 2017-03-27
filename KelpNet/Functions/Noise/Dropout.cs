@@ -13,16 +13,15 @@ namespace KelpNet.Functions.Noise
         private readonly double dropoutRatio;
         private readonly List<double[]> maskStack = new List<double[]>();
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = false) : base(name, isGpu)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
         {
             this.dropoutRatio = dropoutRatio;
+        }
 
-            //カーネルを作成
-            if (isGpu)
-            {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "DropoutForward");
-                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "DropoutBackward");
-            }
+        public override void InitKernel()
+        {
+            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "DropoutForward");
+            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "DropoutBackward");
         }
 
         const string ForwardKernelSource =
