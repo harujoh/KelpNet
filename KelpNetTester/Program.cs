@@ -1,7 +1,6 @@
 ﻿using System;
 using KelpNetTester.Benchmarker;
 using KelpNetTester.Tests;
-using KelpNet.Common;
 
 namespace KelpNetTester
 {

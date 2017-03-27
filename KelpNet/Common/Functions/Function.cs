@@ -33,7 +33,7 @@ namespace KelpNet.Common.Functions
             this.IsGpu = isGpu && Weaver.Enable;
 
             //カーネルを作成
-            if (isGpu)
+            if (this.IsGpu)
             {
                 this.InitKernel();
             }
