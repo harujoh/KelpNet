@@ -23,6 +23,9 @@ namespace KelpNetWaifu2x
         public FormMain()
         {
             InitializeComponent();
+
+            //GPUを初期化
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
         }
 
         private void button1_Click(object sender, EventArgs e)

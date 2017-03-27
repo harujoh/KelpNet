@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using KelpNet.Common;
 using KelpNet.Common.Tools;
 using KelpNet.Functions;
 using KelpNet.Functions.Activations;
@@ -29,6 +30,9 @@ namespace KelpNetTester.Tests
 
         public static void Run()
         {
+            //GPUを初期化
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+
             Stopwatch sw = new Stopwatch();
 
             //MNISTのデータを用意する
