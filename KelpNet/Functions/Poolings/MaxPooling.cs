@@ -53,7 +53,10 @@ namespace KelpNet.Functions.Poolings
 
         const string ForwardKernelSource =
 @"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
 __kernel void MaxPoolingForward(
 	__global const double *gpuX,
 	__global int *gpuYindex,

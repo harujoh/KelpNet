@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Tools;
 using KelpNet.Functions;
 using KelpNet.Functions.Activations;
@@ -14,6 +15,9 @@ namespace KelpNetTester.Tests
     {
         public static void Run()
         {
+            //GPUを初期化
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+
             //各初期値を記述
             double[,,,] initial_W1 =
                 {

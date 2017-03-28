@@ -26,7 +26,10 @@ namespace KelpNet.Functions.Noise
 
         const string ForwardKernelSource =
 @"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
 __kernel void DropoutForward(
 	__global const double *gpuX,
 	__global const double *mask,
@@ -88,7 +91,10 @@ __kernel void DropoutForward(
 
         const string BackwardKernelSource =
 @"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
 __kernel void DropoutBackward(
 	__global const double *mask,
 	__global double *gpugX,

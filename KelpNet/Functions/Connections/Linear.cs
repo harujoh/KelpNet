@@ -60,7 +60,10 @@ namespace KelpNet.Functions.Connections
 
         const string ForwardKernelSource =
 @"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
 __kernel void LinearForward(
 	__global const double *gpuX,
 	__global const double *gpuW, 
@@ -71,10 +74,18 @@ __kernel void LinearForward(
 	int batchCount = get_global_id(0);
 	int i = get_global_id(1);
 
+    gpuX += batchCount * InputCount;
+    gpuW += i * InputCount;
+
+    double gpuYSum = 0;    
+
     for (int j = 0; j < InputCount; j++)
     {
-        gpuY[i + batchCount * OutputCount] += gpuX[j + batchCount * InputCount] * gpuW[i * InputCount + j];
+        gpuYSum += gpuX[j] * gpuW[j];
     }
+    
+    gpuY[i + batchCount * OutputCount] += gpuYSum;
+
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
@@ -135,8 +146,10 @@ __kernel void LinearForward(
 
         const string BackwardKernelSource =
 @"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
+#endif
 
 double atom_add_double(__global double* const address, const double value)
 {
@@ -164,12 +177,20 @@ __kernel void LinearBackward(
     int b = get_global_id(0);
     int i = get_global_id(1);
 
-    atom_add_double(&gpugb[i], gpugY[i + b * OutputCount]);
+    gpugW += i * InputCount;
+    gpuW += i * InputCount;
+
+    gpugX += b * InputCount;
+    gpuX += b * InputCount;
+
+    double gy = gpugY[i + b * OutputCount];
+
+    atom_add_double(&gpugb[i], gy);
 
     for (int j = 0; j < InputCount; j++)
     {
-        atom_add_double(&gpugW[i * InputCount + j], gpuX[j + b * InputCount] * gpugY[i + b * OutputCount]);
-        atom_add_double(&gpugX[j + b * InputCount], gpuW[i * InputCount + j] * gpugY[i + b * OutputCount]);
+        atom_add_double(&gpugW[j], gpuX[j] * gy);
+        atom_add_double(&gpugX[j], gpuW[j] * gy);
     }
 }
 ";

@@ -92,7 +92,10 @@ namespace KelpNet.Functions.Connections
 
         const string ForwardKernelSource =
 @"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
 __kernel void Convolution2DForward(
 	__global const double *gpuX,
 	__global const double *gpuW, 
@@ -256,8 +259,10 @@ __kernel void Convolution2DForward(
 
         const string BackwardKernelSource =
 @"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
+#endif
 
 double atom_add_double(__global double* const address, const double value)
 {
