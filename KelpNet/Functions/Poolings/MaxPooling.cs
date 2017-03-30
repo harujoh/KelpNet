@@ -159,7 +159,7 @@ __kernel void MaxPoolingForward(
             else
             {
                 using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
-                using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.CopyHostPointer, outputIndices))
+                using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly, outputIndices.Length))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuYIndex);

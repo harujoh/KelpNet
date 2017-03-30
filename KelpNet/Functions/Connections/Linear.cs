@@ -77,15 +77,14 @@ __kernel void LinearForward(
     gpuX += batchCount * InputCount;
     gpuW += i * InputCount;
 
-    double gpuYSum = 0;    
+    double gpuYSum = 0;
 
     for (int j = 0; j < InputCount; j++)
     {
-        gpuYSum += gpuX[j] * gpuW[j];
+        gpuYSum = mad(gpuX[j], gpuW[j], gpuYSum);
     }
     
     gpuY[i + batchCount * OutputCount] += gpuYSum;
-
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
@@ -148,21 +147,7 @@ __kernel void LinearForward(
 @"
 #if __OPENCL__VERSION__ <= __CL_VERSION_1_1
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
 #endif
-
-double atom_add_double(__global double* const address, const double value)
-{
-  long oldval, newval, readback;
-  
-  *(double*)&oldval = *address;
-  *(double*)&newval = (*(double*)&oldval + value);
-  while ((readback = atom_cmpxchg((__global long*)address, oldval, newval)) != oldval) {
-    oldval = readback;
-    *(double*)&newval = (*(double*)&oldval + value);
-  }
-  return *(double*)&oldval;
-}
 
 __kernel void LinearBackward(
 	__global const double *gpugY,
@@ -171,26 +156,26 @@ __kernel void LinearBackward(
 	__global       double *gpugW, 
 	__global       double *gpugb, 
 	__global       double *gpugX, 
+	         const int BatchCount,
 	         const int OutputCount,
 	         const int InputCount)
 {
-    int b = get_global_id(0);
-    int i = get_global_id(1);
+    int j = get_global_id(0);
 
-    gpugW += i * InputCount;
-    gpuW += i * InputCount;
-
-    gpugX += b * InputCount;
-    gpuX += b * InputCount;
-
-    double gy = gpugY[i + b * OutputCount];
-
-    atom_add_double(&gpugb[i], gy);
-
-    for (int j = 0; j < InputCount; j++)
+    for(int b = 0; b < BatchCount; b++)
     {
-        atom_add_double(&gpugW[j], gpuX[j] * gy);
-        atom_add_double(&gpugX[j], gpuW[j] * gy);
+        for(int i=0;i<OutputCount;i++)
+        {
+            double gy = gpugY[i + b * OutputCount];
+
+            if(j==0)
+            {
+                gpugb[i] += gy;
+            }
+
+            gpugW[j + i * InputCount] += gpuX[j + b * InputCount] * gy;
+            gpugX[j + b * InputCount] += gpuW[j + i * InputCount] * gy;
+        }
     }
 }
 ";
@@ -230,14 +215,15 @@ __kernel void LinearBackward(
                     BackwardKernel.SetMemoryArgument(3, gpugW);
                     BackwardKernel.SetMemoryArgument(4, gpugb);
                     BackwardKernel.SetMemoryArgument(5, gpugX);
-                    BackwardKernel.SetValueArgument(6, this.OutputCount);
-                    BackwardKernel.SetValueArgument(7, this.InputCount);
+                    BackwardKernel.SetValueArgument(6, gy.BatchCount);
+                    BackwardKernel.SetValueArgument(7, this.OutputCount);
+                    BackwardKernel.SetValueArgument(8, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                         (
                             BackwardKernel,
                             null,
-                            new long[] { gy.BatchCount, this.OutputCount },
+                            new long[] { this.InputCount },
                             null,
                             null
                         );
