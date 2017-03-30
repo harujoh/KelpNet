@@ -15,9 +15,6 @@ namespace KelpNetTester.Tests
     {
         public static void Run()
         {
-            //GPUを初期化
-            Weaver.Initialize(ComputeDeviceTypes.Gpu);
-
             //各初期値を記述
             double[,,,] initial_W1 =
                 {

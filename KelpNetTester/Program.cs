@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNetTester.Benchmarker;
 using KelpNetTester.Tests;
 
@@ -10,6 +11,9 @@ namespace KelpNetTester
         //実行したいテストのコメントを外して下さい
         static void Main(string[] args)
         {
+            //GPUを初期化
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+
             //MLPによるXORの学習
             //Test1.Run();
 

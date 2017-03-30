@@ -30,7 +30,7 @@ namespace KelpNet.Functions.Activations
 
 __kernel void LeakyReLUForward(
 	         const double slope,
-	__global double *gpuY)
+	__global double* gpuY)
 {
 	int i = get_global_id(0);
 
@@ -53,7 +53,7 @@ __kernel void LeakyReLUForward(
             }
             else
             {
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly, y.Length))
+                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
                 {
                     ForwardKernel.SetValueArgument(0, this._slope);
                     ForwardKernel.SetMemoryArgument(1, gpuY);

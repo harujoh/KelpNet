@@ -81,7 +81,6 @@ namespace KelpNet.Functions.Connections
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
-
         }
 
         public override void InitKernel()
@@ -119,18 +118,16 @@ __kernel void Convolution2DForward(
     int oy = get_global_id(1);
     int ox = get_global_id(2);
 
-    int outChOffset = och * InputCount * kHeight * kWidth;
 
     int resultIndex = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox;
 
     double localResult = 0.0;
 
+    gpuW += och * InputCount * kHeight * kWidth;
+    gpuX += batchCounter * inputLength;
+
     for (int ich = 0; ich < InputCount; ich++)
     {
-        int inChOffset = ich * kHeight * kWidth;
-
-        int inputOffset = ich * inputShape1 * inputShape2;
-
         for (int ky = 0; ky < kHeight; ky++)
         {
             int iy = oy * stride + ky - padY;
@@ -143,14 +140,17 @@ __kernel void Convolution2DForward(
 
                     if (ix >= 0 && ix < inputShape2)
                     {
-                        int wIndex = outChOffset + inChOffset + ky * kWidth + kx;
-                        int inputIndex = inputOffset + iy * inputShape2 + ix + batchCounter * inputLength;
+                        int inputIndex = iy * inputShape2 + ix;
+                        int wIndex = ky * kWidth + kx;
 
                         localResult += gpuX[inputIndex] * gpuW[wIndex];
                     }
                 }
             }
         }
+
+        gpuW += kHeight * kWidth;
+        gpuX += inputShape1 * inputShape2;
     }
 
     gpuY[resultIndex] = localResult + gpub[och];
@@ -305,14 +305,15 @@ __kernel void Convolution2DBackward(
     int ox = get_global_id(2);
 
     double gyData = gpugY[batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox];
-    int outChOffset = och * InputCount * kHeight * kWidth;
+
+    gpugW += och * InputCount * kHeight * kWidth;
+    gpuW += och * InputCount * kHeight * kWidth;
+
+    gpuX += batchCounter * prevInputLength;
+    gpugX += batchCounter * prevInputLength;
 
     for (int ich = 0; ich < prevInputShape0; ich++)
     {
-        int inChOffset = ich * kHeight * kWidth;
-
-        int inputOffset = ich * prevInputShape1 * prevInputShape2;
-
         for (int ky = 0; ky < kHeight; ky++)
         {
             int iy = oy * stride + ky - padY;
@@ -325,8 +326,8 @@ __kernel void Convolution2DBackward(
 
                     if (ix >= 0 && ix < prevInputShape2)
                     {
-                        int wIndex = outChOffset + inChOffset + ky * kWidth + kx;
-                        int inputIndex = inputOffset + iy * prevInputShape2 + ix + batchCounter * prevInputLength;
+                        int wIndex = ky * kWidth + kx;
+                        int inputIndex = iy * prevInputShape2 + ix;
 
                         atom_add_double(&gpugW[wIndex], gpuX[inputIndex] * gyData);
                         atom_add_double(&gpugX[inputIndex], gpuW[wIndex] * gyData);
@@ -334,6 +335,12 @@ __kernel void Convolution2DBackward(
                 }
             }
         }
+
+        gpuX += prevInputShape1 * prevInputShape2;
+        gpugX += prevInputShape1 * prevInputShape2;
+
+        gpugW += kHeight * kWidth;
+        gpuW += kHeight * kWidth;
     }
 
     atom_add_double(&gpugb[och], gyData);
@@ -366,7 +373,7 @@ __kernel void Convolution2DBackward(
                                     int inChOffset = ich * this._kHeight * this._kWidth;
 
                                     //inputインデックス用
-                                    int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
+                                    int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2] + batchCounter * prevInput.Length;
 
                                     for (int ky = 0; ky < this._kHeight; ky++)
                                     {
@@ -384,7 +391,7 @@ __kernel void Convolution2DBackward(
                                                     int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
 
                                                     //prevInputとgxのshapeは等しい
-                                                    int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix + batchCounter * prevInput.Length;
+                                                    int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix;
 
                                                     this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
 

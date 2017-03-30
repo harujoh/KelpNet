@@ -30,9 +30,6 @@ namespace KelpNetTester.Tests
 
         public static void Run()
         {
-            //GPUを初期化
-            Weaver.Initialize(ComputeDeviceTypes.Gpu);
-
             Stopwatch sw = new Stopwatch();
 
             //MNISTのデータを用意する

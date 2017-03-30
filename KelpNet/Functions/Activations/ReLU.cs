@@ -107,7 +107,7 @@ __kernel void ReLUBackward(
             else
             {
                 using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
-                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly, gx.Length))
+                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpuY);
                     BackwardKernel.SetMemoryArgument(1, gpugX);
