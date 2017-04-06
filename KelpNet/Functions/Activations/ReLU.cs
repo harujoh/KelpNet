@@ -21,12 +21,8 @@ namespace KelpNet.Functions.Activations
 
         const string ForwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel void ReLUForward(
-	__global double *gpuY)
+	__global Real *gpuY)
 {
 	int i = get_global_id(0);
 
@@ -75,13 +71,9 @@ __kernel void ReLUForward(
 
         const string BackwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel void ReLUBackward(
-	__global double *gpuY,
-	__global double *gpugX)
+	__global Real *gpuY,
+	__global Real *gpugX)
 {
 	int i = get_global_id(0);
 

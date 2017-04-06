@@ -60,14 +60,10 @@ namespace KelpNet.Functions.Connections
 
         const string ForwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel void LinearForward(
-	__global const double *gpuX,
-	__global const double *gpuW, 
-	__global double *gpuY,
+	__global const Real *gpuX,
+	__global const Real *gpuW, 
+	__global Real *gpuY,
 	const int OutputCount,
 	const int InputCount)
 {
@@ -77,7 +73,7 @@ __kernel void LinearForward(
     gpuX += batchCount * InputCount;
     gpuW += i * InputCount;
 
-    double gpuYSum = 0;
+    Real gpuYSum = 0;
 
     for (int j = 0; j < InputCount; j++)
     {
@@ -145,36 +141,38 @@ __kernel void LinearForward(
 
         const string BackwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel void LinearBackward(
-	__global const double *gpugY,
-	__global const double *gpuX,
-	__global const double *gpuW, 
-	__global       double *gpugW, 
-	__global       double *gpugb, 
-	__global       double *gpugX, 
+	__global const Real *gpugY,
+	__global const Real *gpuX,
+	__global const Real *gpuW, 
+	__global       Real *gpugW, 
+	__global       Real *gpugb, 
+	__global       Real *gpugX, 
 	         const int BatchCount,
 	         const int OutputCount,
 	         const int InputCount)
 {
     int j = get_global_id(0);
 
+    gpugW += j;
+    gpuW += j;
+
+    gpugX += j;
+    gpuX += j;
+
     for(int b = 0; b < BatchCount; b++)
     {
-        for(int i=0;i<OutputCount;i++)
+        for(int i = 0; i < OutputCount; i++)
         {
-            double gy = gpugY[i + b * OutputCount];
+            Real gy = gpugY[i + b * OutputCount];
 
             if(j==0)
             {
                 gpugb[i] += gy;
             }
 
-            gpugW[j + i * InputCount] += gpuX[j + b * InputCount] * gy;
-            gpugX[j + b * InputCount] += gpuW[j + i * InputCount] * gy;
+            gpugW[i * InputCount] += gpuX[b * InputCount] * gy;
+            gpugX[b * InputCount] += gpuW[i * InputCount] * gy;
         }
     }
 }

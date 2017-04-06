@@ -24,13 +24,9 @@ namespace KelpNet.Functions.Activations
 
         const string ForwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel void LeakyReLUForward(
-	         const double slope,
-	__global double* gpuY)
+	         const Real slope,
+	__global Real* gpuY)
 {
 	int i = get_global_id(0);
 
@@ -82,9 +78,9 @@ __kernel void LeakyReLUForward(
 #endif
 
 __kernel void LeakyReLUBackward(
-	__global double *gpuY,
-  	   const double slope,
-	__global double *gpugX)
+	__global Real *gpuY,
+  	   const Real slope,
+	__global Real *gpugX)
 {
 	int i = get_global_id(0);
 

@@ -11,27 +11,48 @@ namespace KelpNet.Common
     [Flags]
     public enum ComputeDeviceTypes : long
     {
-        /// <summary> </summary>
         Default = 1 << 0,
-        /// <summary> </summary>
         Cpu = 1 << 1,
-        /// <summary> </summary>
         Gpu = 1 << 2,
-        /// <summary> </summary>
         Accelerator = 1 << 3,
-        /// <summary> </summary>
         All = 0xFFFFFFFF
     }
+
+    public enum RealTypes
+    {
+        half = 0,
+        @float = 1,
+        @double = 2
+    }
+
 
     //GPU関連の処理を担うマネージャー
     public class Weaver
     {
+        public const string USE_DOUBLE_HEADER_STRING =
+@"
+#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
+#if defined(cl_khr_fp64)
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#elif defined(cl_amd_fp64)
+#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
+#endif
+";
+
+        public const string REAL_HEADER_STRING =
+@"
+//! REAL is provided by compiler option
+typedef REAL Real;
+";
+
         public static ComputeContext Context;
         private static ComputeDevice[] Devices;
         public static ComputeCommandQueue CommandQueue;
         public static int DeviceIndex;
         public static bool Enable;
         public static ComputePlatform Platform;
+        public static RealTypes RealType = RealTypes.@double;
 
         public static void Initialize(ComputeDeviceTypes selectedComputeDeviceTypes, int platformId = 0, int deviceIndex = 0)
         {
@@ -62,11 +83,20 @@ namespace KelpNet.Common
 
         public static ComputeKernel CreateKernel(string source, string kernelName)
         {
+            //浮動小数点の精度設定用
+            source = REAL_HEADER_STRING + source;
+
+            //倍精度時に追加
+            if (RealType == RealTypes.@double)
+            {
+                source = USE_DOUBLE_HEADER_STRING + source;
+            }
+
             ComputeProgram program = new ComputeProgram(Context, source);
 
             try
             {
-                program.Build(Devices, null, null, IntPtr.Zero);
+                program.Build(Devices, string.Format("-D REAL={0}", RealType), null, IntPtr.Zero);
             }
             catch
             {

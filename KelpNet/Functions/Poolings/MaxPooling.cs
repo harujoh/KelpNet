@@ -53,12 +53,8 @@ namespace KelpNet.Functions.Poolings
 
         const string ForwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel void MaxPoolingForward(
-	__global const double *gpuX,
+	__global const Real *gpuX,
 	__global int *gpuYindex,
     const int outputHeight, const int outputWidth, const int outputSize,
     const int inputShape0, const int inputShape1, const int inputShape2, const int inputSize,
@@ -75,7 +71,7 @@ __kernel void MaxPoolingForward(
     gpuX += indexOffset;
     gpuYindex += b * inputShape0 * outputSize + i * outputSize + y * outputWidth + x;
 
-    double maxVal = -DBL_MAX;
+    Real maxVal = -DBL_MAX;
 
     for (int dy = 0; dy < kHeight; dy++)
     {
@@ -105,7 +101,7 @@ __kernel void MaxPoolingForward(
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
-            double[] result = Enumerable.Repeat(double.MinValue, input.Shape[0] * outputHeight * outputWidth * input.BatchCount).ToArray();
+            double[] result = new double[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
             int[] outputIndices = new int[result.Length];
             this._prevInputShape = input.Shape.ToArray();
             this._prevInputDataLength = input.Data.Length;

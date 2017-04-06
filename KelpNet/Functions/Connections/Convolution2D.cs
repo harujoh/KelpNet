@@ -91,15 +91,11 @@ namespace KelpNet.Functions.Connections
 
         const string ForwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel void Convolution2DForward(
-	__global const double *gpuX,
-	__global const double *gpuW, 
-	__global const double *gpub, 
-	__global double *gpuY,
+	__global const Real *gpuX,
+	__global const Real *gpuW, 
+	__global const Real *gpub, 
+	__global Real *gpuY,
     const int inputShape1,
     const int inputShape2,
     const int inputLength,
@@ -121,7 +117,7 @@ __kernel void Convolution2DForward(
 
     int resultIndex = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox;
 
-    double localResult = 0.0;
+    Real localResult = 0.0;
 
     gpuW += och * InputCount * kHeight * kWidth;
     gpuX += batchCounter * inputLength;
@@ -259,24 +255,6 @@ __kernel void Convolution2DForward(
 
         const string BackwardKernelSource =
 @"
-#if __OPENCL__VERSION__ <= __CL_VERSION_1_1
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
-#endif
-
-double atom_add_double(__global double* const address, const double value)
-{
-  long oldval, newval, readback;
-  
-  *(double*)&oldval = *address;
-  *(double*)&newval = (*(double*)&oldval + value);
-  while ((readback = atom_cmpxchg((__global long*)address, oldval, newval)) != oldval) {
-    oldval = readback;
-    *(double*)&newval = (*(double*)&oldval + value);
-  }
-  return *(double*)&oldval;
-}
-
 __kernel void Convolution2DBackward(
 	__global const double *gpugY,
 	__global const double *gpuX,
@@ -304,46 +282,6 @@ __kernel void Convolution2DBackward(
     int oy = get_global_id(1);
     int ox = get_global_id(2);
 
-    double gyData = gpugY[batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox];
-
-    gpugW += och * InputCount * kHeight * kWidth;
-    gpuW += och * InputCount * kHeight * kWidth;
-
-    gpuX += batchCounter * prevInputLength;
-    gpugX += batchCounter * prevInputLength;
-
-    for (int ich = 0; ich < prevInputShape0; ich++)
-    {
-        for (int ky = 0; ky < kHeight; ky++)
-        {
-            int iy = oy * stride + ky - padY;
-
-            if (iy >= 0 && iy < prevInputShape1)
-            {
-                for (int kx = 0; kx < kWidth; kx++)
-                {
-                    int ix = ox * stride + kx - padX;
-
-                    if (ix >= 0 && ix < prevInputShape2)
-                    {
-                        int wIndex = ky * kWidth + kx;
-                        int inputIndex = iy * prevInputShape2 + ix;
-
-                        atom_add_double(&gpugW[wIndex], gpuX[inputIndex] * gyData);
-                        atom_add_double(&gpugX[inputIndex], gpuW[wIndex] * gyData);
-                    }
-                }
-            }
-        }
-
-        gpuX += prevInputShape1 * prevInputShape2;
-        gpugX += prevInputShape1 * prevInputShape2;
-
-        gpugW += kHeight * kWidth;
-        gpuW += kHeight * kWidth;
-    }
-
-    atom_add_double(&gpugb[och], gyData);
 }";
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)

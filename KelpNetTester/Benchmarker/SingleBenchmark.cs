@@ -16,7 +16,8 @@ namespace KelpNetTester.Benchmarker
         public static void Run()
         {
             //GPUを初期化
-            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            //Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            Weaver.Initialize(ComputeDeviceTypes.Cpu, 1);
 
             Stopwatch sw = new Stopwatch();
 
