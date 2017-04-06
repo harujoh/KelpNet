@@ -283,10 +283,11 @@ __kernel void Convolution2DBackward(
     int kx = get_global_id(2);
 
     int inChOffset = ich * kHeight * kWidth + ky * kWidth + kx;
+    int inputInChOffset = ich * prevInputShape1 * prevInputShape2;
 
     for (int batchCounter = 0; batchCounter < BatchCount; batchCounter++)
     {
-        int inputOffset = ich * prevInputShape1 * prevInputShape2 + batchCounter * prevInputLength;
+        int inputOffset = inputInChOffset + batchCounter * prevInputLength;
 
         for (int och = 0; och < gyShape0; och++)
         {
@@ -294,26 +295,24 @@ __kernel void Convolution2DBackward(
 
             for (int oy = 0; oy < gyShape1; oy++)
             {
+                int iy = oy * stride + ky - padY;
+
                 for (int ox = 0; ox < gyShape2; ox++)
                 {
+                    int ix = ox * stride + kx - padX;
+
                     double gyData = gpugY[batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox];
 
-                    int iy = oy * stride + ky - padY;
-
-                    if (iy >= 0 && iy < prevInputShape1)
+                    if (iy >= 0 && iy < prevInputShape1 &&
+                        ix >= 0 && ix < prevInputShape2)
                     {
-                        int ix = ox * stride + kx - padX;
+                        int inputIndex = inputOffset + iy * prevInputShape2 + ix;
 
-                        if (ix >= 0 && ix < prevInputShape2)
-                        {
-                            int inputIndex = inputOffset + iy * prevInputShape2 + ix;
-
-                            gpugW[wIndex] += gpuX[inputIndex] * gyData;
-                            gpugX[inputIndex] += gpuW[wIndex] * gyData;
-                        }
+                        gpugW[wIndex] += gpuX[inputIndex] * gyData;
+                        gpugX[inputIndex] += gpuW[wIndex] * gyData;
                     }
                                 
-                    if(och == 0 && ky == 0 && kx == 0){
+                    if(ich == 0 && ky == 0 && kx == 0){
                         gpugb[och] += gyData;
                     }
                 }
