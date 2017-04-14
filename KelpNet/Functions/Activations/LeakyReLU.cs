@@ -107,7 +107,7 @@ __kernel void LeakyReLUBackward(
             else
             {
                 using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
-                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly, gx.Length))
+                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpuY);
                     BackwardKernel.SetValueArgument(1, this._slope);

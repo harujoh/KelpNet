@@ -96,7 +96,7 @@ typedef REAL Real;
 
             try
             {
-                program.Build(Devices, string.Format("-D REAL={0}", RealType), null, IntPtr.Zero);
+                program.Build(Devices, string.Format("-D REAL={0} -Werror", RealType), null, IntPtr.Zero);
             }
             catch
             {

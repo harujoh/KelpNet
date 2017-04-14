@@ -92,10 +92,10 @@ namespace KelpNet.Functions.Connections
         const string ForwardKernelSource =
 @"
 __kernel void Convolution2DForward(
-	__global const Real *gpuX,
-	__global const Real *gpuW, 
-	__global const Real *gpub, 
-	__global Real *gpuY,
+	const __global __read_only  Real* gpuX,
+	const __global __read_only  Real* gpuW, 
+	const __global __read_only  Real* gpub, 
+	      __global __write_only Real* gpuY,
     const int inputShape1,
     const int inputShape2,
     const int inputLength,
@@ -113,9 +113,6 @@ __kernel void Convolution2DForward(
 	int och = get_global_id(0) % OutputCount;
     int oy = get_global_id(1);
     int ox = get_global_id(2);
-
-
-    int resultIndex = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox;
 
     Real localResult = 0.0;
 
@@ -136,8 +133,8 @@ __kernel void Convolution2DForward(
 
                     if (ix >= 0 && ix < inputShape2)
                     {
-                        int inputIndex = iy * inputShape2 + ix;
-                        int wIndex = ky * kWidth + kx;
+                        int inputIndex = ich * inputShape1 * inputShape2 + iy * inputShape2 + ix;
+                        int wIndex = ich * kHeight * kWidth + ky * kWidth + kx;
 
                         localResult += gpuX[inputIndex] * gpuW[wIndex];
                     }
@@ -145,11 +142,9 @@ __kernel void Convolution2DForward(
             }
         }
 
-        gpuW += kHeight * kWidth;
-        gpuX += inputShape1 * inputShape2;
     }
 
-    gpuY[resultIndex] = localResult + gpub[och];
+    gpuY[batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox] = localResult + gpub[och];
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
@@ -216,7 +211,7 @@ __kernel void Convolution2DForward(
                 using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
                 using (ComputeBuffer<double> gpuW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                 using (ComputeBuffer<double> gpub = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data))
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly, result.Length))
+                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuW);
@@ -256,22 +251,22 @@ __kernel void Convolution2DForward(
         const string BackwardKernelSource =
 @"
 __kernel void Convolution2DBackward(
-	__global const double *gpugY,
-	__global const double *gpuX,
-	__global const double *gpuW, 
-	__global       double *gpugW, 
-	__global       double *gpugb, 
-	__global       double *gpugX, 
+	const __global __read_only  double* gpugY,
+	const __global __read_only  double* gpuX,
+	const __global __read_only  double* gpuW, 
+  	      __global __read_write double* gpugW, 
+	      __global __read_write double* gpugb, 
+	      __global __read_write double* gpugX, 
 	const int OutputCount,
 	const int InputCount,
 	const int BatchCount,
     const int gyShape0,
     const int gyShape1,
     const int gyShape2,
-    const int prevInputShape0,
-    const int prevInputShape1,
-    const int prevInputShape2,
-    const int prevInputLength,
+    const int xShape0,
+    const int xShape1,
+    const int xShape2,
+    const int xLength,
     const int stride,
 	const int padX,
 	const int padY,
@@ -279,40 +274,47 @@ __kernel void Convolution2DBackward(
 	const int kWidth)
 {
 	int ich = get_global_id(0);
-    int ky = get_global_id(1);
-    int kx = get_global_id(2);
 
-    int inChOffset = ich * kHeight * kWidth + ky * kWidth + kx;
-    int inputInChOffset = ich * prevInputShape1 * prevInputShape2;
+    gpuW += ich * kHeight * kWidth;
+    gpugW += ich * kHeight * kWidth;
+    gpuX += ich * xShape1 * xShape2; 
+    gpugX += ich * xShape1 * xShape2; 
+
 
     for (int batchCounter = 0; batchCounter < BatchCount; batchCounter++)
     {
-        int inputOffset = inputInChOffset + batchCounter * prevInputLength;
-
         for (int och = 0; och < gyShape0; och++)
         {
-            int wIndex = och * InputCount * kHeight * kWidth + inChOffset;
-
             for (int oy = 0; oy < gyShape1; oy++)
             {
-                int iy = oy * stride + ky - padY;
-
                 for (int ox = 0; ox < gyShape2; ox++)
                 {
-                    int ix = ox * stride + kx - padX;
-
                     double gyData = gpugY[batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox];
 
-                    if (iy >= 0 && iy < prevInputShape1 &&
-                        ix >= 0 && ix < prevInputShape2)
+                    for (int ky = 0; ky < kHeight; ky++)
                     {
-                        int inputIndex = inputOffset + iy * prevInputShape2 + ix;
+                        int iy = oy * stride + ky - padY;
 
-                        gpugW[wIndex] += gpuX[inputIndex] * gyData;
-                        gpugX[inputIndex] += gpuW[wIndex] * gyData;
+                        if (iy >= 0 && iy < xShape1)
+                        {
+                            for (int kx = 0; kx < kWidth; kx++)
+                            {
+                                int ix = ox * stride + kx - padX;
+
+                                if (ix >= 0 && ix < xShape2)
+                                {
+                                    int wIndex = och * InputCount * kHeight * kWidth + ky * kWidth + kx;
+                                    int inputIndex = batchCounter * xLength + iy * xShape2 + ix;
+
+                                    gpugW[wIndex] += gpuX[inputIndex] * gyData;
+                                    gpugX[inputIndex] += gpuW[wIndex] * gyData;
+                                }
+                            }
+                        }
                     }
-                                
-                    if(ich == 0 && ky == 0 && kx == 0){
+
+                    if(ich == 0)
+                    {
                         gpugb[och] += gyData;
                     }
                 }
@@ -321,9 +323,9 @@ __kernel void Convolution2DBackward(
     }
 }";
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray x)
         {
-            double[] gx = new double[prevInput.Data.Length];
+            double[] gx = new double[x.Data.Length];
 
             if (!IsGpu)
             {
@@ -342,33 +344,33 @@ __kernel void Convolution2DBackward(
                             {
                                 double gyData = gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
 
-                                for (int ich = 0; ich < prevInput.Shape[0]; ich++)
+                                for (int ich = 0; ich < x.Shape[0]; ich++)
                                 {
                                     //gWインデックス用
                                     int inChOffset = ich * this._kHeight * this._kWidth;
 
                                     //inputインデックス用
-                                    int inputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2] + batchCounter * prevInput.Length;
+                                    int inputOffset = ich * x.Shape[1] * x.Shape[2] + batchCounter * x.Length;
 
                                     for (int ky = 0; ky < this._kHeight; ky++)
                                     {
                                         int iy = oy * this._stride + ky - this._padY;
 
-                                        if (iy >= 0 && iy < prevInput.Shape[1])
+                                        if (iy >= 0 && iy < x.Shape[1])
                                         {
                                             for (int kx = 0; kx < this._kWidth; kx++)
                                             {
                                                 int ix = ox * this._stride + kx - this._padX;
 
-                                                if (ix >= 0 && ix < prevInput.Shape[2])
+                                                if (ix >= 0 && ix < x.Shape[2])
                                                 {
                                                     //WとgWのshapeは等しい
                                                     int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
 
-                                                    //prevInputとgxのshapeは等しい
-                                                    int inputIndex = inputOffset + iy * prevInput.Shape[2] + ix;
+                                                    //xとgxのshapeは等しい
+                                                    int inputIndex = inputOffset + iy * x.Shape[2] + ix;
 
-                                                    this.gW.Data[wIndex] += prevInput.Data[inputIndex] * gyData;
+                                                    this.gW.Data[wIndex] += x.Data[inputIndex] * gyData;
 
                                                     gx[inputIndex] += this.W.Data[wIndex] * gyData;
                                                 }
@@ -386,7 +388,7 @@ __kernel void Convolution2DBackward(
             else
             {
                 using (ComputeBuffer<double> gpugY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
-                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevInput.Data))
+                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
                 using (ComputeBuffer<double> gpuW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                 using (ComputeBuffer<double> gpugW = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
                 using (ComputeBuffer<double> gpugb = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gb.Data))
@@ -404,10 +406,10 @@ __kernel void Convolution2DBackward(
                     BackwardKernel.SetValueArgument(9, gy.Shape[0]);
                     BackwardKernel.SetValueArgument(10, gy.Shape[1]);
                     BackwardKernel.SetValueArgument(11, gy.Shape[2]);
-                    BackwardKernel.SetValueArgument(12, prevInput.Shape[0]);
-                    BackwardKernel.SetValueArgument(13, prevInput.Shape[1]);
-                    BackwardKernel.SetValueArgument(14, prevInput.Shape[2]);
-                    BackwardKernel.SetValueArgument(15, prevInput.Length);
+                    BackwardKernel.SetValueArgument(12, x.Shape[0]);
+                    BackwardKernel.SetValueArgument(13, x.Shape[1]);
+                    BackwardKernel.SetValueArgument(14, x.Shape[2]);
+                    BackwardKernel.SetValueArgument(15, x.Length);
                     BackwardKernel.SetValueArgument(16, this._stride);
                     BackwardKernel.SetValueArgument(17, this._padX);
                     BackwardKernel.SetValueArgument(18, this._padY);
@@ -418,7 +420,7 @@ __kernel void Convolution2DBackward(
                     (
                         BackwardKernel,
                         null,
-                        new long[] { prevInput.Shape[0], this._kHeight, this._kWidth },
+                        new long[] { x.Shape[0] },
                         null,
                         null
                     );
@@ -430,7 +432,7 @@ __kernel void Convolution2DBackward(
                 }
             }
 
-            return BatchArray.Convert(gx, prevInput.Shape, prevInput.BatchCount);
+            return BatchArray.Convert(gx, x.Shape, x.BatchCount);
         }
     }
 }
