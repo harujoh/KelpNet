@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using KelpNet.Common;
 using KelpNet.Functions;
 using KelpNet.Functions.Connections;
@@ -44,7 +45,7 @@ namespace KelpNetTester.Tests
             {
                 NdArray[] sequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 
-                double loss = ComputeLoss(model, sequences);
+                Real loss = ComputeLoss(model, sequences);
 
                 model.Update();
 
@@ -63,10 +64,10 @@ namespace KelpNetTester.Tests
             predict(testSequences[sample_index], model, PREDICTION_LENGTH);
         }
 
-        static double ComputeLoss(FunctionStack model, NdArray[] sequences)
+        static Real ComputeLoss(FunctionStack model, NdArray[] sequences)
         {
             //全体での誤差を集計
-            List<double> totalLoss = new List<double>();
+            Real totalLoss = 0;
             BatchArray x = new BatchArray(new[] { 1 }, MINI_BATCH_SIZE);
             BatchArray t = new BatchArray(new[] { 1 }, MINI_BATCH_SIZE);
 
@@ -80,9 +81,9 @@ namespace KelpNetTester.Tests
                     t.Data[j] = sequences[j].Data[i + 1];
                 }
 
-                double sumLoss;
+                Real sumLoss;
                 backNdArrays.Push(new MeanSquaredError().Evaluate(model.Forward(x), t, out sumLoss));
-                totalLoss.Add(sumLoss);
+                totalLoss += sumLoss;
             }
 
             for (int i = 0; backNdArrays.Count > 0; i++)
@@ -90,27 +91,27 @@ namespace KelpNetTester.Tests
                 model.Backward(backNdArrays.Pop());
             }
 
-            return totalLoss.Average();
+            return totalLoss / (LENGTH_OF_SEQUENCE - 1);
         }
 
         static void predict(NdArray seq, FunctionStack model, int pre_length)
         {
-            double[] pre_input_seq = new double[seq.Data.Length / 4];
+            Real[] pre_input_seq = new Real[seq.Data.Length / 4];
             if (pre_input_seq.Length < 1)
             {
-                pre_input_seq = new double[1];
+                pre_input_seq = new Real[1];
             }
-            Buffer.BlockCopy(seq.Data, 0, pre_input_seq, 0, sizeof(double) * pre_input_seq.Length);
+            Array.Copy(seq.Data, pre_input_seq, pre_input_seq.Length);
 
-            List<double> input_seq = new List<double>();
+            List<Real> input_seq = new List<Real>();
             input_seq.AddRange(pre_input_seq);
 
-            List<double> output_seq = new List<double>();
+            List<Real> output_seq = new List<Real>();
             output_seq.Add(input_seq[input_seq.Count - 1]);
 
             for (int i = 0; i < pre_length; i++)
             {
-                double future = predict_sequence(model, input_seq);
+                Real future = predict_sequence(model, input_seq);
                 input_seq.RemoveAt(0);
                 input_seq.Add(future);
                 output_seq.Add(future);
@@ -124,7 +125,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine(seq);
         }
 
-        static double predict_sequence(FunctionStack model, List<double> input_seq)
+        static Real predict_sequence(FunctionStack model, List<Real> input_seq)
         {
             model.ResetState();
 
@@ -157,7 +158,7 @@ namespace KelpNetTester.Tests
                 {
                     for (int j = 0; j < this.stepsPerCycle; j++)
                     {
-                        result.Data[j + i * this.stepsPerCycle] = Math.Sin(j * 2 * Math.PI / this.stepsPerCycle);
+                        result.Data[j + i * this.stepsPerCycle] = (Real)Math.Sin(j * 2 * Math.PI / this.stepsPerCycle);
                     }
                 }
 

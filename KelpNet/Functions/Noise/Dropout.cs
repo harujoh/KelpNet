@@ -10,12 +10,12 @@ namespace KelpNet.Functions.Noise
     [Serializable]
     public class Dropout : Function
     {
-        private readonly double dropoutRatio;
-        private readonly List<double[]> maskStack = new List<double[]>();
+        private readonly Real dropoutRatio;
+        private readonly List<Real[]> maskStack = new List<Real[]>();
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
+        public Dropout(Real? dropoutRatio = null, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
         {
-            this.dropoutRatio = dropoutRatio;
+            this.dropoutRatio = dropoutRatio ?? 0.5f;
         }
 
         public override void InitKernel()
@@ -39,9 +39,9 @@ __kernel void DropoutForward(
 
         protected override BatchArray ForwardSingle(BatchArray x)
         {
-            double[] result = new double[x.Data.Length];
-            double[] mask = new double[x.Length];
-            double scale = 1.0 / (1.0 - this.dropoutRatio);
+            Real[] result = new Real[x.Data.Length];
+            Real[] mask = new Real[x.Length];
+            Real scale = 1.0f / (1.0f - this.dropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)
             {
@@ -57,9 +57,9 @@ __kernel void DropoutForward(
             }
             else
             {
-                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
-                using (ComputeBuffer<double> gpuMask = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
+                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
+                using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
                     ForwardKernel.SetMemoryArgument(1, gpuMask);
@@ -100,8 +100,8 @@ __kernel void DropoutBackward(
 
         protected override BatchArray BackwardSingle(BatchArray gy)
         {
-            double[] result = gy.Data.ToArray();
-            double[] mask = this.maskStack[this.maskStack.Count - 1];
+            Real[] result = gy.Data.ToArray();
+            Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
             if (!IsGpu)
@@ -116,8 +116,8 @@ __kernel void DropoutBackward(
             }
             else
             {
-                using (ComputeBuffer<double> gpuMask = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
-                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
+                using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
+                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpuMask);
                     BackwardKernel.SetMemoryArgument(1, gpugX);

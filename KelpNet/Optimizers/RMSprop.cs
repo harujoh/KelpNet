@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -7,15 +8,15 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class RMSprop : Optimizer
     {
-        public double LearningRate;
-        public double Alpha;
-        public double Epsilon;
+        public Real LearningRate;
+        public Real Alpha;
+        public Real Epsilon;
 
-        public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8)
+        public RMSprop(Real? learningRate = null, Real? alpha = null, Real? epsilon = null)
         {
-            this.LearningRate = learningRate;
-            this.Alpha = alpha;
-            this.Epsilon = epsilon;
+            this.LearningRate = learningRate ?? 0.01f;
+            this.Alpha = alpha ?? 0.99f;
+            this.Epsilon = epsilon ?? (Real)1e-8f;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -31,23 +32,23 @@ namespace KelpNet.Optimizers
     class RMSpropParameter : OptimizerParameter
     {
         private readonly RMSprop optimiser;
-        private readonly double[] ms;
+        private readonly Real[] ms;
 
         public RMSpropParameter(FunctionParameter parameter, RMSprop optimiser) : base(parameter)
         {
             this.optimiser = optimiser;
-            this.ms = new double[parameter.Length];
+            this.ms = new Real[parameter.Length];
         }
 
         public override void UpdateFunctionParameters()
         {
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = this.FunctionParameter.Grad.Data[i];
+                Real grad = this.FunctionParameter.Grad.Data[i];
                 this.ms[i] *= this.optimiser.Alpha;
                 this.ms[i] += (1 - this.optimiser.Alpha) * grad * grad;
 
-                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / ((Real)Math.Sqrt(this.ms[i]) + this.optimiser.Epsilon);
             }
         }
     }

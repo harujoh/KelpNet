@@ -46,10 +46,10 @@ namespace KelpNetTester.Tests
 
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
             GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);
-            SGD sgd = new SGD(learningRate: 1.0);
+            SGD sgd = new SGD(learningRate: 1.0f);
             model.SetOptimizer(gradientClipping, sgd);
 
-            double wholeLen = trainData.Length;
+            Real wholeLen = trainData.Length;
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
             int epoch = 0;
 
@@ -68,7 +68,7 @@ namespace KelpNetTester.Tests
                     t.Data[j] = trainData[(int)((jump * j + i + 1) % wholeLen)];
                 }
 
-                double sumLoss;
+                Real sumLoss;
                 backNdArrays.Push(new SoftmaxCrossEntropy().Evaluate(model.Forward(x), t, out sumLoss));
                 Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
 
@@ -93,23 +93,25 @@ namespace KelpNetTester.Tests
 
                     if (epoch >= 6)
                     {
-                        sgd.LearningRate /= 1.2;
+                        sgd.LearningRate /= 1.2f;
                         Console.WriteLine("learning rate =" + sgd.LearningRate);
                     }
                 }
             }
 
             Console.WriteLine("test start");
-            double testPerp = Evaluate(model, testData);
+            Real testPerp = Evaluate(model, testData);
             Console.WriteLine("test perplexity:" + testPerp);
         }
 
-        static double Evaluate(FunctionStack model, int[] dataset)
+        static Real Evaluate(FunctionStack model, int[] dataset)
         {
             FunctionStack predictModel = model.Clone();
             predictModel.ResetState();
 
-            List<double> totalLoss = new List<double>();
+            //List<Real> totalLoss = new List<Real>();
+            Real totalLoss = 0;
+            long totalLossCount = 0;
 
             for (int i = 0; i < dataset.Length - 1; i++)
             {
@@ -122,13 +124,14 @@ namespace KelpNetTester.Tests
                     t.Data[j] = dataset[j + i + 1];
                 }
 
-                double sumLoss;
+                Real sumLoss;
                 new SoftmaxCrossEntropy().Evaluate(predictModel.Forward(x), t, out sumLoss);
-                totalLoss.Add(sumLoss);
+                totalLoss += sumLoss;
+                totalLossCount++;
             }
 
             //calc perplexity
-            return Math.Exp(totalLoss.Sum() / (totalLoss.Count - 1));
+            return (Real)Math.Exp(totalLoss / (totalLossCount - 1));
         }
     }
 }

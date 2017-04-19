@@ -12,8 +12,8 @@ namespace KelpNetTester
         static void Main(string[] args)
         {
             //GPUを初期化
-            //Weaver.Initialize(ComputeDeviceTypes.Gpu);
-            Weaver.Initialize(ComputeDeviceTypes.Cpu,1);
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            //Weaver.Initialize(ComputeDeviceTypes.Cpu,1);
 
             //MLPによるXORの学習
             //Test1.Run();
@@ -31,7 +31,7 @@ namespace KelpNetTester
             //Test5.Run();
 
             //5層CNNによるMNISTの学習
-            Test6.Run();
+            //Test6.Run();
 
             //BatchNormを使った15層MLPによるMNISTの学習
             //Test7.Run();
@@ -58,7 +58,7 @@ namespace KelpNetTester
             //TestX.Run();
 
             //ベンチマーク
-            //SingleBenchmark.Run();
+            SingleBenchmark.Run();
 
             Console.WriteLine("Test Done...");
             Console.Read();

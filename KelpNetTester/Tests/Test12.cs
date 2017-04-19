@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using KelpNet.Common;
 using KelpNet.Common.Tools;
 using KelpNet.Functions;
@@ -41,12 +42,12 @@ namespace KelpNetTester.Tests
 
             public BatchArray GetTrainData()
             {
-                double[] tmp = new double[(256 + 10) * BATCH_DATA_COUNT];
+                Real[] tmp = new Real[(256 + 10) * BATCH_DATA_COUNT];
 
                 for (int k = 0; k < BATCH_DATA_COUNT; k++)
                 {
-                    tmp[256 + (int)this.Label.Data[k * this.Label.Length] + k * (256 + 10)] = 1.0;
-                    Buffer.BlockCopy(this.Result.Data, sizeof(double) * k * this.Result.Length, tmp, sizeof(double) * k * (256 + 10), sizeof(double) * 256);
+                    tmp[256 + (int)this.Label.Data[k * this.Label.Length] + k * (256 + 10)] = 1;
+                    Array.Copy(this.Result.Data, k * this.Result.Length, tmp, k * (256 + 10), 256);
                 }
 
                 return BatchArray.Convert(tmp, new[] { 256 + 10 }, BATCH_DATA_COUNT);
@@ -97,45 +98,47 @@ namespace KelpNetTester.Tests
                 new Linear(256 + 10, 1024, name: "cDNI1 Linear1"),
                 new BatchNormalization(1024, name: "cDNI1 Nrom1"),
                 new ReLU(name: "cDNI1 ReLU1"),
-                new Linear(1024, 256, initialW: new double[1024, 256], name: "DNI1 Linear3")
+                new Linear(1024, 256, initialW: new Real[1024, 256], name: "DNI1 Linear3")
             );
 
             FunctionStack cDNI2 = new FunctionStack(
                 new Linear(256 + 10, 1024, name: "cDNI2 Linear1"),
                 new BatchNormalization(1024, name: "cDNI2 Nrom1"),
                 new ReLU(name: "cDNI2 ReLU1"),
-                new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI2 Linear3")
+                new Linear(1024, 256, initialW: new Real[1024, 256], name: "cDNI2 Linear3")
             );
 
             FunctionStack cDNI3 = new FunctionStack(
                 new Linear(256 + 10, 1024, name: "cDNI3 Linear1"),
                 new BatchNormalization(1024, name: "cDNI3 Nrom1"),
                 new ReLU(name: "cDNI3 ReLU1"),
-                new Linear(1024, 256, initialW: new double[1024, 256], name: "cDNI3 Linear3")
+                new Linear(1024, 256, initialW: new Real[1024, 256], name: "cDNI3 Linear3")
             );
 
             //optimizerを宣言
-            Layer1.SetOptimizer(new Adam(0.00003));
-            Layer2.SetOptimizer(new Adam(0.00003));
-            Layer3.SetOptimizer(new Adam(0.00003));
-            Layer4.SetOptimizer(new Adam(0.00003));
+            Layer1.SetOptimizer(new Adam(0.00003f));
+            Layer2.SetOptimizer(new Adam(0.00003f));
+            Layer3.SetOptimizer(new Adam(0.00003f));
+            Layer4.SetOptimizer(new Adam(0.00003f));
 
-            cDNI1.SetOptimizer(new Adam(0.00003));
-            cDNI2.SetOptimizer(new Adam(0.00003));
-            cDNI3.SetOptimizer(new Adam(0.00003));
+            cDNI1.SetOptimizer(new Adam(0.00003f));
+            cDNI2.SetOptimizer(new Adam(0.00003f));
+            cDNI3.SetOptimizer(new Adam(0.00003f));
 
             for (int epoch = 0; epoch < 10; epoch++)
             {
                 Console.WriteLine("epoch " + (epoch + 1));
 
                 //全体での誤差を集計
-                List<double> totalLoss = new List<double>();
+                Real totalLoss = 0;
+                Real cDNI1totalLoss = 0;
+                Real cDNI2totalLoss = 0;
+                Real cDNI3totalLoss = 0;
 
-                List<double> cDNI1totalLoss = new List<double>();
-
-                List<double> cDNI2totalLoss = new List<double>();
-
-                List<double> cDNI3totalLoss = new List<double>();
+                long totalLossCount = 0;
+                long cDNI1totalLossCount = 0;
+                long cDNI2totalLossCount = 0;
+                long cDNI3totalLossCount = 0;
 
 
                 //何回バッチを実行するか
@@ -169,13 +172,13 @@ namespace KelpNetTester.Tests
 
 
                     //第一層用のcDNIの学習を実行
-                    double cDNI1loss = 0;
+                    Real cDNI1loss = 0;
                     BatchArray DNI1lossResult = new MeanSquaredError().Evaluate(cDNI1Result, layer2BackwardResult, out cDNI1loss);
 
                     cDNI1.Backward(DNI1lossResult);
                     cDNI1.Update();
-                    cDNI1totalLoss.Add(cDNI1loss);
-
+                    cDNI1totalLoss+=cDNI1loss;
+                    cDNI1totalLossCount++;
 
                     //第三層を実行
                     BatchArray layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
@@ -190,44 +193,44 @@ namespace KelpNetTester.Tests
 
 
                     //第二層用のcDNIの学習を実行
-                    double cDNI2loss = 0;
+                    Real cDNI2loss = 0;
                     BatchArray DNI2lossResult = new MeanSquaredError().Evaluate(cDNI2Result, layer3BackwardResult, out cDNI2loss);
 
                     cDNI2.Backward(DNI2lossResult);
                     cDNI2.Update();
-                    cDNI2totalLoss.Add(cDNI2loss);
-
+                    cDNI2totalLoss=cDNI2loss;
+                    cDNI2totalLossCount++;
 
                     //第四層を実行
                     BatchArray layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
 
                     //第四層の傾きを取得
-                    double sumLoss = 0;
+                    Real sumLoss = 0;
                     BatchArray lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, layer3ResultDataSet.Label, out sumLoss);
 
                     //第四層を更新
                     BatchArray layer4BackwardResult = Layer4.Backward(lossResult);
                     Layer4.Update();
-                    totalLoss.Add(sumLoss);
-
+                    totalLoss=sumLoss;
+                    totalLossCount++;
 
                     //第三層用のcDNIの学習を実行
-                    double cDNI3loss = 0;
+                    Real cDNI3loss = 0;
                     BatchArray DNI3lossResult = new MeanSquaredError().Evaluate(cDNI3Result, layer4BackwardResult, out cDNI3loss);
 
                     cDNI3.Backward(DNI3lossResult);
                     cDNI3.Update();
-                    cDNI3totalLoss.Add(cDNI3loss);
-
+                    cDNI3totalLoss=cDNI3loss;
+                    cDNI3totalLossCount++;
 
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
                     //結果出力
-                    Console.WriteLine("total loss " + totalLoss.Average());
+                    Console.WriteLine("total loss " + totalLoss/totalLossCount);
                     Console.WriteLine("local loss " + sumLoss);
 
-                    Console.WriteLine("\ncDNI1 total loss " + cDNI1totalLoss.Average());
-                    Console.WriteLine("cDNI2 total loss " + cDNI2totalLoss.Average());
-                    Console.WriteLine("cDNI3 total loss " + cDNI3totalLoss.Average());
+                    Console.WriteLine("\ncDNI1 total loss " + cDNI1totalLoss/cDNI1totalLossCount);
+                    Console.WriteLine("cDNI2 total loss " + cDNI2totalLoss/cDNI2totalLossCount);
+                    Console.WriteLine("cDNI3 total loss " + cDNI3totalLoss/cDNI3totalLossCount);
 
                     Console.WriteLine("\ncDNI1 local loss " + cDNI1loss);
                     Console.WriteLine("cDNI2 local loss " + cDNI2loss);
@@ -242,7 +245,7 @@ namespace KelpNetTester.Tests
                         MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

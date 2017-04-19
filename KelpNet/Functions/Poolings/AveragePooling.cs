@@ -43,8 +43,8 @@ namespace KelpNet.Functions.Poolings
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
-            double[] result = new double[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
-            double m = this._kHeight * this._kWidth;
+            Real[] result = new Real[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
+            Real m = this._kHeight * this._kWidth;
 
             for (int b = 0; b < input.BatchCount; b++)
             {
@@ -89,8 +89,8 @@ namespace KelpNet.Functions.Poolings
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
         {
-            double[] result = new double[prevInput.Data.Length];
-            double m = this._kHeight * this._kWidth;
+            Real[] result = new Real[prevInput.Data.Length];
+            Real m = this._kHeight * this._kWidth;
 
             for (int b = 0; b < gy.BatchCount; b++)
             {
@@ -104,7 +104,7 @@ namespace KelpNet.Functions.Poolings
                     {
                         for (int x = 0; x < prevOutput.Shape[2]; x++)
                         {
-                            double gyData = gy.Data[gyIndex] / m;
+                            Real gyData = gy.Data[gyIndex] / m;
 
                             for (int dy = 0; dy < this._kHeight; dy++)
                             {

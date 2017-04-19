@@ -61,7 +61,8 @@ namespace KelpNetTester.Tests
                 Console.WriteLine("epoch " + epoch);
 
                 //全体での誤差を集計
-                List<double> totalLoss = new List<double>();
+                Real totalLoss = 0;
+                long totalLossCount = 0;
 
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
@@ -74,11 +75,12 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
-                    totalLoss.Add(sumLoss);
+                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    totalLoss += sumLoss;
+                    totalLossCount++;
 
                     //結果出力
-                    Console.WriteLine("total loss " + totalLoss.Average());
+                    Console.WriteLine("total loss " + totalLoss / totalLossCount);
                     Console.WriteLine("local loss " + sumLoss);
 
                     sw.Stop();
@@ -93,7 +95,7 @@ namespace KelpNetTester.Tests
                         MnistDataSet datasetY = mnistData.GetRandomYSet(TEACH_DATA_COUNT);
 
                         //テストを実行
-                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

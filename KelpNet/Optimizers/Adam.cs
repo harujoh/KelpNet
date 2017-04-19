@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -7,17 +8,17 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class Adam : Optimizer
     {
-        public double Alpha;
-        public double Beta1;
-        public double Beta2;
-        public double Epsilon;
+        public Real Alpha;
+        public Real Beta1;
+        public Real Beta2;
+        public Real Epsilon;
 
-        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8)
+        public Adam(Real? alpha = null, Real? beta1 = null, Real? beta2 = null, Real? epsilon = null)
         {
-            this.Alpha = alpha;
-            this.Beta1 = beta1;
-            this.Beta2 = beta2;
-            this.Epsilon = epsilon;
+            this.Alpha = alpha ?? 0.001f;
+            this.Beta1 = beta1 ?? 0.9f;
+            this.Beta2 = beta2 ?? 0.999f;
+            this.Epsilon = epsilon ??(Real)1e-8f;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -34,31 +35,31 @@ namespace KelpNet.Optimizers
     {
         private readonly Adam optimiser;
 
-        private readonly double[] m;
-        private readonly double[] v;
+        private readonly Real[] m;
+        private readonly Real[] v;
 
         public AdamParameter(FunctionParameter parameter, Adam optimiser) : base(parameter)
         {
-            this.m = new double[parameter.Length];
-            this.v = new double[parameter.Length];
+            this.m = new Real[parameter.Length];
+            this.v = new Real[parameter.Length];
 
             this.optimiser = optimiser;
         }
 
         public override void UpdateFunctionParameters()
         {
-            double fix1 = 1 - Math.Pow(this.optimiser.Beta1, this.optimiser.UpdateCount);
-            double fix2 = 1 - Math.Pow(this.optimiser.Beta2, this.optimiser.UpdateCount);
-            double lr = this.optimiser.Alpha * Math.Sqrt(fix2) / fix1;
+            Real fix1 = 1 - (Real)Math.Pow(this.optimiser.Beta1, this.optimiser.UpdateCount);
+            Real fix2 = 1 - (Real)Math.Pow(this.optimiser.Beta2, this.optimiser.UpdateCount);
+            Real lr = this.optimiser.Alpha * (Real)Math.Sqrt(fix2) / fix1;
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = this.FunctionParameter.Grad.Data[i];
+                Real grad = this.FunctionParameter.Grad.Data[i];
 
                 this.m[i] += (1 - this.optimiser.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this.optimiser.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Param.Data[i] -= lr * this.m[i] / (Math.Sqrt(this.v[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= lr * this.m[i] / ((Real)Math.Sqrt(this.v[i]) + this.optimiser.Epsilon);
             }
         }
     }

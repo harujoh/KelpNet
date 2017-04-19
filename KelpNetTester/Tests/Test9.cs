@@ -54,7 +54,7 @@ namespace KelpNetTester.Tests
 
                     if (id == vocabulary.EosID)
                     {
-                        double accumloss = 0;
+                        Real accumloss = 0;
                         Stack<BatchArray> tmp = new Stack<BatchArray>();
 
                         for (int i = 0; i < s.Count; i++)
@@ -76,7 +76,7 @@ namespace KelpNetTester.Tests
                             //l3 Linear
                             BatchArray h2 = model.Functions[3].Forward(h);
 
-                            double loss;
+                            Real loss;
                             tmp.Push(softmaxCrossEntropy.Evaluate(h2, new BatchArray(new[] { tx }), out loss));
                             accumloss += loss;
                         }
@@ -104,7 +104,7 @@ namespace KelpNetTester.Tests
 
             Console.WriteLine("Test Start.");
 
-            double sum = 0.0;
+            Real sum = 0;
             int wnum = 0;
             List<int> ts = new List<int>();
             bool unkWord = false;
@@ -143,9 +143,9 @@ namespace KelpNetTester.Tests
             Console.WriteLine(Math.Pow(2.0, sum / wnum));
         }
 
-        static double CalPs(FunctionStack model, List<int> s)
+        static Real CalPs(FunctionStack model, List<int> s)
         {
-            double sum = 0.0;
+            Real sum = 0;
 
             BatchArray h = new BatchArray(NdArray.Zeros(N_UNITS));
 
@@ -166,8 +166,8 @@ namespace KelpNetTester.Tests
 
                 //l3 Softmax(l3 Linear)
                 BatchArray yv = model.Functions[4].Forward(model.Functions[3].Forward(h));
-                double pi = yv.Data[s[i - 1]];
-                sum -= Math.Log(pi, 2);
+                Real pi = yv.Data[s[i - 1]];
+                sum -= (Real)Math.Log(pi, 2);
             }
 
             return sum;

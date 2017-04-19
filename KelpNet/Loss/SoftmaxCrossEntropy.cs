@@ -7,14 +7,15 @@ namespace KelpNet.Loss
 {
     public class SoftmaxCrossEntropy : ILossFunction
     {
-        public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out double loss)
+        public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out Real loss)
         {
-            double[] localloss = new double[input.BatchCount];
-            double[] gx = new double[input.Data.Length];
+            //Real[] localloss = new Real[input.BatchCount];
+            Real localloss = 0;
+            Real[] gx = new Real[input.Data.Length];
 
             for (int b = 0; b < input.BatchCount; b++)
             {
-                double maxIndex = 0;
+                Real maxIndex = 0;
 
                 for (int i = 0; i < teachSignal.Length; i++)
                 {
@@ -24,9 +25,9 @@ namespace KelpNet.Loss
                     }
                 }
 
-                double[] logY = new double[input.Length];
-                double[] y = new double[input.Length];
-                double m = input.Data[b * input.Length];
+                Real[] logY = new Real[input.Length];
+                Real y = 0;
+                Real m = input.Data[b * input.Length];
 
                 for (int i = 1; i < input.Length; i++)
                 {
@@ -38,28 +39,28 @@ namespace KelpNet.Loss
 
                 for (int i = 0; i < input.Length; i++)
                 {
-                    y[i] = Math.Exp(input.Data[i + b * input.Length] - m);
+                    y += (Real)Math.Exp(input.Data[i + b * input.Length] - m);                    
                 }
 
-                m += Math.Log(y.Sum());
+                m += (Real)Math.Log(y);
 
                 for (int i = 0; i < input.Length; i++)
                 {
                     logY[i] = input.Data[i + b * input.Length] - m;
                 }
 
-                localloss[b] = -logY[(int)maxIndex];
+                localloss += -logY[(int)maxIndex];
 
 
                 for (int i = 0; i < logY.Length; i++)
                 {
-                    gx[i + b * input.Length] = Math.Exp(logY[i]);
+                    gx[i + b * input.Length] = (Real)Math.Exp(logY[i]);
                 }
 
                 gx[(int)maxIndex + b * input.Length] -= 1;
             }
 
-            loss = localloss.Average();
+            loss = localloss / input.BatchCount;
 
             return BatchArray.Convert(gx, input.Shape, input.BatchCount);
         }

@@ -7,11 +7,11 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class ELU : NeedPreviousDataFunction
     {
-        private readonly double _alpha;
+        private readonly Real _alpha;
 
-        public ELU(double alpha = 1.0, string name = "ELU", bool isGpu = true) : base(name, isGpu)
+        public ELU(Real? alpha = null, string name = "ELU", bool isGpu = true) : base(name, isGpu)
         {
-            this._alpha = alpha;
+            this._alpha = alpha ?? 1f;
         }
 
         public override void InitKernel()
@@ -20,11 +20,18 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] result = new double[x.Data.Length];
+            Real[] result = new Real[x.Data.Length];
 
             for (int i = 0; i < x.Data.Length; i++)
             {
-                result[i] = x.Data[i] >= 0 ? x.Data[i] : this._alpha * (Math.Exp(x.Data[i]) - 1);
+                if (x.Data[i] >= 0)
+                {
+                    result[i] = x.Data[i];
+                }
+                else
+                {
+                    result[i] = this._alpha * ((Real)Math.Exp(x.Data[i]) - 1);
+                }
             }
 
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
@@ -32,13 +39,18 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
         {
-            double[] result = new double[gy.Data.Length];
+            Real[] result = new Real[gy.Data.Length];
 
             for (int i = 0; i < gy.Data.Length; i++)
             {
-                result[i] = prevOutput.Data[i] >= 0
-                    ? gy.Data[i]
-                    : gy.Data[i] * this._alpha * Math.Exp(prevInput.Data[i]);
+                if (prevOutput.Data[i] >= 0)
+                {
+                    result[i] = gy.Data[i];
+                }
+                else
+                {
+                    result[i] = gy.Data[i] * this._alpha * (Real)Math.Exp(prevInput.Data[i]);
+                }
             }
 
             return BatchArray.Convert(result, gy.Shape, gy.BatchCount);

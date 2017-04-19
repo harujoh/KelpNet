@@ -19,21 +19,21 @@ namespace KelpNetTester.Tests
             const int learningCount = 10000;
 
             //訓練データ
-            double[][] trainData =
+            Real[][] trainData =
             {
-                new[] { 0.0, 0.0 },
-                new[] { 1.0, 0.0 },
-                new[] { 0.0, 1.0 },
-                new[] { 1.0, 1.0 }
+                new Real[] { 0.0f, 0.0f },
+                new Real[] { 1.0f, 0.0f },
+                new Real[] { 0.0f, 1.0f },
+                new Real[] { 1.0f, 1.0f }
             };
 
             //訓練データラベル
-            double[][] trainLabel =
+            Real[][] trainLabel =
             {
-                new[] { 0.0 },
-                new[] { 1.0 },
-                new[] { 1.0 },
-                new[] { 0.0 }
+                new Real[] { 0.0f },
+                new Real[] { 1.0f },
+                new Real[] { 1.0f },
+                new Real[] { 0.0f }
             };
 
             //ネットワークの構成は FunctionStack に書き連ねる
@@ -59,7 +59,7 @@ namespace KelpNetTester.Tests
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (double[] input in trainData)
+            foreach (Real[] input in trainData)
             {
                 NdArray result = nn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
@@ -73,7 +73,7 @@ namespace KelpNetTester.Tests
             FunctionStack testnn = ModelIO.Load("test.nn");
 
             Console.WriteLine("Test Start...");
-            foreach (double[] input in trainData)
+            foreach (Real[] input in trainData)
             {
                 NdArray result = testnn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());

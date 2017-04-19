@@ -47,7 +47,7 @@ namespace KelpNetWaifu2x
                 //Microsoft.CSharp.RuntimeBinder.RuntimeBinderExceptionは無視して下さい
                 foreach (var data in json)
                 {
-                    double[,,,] weightData = new double[(int)data["nOutputPlane"], (int)data["nInputPlane"], (int)data["kW"], (int)data["kH"]];
+                    Real[,,,] weightData = new Real[(int)data["nOutputPlane"], (int)data["nInputPlane"], (int)data["kW"], (int)data["kH"]];
 
                     for (int i = 0; i < weightData.GetLength(0); i++)
                     {
@@ -64,8 +64,8 @@ namespace KelpNetWaifu2x
                     }
 
                     //padを行い入力と出力画像のサイズを合わせる
-                    functionList.Add(new Convolution2D((int)data["nInputPlane"], (int)data["nOutputPlane"], (int)data["kW"], pad: (int)data["kW"] / 2, initialW: weightData, initialb: (double[])data["bias"],name: "Convolution2D l" + layerCounter++));
-                    functionList.Add(new LeakyReLU(0.1,name: "LeakyReLU l" + layerCounter++));
+                    functionList.Add(new Convolution2D((int)data["nInputPlane"], (int)data["nOutputPlane"], (int)data["kW"], pad: (int)data["kW"] / 2, initialW: weightData, initialb: (Real[])data["bias"],name: "Convolution2D l" + layerCounter++));
+                    functionList.Add(new LeakyReLU(0.1f, name: "LeakyReLU l" + layerCounter++));
                 }
 
                 nn = new FunctionStack(functionList.ToArray());

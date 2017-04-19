@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace KelpNet.Common
 {
@@ -22,7 +23,7 @@ namespace KelpNet.Common
             this.Data = ndArray.Data;
         }
 
-        public BatchArray(double[] data, int[] shape, int batchCount)
+        public BatchArray(Real[] data, int[] shape, int batchCount)
         {
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
@@ -35,7 +36,7 @@ namespace KelpNet.Common
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
-            this.Data = new double[this.Length * batchCount];
+            this.Data = new Real[this.Length * batchCount];
         }
 
         public BatchArray(NdArray ndArray)
@@ -58,10 +59,10 @@ namespace KelpNet.Common
                 arrayLength += ndArray[i].Data.Length;
             }
 
-            this.Data = new double[arrayLength];
+            this.Data = new Real[arrayLength];
             for (int i = 0; i < ndArray.Length; i++)
             {
-                Buffer.BlockCopy(ndArray[i].Data, 0, this.Data, this.Length * i * sizeof(double), ndArray[i].Data.Length * sizeof(double));
+                Array.Copy(ndArray[i].Data, 0, this.Data, this.Length * i, ndArray[i].Data.Length);
             }
         }
 
@@ -77,7 +78,7 @@ namespace KelpNet.Common
             return new BatchArray(result);
         }
 
-        public static BatchArray Convert(double[] data, int[] shape, int batchCount)
+        public static BatchArray Convert(Real[] data, int[] shape, int batchCount)
         {
             return new BatchArray { Data = data, Shape = shape.ToArray(), BatchCount = batchCount, Length = data.Length / batchCount };
         }

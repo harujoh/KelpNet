@@ -4,12 +4,12 @@ namespace KelpNetTester.Benchmarker
 {
     class BenchDataMaker
     {
-        public static double[] GetDoubleArray(int length)
+        public static Real[] GetDoubleArray(int length)
         {
-            double[] result = new double[length];
+            Real[] result = new Real[length];
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = Mother.Dice.NextDouble();
+                result[i] = (Real)Mother.Dice.NextDouble();
             }
 
             return result;

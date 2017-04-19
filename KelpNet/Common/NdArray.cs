@@ -11,10 +11,10 @@ namespace KelpNet.Common
     [Serializable]
     public class NdArray
     {
-        public double[] Data;
+        public Real[] Data;
         public int[] Shape;
 
-        public NdArray(double[] data, int[] shape)
+        public NdArray(Real[] data, int[] shape)
         {
             //コンストラクタはコピーを作成する
             this.Data = data.ToArray();
@@ -37,25 +37,25 @@ namespace KelpNet.Common
         }
 
         //データ部をコピーせずにインスタンスする
-        public static NdArray Convert(double[] data, int[] shape)
+        public static NdArray Convert(Real[] data, int[] shape)
         {
             return new NdArray { Data = data, Shape = shape.ToArray() };
         }
 
         //データ部をコピーせずにインスタンスする
-        public static NdArray Convert(double[] data)
+        public static NdArray Convert(Real[] data)
         {
             return new NdArray { Data = data, Shape = new[] { data.Length } };
         }
 
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            return new NdArray { Data = new double[baseArray.Data.Length], Shape = baseArray.Shape.ToArray() };
+            return new NdArray { Data = new Real[baseArray.Data.Length], Shape = baseArray.Shape.ToArray() };
         }
 
         public static NdArray OnesLike(NdArray baseArray)
         {
-            double[] resutlArray = new double[baseArray.Data.Length];
+            Real[] resutlArray = new Real[baseArray.Data.Length];
 
             for (int i = 0; i < resutlArray.Length; i++)
             {
@@ -67,12 +67,12 @@ namespace KelpNet.Common
 
         public static NdArray Zeros(params int[] shape)
         {
-            return new NdArray { Data = new double[ShapeToArrayLength(shape)], Shape = shape };
+            return new NdArray { Data = new Real[ShapeToArrayLength(shape)], Shape = shape };
         }
 
         public static NdArray Ones(params int[] shape)
         {
-            double[] resutlArray = new double[ShapeToArrayLength(shape)];
+            Real[] resutlArray = new Real[ShapeToArrayLength(shape)];
 
             for (int i = 0; i < resutlArray.Length; i++)
             {
@@ -96,7 +96,7 @@ namespace KelpNet.Common
 
         public static NdArray FromArray(Array data)
         {
-            double[] resultData = new double[data.Length];
+            Real[] resultData = new Real[data.Length];
             int[] resultShape;
 
             if (data.Rank == 1)
@@ -108,8 +108,8 @@ namespace KelpNet.Common
             }
             else
             {
-                //int -> doubleの指定ミスで例外がポコポコ出るので、ここで吸収
-                if (data.GetType().GetElementType() != typeof(double))
+                //方の不一致をここで吸収
+                if (data.GetType().GetElementType() != typeof(Real))
                 {
                     Type arrayType = data.GetType().GetElementType();
                     //一次元の長さの配列を用意
@@ -122,7 +122,7 @@ namespace KelpNet.Common
                 }
                 else
                 {
-                    Buffer.BlockCopy(data, 0, resultData, 0, sizeof(double) * resultData.Length);
+                    Array.Copy(data, resultData, resultData.Length);
                 }
 
                 resultShape = new int[data.Rank];
@@ -135,7 +135,7 @@ namespace KelpNet.Common
             return new NdArray { Data = resultData, Shape = resultShape };
         }
 
-        public void Fill(double val)
+        public void Fill(Real val)
         {
             for (int i = 0; i < this.Data.Length; i++)
             {
@@ -152,7 +152,7 @@ namespace KelpNet.Common
             int realMaxLength = 0;   //小数点以下の最大値
             bool isExponential = false; //指数表現にするか
 
-            foreach (double data in this.Data)
+            foreach (Real data in this.Data)
             {
                 string[] divStr = data.ToString().Split('.');
                 intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
@@ -190,7 +190,7 @@ namespace KelpNet.Common
                 string[] divStr;
                 if (isExponential)
                 {
-                    divStr = this.Data[i].ToString("0.00000000e+00").Split('.');
+                    divStr = string.Format("{0:0.00000000e+00}", this.Data[i]).Split('.');
                 }
                 else
                 {

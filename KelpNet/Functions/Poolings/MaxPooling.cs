@@ -101,7 +101,7 @@ __kernel void MaxPoolingForward(
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
-            double[] result = new double[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
+            Real[] result = new Real[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
             int[] outputIndices = new int[result.Length];
             this._prevInputShape = input.Shape.ToArray();
             this._prevInputDataLength = input.Data.Length;
@@ -121,7 +121,7 @@ __kernel void MaxPoolingForward(
                         {
                             for (int x = 0; x < outputWidth; x++)
                             {
-                                double maxVal = double.MinValue;
+                                Real maxVal = Real.MinValue;
                                 for (int dy = 0; dy < this._kHeight; dy++)
                                 {
                                     int inputIndexY = y * this._stride + dy - this._padY;
@@ -153,7 +153,7 @@ __kernel void MaxPoolingForward(
             }
             else
             {
-                using (ComputeBuffer<double> gpuX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
+                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
                 using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, outputIndices.Length))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuX);
@@ -199,7 +199,7 @@ __kernel void MaxPoolingForward(
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);
 
-            double[] result = new double[this._prevInputDataLength];
+            Real[] result = new Real[this._prevInputDataLength];
 
             for (int i = 0; i < gy.Data.Length; i++)
             {

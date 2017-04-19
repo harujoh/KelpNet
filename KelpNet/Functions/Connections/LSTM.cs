@@ -19,21 +19,21 @@ namespace KelpNet.Functions.Connections
         public Linear lateral2;
         public Linear lateral3;
 
-        private List<double[]> aParam;
-        private List<double[]> iParam;
-        private List<double[]> fParam;
-        private List<double[]> oParam;
-        private List<double[]> cParam;
+        private List<Real[]> aParam;
+        private List<Real[]> iParam;
+        private List<Real[]> fParam;
+        private List<Real[]> oParam;
+        private List<Real[]> cParam;
 
-        private double[] hParam;
+        private Real[] hParam;
 
         BatchArray gxPrev0;
         BatchArray gxPrev1;
         BatchArray gxPrev2;
         BatchArray gxPrev3;
-        double[] gcPrev;
+        Real[] gcPrev;
 
-        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM", bool isGpu = true) : base(name, isGpu, inSize, outSize)
+        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM", bool isGpu = true) : base(name, isGpu, inSize, outSize)
         {
             this.Parameters = new FunctionParameter[12];
 
@@ -76,13 +76,13 @@ namespace KelpNet.Functions.Connections
             if (this.hParam == null)
             {
                 //値がなければ初期化
-                this.aParam = new List<double[]>();
-                this.iParam = new List<double[]>();
-                this.fParam = new List<double[]>();
-                this.oParam = new List<double[]>();
-                this.cParam = new List<double[]>();
-                this.hParam = new double[x.BatchCount * this.OutputCount];
-                this.gcPrev = new double[x.BatchCount * this.InputCount];
+                this.aParam = new List<Real[]>();
+                this.iParam = new List<Real[]>();
+                this.fParam = new List<Real[]>();
+                this.oParam = new List<Real[]>();
+                this.cParam = new List<Real[]>();
+                this.hParam = new Real[x.BatchCount * this.OutputCount];
+                this.gcPrev = new Real[x.BatchCount * this.InputCount];
             }
             else
             {
@@ -104,15 +104,15 @@ namespace KelpNet.Functions.Connections
 
             if (this.cParam.Count == 0)
             {
-                this.cParam.Add(new double[this.OutputCount * x.BatchCount]);
+                this.cParam.Add(new Real[this.OutputCount * x.BatchCount]);
             }
 
-            double[] la = new double[this.OutputCount * x.BatchCount];
-            double[] li = new double[this.OutputCount * x.BatchCount];
-            double[] lf = new double[this.OutputCount * x.BatchCount];
-            double[] lo = new double[this.OutputCount * x.BatchCount];
-            double[] cPrev = this.cParam[this.cParam.Count - 1];
-            double[] cResult = new double[cPrev.Length];
+            Real[] la = new Real[this.OutputCount * x.BatchCount];
+            Real[] li = new Real[this.OutputCount * x.BatchCount];
+            Real[] lf = new Real[this.OutputCount * x.BatchCount];
+            Real[] lo = new Real[this.OutputCount * x.BatchCount];
+            Real[] cPrev = this.cParam[this.cParam.Count - 1];
+            Real[] cResult = new Real[cPrev.Length];
 
             for (int i = 0; i < x.BatchCount; i++)
             {
@@ -122,13 +122,13 @@ namespace KelpNet.Functions.Connections
                     int index = j * 4;
                     int batchIndex = j + i * OutputCount;
 
-                    la[batchIndex] = Math.Tanh(upwards[index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
+                    la[batchIndex] = (Real)Math.Tanh(upwards[index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
                     li[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
                     lf[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
                     lo[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
 
                     cResult[batchIndex] = la[batchIndex] * li[batchIndex] + lf[batchIndex] * cPrev[batchIndex];
-                    this.hParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
+                    this.hParam[batchIndex] = lo[batchIndex] * (Real)Math.Tanh(cResult[batchIndex]);
                 }
             }
 
@@ -144,7 +144,7 @@ namespace KelpNet.Functions.Connections
 
         protected override BatchArray BackwardSingle(BatchArray gh)
         {
-            double[] lgh = gh.Data.ToArray();
+            Real[] lgh = gh.Data.ToArray();
 
             if (this.gxPrev0 == null)
             {
@@ -170,33 +170,33 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            double[] lcParam = this.cParam[this.cParam.Count - 1];
+            Real[] lcParam = this.cParam[this.cParam.Count - 1];
             this.cParam.RemoveAt(this.cParam.Count - 1);
 
-            double[] laParam = this.aParam[this.aParam.Count - 1];
+            Real[] laParam = this.aParam[this.aParam.Count - 1];
             this.aParam.RemoveAt(this.aParam.Count - 1);
 
-            double[] liParam = this.iParam[this.iParam.Count - 1];
+            Real[] liParam = this.iParam[this.iParam.Count - 1];
             this.iParam.RemoveAt(this.iParam.Count - 1);
 
-            double[] lfParam = this.fParam[this.fParam.Count - 1];
+            Real[] lfParam = this.fParam[this.fParam.Count - 1];
             this.fParam.RemoveAt(this.fParam.Count - 1);
 
-            double[] loParam = this.oParam[this.oParam.Count - 1];
+            Real[] loParam = this.oParam[this.oParam.Count - 1];
             this.oParam.RemoveAt(this.oParam.Count - 1);
 
-            double[] cPrev = this.cParam[this.cParam.Count - 1];
+            Real[] cPrev = this.cParam[this.cParam.Count - 1];
 
             for (int i = 0; i < gh.BatchCount; i++)
             {
-                double[] gParam = new double[this.InputCount * 4];
+                Real[] gParam = new Real[this.InputCount * 4];
 
                 for (int j = 0; j < this.InputCount; j++)
                 {
                     int prevOutputIndex = j + i * this.OutputCount;
                     int prevInputIndex = j + i * this.InputCount;
 
-                    double co = Math.Tanh(lcParam[prevOutputIndex]);
+                    Real co = (Real)Math.Tanh(lcParam[prevOutputIndex]);
 
                     this.gcPrev[prevInputIndex] += lgh[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
                     gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
@@ -207,7 +207,7 @@ namespace KelpNet.Functions.Connections
                     this.gcPrev[prevInputIndex] *= lfParam[prevOutputIndex];
                 }
 
-                double[] resultParam = new double[this.OutputCount * 4];
+                Real[] resultParam = new Real[this.OutputCount * 4];
 
                 //配置換え
                 for (int j = 0; j < this.OutputCount * 4; j++)
@@ -231,7 +231,7 @@ namespace KelpNet.Functions.Connections
             BatchArray gArray2 = this.upward2.Backward(this.gxPrev2);
             BatchArray gArray3 = this.upward3.Backward(this.gxPrev3);
 
-            double[] gx = new double[gh.BatchCount * this.InputCount];
+            Real[] gx = new Real[gh.BatchCount * this.InputCount];
 
             for (int i = 0; i < gx.Length; i++)
             {
@@ -250,19 +250,19 @@ namespace KelpNet.Functions.Connections
             this.gxPrev3 = null;
         }
 
-        static double Sigmoid(double x)
+        static Real Sigmoid(Real x)
         {
-            return 1 / (1 + Math.Exp(-x));
+            return 1f / (1f + (Real)Math.Exp(-x));
         }
 
-        static double GradSigmoid(double x)
+        static Real GradSigmoid(Real x)
         {
-            return x * (1 - x);
+            return x * (1f - x);
         }
 
-        static double GradTanh(double x)
+        static Real GradTanh(Real x)
         {
-            return 1 - x * x;
+            return 1f - x * x;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -7,13 +8,13 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class AdaDelta : Optimizer
     {
-        public double Rho;
-        public double Epsilon;
+        public Real Rho;
+        public Real Epsilon;
 
-        public AdaDelta(double rho = 0.95, double epsilon = 1e-6)
+        public AdaDelta(Real? rho = null, Real? epsilon = null)
         {
-            this.Rho = rho;
-            this.Epsilon = epsilon;
+            this.Rho = rho ?? 0.95f;
+            this.Epsilon = epsilon ?? (Real)1e-6f;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -28,14 +29,14 @@ namespace KelpNet.Optimizers
     [Serializable]
     class AdaDeltaParameter : OptimizerParameter
     {
-        private readonly double[] msg;
-        private readonly double[] msdx;
+        private readonly Real[] msg;
+        private readonly Real[] msdx;
         private readonly AdaDelta optimiser;
 
         public AdaDeltaParameter(FunctionParameter functionParameter, AdaDelta optimiser) : base(functionParameter)
         {
-            this.msg = new double[functionParameter.Length];
-            this.msdx = new double[functionParameter.Length];
+            this.msg = new Real[functionParameter.Length];
+            this.msdx = new Real[functionParameter.Length];
             this.optimiser = optimiser;
         }
 
@@ -43,11 +44,11 @@ namespace KelpNet.Optimizers
         {
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = this.FunctionParameter.Grad.Data[i];
+                Real grad = this.FunctionParameter.Grad.Data[i];
                 this.msg[i] *= this.optimiser.Rho;
                 this.msg[i] += (1 - this.optimiser.Rho) * grad * grad;
 
-                double dx = Math.Sqrt((this.msdx[i] + this.optimiser.Epsilon) / (this.msg[i] + this.optimiser.Epsilon)) * grad;
+                Real dx = (Real)Math.Sqrt((this.msdx[i] + this.optimiser.Epsilon) / (this.msg[i] + this.optimiser.Epsilon)) * grad;
 
                 this.msdx[i] *= this.optimiser.Rho;
                 this.msdx[i] += (1 - this.optimiser.Rho) * dx * dx;
