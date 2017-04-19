@@ -6,13 +6,13 @@ namespace KelpNet.Functions.Activations
 {
     public class Softplus : NeedPreviousOutputFunction
     {
-        private readonly double _beta;
-        private readonly double _betaInv;
+        private readonly Real _beta;
+        private readonly Real _betaInv;
 
-        public Softplus(double beta = 1.0, string name = "Softplus", bool isGpu = true) : base(name, isGpu)
+        public Softplus(Real? beta = null, string name = "Softplus", bool isGpu = true) : base(name, isGpu)
         {
-            this._beta = beta;
-            this._betaInv = 1.0 / beta;
+            this._beta = beta ?? 1f;
+            this._betaInv = 1f / this._beta;
         }
 
         public override void InitKernel()
@@ -21,7 +21,7 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Data.Length];
+            Real[] y = new Real[x.Data.Length];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
@@ -30,7 +30,7 @@ namespace KelpNet.Functions.Activations
                     y[i + b * x.Length] = x.Data[i + b * x.Length] * this._beta;
                 }
 
-                double maxval = y[b * x.Length];
+                Real maxval = y[b * x.Length];
                 for (int i = 1; i < x.Length; i++)
                 {
                     if (maxval < y[i + b * x.Length])
@@ -41,7 +41,7 @@ namespace KelpNet.Functions.Activations
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = (maxval + Math.Log(1.0 + Math.Exp(-Math.Abs(x.Data[i + b * x.Length] * this._beta)))) * this._betaInv;
+                    y[i + b * x.Length] = (maxval + (Real)Math.Log(1.0 + Math.Exp(-Math.Abs(x.Data[i + b * x.Length] * this._beta)))) * this._betaInv;
                 }
 
             }
@@ -51,11 +51,11 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Data.Length];
+            Real[] gx = new Real[gy.Data.Length];
 
             for (int i = 0; i < gx.Length; i++)
             {
-                gx[i] = (1 - 1 / (1 + Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
+                gx[i] = (1 - 1 / (1 + (Real)Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
             }
 
             return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);

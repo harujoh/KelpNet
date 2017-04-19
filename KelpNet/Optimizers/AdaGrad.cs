@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -7,13 +8,13 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class AdaGrad : Optimizer
     {
-        public double LearningRate;
-        public double Epsilon;
+        public Real LearningRate;
+        public Real Epsilon;
 
-        public AdaGrad(double learningRate = 0.01, double epsilon = 1e-8)
+        public AdaGrad(Real? learningRate = null, Real? epsilon = null)
         {
-            this.LearningRate = learningRate;
-            this.Epsilon = epsilon;
+            this.LearningRate = learningRate ?? 0.01f;
+            this.Epsilon = epsilon ?? (Real)1e-8f;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -29,11 +30,11 @@ namespace KelpNet.Optimizers
     class AdaGradParameter : OptimizerParameter
     {
         private readonly AdaGrad optimiser;
-        private readonly double[] h;
+        private readonly Real[] h;
 
         public AdaGradParameter(FunctionParameter functionParameter, AdaGrad optimiser) : base(functionParameter)
         {
-            this.h = new double[functionParameter.Length];
+            this.h = new Real[functionParameter.Length];
             this.optimiser = optimiser;
         }
 
@@ -41,11 +42,11 @@ namespace KelpNet.Optimizers
         {
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = this.FunctionParameter.Grad.Data[i];
+                Real grad = this.FunctionParameter.Grad.Data[i];
 
                 this.h[i] += grad * grad;
 
-                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / ((Real)Math.Sqrt(this.h[i]) + this.optimiser.Epsilon);
             }
         }
     }

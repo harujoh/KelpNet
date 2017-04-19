@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -18,7 +19,7 @@ namespace KelpNet.Functions.Connections
         private int _subSample;
         private int _trim;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, double[,,,] initialW = null, double[] initialb = null, string name = "Deconv2D", bool isGpu = true) : base(name,isGpu, inputChannels, outputChannels)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Deconv2D", bool isGpu = true) : base(name,isGpu, inputChannels, outputChannels)
         {
             this._kSize = kSize;
             this._subSample = subSample;
@@ -35,8 +36,7 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                //サイズチェックを兼ねる
-                Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
+                this.W.Data = initialW.Cast<Real>().ToArray();
             }
 
             this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
@@ -49,7 +49,7 @@ namespace KelpNet.Functions.Connections
             {
                 if (initialb != null)
                 {
-                    Buffer.BlockCopy(initialb, 0, this.b.Data, 0, sizeof(double) * initialb.Length);
+                    this.b.Data = initialb.ToArray();
                 }
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
@@ -64,7 +64,7 @@ namespace KelpNet.Functions.Connections
         {
             int outputSize = (input.Shape[2] - 1) * this._subSample + this._kSize - this._trim * 2;
 
-            double[] result = new double[this.OutputCount * outputSize * outputSize];
+            Real[] result = new Real[this.OutputCount * outputSize * outputSize];
 
             int outSizeOffset = outputSize * outputSize;
 
@@ -121,7 +121,7 @@ namespace KelpNet.Functions.Connections
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
-            double[] gx = new double[prevInput.Data.Length];
+            Real[] gx = new Real[prevInput.Data.Length];
 
             for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
             {

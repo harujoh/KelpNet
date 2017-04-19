@@ -31,14 +31,14 @@ namespace KelpNetTester.Tests
 
             this.model = new Deconvolution2D(1, 1, 15, 1, 7);
 
-            this.optimizer = new SGD(learningRate: 0.01); //大きいと発散する
+            this.optimizer = new SGD(learningRate: 0.01f); //大きいと発散する
             this.model.SetOptimizer(this.optimizer);
         }
 
         static BatchArray getRandomImage(int N = 1, int img_w = 128, int img_h = 128)
         {
             // ランダムに0.1％の点を作る
-            double[] img_p = new double[N * img_w * img_h];
+            Real[] img_p = new Real[N * img_w * img_h];
 
             for (int i = 0; i < img_p.Length; i++)
             {
@@ -50,20 +50,20 @@ namespace KelpNetTester.Tests
         }
 
         //１つの球状の模様を作成（ガウスですが）
-        static double[] MakeOneCore()
+        static Real[] MakeOneCore()
         {
             int max_xy = 15;
-            double sig = 5.0;
-            double sig2 = sig * sig;
-            double c_xy = 7;
-            double[] core = new double[max_xy * max_xy];
+            Real sig = 5;
+            Real sig2 = sig * sig;
+            Real c_xy = 7;
+            Real[] core = new Real[max_xy * max_xy];
 
             for (int px = 0; px < max_xy; px++)
             {
                 for (int py = 0; py < max_xy; py++)
                 {
-                    double r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
-                    core[py * max_xy + px] = Math.Exp(-r2 / sig2) * 1;
+                    Real r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
+                    core[py * max_xy + px] = (Real)Math.Exp(-r2 / sig2) * 1;
                 }
             }
 
@@ -89,14 +89,14 @@ namespace KelpNetTester.Tests
                 //img_yを暗黙的にNdArrayとして使用
                 this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y);
 
-                double loss;
+                Real loss;
                 BatchArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);
 
                 this.model.Backward(gy);
 
                 this.model.Update();
 
-                this.Text = "[epoch" + this.counter + "] Loss : " + loss.ToString("f4");
+                this.Text = "[epoch" + this.counter + "] Loss : " + string.Format("{0:F4}", loss);
 
                 this.counter++;
             }

@@ -9,11 +9,11 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class LeakyReLU : NeedPreviousOutputFunction
     {
-        private readonly double _slope;
+        private readonly Real _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isGpu = true) : base(name, isGpu)
+        public LeakyReLU(Real? slope = null, string name = "LeakyReLU", bool isGpu = true) : base(name, isGpu)
         {
-            this._slope = slope;
+            this._slope = slope ?? 0.2f;
         }
 
         public override void InitKernel()
@@ -38,7 +38,7 @@ __kernel void LeakyReLUForward(
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = x.Data.ToArray();
+            Real[] y = x.Data.ToArray();
 
             if (!IsGpu)
             {
@@ -49,7 +49,7 @@ __kernel void LeakyReLUForward(
             }
             else
             {
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
                 {
                     ForwardKernel.SetValueArgument(0, this._slope);
                     ForwardKernel.SetMemoryArgument(1, gpuY);
@@ -92,7 +92,7 @@ __kernel void LeakyReLUBackward(
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = gy.Data.ToArray();
+            Real[] gx = gy.Data.ToArray();
 
             if (!IsGpu)
             {
@@ -106,8 +106,8 @@ __kernel void LeakyReLUBackward(
             }
             else
             {
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
-                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
+                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpuY);
                     BackwardKernel.SetValueArgument(1, this._slope);

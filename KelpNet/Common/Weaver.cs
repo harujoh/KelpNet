@@ -18,14 +18,6 @@ namespace KelpNet.Common
         All = 0xFFFFFFFF
     }
 
-    public enum RealTypes
-    {
-        half = 0,
-        @float = 1,
-        @double = 2
-    }
-
-
     //GPU関連の処理を担うマネージャー
     public class Weaver
     {
@@ -52,7 +44,6 @@ typedef REAL Real;
         public static int DeviceIndex;
         public static bool Enable;
         public static ComputePlatform Platform;
-        public static RealTypes RealType = RealTypes.@double;
 
         public static void Initialize(ComputeDeviceTypes selectedComputeDeviceTypes, int platformId = 0, int deviceIndex = 0)
         {
@@ -83,11 +74,13 @@ typedef REAL Real;
 
         public static ComputeKernel CreateKernel(string source, string kernelName)
         {
+            string realType = typeof(Real) == typeof(double) ? "double" : "float";
+
             //浮動小数点の精度設定用
             source = REAL_HEADER_STRING + source;
 
             //倍精度時に追加
-            if (RealType == RealTypes.@double)
+            if (typeof(Real) == typeof(double))
             {
                 source = USE_DOUBLE_HEADER_STRING + source;
             }
@@ -96,7 +89,7 @@ typedef REAL Real;
 
             try
             {
-                program.Build(Devices, string.Format("-D REAL={0} -Werror", RealType), null, IntPtr.Zero);
+                program.Build(Devices, string.Format("-D REAL={0} -Werror", realType), null, IntPtr.Zero);
             }
             catch
             {

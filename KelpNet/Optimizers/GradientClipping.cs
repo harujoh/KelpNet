@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -8,9 +9,9 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class GradientClipping : Optimizer
     {
-        public double Threshold;
+        public Real Threshold;
 
-        public GradientClipping(double threshold)
+        public GradientClipping(Real threshold)
         {
             this.Threshold = threshold;
         }
@@ -37,15 +38,15 @@ namespace KelpNet.Optimizers
         public override void UpdateFunctionParameters()
         {
             //_sum_sqnorm
-            double s = 0.0;
+            Real s = 0.0f;
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                s += Math.Pow(this.FunctionParameter.Grad.Data[i], 2);
+                s += (Real)Math.Pow(this.FunctionParameter.Grad.Data[i], 2);
             }
 
-            double norm = Math.Sqrt(s);
-            double rate = this.optimiser.Threshold / norm;
+            Real norm = (Real)Math.Sqrt(s);
+            Real rate = this.optimiser.Threshold / norm;
 
             if (rate < 1)
             {

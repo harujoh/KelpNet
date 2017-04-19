@@ -23,15 +23,15 @@ namespace KelpNetTester.Tests
 
         public static void Run()
         {
-            double[][] trainData = new double[N][];
-            double[][] trainLabel = new double[N][];
+            Real[][] trainData = new Real[N][];
+            Real[][] trainLabel = new Real[N][];
 
             for (int i = 0; i < N; i++)
             {
                 //Sin波を一周期分用意
-                double radian = -Math.PI + Math.PI * 2.0 * i / (N - 1);
+                Real radian = (Real)(- Math.PI + Math.PI * 2.0 * i / (N - 1));
                 trainData[i] = new[] { radian };
-                trainLabel[i] = new[] { Math.Sin(radian) };
+                trainLabel[i] = new[] { (Real)Math.Sin(radian) };
             }
 
             //ネットワークの構成を FunctionStack に書き連ねる
@@ -48,7 +48,7 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < EPOCH; i++)
             {
                 //誤差集計用
-                double loss = 0.0;
+                Real loss = 0;
 
                 for (int j = 0; j < N; j++)
                 {
@@ -66,7 +66,7 @@ namespace KelpNetTester.Tests
             //訓練結果を表示
             Console.WriteLine("Test Start...");
 
-            foreach (double[] val in trainData)
+            foreach (Real[] val in trainData)
             {
                 Console.WriteLine(val[0] + ":" + nn.Predict(new BatchArray(val)).Data[0]);
             }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -11,7 +13,7 @@ namespace KelpNet.Functions.Connections
         public NdArray W;
         public NdArray gW;
 
-        public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = "EmbedID", bool isGpu = true) : base(name, isGpu, inputCount, outputCount)
+        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = "EmbedID", bool isGpu = true) : base(name, isGpu, inputCount, outputCount)
         {
             this.W = NdArray.Zeros(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);
@@ -23,7 +25,7 @@ namespace KelpNet.Functions.Connections
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                Buffer.BlockCopy(initialW, 0, this.W.Data, 0, sizeof(double) * initialW.Length);
+                this.W.Data = initialW.Cast<Real>().ToArray();
             }
 
             this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
@@ -35,7 +37,7 @@ namespace KelpNet.Functions.Connections
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] result = new double[x.Data.Length * this.OutputCount];
+            Real[] result = new Real[x.Data.Length * this.OutputCount];
 
             for (int b = 0; b < x.BatchCount; b++)
             {

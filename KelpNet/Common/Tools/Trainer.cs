@@ -8,22 +8,22 @@ namespace KelpNet.Common.Tools
     //主にArray->NdArrayの型変換を担う
     public class Trainer
     {
-        public static double Train(FunctionStack functionStack, Array input, Array teach, ILossFunction lossFunction, bool isUpdate = true)
+        public static Real Train(FunctionStack functionStack, Array input, Array teach, ILossFunction lossFunction, bool isUpdate = true)
         {
             return Train(functionStack, new BatchArray(input), new BatchArray(teach), lossFunction, isUpdate);
         }
 
         //バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, Array[] input, Array[] teach, ILossFunction lossFunction, bool isUpdate = true)
+        public static Real Train(FunctionStack functionStack, Array[] input, Array[] teach, ILossFunction lossFunction, bool isUpdate = true)
         {
             return Train(functionStack, BatchArray.FromArray(input), BatchArray.FromArray(teach), lossFunction, isUpdate);
         }
 
         //バッチで学習処理を行う
-        public static double Train(FunctionStack functionStack, BatchArray input, BatchArray teach, ILossFunction lossFunction, bool isUpdate = true)
+        public static Real Train(FunctionStack functionStack, BatchArray input, BatchArray teach, ILossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
-            double sumLoss;
+            Real sumLoss;
 
             //Forwardのバッチを実行
             BatchArray lossResult = lossFunction.Evaluate(functionStack.Forward(input), teach, out sumLoss);
@@ -41,18 +41,18 @@ namespace KelpNet.Common.Tools
         }
 
         //精度測定
-        public static double Accuracy(FunctionStack functionStack, Array x, Array y)
+        public static Real Accuracy(FunctionStack functionStack, Array x, Array y)
         {
             return Accuracy(functionStack, new BatchArray(x), new BatchArray(y));
         }
 
         //精度測定
-        public static double Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
+        public static Real Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
         {
             return Accuracy(functionStack, BatchArray.FromArray(x), BatchArray.FromArray(y));
         }
 
-        public static double Accuracy(FunctionStack functionStack, BatchArray x, BatchArray y)
+        public static Real Accuracy(FunctionStack functionStack, BatchArray x, BatchArray y)
         {
             int matchCount = 0;
 
@@ -60,7 +60,7 @@ namespace KelpNet.Common.Tools
 
             for (int b = 0; b < x.BatchCount; b++)
             {
-                double maxval = forwardResult.Data[b * forwardResult.Length];
+                Real maxval = forwardResult.Data[b * forwardResult.Length];
                 int maxindex = 0;
 
                 for (int i = 0; i < forwardResult.Length; i++)
@@ -78,7 +78,7 @@ namespace KelpNet.Common.Tools
                 }
             }
 
-            return matchCount / (double)x.BatchCount;
+            return matchCount / (Real)x.BatchCount;
         }
     }
 }

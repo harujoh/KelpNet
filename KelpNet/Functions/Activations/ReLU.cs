@@ -34,7 +34,7 @@ __kernel void ReLUForward(
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = x.Data.ToArray();
+            Real[] y = x.Data.ToArray();
 
             if (!IsGpu)
             {
@@ -48,7 +48,7 @@ __kernel void ReLUForward(
             }
             else
             {
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
                 {
                     ForwardKernel.SetMemoryArgument(0, gpuY);
 
@@ -84,7 +84,7 @@ __kernel void ReLUBackward(
 }";
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = gy.Data.ToArray();
+            Real[] gx = gy.Data.ToArray();
 
             if (!IsGpu)
             {
@@ -92,14 +92,14 @@ __kernel void ReLUBackward(
                 {
                     if (prevOutput.Data[i] <= 0)
                     {
-                        gx[i] = 0.0;
+                        gx[i] = 0;
                     }
                 }
             }
             else
             {
-                using (ComputeBuffer<double> gpuY = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
-                using (ComputeBuffer<double> gpugX = new ComputeBuffer<double>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
+                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpuY);
                     BackwardKernel.SetMemoryArgument(1, gpugX);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using KelpNet.Common;
 using MNISTLoader;
 
@@ -23,14 +24,14 @@ namespace KelpNetTester
 
             for (int i = 0; i < this.mnistDataLoader.TrainData.Length; i++)
             {
-                double[] x = new double[28 * 28];
+                Real[] x = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TrainData[i].Length; j++)
                 {
-                    x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0;
+                    x[j] = this.mnistDataLoader.TrainData[i][j] / 255f;
                 }
                 this.X[i] = new NdArray(x, new[] { 1, 28, 28 });
 
-                this.Tx[i] = NdArray.FromArray(new[] { (int)this.mnistDataLoader.TrainLabel[i] });
+                this.Tx[i] = NdArray.FromArray(new[] { (Real)this.mnistDataLoader.TrainLabel[i] });
             }
 
             //教師データ
@@ -40,14 +41,14 @@ namespace KelpNetTester
 
             for (int i = 0; i < this.mnistDataLoader.TeachData.Length; i++)
             {
-                double[] y = new double[28 * 28];
+                Real[] y = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TeachData[i].Length; j++)
                 {
-                    y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0;
+                    y[j] = this.mnistDataLoader.TeachData[i][j] / 255f;
                 }
                 this.Y[i] = new NdArray(y, new[] { 1, 28, 28 });
 
-                this.Ty[i] = NdArray.FromArray(new[] { (int)this.mnistDataLoader.TeachLabel[i] });
+                this.Ty[i] = NdArray.FromArray(new[] { (Real)this.mnistDataLoader.TeachLabel[i] });
             }
         }
 
@@ -60,7 +61,7 @@ namespace KelpNetTester
             {
                 int index = Mother.Dice.Next(this.Y.Length);
 
-                Buffer.BlockCopy(this.Y[index].Data, 0, listY.Data, sizeof(double) * j * listY.Length, sizeof(double) * listY.Length);
+                Array.Copy(this.Y[index].Data, 0, listY.Data,j * listY.Length,listY.Length);
                 listTy.Data[j] = this.Ty[index].Data[0];
             }
 
@@ -76,7 +77,7 @@ namespace KelpNetTester
             {
                 int index = Mother.Dice.Next(this.X.Length);
 
-                Buffer.BlockCopy(this.X[index].Data, 0, listX.Data, sizeof(double) * j * listX.Length, sizeof(double) * listX.Length);
+                Array.Copy(this.X[index].Data, 0, listX.Data, j * listX.Length, listX.Length);
                 listTx.Data[j] = this.Tx[index].Data[0];
             }
 

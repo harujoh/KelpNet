@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KelpNet.Common;
 using KelpNet.Common.Tools;
 using KelpNet.Functions;
 using KelpNet.Functions.Activations;
@@ -106,7 +107,9 @@ namespace KelpNetTester.Tests
                 Console.WriteLine("epoch " + (epoch + 1));
 
                 //全体での誤差を集計
-                List<double> totalLoss = new List<double>();
+                //List<Real> totalLoss = new List<Real>();
+                Real totalLoss = 0;
+                long totalLossCounter = 0;
 
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
@@ -115,15 +118,16 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //学習を実行
-                    double sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
-                    totalLoss.Add(sumLoss);
+                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    totalLoss += sumLoss;
+                    totalLossCounter++;
 
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)
                     {
                         //結果出力
                         Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
-                        Console.WriteLine("total loss " + totalLoss.Average());
+                        Console.WriteLine("total loss " + totalLoss / totalLossCounter);
                         Console.WriteLine("local loss " + sumLoss);
                         Console.WriteLine("");
                         Console.WriteLine("Testing...");
@@ -132,7 +136,7 @@ namespace KelpNetTester.Tests
                         MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

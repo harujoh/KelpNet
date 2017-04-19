@@ -17,11 +17,11 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Data.Length];
+            Real[] y = new Real[x.Data.Length];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
-                double maxval = x.Data[b * x.Length];
+                Real maxval = x.Data[b * x.Length];
 
                 for (int i = 1; i < x.Length; i++)
                 {
@@ -31,11 +31,11 @@ namespace KelpNet.Functions.Activations
                     }
                 }
 
-                double sumval = 0.0;
+                Real sumval = 0;
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = Math.Exp(x.Data[i + b * x.Length] - maxval);
+                    y[i + b * x.Length] = (Real)Math.Exp(x.Data[i + b * x.Length] - maxval);
                     sumval += y[i + b * x.Length];
                 }
 
@@ -50,11 +50,11 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Data.Length];
+            Real[] gx = new Real[gy.Data.Length];
 
             for (int b = 0; b < gy.BatchCount; b++)
             {
-                double sumdx = 0.0;
+                Real sumdx = 0;
 
                 for (int i = 0; i < gy.Length; i++)
                 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -7,13 +8,13 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class MomentumSGD : Optimizer
     {
-        public double LearningRate;
-        public double Momentum;
+        public Real LearningRate;
+        public Real Momentum;
 
-        public MomentumSGD( double learningRate = 0.01, double momentum = 0.9)
+        public MomentumSGD(Real? learningRate = null, Real? momentum = null)
         {
-            this.LearningRate = learningRate;
-            this.Momentum = momentum;
+            this.LearningRate = learningRate ?? 0.01f;
+            this.Momentum = momentum ?? 0.9f;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -29,11 +30,11 @@ namespace KelpNet.Optimizers
     class MomentumSGDParameter : OptimizerParameter
     {
         private readonly MomentumSGD optimiser;
-        private readonly double[] v;
+        private readonly Real[] v;
 
         public MomentumSGDParameter(FunctionParameter functionParameter, MomentumSGD optimiser) : base(functionParameter)
         {
-            this.v = new double[functionParameter.Length];
+            this.v = new Real[functionParameter.Length];
             this.optimiser = optimiser;
         }
 

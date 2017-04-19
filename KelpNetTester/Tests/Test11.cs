@@ -74,7 +74,7 @@ namespace KelpNetTester.Tests
                 new Linear(1024, 1024, name: "DNI1 Linear2"),
                 new BatchNormalization(1024, name: "DNI1 Nrom2"),
                 new ReLU(name: "DNI1 ReLU2"),
-                new Linear(1024, 256, initialW: new double[1024, 256], name: "DNI1 Linear3")
+                new Linear(1024, 256, initialW: new Real[1024, 256], name: "DNI1 Linear3")
             );
 
             FunctionStack DNI2 = new FunctionStack(
@@ -84,7 +84,7 @@ namespace KelpNetTester.Tests
                 new Linear(1024, 1024, name: "DNI2 Linear2"),
                 new BatchNormalization(1024, name: "DNI2 Nrom2"),
                 new ReLU(name: "DNI2 ReLU2"),
-                new Linear(1024, 256, initialW: new double[1024, 256], name: "DNI2 Linear3")
+                new Linear(1024, 256, initialW: new Real[1024, 256], name: "DNI2 Linear3")
             );
 
             FunctionStack DNI3 = new FunctionStack(
@@ -94,7 +94,7 @@ namespace KelpNetTester.Tests
                 new Linear(1024, 1024, name: "DNI3 Linear2"),
                 new BatchNormalization(1024, name: "DNI3 Nrom2"),
                 new ReLU(name: "DNI3 ReLU2"),
-                new Linear(1024, 256, initialW: new double[1024, 256], name: "DNI3 Linear3")
+                new Linear(1024, 256, initialW: new Real[1024, 256], name: "DNI3 Linear3")
             );
 
             //optimizerを宣言
@@ -113,13 +113,23 @@ namespace KelpNetTester.Tests
                 Console.WriteLine("epoch " + (epoch + 1));
 
                 //全体での誤差を集計
-                List<double> totalLoss = new List<double>();
+                //List<Real> totalLoss = new List<Real>();
 
-                List<double> DNI1totalLoss = new List<double>();
+                //List<Real> DNI1totalLoss = new List<Real>();
 
-                List<double> DNI2totalLoss = new List<double>();
+                //List<Real> DNI2totalLoss = new List<Real>();
 
-                List<double> DNI3totalLoss = new List<double>();
+                //List<Real> DNI3totalLoss = new List<Real>();
+
+                Real totalLoss = 0;
+                Real DNI1totalLoss = 0;
+                Real DNI2totalLoss = 0;
+                Real DNI3totalLoss = 0;
+
+                long totalLossCount = 0;
+                long DNI1totalLossCount = 0;
+                long DNI2totalLossCount = 0;
+                long DNI3totalLossCount = 0;
 
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
@@ -148,11 +158,12 @@ namespace KelpNetTester.Tests
                     Layer2.Update();
 
                     //第一層用のDNIの学習を実行
-                    double DNI1loss;
+                    Real DNI1loss;
                     BatchArray DNI1lossResult = new MeanSquaredError().Evaluate(DNI1Result, layer2BackwardResult, out DNI1loss);
                     DNI1.Backward(DNI1lossResult);
                     DNI1.Update();
-                    DNI1totalLoss.Add(DNI1loss);
+                    DNI1totalLoss += DNI1loss;
+                    DNI1totalLossCount++;
 
                     //第二層を実行
                     BatchArray layer3ForwardResult = Layer3.Forward(layer2ForwardResult);
@@ -165,39 +176,42 @@ namespace KelpNetTester.Tests
                     Layer3.Update();
 
                     //第二層用のDNIの学習を実行
-                    double DNI2loss;
+                    Real DNI2loss;
                     BatchArray DNI2lossResult = new MeanSquaredError().Evaluate(DNI2Result, layer3BackwardResult, out DNI2loss);
                     DNI2.Backward(DNI2lossResult);
                     DNI2.Update();
-                    DNI2totalLoss.Add(DNI2loss);
+                    DNI2totalLoss += DNI2loss;
+                    DNI2totalLossCount++;
 
                     //第四層を実行
                     BatchArray layer4ForwardResult = Layer4.Forward(layer3ForwardResult);
 
                     //第四層の傾きを取得
-                    double sumLoss;
+                    Real sumLoss;
                     BatchArray lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, datasetX.Label, out sumLoss);
 
                     //第四層を更新
                     BatchArray layer4BackwardResult = Layer4.Backward(lossResult);
                     Layer4.Update();
-                    totalLoss.Add(sumLoss);
+                    totalLoss = sumLoss;
+                    totalLossCount++;
 
                     //第三層用のDNIの学習を実行
-                    double DNI3loss;
+                    Real DNI3loss;
                     BatchArray DNI3lossResult = new MeanSquaredError().Evaluate(DNI3Result, layer4BackwardResult, out DNI3loss);
                     DNI3.Backward(DNI3lossResult);
                     DNI3.Update();
-                    DNI3totalLoss.Add(DNI3loss);
+                    DNI3totalLoss = DNI3loss;
+                    DNI3totalLossCount++;
 
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
                     //結果出力
-                    Console.WriteLine("total loss " + totalLoss.Average());
+                    Console.WriteLine("total loss " + totalLoss / totalLossCount);
                     Console.WriteLine("local loss " + sumLoss);
 
-                    Console.WriteLine("\nDNI1 total loss " + DNI1totalLoss.Average());
-                    Console.WriteLine("DNI2 total loss " + DNI2totalLoss.Average());
-                    Console.WriteLine("DNI3 total loss " + DNI3totalLoss.Average());
+                    Console.WriteLine("\nDNI1 total loss " + DNI1totalLoss / DNI1totalLossCount);
+                    Console.WriteLine("DNI2 total loss " + DNI2totalLoss / DNI2totalLossCount);
+                    Console.WriteLine("DNI3 total loss " + DNI3totalLoss / DNI3totalLossCount);
 
                     Console.WriteLine("\nDNI1 local loss " + DNI1loss);
                     Console.WriteLine("DNI2 local loss " + DNI2loss);
@@ -212,7 +226,7 @@ namespace KelpNetTester.Tests
                         MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

@@ -17,11 +17,11 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Data.Length];
+            Real[] y = new Real[x.Data.Length];
 
             for (int i = 0; i < y.Length; i++)
             {
-                y[i] = Math.Tanh(x.Data[i]);
+                y[i] = (Real)Math.Tanh(x.Data[i]);
             }
 
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
@@ -29,7 +29,7 @@ namespace KelpNet.Functions.Activations
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Data.Length];
+            Real[] gx = new Real[gy.Data.Length];
 
             for (int i = 0; i < gx.Length; i++)
             {
