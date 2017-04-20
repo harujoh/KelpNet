@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -13,11 +14,14 @@ namespace KelpNet.Functions.Activations
 
         protected override NdArray NeedPreviousForward(NdArray x)
         {
-            double[] y = new double[x.Length];
+            double[] y = x.Data.ToArray();
 
-            for (int i = 0; i < x.Length; i++)
+            for (int i = 0; i < y.Length; i++)
             {
-                y[i] = Math.Max(0, x.Data[i]);
+                if (y[i] < 0)
+                {
+                    y[i] = 0;
+                }
             }
 
             return NdArray.Convert(y, x.Shape);
@@ -25,11 +29,14 @@ namespace KelpNet.Functions.Activations
 
         protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
         {
-            double[] gx = new double[gy.Length];
+            double[] gx = gy.Data.ToArray();
 
-            for (int i = 0; i < gy.Length; i++)
+            for (int i = 0; i < prevOutput.Data.Length; i++)
             {
-                gx[i] = prevOutput.Data[i] > 0 ? gy.Data[i] : 0;
+                if (prevOutput.Data[i] <= 0)
+                {
+                    gx[i] = 0.0;
+                }
             }
 
             return NdArray.Convert(gx, gy.Shape);
