@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Cloo;
 
@@ -74,13 +75,13 @@ typedef REAL Real;
 
         public static ComputeKernel CreateKernel(string source, string kernelName)
         {
-            string realType = typeof(Real) == typeof(double) ? "double" : "float";
+            string realType = Marshal.SizeOf(typeof(Real)) == Marshal.SizeOf(typeof(double)) ? "double" : "float";
 
             //浮動小数点の精度設定用
             source = REAL_HEADER_STRING + source;
 
             //倍精度時に追加
-            if (typeof(Real) == typeof(double))
+            if (realType == "double")
             {
                 source = USE_DOUBLE_HEADER_STRING + source;
             }

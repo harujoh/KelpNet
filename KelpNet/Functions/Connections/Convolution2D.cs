@@ -93,46 +93,46 @@ namespace KelpNet.Functions.Connections
         const string ForwardKernelSource =
 @"
 __kernel void Convolution2DForward(
-	const __global __read_only  Real* gpuX,
-	const __global __read_only  Real* gpuW, 
-	const __global __read_only  Real* gpub, 
-	      __global __write_only Real* gpuY,
+    const __global __read_only  Real* gpuX,
+    const __global __read_only  Real* gpuW,
+    const __global __read_only  Real* gpub,
+          __global __write_only Real* gpuY,
     const int inputShape1,
     const int inputShape2,
     const int inputLength,
     const int outputWidth,
     const int outputHeight,
     const int stride,
-	const int padX,
-	const int padY,
-	const int kHeight,
-	const int kWidth,
-	const int OutputCount,
-	const int InputCount)
+    const int padX,
+    const int padY,
+    const int kHeight,
+    const int kWidth,
+    const int OutputCount,
+    const int InputCount)
 {
-	int batchCounter = get_global_id(0) / OutputCount;
-	int och = get_global_id(0) % OutputCount;
+    int batchCounter = get_global_id(0) / OutputCount;
+    int och = get_global_id(0) % OutputCount;
     int oy = get_global_id(1);
     int ox = get_global_id(2);
 
     Real localResult = 0;
 
-    gpuW += och * InputCount * kHeight * kWidth;
-    gpuX += batchCounter * inputLength;
+    gpuW += och* InputCount * kHeight* kWidth;
+    gpuX += batchCounter* inputLength;
 
-    for (int ich = 0; ich < InputCount; ich++)
+    for (int ich = 0; ich<InputCount; ich++)
     {
-        for (int ky = 0; ky < kHeight; ky++)
+        for (int ky = 0; ky<kHeight; ky++)
         {
             int iy = oy * stride + ky - padY;
 
-            if (iy >= 0 && iy < inputShape1)
+            if (iy >= 0 && iy<inputShape1)
             {
-                for (int kx = 0; kx < kWidth; kx++)
+                for (int kx = 0; kx<kWidth; kx++)
                 {
                     int ix = ox * stride + kx - padX;
 
-                    if (ix >= 0 && ix < inputShape2)
+                    if (ix >= 0 && ix<inputShape2)
                     {
                         int inputIndex = ich * inputShape1 * inputShape2 + iy * inputShape2 + ix;
                         int wIndex = ich * kHeight * kWidth + ky * kWidth + kx;
@@ -257,8 +257,6 @@ __kernel void Convolution2DBackward(
   	      __global __read_write Real* gpugW, 
 	      __global __read_write Real* gpugb, 
 	      __global __read_write Real* gpugX, 
-	      __global __read_write Real* tmpgW, 
-	      __local  Real* lgW,
 	const int OutputCount,
 	const int InputCount,
 	const int BatchCount,
@@ -275,17 +273,14 @@ __kernel void Convolution2DBackward(
 	const int kHeight,
 	const int kWidth)
 {
-    int batchCounter = get_global_id(0);
-	int ich = get_global_id(1);
-
-    int wLength = OutputCount * InputCount * kHeight * kWidth;
+	int ich = get_global_id(0);
 
     gpuW += ich * kHeight * kWidth;
-    //lgW += ich * kHeight * kWidth;
+    gpugW += ich * kHeight * kWidth;
     gpuX += ich * xShape1 * xShape2; 
     gpugX += ich * xShape1 * xShape2; 
 
-    //for (int batchCounter = 0; batchCounter < BatchCount; batchCounter++)
+    for (int batchCounter = 0; batchCounter < BatchCount; batchCounter++)
     {
         for (int och = 0; och < gyShape0; och++)
         {
@@ -310,7 +305,7 @@ __kernel void Convolution2DBackward(
                                     int wIndex = och * InputCount * kHeight * kWidth + ky * kWidth + kx;
                                     int inputIndex = batchCounter * xLength + iy * xShape2 + ix;
 
-                                    lgW[wIndex + ich * kHeight * kWidth] += gpuX[inputIndex] * gyData;
+                                    gpugW[wIndex] += gpuX[inputIndex] * gyData;
                                     gpugX[inputIndex] += gpuW[wIndex] * gyData;
                                 }
                             }
@@ -322,26 +317,6 @@ __kernel void Convolution2DBackward(
                         gpugb[och] += gyData;
                     }
                 }
-            }
-        }
-    }
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    for(int i = 0;i < wLength; i++)
-    {
-        tmpgW[batchCounter * wLength + i] = lgW[i];
-    }
-
-	barrier(CLK_GLOBAL_MEM_FENCE);
-
-    if(batchCounter == 0 && ich==0)
-    {
-        for(int bc = 0; bc < BatchCount; bc++)
-        {
-            for(int i = 0; i < wLength; i++)
-            {
-                gpugW[i] = tmpgW[bc * wLength + i];
             }
         }
     }
@@ -417,7 +392,6 @@ __kernel void Convolution2DBackward(
                 using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
                 using (ComputeBuffer<Real> gpugb = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gb.Data))
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
-                using (ComputeBuffer<Real> tmpgW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.AllocateHostPointer, this.gW.Data.Length * gy.BatchCount))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpugY);
                     BackwardKernel.SetMemoryArgument(1, gpuX);
@@ -425,30 +399,28 @@ __kernel void Convolution2DBackward(
                     BackwardKernel.SetMemoryArgument(3, gpugW);
                     BackwardKernel.SetMemoryArgument(4, gpugb);
                     BackwardKernel.SetMemoryArgument(5, gpugX);
-                    BackwardKernel.SetMemoryArgument(6, tmpgW);
-                    BackwardKernel.SetLocalArgument(7, this.W.Data.Length * Marshal.SizeOf(typeof(Real)));
-                    BackwardKernel.SetValueArgument(8, this.OutputCount);
-                    BackwardKernel.SetValueArgument(9, this.InputCount);
-                    BackwardKernel.SetValueArgument(10, gy.BatchCount);
-                    BackwardKernel.SetValueArgument(11, gy.Shape[0]);
-                    BackwardKernel.SetValueArgument(12, gy.Shape[1]);
-                    BackwardKernel.SetValueArgument(13, gy.Shape[2]);
-                    BackwardKernel.SetValueArgument(14, x.Shape[0]);
-                    BackwardKernel.SetValueArgument(15, x.Shape[1]);
-                    BackwardKernel.SetValueArgument(16, x.Shape[2]);
-                    BackwardKernel.SetValueArgument(17, x.Length);
-                    BackwardKernel.SetValueArgument(18, this._stride);
-                    BackwardKernel.SetValueArgument(19, this._padX);
-                    BackwardKernel.SetValueArgument(20, this._padY);
-                    BackwardKernel.SetValueArgument(21, this._kHeight);
-                    BackwardKernel.SetValueArgument(22, this._kWidth);
+                    BackwardKernel.SetValueArgument(6, this.OutputCount);
+                    BackwardKernel.SetValueArgument(7, this.InputCount);
+                    BackwardKernel.SetValueArgument(8, gy.BatchCount);
+                    BackwardKernel.SetValueArgument(9, gy.Shape[0]);
+                    BackwardKernel.SetValueArgument(10, gy.Shape[1]);
+                    BackwardKernel.SetValueArgument(11, gy.Shape[2]);
+                    BackwardKernel.SetValueArgument(12, x.Shape[0]);
+                    BackwardKernel.SetValueArgument(13, x.Shape[1]);
+                    BackwardKernel.SetValueArgument(14, x.Shape[2]);
+                    BackwardKernel.SetValueArgument(15, x.Length);
+                    BackwardKernel.SetValueArgument(16, this._stride);
+                    BackwardKernel.SetValueArgument(17, this._padX);
+                    BackwardKernel.SetValueArgument(18, this._padY);
+                    BackwardKernel.SetValueArgument(19, this._kHeight);
+                    BackwardKernel.SetValueArgument(20, this._kWidth);
 
                     Weaver.CommandQueue.Execute
                     (
                         BackwardKernel,
                         null,
-                        new long[] { gy.BatchCount, x.Shape[0] },
-                        new long[] { gy.BatchCount, 1 },
+                        new long[] { x.Shape[0] },
+                        null,
                         null
                     );
 

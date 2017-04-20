@@ -108,7 +108,7 @@ namespace KelpNet.Common
             }
             else
             {
-                //方の不一致をここで吸収
+                //型の不一致をここで吸収
                 if (data.GetType().GetElementType() != typeof(Real))
                 {
                     Type arrayType = data.GetType().GetElementType();
@@ -122,7 +122,7 @@ namespace KelpNet.Common
                 }
                 else
                 {
-                    Array.Copy(data, resultData, resultData.Length);
+                    resultData = data.Cast<Real>().ToArray();
                 }
 
                 resultShape = new int[data.Rank];

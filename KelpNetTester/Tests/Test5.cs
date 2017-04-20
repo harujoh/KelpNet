@@ -18,43 +18,43 @@ namespace KelpNetTester.Tests
             //各初期値を記述
             Real[,,,] initial_W1 =
                 {
-                    {{{1.0f,  0.5f, 0.0f}, { 0.5f, 0.0f, -0.5f}, {0.0f, -0.5f, -1.0f}}},
-                    {{{0.0f, -0.1f, 0.1f}, {-0.3f, 0.4f,  0.7f}, {0.5f, -0.2f,  0.2f}}}
+                    {{{(Real)1.0, (Real) 0.5, (Real)0.0}, { (Real)0.5, (Real)0.0, -(Real)0.5}, {(Real)0.0, -(Real)0.5, -(Real)1.0}}},
+                    {{{(Real)0.0, -(Real)0.1, (Real)0.1}, {-(Real)0.3, (Real)0.4,  (Real)0.7}, {(Real)0.5, -(Real)0.2,  (Real)0.2}}}
                 };
-            Real[] initial_b1 = { 0.5f, 1.0f };
+            Real[] initial_b1 = { (Real)0.5, (Real)1.0 };
 
             Real[,,,] initial_W2 =
                 {
-                    {{{-0.1f,  0.6f}, {0.3f, -0.9f}}, {{ 0.7f, 0.9f}, {-0.2f, -0.3f}}},
-                    {{{-0.6f, -0.1f}, {0.3f,  0.3f}}, {{-0.5f, 0.8f}, { 0.9f,  0.1f}}}
+                    {{{-(Real)0.1,  (Real)0.6}, {(Real)0.3, -(Real)0.9}}, {{ (Real)0.7, (Real)0.9}, {-(Real)0.2, -(Real)0.3}}},
+                    {{{-(Real)0.6, -(Real)0.1}, {(Real)0.3,  (Real)0.3}}, {{-(Real)0.5, (Real)0.8}, { (Real)0.9,  (Real)0.1}}}
                 };
-            Real[] initial_b2 = { 0.1f, 0.9f };
+            Real[] initial_b2 = { (Real)0.1, (Real)0.9f };
 
             Real[,] initial_W3 =
                 {
-                    {0.5f, 0.3f, 0.4f, 0.2f, 0.6f, 0.1f, 0.4f, 0.3f},
-                    {0.6f, 0.4f, 0.9f, 0.1f, 0.5f, 0.2f, 0.3f, 0.4f}
+                    {(Real)0.5, (Real)0.3, (Real)0.4, (Real)0.2, (Real)0.6, (Real)0.1, (Real)0.4, (Real)0.3},
+                    {(Real)0.6, (Real)0.4, (Real)0.9, (Real)0.1, (Real)0.5, (Real)0.2, (Real)0.3, (Real)0.4}
                 };
-            Real[] initial_b3 = { 0.01f, 0.02f };
+            Real[] initial_b3 = { (Real)0.01, (Real)0.02 };
 
-            Real[,] initial_W4 = { { 0.8f, 0.2f }, { 0.4f, 0.6f } };
-            Real[] initial_b4 = { 0.02f, 0.01f };
+            Real[,] initial_W4 = { { (Real)0.8, (Real)0.2 }, { (Real)0.4, (Real)0.6 } };
+            Real[] initial_b4 = { (Real)0.02, (Real)0.01 };
 
 
             //入力データ
             Real[,,] x = {{
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.9f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.8f, 0.9f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.1f, 0.8f, 0.5f, 0.8f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.3f, 0.3f, 0.1f, 0.7f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.1f, 0.0f, 0.1f, 0.7f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.7f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.4f, 0.8f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.8f, 0.4f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.8f, 0.3f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.8f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.7f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-                    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.2, (Real)0.9, (Real)0.2, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.2, (Real)0.8, (Real)0.9, (Real)0.1, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.1, (Real)0.8, (Real)0.5, (Real)0.8, (Real)0.1, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.3, (Real)0.3, (Real)0.1, (Real)0.7, (Real)0.2, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.1, (Real)0.0, (Real)0.1, (Real)0.7, (Real)0.2, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.1, (Real)0.7, (Real)0.1, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.4, (Real)0.8, (Real)0.1, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.8, (Real)0.4, (Real)0.1, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.2, (Real)0.8, (Real)0.3, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.1, (Real)0.8, (Real)0.2, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.1, (Real)0.7, (Real)0.2, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0},
+                    { (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.3, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0, (Real)0.0}
                 }};
 
             //教師信号
