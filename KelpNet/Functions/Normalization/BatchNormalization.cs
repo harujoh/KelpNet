@@ -174,8 +174,8 @@ namespace KelpNet.Functions.Normalization
                 gx[i] = NdArray.Zeros(this.ChannelSize);
             }
 
-            this.gBeta.Fill(0);
-            this.gGamma.Fill(0);
+            this.gBeta.Clear();
+            this.gGamma.Clear();
 
             for (int i = 0; i < this.ChannelSize; i++)
             {

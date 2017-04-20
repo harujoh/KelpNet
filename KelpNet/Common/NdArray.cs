@@ -28,9 +28,6 @@ namespace KelpNet.Common
             this.Shape = ndArray.Shape.ToArray();
         }
 
-        //ガワだけを作る
-        //private NdArray() { }
-
         public int Length
         {
             get { return this.Data.Length; }
@@ -162,6 +159,11 @@ namespace KelpNet.Common
             }
 
             return new NdArray { Data = resultData, Shape = resultShape };
+        }
+
+        public void Clear()
+        {
+            this.Data = new double[this.Data.Length];
         }
 
         public void Fill(double val)
