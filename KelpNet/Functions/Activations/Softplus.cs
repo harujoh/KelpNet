@@ -11,8 +11,8 @@ namespace KelpNet.Functions.Activations
 
         public Softplus(Real? beta = null, string name = "Softplus", bool isGpu = true) : base(name, isGpu)
         {
-            this._beta = beta ?? 1f;
-            this._betaInv = 1f / this._beta;
+            this._beta = beta ?? 1;
+            this._betaInv = 1 / this._beta;
         }
 
         public override void InitKernel()

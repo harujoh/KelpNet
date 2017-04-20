@@ -21,19 +21,19 @@ namespace KelpNetTester.Tests
             //訓練データ
             Real[][] trainData =
             {
-                new Real[] { 0.0f, 0.0f },
-                new Real[] { 1.0f, 0.0f },
-                new Real[] { 0.0f, 1.0f },
-                new Real[] { 1.0f, 1.0f }
+                new Real[] { 0, 0 },
+                new Real[] { 1, 0 },
+                new Real[] { 0, 1 },
+                new Real[] { 1, 1 }
             };
 
             //訓練データラベル
             Real[][] trainLabel =
             {
-                new Real[] { 0.0f },
-                new Real[] { 1.0f },
-                new Real[] { 1.0f },
-                new Real[] { 0.0f }
+                new Real[] { 0 },
+                new Real[] { 1 },
+                new Real[] { 1 },
+                new Real[] { 0 }
             };
 
             //ネットワークの構成は FunctionStack に書き連ねる

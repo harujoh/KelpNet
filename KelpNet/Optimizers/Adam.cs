@@ -15,10 +15,10 @@ namespace KelpNet.Optimizers
 
         public Adam(Real? alpha = null, Real? beta1 = null, Real? beta2 = null, Real? epsilon = null)
         {
-            this.Alpha = alpha ?? 0.001f;
-            this.Beta1 = beta1 ?? 0.9f;
-            this.Beta2 = beta2 ?? 0.999f;
-            this.Epsilon = epsilon ??(Real)1e-8f;
+            this.Alpha = alpha ?? (Real)0.001;
+            this.Beta1 = beta1 ?? (Real)0.9;
+            this.Beta2 = beta2 ?? (Real)0.999;
+            this.Epsilon = epsilon ?? (Real)1e-8;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)

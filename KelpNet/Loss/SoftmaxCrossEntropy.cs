@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Loss;
 
@@ -9,7 +8,6 @@ namespace KelpNet.Loss
     {
         public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out Real loss)
         {
-            //Real[] localloss = new Real[input.BatchCount];
             Real localloss = 0;
             Real[] gx = new Real[input.Data.Length];
 

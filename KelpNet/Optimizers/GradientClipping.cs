@@ -38,7 +38,7 @@ namespace KelpNet.Optimizers
         public override void UpdateFunctionParameters()
         {
             //_sum_sqnorm
-            Real s = 0.0f;
+            Real s = 0;
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {

@@ -36,8 +36,8 @@ namespace KelpNet.Functions.Normalization
         public BatchNormalization(int channelSize, Real? decay = null, Real? eps = null, bool isTrain = true, string name = "BatchNorm", bool isGpu = true) : base(name, isGpu)
         {
             this.ChannelSize = channelSize;
-            this.Decay = decay ?? 0.9f;
-            this.Eps = eps ?? (Real)1e-5f;
+            this.Decay = decay ?? (Real)0.9;
+            this.Eps = eps ?? (Real)1e-5;
             this.IsTrain = isTrain;
 
             this.Gamma = NdArray.Ones(channelSize);
@@ -193,7 +193,7 @@ namespace KelpNet.Functions.Normalization
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
                     this.gMean.Data[i] = -gs * this.gBeta.Data[i];
-                    this.gVariance.Data[i] = -0.5f * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
+                    this.gVariance.Data[i] = (Real)(-0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i]);
 
                     for (int j = 0; j < gy.BatchCount; j++)
                     {

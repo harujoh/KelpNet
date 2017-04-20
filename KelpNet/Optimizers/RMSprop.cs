@@ -14,9 +14,9 @@ namespace KelpNet.Optimizers
 
         public RMSprop(Real? learningRate = null, Real? alpha = null, Real? epsilon = null)
         {
-            this.LearningRate = learningRate ?? 0.01f;
-            this.Alpha = alpha ?? 0.99f;
-            this.Epsilon = epsilon ?? (Real)1e-8f;
+            this.LearningRate = learningRate ?? (Real)0.01;
+            this.Alpha = alpha ?? (Real)0.99;
+            this.Epsilon = epsilon ?? (Real)1e-8;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)

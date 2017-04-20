@@ -21,7 +21,7 @@ namespace KelpNetTester.Tests
 
             Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7);
 
-            SGD optimizer = new SGD(learningRate: 0.00005f); //大きいと発散する
+            SGD optimizer = new SGD(learningRate: (Real)0.00005); //大きいと発散する
             model.SetOptimizer(optimizer);
             MeanSquaredError meanSquaredError = new MeanSquaredError();
 

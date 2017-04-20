@@ -13,8 +13,8 @@ namespace KelpNet.Optimizers
 
         public AdaDelta(Real? rho = null, Real? epsilon = null)
         {
-            this.Rho = rho ?? 0.95f;
-            this.Epsilon = epsilon ?? (Real)1e-6f;
+            this.Rho = rho ?? (Real)0.95;
+            this.Epsilon = epsilon ?? (Real)1e-6;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)

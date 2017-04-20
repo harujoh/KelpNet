@@ -31,7 +31,7 @@ namespace KelpNetTester.Tests
 
             this.model = new Deconvolution2D(1, 1, 15, 1, 7);
 
-            this.optimizer = new SGD(learningRate: 0.01f); //大きいと発散する
+            this.optimizer = new SGD(learningRate: (Real)0.01); //大きいと発散する
             this.model.SetOptimizer(this.optimizer);
         }
 

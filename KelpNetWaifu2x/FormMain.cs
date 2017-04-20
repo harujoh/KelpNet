@@ -65,7 +65,7 @@ namespace KelpNetWaifu2x
 
                     //padを行い入力と出力画像のサイズを合わせる
                     functionList.Add(new Convolution2D((int)data["nInputPlane"], (int)data["nOutputPlane"], (int)data["kW"], pad: (int)data["kW"] / 2, initialW: weightData, initialb: (Real[])data["bias"],name: "Convolution2D l" + layerCounter++));
-                    functionList.Add(new LeakyReLU(0.1f, name: "LeakyReLU l" + layerCounter++));
+                    functionList.Add(new LeakyReLU((Real)0.1, name: "LeakyReLU l" + layerCounter++));
                 }
 
                 nn = new FunctionStack(functionList.ToArray());

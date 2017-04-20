@@ -12,7 +12,7 @@ namespace KelpNet.Optimizers
 
         public SGD(Real? learningRate = null)
         {
-            this.LearningRate = learningRate ?? 0.1f;
+            this.LearningRate = learningRate ?? (Real)0.1;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)

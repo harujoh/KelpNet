@@ -58,7 +58,7 @@ namespace KelpNetTester.Tests
                 }};
 
             //教師信号
-            Real[] t = { 0.0f, 1.0f };
+            Real[] t = { 0, 1 };
 
 
             //層の中身をチェックしたい場合は、層単体でインスタンスを持つ

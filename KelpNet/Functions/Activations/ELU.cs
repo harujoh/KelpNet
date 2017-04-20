@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Activations
 
         public ELU(Real? alpha = null, string name = "ELU", bool isGpu = true) : base(name, isGpu)
         {
-            this._alpha = alpha ?? 1f;
+            this._alpha = alpha ?? 1;
         }
 
         public override void InitKernel()

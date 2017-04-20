@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Noise
 
         public Dropout(Real? dropoutRatio = null, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
         {
-            this.dropoutRatio = dropoutRatio ?? 0.5f;
+            this.dropoutRatio = dropoutRatio ?? (Real)0.5;
         }
 
         public override void InitKernel()
@@ -41,7 +41,7 @@ __kernel void DropoutForward(
         {
             Real[] result = new Real[x.Data.Length];
             Real[] mask = new Real[x.Length];
-            Real scale = 1.0f / (1.0f - this.dropoutRatio);
+            Real scale = 1 / (1 - this.dropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)
             {

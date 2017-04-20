@@ -115,7 +115,7 @@ __kernel void Convolution2DForward(
     int oy = get_global_id(1);
     int ox = get_global_id(2);
 
-    Real localResult = 0.0f;
+    Real localResult = 0;
 
     gpuW += och * InputCount * kHeight * kWidth;
     gpuX += batchCounter * inputLength;

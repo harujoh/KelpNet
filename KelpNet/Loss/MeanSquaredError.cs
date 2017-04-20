@@ -13,9 +13,9 @@ namespace KelpNet.Loss
 
             for (int b = 0; b < input.BatchCount; b++)
             {
-                loss = 0.0f;
+                loss = 0;
 
-                Real coeff = 2.0f / teachSignal.Length;
+                Real coeff = (Real)(2.0 / teachSignal.Length);
 
                 for (int i = 0; i < input.Length; i++)
                 {

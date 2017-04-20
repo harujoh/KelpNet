@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Activations
 
         public LeakyReLU(Real? slope = null, string name = "LeakyReLU", bool isGpu = true) : base(name, isGpu)
         {
-            this._slope = slope ?? 0.2f;
+            this._slope = slope ?? (Real)0.2;
         }
 
         public override void InitKernel()

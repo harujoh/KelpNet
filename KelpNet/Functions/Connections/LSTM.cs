@@ -252,17 +252,17 @@ namespace KelpNet.Functions.Connections
 
         static Real Sigmoid(Real x)
         {
-            return 1f / (1f + (Real)Math.Exp(-x));
+            return (Real)(1 / (1 + Math.Exp(-x)));
         }
 
         static Real GradSigmoid(Real x)
         {
-            return x * (1f - x);
+            return x * (1 - x);
         }
 
         static Real GradTanh(Real x)
         {
-            return 1f - x * x;
+            return 1 - x * x;
         }
     }
 }

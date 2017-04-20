@@ -13,13 +13,13 @@ namespace KelpNet.Common.Tools
 
             for (int i = 0; i < array.Data.Length; i++)
             {
-                array.Data[i] = Normal(s) * (masterScale ?? 1f);
+                array.Data[i] = Normal(s) * (masterScale ?? 1);
             }
         }
 
         private static Real Normal(Real? scale = null)
         {
-            Mother.Sigma = scale ?? 0.05f;
+            Mother.Sigma = scale ?? (Real)0.05;
             return Mother.RandomNormal();
         }
 

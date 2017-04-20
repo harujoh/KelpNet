@@ -13,8 +13,8 @@ namespace KelpNet.Optimizers
 
         public AdaGrad(Real? learningRate = null, Real? epsilon = null)
         {
-            this.LearningRate = learningRate ?? 0.01f;
-            this.Epsilon = epsilon ?? (Real)1e-8f;
+            this.LearningRate = learningRate ?? (Real)0.01;
+            this.Epsilon = epsilon ?? (Real)1e-8;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)

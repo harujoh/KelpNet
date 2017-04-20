@@ -46,7 +46,7 @@ namespace KelpNetTester.Tests
 
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
             GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);
-            SGD sgd = new SGD(learningRate: 1.0f);
+            SGD sgd = new SGD(learningRate: 1);
             model.SetOptimizer(gradientClipping, sgd);
 
             Real wholeLen = trainData.Length;
@@ -93,7 +93,7 @@ namespace KelpNetTester.Tests
 
                     if (epoch >= 6)
                     {
-                        sgd.LearningRate /= 1.2f;
+                        sgd.LearningRate /= (Real)1.2;
                         Console.WriteLine("learning rate =" + sgd.LearningRate);
                     }
                 }
