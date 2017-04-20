@@ -44,15 +44,15 @@ namespace KelpNet.Loss
         {
             double[] result = new double[x.Length];
 
-            double[] y = new double[x.Length];
+            double y = 0;
             double m = x.Max();
 
             for (int i = 0; i < x.Length; i++)
             {
-                y[i] = Math.Exp(x[i] - m);
+                y += Math.Exp(x[i] - m);
             }
 
-            m += Math.Log(y.Sum());
+            m += Math.Log(y);
 
             for (int i = 0; i < x.Length; i++)
             {
