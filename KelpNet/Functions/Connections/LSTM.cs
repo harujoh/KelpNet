@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -186,15 +187,16 @@ namespace KelpNet.Functions.Connections
 
         protected override NdArray[] BackwardSingle(NdArray[] gh)
         {
-            NdArray[] result = new NdArray[gh.Length];
+            NdArray[] lgh = gh.ToArray();
+            NdArray[] result = new NdArray[lgh.Length];
 
             if (this.gxPrev0 == null)
             {
                 //値がなければ初期化
-                this.gxPrev0 = new NdArray[gh.Length];
-                this.gxPrev1 = new NdArray[gh.Length];
-                this.gxPrev2 = new NdArray[gh.Length];
-                this.gxPrev3 = new NdArray[gh.Length];
+                this.gxPrev0 = new NdArray[lgh.Length];
+                this.gxPrev1 = new NdArray[lgh.Length];
+                this.gxPrev2 = new NdArray[lgh.Length];
+                this.gxPrev3 = new NdArray[lgh.Length];
             }
             else
             {
@@ -207,19 +209,19 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int k = 0; k < ghPre0[j].Length; k++)
                     {
-                        gh[j].Data[k] += ghPre0[j].Data[k];
-                        gh[j].Data[k] += ghPre1[j].Data[k];
-                        gh[j].Data[k] += ghPre2[j].Data[k];
-                        gh[j].Data[k] += ghPre3[j].Data[k];
+                        lgh[j].Data[k] += ghPre0[j].Data[k];
+                        lgh[j].Data[k] += ghPre1[j].Data[k];
+                        lgh[j].Data[k] += ghPre2[j].Data[k];
+                        lgh[j].Data[k] += ghPre3[j].Data[k];
                     }
                 }
             }
 
             if (IsParallel)
             {
-                Parallel.For(0, gh.Length, i =>
+                Parallel.For(0, lgh.Length, i =>
                 {
-                    this.CalcgxPrev(gh[i].Data, i);
+                    this.CalcgxPrev(lgh[i].Data, i);
                 });
 
                 NdArray[] gArray0 = this.upward0.Backward(this.gxPrev0);
@@ -227,7 +229,7 @@ namespace KelpNet.Functions.Connections
                 NdArray[] gArray2 = this.upward2.Backward(this.gxPrev2);
                 NdArray[] gArray3 = this.upward3.Backward(this.gxPrev3);
 
-                Parallel.For(0, gh.Length, i =>
+                Parallel.For(0, lgh.Length, i =>
                 {
                     double[] gx = new double[this.InputCount];
 
@@ -244,9 +246,9 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                for (int i = 0; i < gh.Length; i++)
+                for (int i = 0; i < lgh.Length; i++)
                 {
-                    this.CalcgxPrev(gh[i].Data, i);
+                    this.CalcgxPrev(lgh[i].Data, i);
                 }
 
                 NdArray[] gArray0 = this.upward0.Backward(this.gxPrev0);
@@ -254,7 +256,7 @@ namespace KelpNet.Functions.Connections
                 NdArray[] gArray2 = this.upward2.Backward(this.gxPrev2);
                 NdArray[] gArray3 = this.upward3.Backward(this.gxPrev3);
 
-                for (int i = 0; i < gh.Length; i++)
+                for (int i = 0; i < lgh.Length; i++)
                 {
                     double[] gx = new double[this.InputCount];
 
