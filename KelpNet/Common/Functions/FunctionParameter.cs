@@ -30,9 +30,6 @@ namespace KelpNet.Common.Functions
             {
                 this.Grad.Data[j] /= this.TrainCount;
             }
-
-            //カウンタをリセット
-            this.TrainCount = 0;
         }
 
         //傾きの初期化
