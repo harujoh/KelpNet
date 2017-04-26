@@ -113,8 +113,8 @@ namespace KelpNetWaifu2x
                     g.Dispose();
 
                     NdArray image = NdArrayConverter.Image2NdArray(resultImage);
-                    NdArray resultArray = this.nn.Predict(new BatchArray(image));
-                    resultImage = NdArrayConverter.NdArray2Image(resultArray);
+                    BatchArray resultArray = this.nn.Predict(new BatchArray(image));
+                    resultImage = NdArrayConverter.NdArray2Image(resultArray.GetNdArray(0));
                     resultImage.Save(sfd.FileName);
                     this.pictureBox1.Image = new Bitmap(resultImage);
                 }

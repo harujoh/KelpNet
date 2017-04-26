@@ -41,7 +41,7 @@ namespace KelpNet.Functions.Normalization
             this.IsTrain = isTrain;
 
             this.Gamma = NdArray.Ones(channelSize);
-            this.Beta = NdArray.Zeros(channelSize);
+            this.Beta = new NdArray(channelSize);
 
             this.gGamma = NdArray.ZerosLike(this.Gamma);
             this.gBeta = NdArray.ZerosLike(this.Beta);
@@ -52,13 +52,13 @@ namespace KelpNet.Functions.Normalization
             this.Parameters[0] = new FunctionParameter(this.Gamma, this.gGamma, this.Name + " Gamma");
             this.Parameters[1] = new FunctionParameter(this.Beta, this.gBeta, this.Name + " Beta");
 
-            this.AvgMean = NdArray.Zeros(channelSize);
-            this.AvgVar = NdArray.Zeros(channelSize);
+            this.AvgMean = new NdArray(channelSize);
+            this.AvgVar = new NdArray(channelSize);
 
             if (!this.IsTrain)
             {
-                this.gMean = NdArray.Zeros(channelSize);
-                this.gVariance = NdArray.Zeros(channelSize);
+                this.gMean = new NdArray(channelSize);
+                this.gVariance = new NdArray(channelSize);
 
                 this.Parameters[2] = new FunctionParameter(this.AvgMean, this.gMean, this.Name + " Mean");
                 this.Parameters[3] = new FunctionParameter(this.AvgVar, this.gVariance, this.Name + " Variance");
@@ -157,8 +157,8 @@ namespace KelpNet.Functions.Normalization
         {
             Real[] gx = new Real[gy.BatchCount * this.ChannelSize];
 
-            this.gBeta.Fill(0);
-            this.gGamma.Fill(0);
+            this.gBeta.Clear();
+            this.gGamma.Clear();
 
             for (int i = 0; i < this.ChannelSize; i++)
             {

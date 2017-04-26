@@ -76,7 +76,7 @@ namespace KelpNetTester.Tests
             if (this.counter < 11)
             {
                 //ランダムに点が打たれた画像を生成
-                BatchArray img_p = new BatchArray(getRandomImage());
+                BatchArray img_p = getRandomImage();
 
                 //目標とするフィルタで学習用の画像を出力
                 BatchArray img_core = this.decon_core.Forward(img_p);
@@ -87,7 +87,7 @@ namespace KelpNetTester.Tests
                 BatchArray img_y = this.model.Forward(img_p);
 
                 //img_yを暗黙的にNdArrayとして使用
-                this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y);
+                this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y.GetNdArray(0));
 
                 Real loss;
                 BatchArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);

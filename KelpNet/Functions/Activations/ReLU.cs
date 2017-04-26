@@ -1,124 +1,60 @@
 ﻿using System;
-using System.Linq;
-using Cloo;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
+using KelpNet.Common.Activations;
 
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class ReLU : NeedPreviousOutputFunction
+    public class ReLU : Activation
     {
-        public ReLU(string name = "ReLU",bool isGpu = true) : base(name, isGpu)
-        {
-        }
+        public override string ForwardKernelSource { get; }
+        public override string BackwardKernelSource { get; }
 
-        public override void InitKernel()
-        {
-            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "ReLUForward");
-            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "ReLUBackward");
-        }
-
-        const string ForwardKernelSource =
+        public override string ForwardActivateGPU { get; } =
 @"
-__kernel void ReLUForward(
-	__global Real *gpuY)
+void ForwardActivate(__global Real* gpuY)
 {
-	int i = get_global_id(0);
-
-    if(gpuY[i] < 0.0)
+    if(*gpuY < 0.0)
     {
-        gpuY[i] = 0.0;
+        *gpuY = 0.0;
     }
-}";
+}
+";
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        public override string BackwardActivateGPU { get; } =
+@"
+void BackwardActivate(Real gpuY, __global Real* gpugX)
+{
+    if(gpuY <= 0.0)
+    {
+        *gpugX = 0.0;
+    }
+}
+";
+
+        public ReLU(string name = "ReLU", bool isGpu = true) : base(name, isGpu)
         {
-            Real[] y = x.Data.ToArray();
+            this.ForwardKernelSource = ForwardActivateGPU + String.Format(ForwardKernelString, this.ForwardKernelName);
+            this.BackwardKernelSource = BackwardActivateGPU + String.Format(BackwardKernelString, this.BackwardKernelName);
 
-            if (!IsGpu)
-            {
-                for (int i = 0; i < x.Data.Length; i++)
-                {
-                    if (y[i] < 0)
-                    {
-                        y[i] = 0;
-                    }
-                }
-            }
-            else
-            {
-                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
-                {
-                    ForwardKernel.SetMemoryArgument(0, gpuY);
-
-                    Weaver.CommandQueue.Execute
-                        (
-                            ForwardKernel,
-                            null,
-                            new long[] { x.Data.Length },
-                            null,
-                            null
-                        );
-
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref y, true, null);
-                }
-            }
-
-            return BatchArray.Convert(y, x.Shape, x.BatchCount);
+            this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, this.ForwardKernelName);
+            this.BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, this.BackwardKernelName);
         }
 
-        const string BackwardKernelSource =
-@"
-__kernel void ReLUBackward(
-	__global Real *gpuY,
-	__global Real *gpugX)
-{
-	int i = get_global_id(0);
-
-    if(gpuY[i] <= 0.0)
-    {
-        gpugX[i] = 0.0;
-    }
-}";
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
+        public override void ForwardActivate(ref Real x)
         {
-            Real[] gx = gy.Data.ToArray();
-
-            if (!IsGpu)
+            if (x < 0)
             {
-                for (int i = 0; i < gy.Data.Length; i++)
-                {
-                    if (prevOutput.Data[i] <= 0)
-                    {
-                        gx[i] = 0;
-                    }
-                }
+                x = 0;
             }
-            else
+        }
+
+        public override void BackwardActivate(ref Real gy, Real y)
+        {
+            if (y <= 0)
             {
-                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
-                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
-                {
-                    BackwardKernel.SetMemoryArgument(0, gpuY);
-                    BackwardKernel.SetMemoryArgument(1, gpugX);
-
-                    Weaver.CommandQueue.Execute
-                        (
-                            BackwardKernel,
-                            null,
-                            new long[] { gy.Data.Length },
-                            null,
-                            null
-                        );
-
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
-                }
+                gy = 0;
             }
-
-            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

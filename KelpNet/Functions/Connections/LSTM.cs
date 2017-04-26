@@ -33,6 +33,8 @@ namespace KelpNet.Functions.Connections
         BatchArray gxPrev3;
         Real[] gcPrev;
 
+        private bool initialized = false;
+
         public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM", bool isGpu = true) : base(name, isGpu, inSize, outSize)
         {
             this.Parameters = new FunctionParameter[12];
@@ -146,13 +148,14 @@ namespace KelpNet.Functions.Connections
         {
             Real[] lgh = gh.Data.ToArray();
 
-            if (this.gxPrev0 == null)
+            if (!initialized)
             {
                 //値がなければ初期化
                 this.gxPrev0 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
                 this.gxPrev1 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
                 this.gxPrev2 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
                 this.gxPrev3 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
+                initialized = true;
             }
             else
             {
@@ -243,11 +246,8 @@ namespace KelpNet.Functions.Connections
 
         public override void ResetState()
         {
+            initialized = false;
             this.hParam = null;
-            this.gxPrev0 = null;
-            this.gxPrev1 = null;
-            this.gxPrev2 = null;
-            this.gxPrev3 = null;
         }
 
         static Real Sigmoid(Real x)

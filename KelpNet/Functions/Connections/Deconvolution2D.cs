@@ -27,7 +27,7 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.W = NdArray.Zeros(outputChannels, inputChannels, kSize, kSize);
+            this.W = new NdArray(outputChannels, inputChannels, kSize, kSize);
             this.gW = NdArray.ZerosLike(this.W);
 
             if (initialW == null)
@@ -42,7 +42,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
 
             //noBias=trueでもbiasを用意して更新しない
-            this.b = NdArray.Zeros(outputChannels);
+            this.b = new NdArray(outputChannels);
             this.gb = NdArray.ZerosLike(this.b);
 
             if (!noBias)

@@ -21,7 +21,7 @@ namespace KelpNet.Functions.Connections
         public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = true) : base(name, isGpu, inputCount, outputCount)
         {
             this.noBias = noBias;
-            this.W = NdArray.Zeros(outputCount, inputCount);
+            this.W = new NdArray(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
@@ -39,7 +39,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
 
             //noBias=trueでもbiasを用意して更新しない
-            this.b = NdArray.Zeros(outputCount);
+            this.b = new NdArray(outputCount);
             this.gb = NdArray.ZerosLike(this.b);
 
             if (!noBias)
@@ -55,11 +55,11 @@ namespace KelpNet.Functions.Connections
 
         public override void InitKernel()
         {
-            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LinearForward");
+            ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "LinearForward");
             BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LinearBackward");
         }
 
-        const string ForwardKernelSource =
+        public override string ForwardKernelSource { get; } =
 @"
 __kernel void LinearForward(
 	__global const Real *gpuX,
@@ -140,7 +140,7 @@ __kernel void LinearForward(
             return BatchArray.Convert(y, new[] { OutputCount }, x.BatchCount);
         }
 
-        const string BackwardKernelSource =
+        public override string BackwardKernelSource { get; } =
 @"
 __kernel void LinearBackward(
 	__global const Real *gpugY,

@@ -20,11 +20,11 @@ namespace KelpNet.Functions.Noise
 
         public override void InitKernel()
         {
-            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "DropoutForward");
-            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "DropoutBackward");
+            ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "DropoutForward");
+            BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "DropoutBackward");
         }
 
-        const string ForwardKernelSource =
+        public override string ForwardKernelSource { get; } =
 @"
 __kernel void DropoutForward(
 	__global const Real *gpuX,
@@ -85,7 +85,7 @@ __kernel void DropoutForward(
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        const string BackwardKernelSource =
+        public override string BackwardKernelSource { get; } =
 @"
 __kernel void DropoutBackward(
 	__global const Real *mask,

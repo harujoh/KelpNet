@@ -28,8 +28,11 @@ namespace KelpNet.Common
             this.Shape = ndArray.Shape.ToArray();
         }
 
-        //ガワだけを作る
-        protected NdArray() { }
+        public NdArray (params int[] shape)
+        {
+            Data = new Real[ShapeToArrayLength(shape)];
+            Shape = shape.ToArray();
+        }
 
         public int Rank
         {
@@ -65,11 +68,6 @@ namespace KelpNet.Common
             return new NdArray { Data = resutlArray, Shape = baseArray.Shape.ToArray() };
         }
 
-        public static NdArray Zeros(params int[] shape)
-        {
-            return new NdArray { Data = new Real[ShapeToArrayLength(shape)], Shape = shape };
-        }
-
         public static NdArray Ones(params int[] shape)
         {
             Real[] resutlArray = new Real[ShapeToArrayLength(shape)];
@@ -82,7 +80,7 @@ namespace KelpNet.Common
             return new NdArray { Data = resutlArray, Shape = shape };
         }
 
-        protected static int ShapeToArrayLength(params int[] shapes)
+        public static int ShapeToArrayLength(params int[] shapes)
         {
             int result = 1;
 
@@ -135,6 +133,11 @@ namespace KelpNet.Common
             return new NdArray { Data = resultData, Shape = resultShape };
         }
 
+        public void Clear()
+        {
+            this.Data = new Real[this.Data.Length];
+        }
+
         public void Fill(Real val)
         {
             for (int i = 0; i < this.Data.Length; i++)
@@ -154,7 +157,7 @@ namespace KelpNet.Common
 
             foreach (Real data in this.Data)
             {
-                string[] divStr = data.ToString().Split('.');
+                string[] divStr = ((double)data).ToString().Split('.');
                 intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
                 if (divStr.Length > 1 && !isExponential)
                 {
@@ -190,11 +193,11 @@ namespace KelpNet.Common
                 string[] divStr;
                 if (isExponential)
                 {
-                    divStr = string.Format("{0:0.00000000e+00}", this.Data[i]).Split('.');
+                    divStr = string.Format("{0:0.00000000e+00}", (double)this.Data[i]).Split('.');
                 }
                 else
                 {
-                    divStr = this.Data[i].ToString().Split('.');
+                    divStr = ((double)this.Data[i]).ToString().Split('.');
                 }
 
                 //最大文字数でインデントを揃える

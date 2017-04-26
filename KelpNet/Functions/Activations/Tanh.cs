@@ -1,42 +1,48 @@
 ﻿using System;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
+using KelpNet.Common.Activations;
 
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class Tanh : NeedPreviousOutputFunction
+    public class Tanh : Activation
     {
+        public override string ForwardKernelSource { get; }
+        public override string BackwardKernelSource { get; }
+
+        public override string ForwardActivateGPU { get; } =
+@"
+void ForwardActivate(__global Real* gpuY)
+{
+    *gpuY = tanh(*gpuY);
+}
+";
+
+        public override string BackwardActivateGPU { get; } =
+@"
+void BackwardActivate(Real gpuY, __global Real* gpugX)
+{
+    *gpugX *= 1 - gpuY * gpuY;
+}
+";
+
         public Tanh(string name = "Tanh", bool isGpu = true) : base(name, isGpu)
         {
+            this.ForwardKernelSource = ForwardActivateGPU + String.Format(ForwardKernelString, this.ForwardKernelName);
+            this.BackwardKernelSource = BackwardActivateGPU + String.Format(BackwardKernelString, this.BackwardKernelName);
+
+            this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, this.ForwardKernelName);
+            this.BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, this.BackwardKernelName);
         }
 
-        public override void InitKernel()
+        public override void ForwardActivate(ref Real x)
         {
+            x = (Real)Math.Tanh(x);
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        public override void BackwardActivate(ref Real gy, Real y)
         {
-            Real[] y = new Real[x.Data.Length];
-
-            for (int i = 0; i < y.Length; i++)
-            {
-                y[i] = (Real)Math.Tanh(x.Data[i]);
-            }
-
-            return BatchArray.Convert(y, x.Shape, x.BatchCount);
-        }
-
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
-        {
-            Real[] gx = new Real[gy.Data.Length];
-
-            for (int i = 0; i < gx.Length; i++)
-            {
-                gx[i] = gy.Data[i] * (1 - prevOutput.Data[i] * prevOutput.Data[i]);
-            }
-
-            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
+            gy *= 1 - y * y;
         }
     }
 }

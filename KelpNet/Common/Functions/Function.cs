@@ -23,6 +23,12 @@ namespace KelpNet.Common.Functions
         [NonSerialized]
         public ComputeKernel BackwardKernel;
 
+        public string ForwardKernelName { get; }
+        public string BackwardKernelName { get; }
+
+        public virtual string ForwardKernelSource { get; }
+        public virtual string BackwardKernelSource { get; }
+
         //コンストラクタ
         protected Function(string name, bool isGpu, int inputCount = 0, int oututCount = 0)
         {
@@ -32,6 +38,9 @@ namespace KelpNet.Common.Functions
 
             this.IsGpu = isGpu && Weaver.Enable;
 
+            this.ForwardKernelName = name.Replace(" ", "") + "Forward";
+            this.BackwardKernelName = name.Replace(" ", "") + "Backward";
+
             //カーネルを作成
             if (this.IsGpu)
             {
@@ -39,7 +48,7 @@ namespace KelpNet.Common.Functions
             }
         }
 
-        virtual public void InitKernel()
+        public virtual void InitKernel()
         {            
         }
 

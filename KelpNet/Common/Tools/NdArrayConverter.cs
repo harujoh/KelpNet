@@ -11,7 +11,7 @@ namespace KelpNet.Common.Tools
         public static NdArray Image2NdArray(Bitmap input)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
-            NdArray result = NdArray.Zeros(bitcount, input.Height, input.Width);
+            NdArray result = new NdArray(bitcount, input.Height, input.Width);
 
             BitmapData bmpdat = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly, input.PixelFormat);
             byte[] imageData = new byte[bmpdat.Stride * bmpdat.Height];

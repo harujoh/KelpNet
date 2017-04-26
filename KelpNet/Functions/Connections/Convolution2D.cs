@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -55,7 +54,7 @@ namespace KelpNet.Functions.Connections
 
         void Initialize(Real[,,,] initialW = null, Real[] initialb = null, bool isGpu = true)
         {
-            this.W = NdArray.Zeros(OutputCount, InputCount, this._kHeight, this._kWidth);
+            this.W = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
 
             if (initialW == null)
@@ -70,7 +69,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
 
             //noBias=trueでもbiasを用意して更新しない
-            this.b = NdArray.Zeros(OutputCount);
+            this.b = new NdArray(OutputCount);
             this.gb = NdArray.ZerosLike(this.b);
 
             if (this.Parameters.Length > 1)
@@ -86,11 +85,11 @@ namespace KelpNet.Functions.Connections
 
         public override void InitKernel()
         {
-            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "Convolution2DForward");
-            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "Convolution2DBackward");
+            ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
+            BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "Convolution2DBackward");
         }
 
-        const string ForwardKernelSource =
+        public override string ForwardKernelSource { get; } =
 @"
 __kernel void Convolution2DForward(
     const __global __read_only  Real* gpuX,
@@ -248,7 +247,7 @@ __kernel void Convolution2DForward(
         }
 
 
-        const string BackwardKernelSource =
+        public override string BackwardKernelSource { get; } =
 @"
 __kernel void Convolution2DBackward(
 	const __global __read_only  Real* gpugY,

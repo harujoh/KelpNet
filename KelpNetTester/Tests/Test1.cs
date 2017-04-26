@@ -61,7 +61,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (Real[] input in trainData)
             {
-                NdArray result = nn.Predict(new BatchArray(input));
+                BatchArray result = nn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
@@ -75,7 +75,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (Real[] input in trainData)
             {
-                NdArray result = testnn.Predict(new BatchArray(input));
+                BatchArray result = testnn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }

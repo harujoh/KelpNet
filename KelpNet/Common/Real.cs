@@ -1,15 +1,17 @@
-﻿//using RealType = System.Double;
-using RealType = System.Single;
+﻿using System;
+using RealType = System.Double;
+//using RealType = System.Single;
 
 namespace KelpNet.Common
 {
-    public struct Real
+    [Serializable]
+    public struct Real:IComparable
     {
-        private RealType value;
+        public readonly RealType Value;
 
         private Real(RealType value)
         {
-            this.value = value;
+            this.Value = value;
         }
 
         public static implicit operator Real(RealType value)
@@ -19,7 +21,7 @@ namespace KelpNet.Common
 
         public static implicit operator RealType(Real real)
         {
-            return real.value;
+            return real.Value;
         }
 
         public static Real MinValue
@@ -32,9 +34,14 @@ namespace KelpNet.Common
             get { return RealType.MaxValue; }
         }
 
+        public int CompareTo(object other)
+        {
+            return this.Value.CompareTo(((Real)other).Value);
+        }
+
         public override string ToString()
         {
-            return this.value.ToString();
+            return this.Value.ToString();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace KelpNetTester.Tests
                     {{{-(Real)0.1,  (Real)0.6}, {(Real)0.3, -(Real)0.9}}, {{ (Real)0.7, (Real)0.9}, {-(Real)0.2, -(Real)0.3}}},
                     {{{-(Real)0.6, -(Real)0.1}, {(Real)0.3,  (Real)0.3}}, {{-(Real)0.5, (Real)0.8}, { (Real)0.9,  (Real)0.1}}}
                 };
-            Real[] initial_b2 = { (Real)0.1, (Real)0.9f };
+            Real[] initial_b2 = { (Real)0.1, (Real)0.9 };
 
             Real[,] initial_W3 =
                 {
@@ -58,7 +58,7 @@ namespace KelpNetTester.Tests
                 }};
 
             //教師信号
-            Real[] t = { 0, 1 };
+            Real[] t = { (Real)0.0, (Real)1.0 };
 
 
             //層の中身をチェックしたい場合は、層単体でインスタンスを持つ

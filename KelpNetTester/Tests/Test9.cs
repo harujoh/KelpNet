@@ -46,7 +46,7 @@ namespace KelpNetTester.Tests
             SoftmaxCrossEntropy softmaxCrossEntropy = new SoftmaxCrossEntropy();
             for (int epoch = 0; epoch < TRAINING_EPOCHS; epoch++)
             {
-                BatchArray h = new BatchArray(NdArray.Zeros(N_UNITS));
+                BatchArray h = new BatchArray(new Real[N_UNITS]);
                 for (int pos = 0; pos < trainData.Length; pos++)
                 {
                     int id = trainData[pos];
@@ -147,7 +147,7 @@ namespace KelpNetTester.Tests
         {
             Real sum = 0;
 
-            BatchArray h = new BatchArray(NdArray.Zeros(N_UNITS));
+            BatchArray h = new BatchArray(new Real[N_UNITS]);
 
             for (int i = 1; i < s.Count; i++)
             {

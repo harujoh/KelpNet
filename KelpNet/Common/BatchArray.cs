@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Text;
 
 namespace KelpNet.Common
 {
     [Serializable]
-    public class BatchArray : NdArray
+    public class BatchArray
     {
+        public Real[] Data;
+        public int[] Shape;
+
         public int BatchCount;
         public int Length;
-
-        private BatchArray()
-        {
-        }
 
         public BatchArray(Array data)
         {
@@ -26,7 +25,7 @@ namespace KelpNet.Common
         public BatchArray(Real[] data, int[] shape, int batchCount)
         {
             this.Shape = shape.ToArray();
-            this.Length = ShapeToArrayLength(this.Shape);
+            this.Length = NdArray.ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
         }
@@ -34,7 +33,7 @@ namespace KelpNet.Common
         public BatchArray(int[] shape, int batchCount)
         {
             this.Shape = shape.ToArray();
-            this.Length = ShapeToArrayLength(this.Shape);
+            this.Length = NdArray.ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = new Real[this.Length * batchCount];
         }
@@ -66,13 +65,21 @@ namespace KelpNet.Common
             }
         }
 
+        public NdArray GetNdArray(int i)
+        {
+            Real[] data = new Real[this.Length];
+            Array.Copy(this.Data, i * this.Length, data, 0, this.Length);
+
+            return new NdArray(data, this.Shape);
+        }
+
         public static BatchArray FromArray(Array[] data)
         {
             NdArray[] result = new NdArray[data.Length];
 
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = FromArray(data[i]);
+                result[i] = NdArray.FromArray(data[i]);
             }
 
             return new BatchArray(result);
@@ -80,7 +87,34 @@ namespace KelpNet.Common
 
         public static BatchArray Convert(Real[] data, int[] shape, int batchCount)
         {
-            return new BatchArray { Data = data, Shape = shape.ToArray(), BatchCount = batchCount, Length = data.Length / batchCount };
+            return new BatchArray(shape, batchCount) { Data = data};
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (this.BatchCount > 1)
+            {
+                sb.Append("{");
+            }
+
+            sb.Append(this.GetNdArray(0));
+
+            for (int i = 1; i < this.BatchCount; i++)
+            {
+                if (this.BatchCount != 0)
+                {
+                    sb.Append("},\n{"+ this.GetNdArray(i));
+                }
+            }
+
+            if (this.BatchCount > 1)
+            {
+                sb.Append("}");
+            }
+
+            return sb.ToString();
         }
     }
 }
