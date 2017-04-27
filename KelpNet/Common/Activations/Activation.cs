@@ -12,7 +12,7 @@ namespace KelpNet.Common.Activations
         public abstract string ForwardActivateGPU { get; }
         public abstract string BackwardActivateGPU { get; }
 
-        protected Activation(string name, bool isGpu = true) : base(name, isGpu)
+        protected Activation(string name, bool isGpu) : base(name, isGpu)
         {
         }
 

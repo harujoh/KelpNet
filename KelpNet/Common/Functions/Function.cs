@@ -26,8 +26,13 @@ namespace KelpNet.Common.Functions
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
 
+        //todo 全てを実装し終えたらabstructに
         public virtual string ForwardKernelSource { get; }
         public virtual string BackwardKernelSource { get; }
+
+        public virtual void InitKernel()
+        {
+        }
 
         //コンストラクタ
         protected Function(string name, bool isGpu, int inputCount = 0, int oututCount = 0)
@@ -46,10 +51,6 @@ namespace KelpNet.Common.Functions
             {
                 this.InitKernel();
             }
-        }
-
-        public virtual void InitKernel()
-        {            
         }
 
         public void SetOptimizer(params Optimizer[] optimizers)

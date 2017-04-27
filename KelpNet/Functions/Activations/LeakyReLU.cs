@@ -19,8 +19,10 @@ namespace KelpNet.Functions.Activations
         {
             this._slope = slope ?? (Real)0.2;
 
-            ForwardActivateGPU = String.Format(
-@"
+            if (IsGpu)
+            {
+                ForwardActivateGPU = String.Format(
+                    @"
 void ForwardActivate(__global Real* gpuY)
 {{
     if(*gpuY < 0.0)
@@ -30,8 +32,8 @@ void ForwardActivate(__global Real* gpuY)
 }}
 ", this._slope);
 
-            BackwardActivateGPU = String.Format(
-@"
+                BackwardActivateGPU = String.Format(
+                    @"
 void BackwardActivate(Real gpuY, __global Real* gpugX)
 {{
     if(gpuY <= 0.0)
@@ -41,11 +43,12 @@ void BackwardActivate(Real gpuY, __global Real* gpugX)
 }}
 ", this._slope);
 
-            this.ForwardKernelSource = ForwardActivateGPU + String.Format(ForwardKernelString, this.ForwardKernelName);
-            this.BackwardKernelSource = BackwardActivateGPU + String.Format(BackwardKernelString, this.BackwardKernelName);
+                this.ForwardKernelSource = ForwardActivateGPU + String.Format(ForwardKernelString, this.ForwardKernelName);
+                this.BackwardKernelSource = BackwardActivateGPU + String.Format(BackwardKernelString, this.BackwardKernelName);
 
-            this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, this.ForwardKernelName);
-            this.BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, this.BackwardKernelName);
+                this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, this.ForwardKernelName);
+                this.BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, this.BackwardKernelName);
+            }
         }
 
         public override void ForwardActivate(ref Real x)
