@@ -43,7 +43,7 @@ namespace KelpNetTester.Tests
                 new ReLU(name: "l2 ReLU"),
                 new MaxPooling(2, 2, name: "l2 MaxPooling"),
                 new Linear(7 * 7 * 64, 1024, name: "l3 Linear"),
-                new Dropout(name: "l3 DropOut"),
+                new Dropout(name: "l3 DropOut", isGpu: false),
                 new ReLU(name: "l3 ReLU"),
                 new Linear(1024, 10, name: "l4 Linear")
             );
