@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Cloo;
 using KelpNet.Common.Functions;
 
@@ -6,38 +7,28 @@ namespace KelpNet.Common.Activations
 {
     public abstract class Activation : NeedPreviousOutputFunction
     {
+        //GPU向けのActivate関数の文字列
+        public abstract string ForwardActivateFunctionString { get; }
+        public abstract string BackwardActivateFunctionString { get; }
+
+        //.Netで使用するActivateの仮想関数
         public abstract void ForwardActivate(ref Real x);
         public abstract void BackwardActivate(ref Real gy, Real y);
 
-        public abstract string ForwardActivateGPU { get; }
-        public abstract string BackwardActivateGPU { get; }
-
         protected Activation(string name, bool isGpu) : base(name, isGpu)
         {
+            this.ForwardActivateKernelString = String.Format(this.ForwardActivateKernelString, this.ForwardKernelName);
+            this.BackwardActivateKernelString = String.Format(this.BackwardActivateKernelString, this.BackwardKernelName);
         }
 
-        public override void InitKernel()
-        {
-        }
-
-        protected const string ForwardKernelString =
+        protected string ForwardActivateKernelString =
 @"
-__kernel void {0}(__global Real *gpuY)
+__kernel void {0}(
+    __global Real *gpuY)
 {{
 	int i = get_global_id(0);
 
     ForwardActivate(gpuY + i);
-}}";
-
-        protected const string BackwardKernelString =
-@"
-__kernel void {0}(
-	__global read_only Real *gpuY,
-	__global Real *gpugX)
-{{
-	int i = get_global_id(0);
-
-    BackwardActivate(gpuY[i], gpugX + i);
 }}";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
@@ -73,6 +64,20 @@ __kernel void {0}(
 
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
+
+        protected string BackwardActivateKernelString =
+@"
+__kernel void {0}(
+	__global read_only Real *gpuY,
+	__global Real *gpugX)
+{{
+	int i = get_global_id(0);
+
+    Real gpugY = gpugX[i];
+    BackwardActivate(gpuY[i], &gpugY);
+    
+    gpugX[i] = gpugY;
+}}";
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {

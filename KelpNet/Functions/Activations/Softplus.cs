@@ -15,10 +15,6 @@ namespace KelpNet.Functions.Activations
             this._betaInv = 1 / this._beta;
         }
 
-        public override void InitKernel()
-        {
-        }
-
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             Real[] y = new Real[x.Data.Length];

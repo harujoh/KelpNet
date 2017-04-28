@@ -63,10 +63,6 @@ namespace KelpNet.Functions.Connections
             this.Parameters[11] = this.lateral3.Parameters[0];
         }
 
-        public override void InitKernel()
-        {
-        }
-
         protected override BatchArray ForwardSingle(BatchArray x)
         {
             BatchArray[] upwards = new BatchArray[4];

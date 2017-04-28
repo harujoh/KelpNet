@@ -56,10 +56,6 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        public override void InitKernel()
-        {
-        }
-
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
             int outputSize = (input.Shape[2] - 1) * this._subSample + this._kSize - this._trim * 2;

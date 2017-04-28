@@ -16,7 +16,7 @@ namespace KelpNetTester
             //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1);
 
             //MLPによるXORの学習
-            //Test1.Run();
+            Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -53,6 +53,9 @@ namespace KelpNetTester
 
             //Deconvolution2Dのテスト(Winform)
             //new Test13WinForm().ShowDialog();
+
+            //Test6を連結して実行
+            //Test14.Run();
 
             //Linearの分割実行
             //TestX.Run();

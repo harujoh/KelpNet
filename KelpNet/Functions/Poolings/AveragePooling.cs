@@ -35,10 +35,6 @@ namespace KelpNet.Functions.Poolings
             this._stride = stride;
         }
 
-        public override void InitKernel()
-        {
-        }
-
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;

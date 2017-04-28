@@ -7,13 +7,14 @@ using KelpNet.Common;
 using KelpNet.Common.Activations;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
+using KelpNet.Functions.Activations;
 
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
     public class Convolution2D : NeedPreviousInputFunction
     {
-        private Activation activation;
+        private readonly Activation _activation;
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
         public NdArray W;
@@ -28,7 +29,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true) : base(name, isGpu, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -38,10 +39,17 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
+            this._activation = activation ?? new DummyActivation();
+            if (IsGpu)
+            {
+                this.ForwardKernelSource = this._activation.ForwardActivateFunctionString + ForwardKernelSource;
+                this.BackwardKernelSource = this._activation.BackwardActivateFunctionString + BackwardKernelSource;
+            }
+
             this.Initialize(initialW, initialb, isGpu);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true) : base(name, isGpu, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -53,6 +61,13 @@ namespace KelpNet.Functions.Connections
             this._padY = pad.Height;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
+
+            this._activation = activation ?? new DummyActivation();
+            if (IsGpu)
+            {
+                this.ForwardKernelSource = this._activation.ForwardActivateFunctionString + ForwardKernelSource;
+                this.BackwardKernelSource = this._activation.BackwardActivateFunctionString + BackwardKernelSource;
+            }
 
             this.Initialize(initialW, initialb, isGpu);
         }
@@ -86,12 +101,17 @@ namespace KelpNet.Functions.Connections
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
-        }
 
-        public override void InitKernel()
-        {
-            ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
-            BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "Convolution2DBackward");
+            if (IsGpu)
+            {
+                if (!(this._activation is DummyActivation))
+                {
+                    
+                }
+
+                ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
+                BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "Convolution2DBackward");
+            }
         }
 
         public override string ForwardKernelSource { get; } =
@@ -148,7 +168,9 @@ __kernel void Convolution2DForward(
         }
     }
 
-    gpuY[batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox] = localResult + gpub[och];
+    int index = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox;
+    gpuY[index] = localResult + gpub[och];
+    ForwardActivate(gpuY + index);
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
@@ -204,6 +226,7 @@ __kernel void Convolution2DForward(
                                 }
 
                                 result[resultIndex] += this.b.Data[och];
+                                this._activation.ForwardActivate(ref result[resultIndex]);
                                 resultIndex++;
                             }
                         }
@@ -249,7 +272,7 @@ __kernel void Convolution2DForward(
             }
 
             BatchArray output = BatchArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount);
-            if (this.activation != null)
+            if (!(this._activation is DummyActivation))
             {
                 this._prevOutput.Add(output);
             }
@@ -257,11 +280,11 @@ __kernel void Convolution2DForward(
             return output;
         }
 
-
         public override string BackwardKernelSource { get; } =
 @"
 __kernel void Convolution2DBackward(
 	const __global __read_only  Real* gpugY,
+	const __global __read_only  Real* gpuY,
 	const __global __read_only  Real* gpuX,
 	const __global __read_only  Real* gpuW, 
 	      __global __read_write Real* gpugX, 
@@ -296,8 +319,10 @@ __kernel void Convolution2DBackward(
         {
             for (int ox = 0; ox < gyShape2; ox++)
             {
-                Real gyData = gpugY[batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox];
-
+                int index = batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox;
+                Real gyData = gpugY[index];
+                BackwardActivate(gpuY[index], &gyData);
+                
                 for (int ky = 0; ky < kHeight; ky++)
                 {
                     int iy = oy * stride + ky - padY;
@@ -326,9 +351,10 @@ __kernel void Convolution2DBackward(
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray x)
         {
-            if (this.activation != null)
+            Real[] prevOutputData = new Real[gy.Data.Length];
+            if (!(this._activation is DummyActivation))
             {
-                BatchArray prevOutput = this._prevOutput[this._prevOutput.Count - 1];
+                prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
                 this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
             }
 
@@ -349,7 +375,8 @@ __kernel void Convolution2DBackward(
                         {
                             for (int ox = 0; ox < gy.Shape[2]; ox++)
                             {
-                                Real gyData = gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
+                                Real gyData = gy.Data[gyIndex]; //gyIndex = ch * ox * oy
+                                this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex++]);
 
                                 for (int ich = 0; ich < x.Shape[0]; ich++)
                                 {
@@ -398,30 +425,32 @@ __kernel void Convolution2DBackward(
                 Real[] tmpgWData = new Real[gy.BatchCount * this.gW.Data.Length];
 
                 using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutputData))
                 using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
                 using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
                 using (ComputeBuffer<Real> tmpgW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.AllocateHostPointer, this.gW.Data.Length * gy.BatchCount))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpugY);
-                    BackwardKernel.SetMemoryArgument(1, gpuX);
-                    BackwardKernel.SetMemoryArgument(2, gpuW);
-                    BackwardKernel.SetMemoryArgument(3, gpugX);
-                    BackwardKernel.SetMemoryArgument(4, tmpgW);
-                    BackwardKernel.SetValueArgument(5, this.OutputCount);
-                    BackwardKernel.SetValueArgument(6, this.InputCount);
-                    BackwardKernel.SetValueArgument(7, gy.BatchCount);
-                    BackwardKernel.SetValueArgument(8, gy.Shape[0]);
-                    BackwardKernel.SetValueArgument(9, gy.Shape[1]);
-                    BackwardKernel.SetValueArgument(10, gy.Shape[2]);
-                    BackwardKernel.SetValueArgument(11, x.Shape[1]);
-                    BackwardKernel.SetValueArgument(12, x.Shape[2]);
-                    BackwardKernel.SetValueArgument(13, x.Length);
-                    BackwardKernel.SetValueArgument(14, this._stride);
-                    BackwardKernel.SetValueArgument(15, this._padX);
-                    BackwardKernel.SetValueArgument(16, this._padY);
-                    BackwardKernel.SetValueArgument(17, this._kHeight);
-                    BackwardKernel.SetValueArgument(18, this._kWidth);
+                    BackwardKernel.SetMemoryArgument(1, gpuY);
+                    BackwardKernel.SetMemoryArgument(2, gpuX);
+                    BackwardKernel.SetMemoryArgument(3, gpuW);
+                    BackwardKernel.SetMemoryArgument(4, gpugX);
+                    BackwardKernel.SetMemoryArgument(5, tmpgW);
+                    BackwardKernel.SetValueArgument(6, this.OutputCount);
+                    BackwardKernel.SetValueArgument(7, this.InputCount);
+                    BackwardKernel.SetValueArgument(8, gy.BatchCount);
+                    BackwardKernel.SetValueArgument(9, gy.Shape[0]);
+                    BackwardKernel.SetValueArgument(10, gy.Shape[1]);
+                    BackwardKernel.SetValueArgument(11, gy.Shape[2]);
+                    BackwardKernel.SetValueArgument(12, x.Shape[1]);
+                    BackwardKernel.SetValueArgument(13, x.Shape[2]);
+                    BackwardKernel.SetValueArgument(14, x.Length);
+                    BackwardKernel.SetValueArgument(15, this._stride);
+                    BackwardKernel.SetValueArgument(16, this._padX);
+                    BackwardKernel.SetValueArgument(17, this._padY);
+                    BackwardKernel.SetValueArgument(18, this._kHeight);
+                    BackwardKernel.SetValueArgument(19, this._kWidth);
 
                     Weaver.CommandQueue.Execute
                     (

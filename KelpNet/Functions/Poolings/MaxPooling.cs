@@ -29,6 +29,8 @@ namespace KelpNet.Functions.Poolings
             this._padY = pad;
             this._padX = pad;
             this._stride = stride;
+
+            InitKernel();
         }
 
         public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "MaxPooling", bool isGpu = true) : base(name, isGpu)
@@ -41,14 +43,18 @@ namespace KelpNet.Functions.Poolings
             this._padY = pad.Height;
             this._padX = pad.Width;
             this._stride = stride;
+
+            this.InitKernel();
         }
 
-        public override void InitKernel()
+        public void InitKernel()
         {
-            ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
-
-            //メモリ転送のみの為不要
-            //BackwardKernel = Weaver.CreateKernel("", "");
+            if (IsGpu)
+            {
+                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
+                //メモリ転送のみの為不要
+                //BackwardKernel = Weaver.CreateKernel("", "");
+            }
         }
 
         public override string ForwardKernelSource { get; } =

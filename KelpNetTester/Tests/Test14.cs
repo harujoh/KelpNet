@@ -12,9 +12,9 @@ using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
-    //5層CNNによるMNIST（手書き文字）の学習
-    //Test4と違うのはネットワークの構成とOptimizerだけです
-    class Test6
+    //todo GPUでの戻り値が異なる
+    //5層CNNによるMNIST（手書き文字）の学習 の連結実行版
+    class Test14
     {
         //ミニバッチの数
         //ミニバッチにC#標準のParallelを使用しているため、大きくし過ぎると遅くなるので注意
@@ -36,14 +36,11 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D"),
-                new ReLU(name: "l1 ReLU"),
+                new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D", activation: new ReLU(name: "l1 ReLU")),
                 new MaxPooling(2, 2, name: "l1 MaxPooling"),
-                new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D"),
-                new ReLU(name: "l2 ReLU"),
+                new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D", activation: new ReLU(name: "l2 ReLU")),
                 new MaxPooling(2, 2, name: "l2 MaxPooling"),
-                new Linear(7 * 7 * 64, 1024, name: "l3 Linear"),
-                new ReLU(name: "l3 ReLU"),
+                new Linear(7 * 7 * 64, 1024, name: "l3 Linear", activation: new ReLU(name: "l3 ReLU")),
                 new Dropout(name: "l3 DropOut", isGpu: false),
                 new Linear(1024, 10, name: "l4 Linear")
             );

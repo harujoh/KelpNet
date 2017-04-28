@@ -1,15 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Cloo;
 using KelpNet.Common;
+using KelpNet.Common.Activations;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
+using KelpNet.Functions.Activations;
 
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
     public class Linear : NeedPreviousInputFunction
     {
+        private readonly Activation _activation;
+        private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
+
         public NdArray W;
         public NdArray b;
 
@@ -18,7 +24,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = true) : base(name, isGpu, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = new NdArray(outputCount, inputCount);
@@ -51,12 +57,16 @@ namespace KelpNet.Functions.Connections
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
-        }
 
-        public override void InitKernel()
-        {
-            ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "LinearForward");
-            BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LinearBackward");
+            this._activation = activation ?? new DummyActivation();
+            if (IsGpu)
+            {
+                this.ForwardKernelSource = this._activation.ForwardActivateFunctionString + ForwardKernelSource;
+                this.BackwardKernelSource = this._activation.BackwardActivateFunctionString + BackwardKernelSource;
+
+                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LinearForward");
+                BackwardKernel = Weaver.CreateKernel(BackwardKernelSource, "LinearBackward");
+            }
         }
 
         public override string ForwardKernelSource { get; } =
@@ -82,6 +92,7 @@ __kernel void LinearForward(
     }
     
     gpuY[i + batchCount * OutputCount] += gpuYSum;
+    ForwardActivate(gpuY + i + batchCount * OutputCount);
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
@@ -100,6 +111,8 @@ __kernel void LinearForward(
                         {
                             y[i + batchCount * this.OutputCount] += x.Data[j + batchCount * this.InputCount] * this.W.Data[i * this.InputCount + j];
                         }
+
+                        this._activation.ForwardActivate(ref y[i + batchCount * this.OutputCount]);
                     }
                 }
             }
@@ -137,13 +150,20 @@ __kernel void LinearForward(
                 }
             }
 
-            return BatchArray.Convert(y, new[] { OutputCount }, x.BatchCount);
+            BatchArray output = BatchArray.Convert(y, new[] { OutputCount }, x.BatchCount);
+            if (!(this._activation is DummyActivation))
+            {
+                this._prevOutput.Add(output);
+            }
+
+            return output;
         }
 
         public override string BackwardKernelSource { get; } =
 @"
 __kernel void LinearBackward(
 	__global const Real *gpugY,
+	__global const Real *gpuY,
 	__global const Real *gpuX,
 	__global const Real *gpuW, 
 	__global       Real *gpugW, 
@@ -165,6 +185,7 @@ __kernel void LinearBackward(
         for(int i = 0; i < OutputCount; i++)
         {
             Real gy = gpugY[i + b * OutputCount];
+            BackwardActivate(gpuY[i + b * OutputCount], &gy);
 
             gpugW[i * InputCount] += gpuX[b * InputCount] * gy;
             gpugX[b * InputCount] += gpuW[i * InputCount] * gy;
@@ -174,6 +195,13 @@ __kernel void LinearBackward(
 ";
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
+            Real[] prevOutputData = new Real[gy.Data.Length];
+            if (!(this._activation is DummyActivation))
+            {
+                prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
+                this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
+            }
+
             Real[] gxData = new Real[prevInput.Data.Length];
 
             if (!IsGpu)
@@ -183,6 +211,8 @@ __kernel void LinearBackward(
                     for (int i = 0; i < this.OutputCount; i++)
                     {
                         Real gyData = gy.Data[i + batchCount * this.OutputCount];
+                        this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+
                         this.gb.Data[i] += gyData;
 
                         for (int j = 0; j < this.InputCount; j++)
@@ -196,19 +226,21 @@ __kernel void LinearBackward(
             else
             {
                 using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutputData))
                 using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevInput.Data))
                 using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                 using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gxData))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpugY);
-                    BackwardKernel.SetMemoryArgument(1, gpuX);
-                    BackwardKernel.SetMemoryArgument(2, gpuW);
-                    BackwardKernel.SetMemoryArgument(3, gpugW);
-                    BackwardKernel.SetMemoryArgument(4, gpugX);
-                    BackwardKernel.SetValueArgument(5, gy.BatchCount);
-                    BackwardKernel.SetValueArgument(6, this.OutputCount);
-                    BackwardKernel.SetValueArgument(7, this.InputCount);
+                    BackwardKernel.SetMemoryArgument(1, gpuY);
+                    BackwardKernel.SetMemoryArgument(2, gpuX);
+                    BackwardKernel.SetMemoryArgument(3, gpuW);
+                    BackwardKernel.SetMemoryArgument(4, gpugW);
+                    BackwardKernel.SetMemoryArgument(5, gpugX);
+                    BackwardKernel.SetValueArgument(6, gy.BatchCount);
+                    BackwardKernel.SetValueArgument(7, this.OutputCount);
+                    BackwardKernel.SetValueArgument(8, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                         (

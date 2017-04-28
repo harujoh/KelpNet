@@ -31,10 +31,6 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
         }
 
-        public override void InitKernel()
-        {
-        }
-
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
             Real[] result = new Real[x.Data.Length * this.OutputCount];

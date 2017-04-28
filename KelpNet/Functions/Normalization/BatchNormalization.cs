@@ -65,10 +65,6 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        public override void InitKernel()
-        {
-        }
-
         protected override BatchArray ForwardSingle(BatchArray x)
         {
             //計算用パラメータの取得

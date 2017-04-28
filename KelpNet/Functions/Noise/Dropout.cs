@@ -16,12 +16,12 @@ namespace KelpNet.Functions.Noise
         public Dropout(Real? dropoutRatio = null, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
         {
             this.dropoutRatio = dropoutRatio ?? (Real)0.5;
-        }
 
-        public override void InitKernel()
-        {
-            ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "DropoutForward");
-            BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "DropoutBackward");
+            if (IsGpu)
+            {
+                ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "DropoutForward");
+                BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "DropoutBackward");
+            }
         }
 
         public override string ForwardKernelSource { get; } =
