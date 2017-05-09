@@ -18,7 +18,7 @@ namespace KelpNet.Functions.Activations
 
             if (IsGpu)
             {
-                this.ForwardKernelSource = String.Format(this.ForwardActivateFunctionString, this._slope) + BackwardActivateKernelString;
+                this.ForwardKernelSource = String.Format(this.ForwardActivateFunctionString, this._slope) + ForwardActivateKernelString;
                 this.BackwardKernelSource = String.Format(this.BackwardActivateFunctionString, this._slope) + BackwardActivateKernelString;
 
                 this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, this.ForwardKernelName);

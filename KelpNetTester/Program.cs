@@ -16,7 +16,7 @@ namespace KelpNetTester
             //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1);
 
             //MLPによるXORの学習
-            Test1.Run();
+            //Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();

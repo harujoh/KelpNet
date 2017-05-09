@@ -52,7 +52,7 @@ namespace KelpNet.Functions.Connections
             {
                 if (initialb != null)
                 {
-                    this.b.Data = initialb.Cast<Real>().ToArray();
+                    this.b.Data = initialb.ToArray();
                 }
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
