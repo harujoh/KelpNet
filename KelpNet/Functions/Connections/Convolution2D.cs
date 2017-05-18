@@ -310,18 +310,25 @@ __kernel void Convolution2DBackward(
     int wLength = OutputCount * InputCount * kHeight * kWidth;
 
     gpuW += ich * kHeight * kWidth;
-    gpuX += ich * xShape1 * xShape2; 
-    gpugX += ich * xShape1 * xShape2; 
+    tmpgW += batchCounter * wLength + ich * kHeight * kWidth;
+
+    gpuX += ich * xShape1 * xShape2 + batchCounter * xLength; 
+    gpugX += ich * xShape1 * xShape2 + batchCounter * xLength; 
+
+    gpugY += batchCounter * gyShape0 * gyShape1 * gyShape2;
+    gpuY += batchCounter * gyShape0 * gyShape1 * gyShape2;
 
     for (int och = 0; och < gyShape0; och++)
     {
+        int index = och * gyShape1 * gyShape2;
+        int wIndex = och * InputCount * kHeight * kWidth;
+
         for (int oy = 0; oy < gyShape1; oy++)
         {
             for (int ox = 0; ox < gyShape2; ox++)
             {
-                int index = batchCounter * gyShape0 * gyShape1 * gyShape2 + och * gyShape1 * gyShape2 + oy * gyShape2 + ox;
-                Real gyData = gpugY[index];
-                BackwardActivate(gpuY[index], &gyData);
+                Real gyData = gpugY[index + oy * gyShape2 + ox];
+                BackwardActivate(gpuY[index + oy * gyShape2 + ox], &gyData);
                 
                 for (int ky = 0; ky < kHeight; ky++)
                 {
@@ -335,11 +342,10 @@ __kernel void Convolution2DBackward(
 
                             if (ix >= 0 && ix < xShape2)
                             {
-                                int wIndex = och * InputCount * kHeight * kWidth + ky * kWidth + kx;
-                                int inputIndex = batchCounter * xLength + iy * xShape2 + ix;
+                                int inputIndex = iy * xShape2 + ix;
 
-                                tmpgW[batchCounter * wLength + ich * kHeight * kWidth + wIndex] += gpuX[inputIndex] * gyData;
-                                gpugX[inputIndex] += gpuW[wIndex] * gyData;
+                                tmpgW[wIndex + ky * kWidth + kx] += gpuX[inputIndex] * gyData;
+                                gpugX[inputIndex] += gpuW[wIndex + ky * kWidth + kx] * gyData;
                             }
                         }
                     }
