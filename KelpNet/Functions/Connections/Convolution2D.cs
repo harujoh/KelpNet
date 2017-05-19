@@ -377,11 +377,13 @@ __kernel void Convolution2DBackward(
                         {
                             //計算省略のためにジャンプ
                             int kyStartIndex = this._padY - oy < 0 ? 0 : this._padY - oy;
+                            int kyLimit = this._kHeight < x.Shape[1] - oy + this._padY ? this._kHeight : x.Shape[1] - oy + this._padY;
 
                             for (int ox = 0; ox < gy.Shape[2] * this._stride; ox += this._stride)
                             {
                                 //計算省略のためにジャンプ
                                 int kxStartIndex = this._padX - ox < 0 ? 0 : this._padX - ox;
+                                int kxLimit = this._kWidth < x.Shape[2] - ox + this._padX ? this._kWidth : x.Shape[2] - ox + this._padX;
 
                                 Real gyData = gy.Data[gyIndex]; //gyIndex = ch * ox * oy
                                 this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex++]);
@@ -394,9 +396,9 @@ __kernel void Convolution2DBackward(
                                     //inputインデックス用
                                     int inputOffset = ich * x.Shape[1] * x.Shape[2] + batchCounter * x.Length;
 
-                                    for (int ky = kyStartIndex; ky < this._kHeight && ky < x.Shape[1] - oy + this._padY; ky++)
+                                    for (int ky = kyStartIndex; ky < kyLimit; ky++)
                                     {
-                                        for (int kx = kxStartIndex; kx < this._kWidth && kx < x.Shape[2] - ox + this._padX; kx++)
+                                        for (int kx = kxStartIndex; kx < kxLimit; kx++)
                                         {
                                             //WとgWのshapeは等しい
                                             int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
