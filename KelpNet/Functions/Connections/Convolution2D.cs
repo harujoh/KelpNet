@@ -106,7 +106,7 @@ namespace KelpNet.Functions.Connections
             {
                 if (!(this._activation is DummyActivation))
                 {
-                    
+
                 }
 
                 ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
@@ -377,10 +377,16 @@ __kernel void Convolution2DBackward(
                         //gWインデックス用
                         int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
 
-                        for (int oy = 0; oy < gy.Shape[1]; oy++)
+                        for (int oy = 0; oy < gy.Shape[1] * this._stride; oy += this._stride)
                         {
-                            for (int ox = 0; ox < gy.Shape[2]; ox++)
+                            //計算省略のためにジャンプ
+                            int kyStartIndex = this._padY - oy < 0 ? 0 : this._padY - oy;
+
+                            for (int ox = 0; ox < gy.Shape[2] * this._stride; ox += this._stride)
                             {
+                                //計算省略のためにジャンプ
+                                int kxStartIndex = this._padX - ox < 0 ? 0 : this._padX - ox;
+
                                 Real gyData = gy.Data[gyIndex]; //gyIndex = ch * ox * oy
                                 this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex++]);
 
@@ -392,29 +398,19 @@ __kernel void Convolution2DBackward(
                                     //inputインデックス用
                                     int inputOffset = ich * x.Shape[1] * x.Shape[2] + batchCounter * x.Length;
 
-                                    for (int ky = 0; ky < this._kHeight; ky++)
+                                    for (int ky = kyStartIndex; ky < this._kHeight && ky < x.Shape[1] - oy + this._padY; ky++)
                                     {
-                                        int iy = oy * this._stride + ky - this._padY;
-
-                                        if (iy >= 0 && iy < x.Shape[1])
+                                        for (int kx = kxStartIndex; kx < this._kWidth && kx < x.Shape[2] - ox + this._padX; kx++)
                                         {
-                                            for (int kx = 0; kx < this._kWidth; kx++)
-                                            {
-                                                int ix = ox * this._stride + kx - this._padX;
+                                            //WとgWのshapeは等しい
+                                            int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
 
-                                                if (ix >= 0 && ix < x.Shape[2])
-                                                {
-                                                    //WとgWのshapeは等しい
-                                                    int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
+                                            //xとgxのshapeは等しい
+                                            int inputIndex = inputOffset + (ky + oy - this._padY) * x.Shape[2] + kx + ox - this._padX;
 
-                                                    //xとgxのshapeは等しい
-                                                    int inputIndex = inputOffset + iy * x.Shape[2] + ix;
+                                            this.gW.Data[wIndex] += x.Data[inputIndex] * gyData;
 
-                                                    this.gW.Data[wIndex] += x.Data[inputIndex] * gyData;
-
-                                                    gx[inputIndex] += this.W.Data[wIndex] * gyData;
-                                                }
-                                            }
+                                            gx[inputIndex] += this.W.Data[wIndex] * gyData;
                                         }
                                     }
                                 }
@@ -477,7 +473,7 @@ __kernel void Convolution2DBackward(
                     {
                         for (int i = 0; i < this.gW.Data.Length; i++)
                         {
-                            this.gW.Data[i] += tmpgWData[batchCounter*this.gW.Data.Length + i];
+                            this.gW.Data[i] += tmpgWData[batchCounter * this.gW.Data.Length + i];
                         }
 
                         for (int och = 0; och < gy.Shape[0]; och++)
