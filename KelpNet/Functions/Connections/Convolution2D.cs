@@ -323,31 +323,25 @@ __kernel void Convolution2DBackward(
         int index = och * gyShape1 * gyShape2;
         int wIndex = och * InputCount * kHeight * kWidth;
 
-        for (int oy = 0; oy < gyShape1; oy++)
+        for (int oy = 0; oy < gyShape1 * stride; oy += stride)
         {
-            for (int ox = 0; ox < gyShape2; ox++)
+            int kyStartIndex = padY - oy < 0 ? 0 : padY - oy;
+
+            for (int ox = 0; ox < gyShape2 * stride; ox += stride)
             {
-                Real gyData = gpugY[index + oy * gyShape2 + ox];
-                BackwardActivate(gpuY[index + oy * gyShape2 + ox], &gyData);
+                int kxStartIndex = padX - ox < 0 ? 0 : padX - ox;
+
+                Real gyData = gpugY[index];
+                BackwardActivate(gpuY[index++], &gyData);
                 
-                for (int ky = 0; ky < kHeight; ky++)
+                for (int ky = kyStartIndex; ky < kHeight && ky < xShape1 - oy + padY; ky++)
                 {
-                    int iy = oy * stride + ky - padY;
-
-                    if (iy >= 0 && iy < xShape1)
+                    for (int kx = kxStartIndex; kx < kWidth && kx < xShape2 - ox + padX; kx++)
                     {
-                        for (int kx = 0; kx < kWidth; kx++)
-                        {
-                            int ix = ox * stride + kx - padX;
+                        int inputIndex = (ky + oy - padY) * xShape2 + kx + ox - padX;
 
-                            if (ix >= 0 && ix < xShape2)
-                            {
-                                int inputIndex = iy * xShape2 + ix;
-
-                                tmpgW[wIndex + ky * kWidth + kx] += gpuX[inputIndex] * gyData;
-                                gpugX[inputIndex] += gpuW[wIndex + ky * kWidth + kx] * gyData;
-                            }
-                        }
+                        tmpgW[wIndex + ky * kWidth + kx] += gpuX[inputIndex] * gyData;
+                        gpugX[inputIndex] += gpuW[wIndex + ky * kWidth + kx] * gyData;
                     }
                 }
             }
