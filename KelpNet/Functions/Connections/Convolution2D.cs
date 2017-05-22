@@ -136,39 +136,35 @@ __kernel void Convolution2DForward(
 {
     int batchCounter = get_global_id(0) / OutputCount;
     int och = get_global_id(0) % OutputCount;
-    int oy = get_global_id(1);
-    int ox = get_global_id(2);
+    int oy = get_global_id(1) * stride - padY;
+    int ox = get_global_id(2) * stride - padX;
 
     Real localResult = 0;
 
     gpuW += och* InputCount * kHeight* kWidth;
     gpuX += batchCounter* inputLength;
 
-    for (int ich = 0; ich<InputCount; ich++)
+    int kyStartIndex = oy < 0 ? 0 : oy;
+    int kyLimit = kHeight + oy < inputShape1 ? kHeight + oy : inputShape1;
+
+    int kxStartIndex = ox < 0 ? 0 : ox;
+    int kxLimit = kWidth + ox < inputShape2 ? kWidth + ox : inputShape2;
+
+    for (int ich = 0; ich < InputCount; ich++)
     {
-        for (int ky = 0; ky<kHeight; ky++)
+        for (int ky = kyStartIndex; ky < kyLimit; ky++)
         {
-            int iy = oy * stride + ky - padY;
-
-            if (iy >= 0 && iy<inputShape1)
+            for (int kx = kxStartIndex; kx < kxLimit; kx++)
             {
-                for (int kx = 0; kx<kWidth; kx++)
-                {
-                    int ix = ox * stride + kx - padX;
+                int inputIndex = ich * inputShape1 * inputShape2 + ky * inputShape2 + kx;
+                int wIndex = ich * kHeight * kWidth + (ky - oy) * kWidth + kx - ox;
 
-                    if (ix >= 0 && ix<inputShape2)
-                    {
-                        int inputIndex = ich * inputShape1 * inputShape2 + iy * inputShape2 + ix;
-                        int wIndex = ich * kHeight * kWidth + ky * kWidth + kx;
-
-                        localResult += gpuX[inputIndex] * gpuW[wIndex];
-                    }
-                }
+                localResult += gpuX[inputIndex] * gpuW[wIndex];
             }
         }
     }
 
-    int index = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + oy * outputWidth + ox;
+    int index = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + get_global_id(1) * outputWidth + get_global_id(2);
     gpuY[index] = localResult + gpub[och];
     ForwardActivate(gpuY + index);
 }";
@@ -191,10 +187,16 @@ __kernel void Convolution2DForward(
                         //Wインデックス用
                         int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
 
-                        for (int oy = 0; oy < outputHeight; oy++)
+                        for (int oy = 0; oy < outputHeight * this._stride; oy += this._stride)
                         {
-                            for (int ox = 0; ox < outputWidth; ox++)
+                            int kyStartIndex = oy - this._padY < 0 ? 0 : oy - this._padY;
+                            int kyLimit = this._kHeight + oy - this._padY < input.Shape[1] ? this._kHeight + oy - this._padY : input.Shape[1];
+
+                            for (int ox = 0; ox < outputWidth * this._stride; ox += this._stride)
                             {
+                                int kxStartIndex = ox - this._padX < 0 ? 0 : ox - this._padX;
+                                int kxLimit = this._kWidth + ox - this._padX < input.Shape[2] ? this._kWidth + ox - this._padX : input.Shape[2];
+
                                 for (int ich = 0; ich < this.InputCount; ich++)
                                 {
                                     //Wインデックス用
@@ -203,24 +205,14 @@ __kernel void Convolution2DForward(
                                     //inputインデックス用
                                     int inputOffset = ich * input.Shape[1] * input.Shape[2];
 
-                                    for (int ky = 0; ky < this._kHeight; ky++)
+                                    for (int ky = kyStartIndex; ky < kyLimit; ky++)
                                     {
-                                        int iy = oy * this._stride + ky - this._padY;
-
-                                        if (iy >= 0 && iy < input.Shape[1])
+                                        for (int kx = kxStartIndex; kx < kxLimit; kx++)
                                         {
-                                            for (int kx = 0; kx < this._kWidth; kx++)
-                                            {
-                                                int ix = ox * this._stride + kx - this._padX;
+                                            int wIndex = outChOffset + inChOffset + (ky - oy + this._padY) * this._kWidth + kx - ox + this._padX;
+                                            int inputIndex = inputOffset + ky * input.Shape[2] + kx + batchCounter * input.Length;
 
-                                                if (ix >= 0 && ix < input.Shape[2])
-                                                {
-                                                    int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
-                                                    int inputIndex = inputOffset + iy * input.Shape[2] + ix + batchCounter * input.Length;
-
-                                                    result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
-                                                }
-                                            }
+                                            result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
                                         }
                                     }
                                 }
