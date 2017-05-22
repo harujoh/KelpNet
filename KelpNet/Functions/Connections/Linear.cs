@@ -180,15 +180,18 @@ __kernel void LinearBackward(
     gpugX += j;
     gpuX += j;
 
-    for(int b = 0; b < BatchCount; b++)
+    for(int b = 0; b < BatchCount; b += InputCount)
     {
-        for(int i = 0; i < OutputCount; i++)
+        for(int i = 0; i < OutputCount; i += InputCount)
         {
-            Real gy = gpugY[i + b * OutputCount];
-            BackwardActivate(gpuY[i + b * OutputCount], &gy);
+            Real gy = *gpugY;
+            BackwardActivate(*gpuY, &gy);
 
-            gpugW[i * InputCount] += gpuX[b * InputCount] * gy;
-            gpugX[b * InputCount] += gpuW[i * InputCount] * gy;
+            gpugW[i] += gpuX[b] * gy;
+            gpugX[b] += gpuW[i] * gy;
+            
+            gpuY++;
+            gpugY++;
         }
     }
 }
@@ -238,8 +241,8 @@ __kernel void LinearBackward(
                     BackwardKernel.SetMemoryArgument(3, gpuW);
                     BackwardKernel.SetMemoryArgument(4, gpugW);
                     BackwardKernel.SetMemoryArgument(5, gpugX);
-                    BackwardKernel.SetValueArgument(6, gy.BatchCount);
-                    BackwardKernel.SetValueArgument(7, this.OutputCount);
+                    BackwardKernel.SetValueArgument(6, gy.BatchCount * this.InputCount);
+                    BackwardKernel.SetValueArgument(7, this.OutputCount * this.InputCount);
                     BackwardKernel.SetValueArgument(8, this.InputCount);
 
                     Weaver.CommandQueue.Execute
@@ -256,11 +259,11 @@ __kernel void LinearBackward(
                     Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gxData, true, null);
                 }
 
-                for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
+                for (int batchCount = 0; batchCount < gy.BatchCount * this.OutputCount; batchCount += this.OutputCount)
                 {
                     for (int i = 0; i < this.OutputCount; i++)
                     {
-                        this.gb.Data[i] += gy.Data[i + batchCount * this.OutputCount];
+                        this.gb.Data[i] += gy.Data[batchCount + i];
                     }
                 }
             }
