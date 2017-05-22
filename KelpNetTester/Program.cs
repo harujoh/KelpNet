@@ -12,8 +12,8 @@ namespace KelpNetTester
         static void Main(string[] args)
         {
             //GPUを初期化
-            //Weaver.Initialize(ComputeDeviceTypes.Gpu);
-            Weaver.Initialize(ComputeDeviceTypes.Cpu, 1);
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1);
 
             //MLPによるXORの学習
             //Test1.Run();
