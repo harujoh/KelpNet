@@ -142,7 +142,7 @@ __kernel void Convolution2DForward(
     Real localResult = 0;
 
     gpuW += och* InputCount * kHeight* kWidth;
-    gpuX += batchCounter* inputLength;
+    gpuX += batchCounter * inputLength;
 
     int kyStartIndex = oy < 0 ? 0 : oy;
     int kyLimit = kHeight + oy < inputShape1 ? kHeight + oy : inputShape1;
@@ -310,9 +310,10 @@ __kernel void Convolution2DBackward(
     gpugY += batchCounter * gyShape0 * gyShape1 * gyShape2;
     gpuY += batchCounter * gyShape0 * gyShape1 * gyShape2;
 
+    int index = 0;
+
     for (int och = 0; och < gyShape0; och++)
     {
-        int index = och * gyShape1 * gyShape2;
         int wIndex = och * InputCount * kHeight * kWidth;
 
         for (int oy = 0; oy < gyShape1 * stride; oy += stride)
@@ -326,8 +327,9 @@ __kernel void Convolution2DBackward(
                 int kxLimit = kWidth < xShape2 - ox + padX ? kWidth : xShape2 - ox + padX;
 
                 Real gyData = gpugY[index];
-                BackwardActivate(gpuY[index++], &gyData);
-                
+                BackwardActivate(gpuY[index], &gyData);
+                index++;                
+
                 for (int ky = kyStartIndex; ky < kyLimit; ky++)
                 {
                     for (int kx = kxStartIndex; kx < kxLimit; kx++)

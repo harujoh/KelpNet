@@ -79,26 +79,22 @@ __kernel void MaxPoolingForward(
 
     Real maxVal = -DBL_MAX;
 
-    for (int dy = 0; dy < kHeight; dy++)
+    int dyOffset = y * stride - padY < 0 ? 0 : y * stride - padY;
+    int dyLimit = kHeight + dyOffset < inputShape1 ? kHeight + dyOffset : inputShape1;
+
+    for (int dy = dyOffset; dy < dyLimit; dy++)
     {
-        int inputIndexY = y * stride + dy - padY;
+        int dxOffset = x * stride - padX < 0 ? 0 : x * stride - padX;
+        int dxLimit = kWidth + dxOffset < inputShape2 ? kWidth + dxOffset : inputShape2;
 
-        if (inputIndexY >= 0 && inputIndexY < inputShape1)
+        for (int dx = dxOffset; dx < dxLimit; dx++)
         {
-            for (int dx = 0; dx < kWidth; dx++)
+            int inputIndex = dy * inputShape2 + dx;
+
+            if (maxVal < gpuX[inputIndex])
             {
-                int inputIndexX = x * stride + dx - padX;
-
-                if (inputIndexX >= 0 && inputIndexX < inputShape2)
-                {
-                    int inputIndex = inputIndexY * inputShape2 + inputIndexX;
-
-                    if (maxVal < gpuX[inputIndex])
-                    {
-                        maxVal = gpuX[inputIndex];
-                        gpuYindex[0] = inputIndex + indexOffset;
-                    }
-                }
+                maxVal = gpuX[inputIndex];
+                gpuYindex[0] = inputIndex + indexOffset;
             }
         }
     }
@@ -122,32 +118,31 @@ __kernel void MaxPoolingForward(
 
                     for (int i = 0; i < input.Shape[0]; i++)
                     {
-                        int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
+                        int inputIndexOffset = b * input.Length + i * input.Shape[1] * input.Shape[2];
 
                         for (int y = 0; y < outputHeight; y++)
                         {
+                            int dyOffset = y * this._stride + -this._padY < 0 ? 0 : y * this._stride + -this._padY;
+                            int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
+
                             for (int x = 0; x < outputWidth; x++)
                             {
-                                Real maxVal = Real.MinValue;
-                                for (int dy = 0; dy < this._kHeight; dy++)
+                                int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                                int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
+
+                                outputIndices[resultIndex] = inputIndexOffset + dyOffset * input.Shape[2] + dxOffset;
+                                Real maxVal = input.Data[outputIndices[resultIndex]];
+
+                                for (int dy = dyOffset; dy < dyLimit; dy++)
                                 {
-                                    int inputIndexY = y * this._stride + dy - this._padY;
-
-                                    if (inputIndexY >= 0 && inputIndexY < input.Shape[1])
+                                    for (int dx = dxOffset; dx < dxLimit; dx++)
                                     {
-                                        for (int dx = 0; dx < this._kWidth; dx++)
-                                        {
-                                            int inputIndexX = x * this._stride + dx - this._padX;
+                                        int inputIndex = inputIndexOffset + dy * input.Shape[2] + dx;
 
-                                            if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
-                                            {
-                                                int inputIndex = inputIndexOffset + inputIndexY * input.Shape[2] + inputIndexX + b * input.Length;
-                                                if (maxVal < input.Data[inputIndex])
-                                                {
-                                                    maxVal = input.Data[inputIndex];
-                                                    outputIndices[resultIndex] = inputIndex;
-                                                }
-                                            }
+                                        if (maxVal < input.Data[inputIndex])
+                                        {
+                                            maxVal = input.Data[inputIndex];
+                                            outputIndices[resultIndex] = inputIndex;
                                         }
                                     }
                                 }
