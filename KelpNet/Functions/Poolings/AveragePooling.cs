@@ -52,25 +52,20 @@ namespace KelpNet.Functions.Poolings
 
                     for (int y = 0; y < outputHeight; y++)
                     {
+                        int dyOffset = y * this._stride - this._padY < 0 ? 0 : y * this._stride - this._padY;
+                        int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
+
                         for (int x = 0; x < outputWidth; x++)
                         {
-                            for (int dy = 0; dy < this._kHeight; dy++)
+                            int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                            int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
+
+                            for (int dy = dyOffset; dy < dyLimit; dy++)
                             {
-                                int inputIndexY = y * this._stride + dy - this._padY;
-
-                                if (inputIndexY >= 0 && inputIndexY < input.Shape[1])
+                                for (int dx = dxOffset; dx < dxLimit; dx++)
                                 {
-                                    for (int dx = 0; dx < this._kWidth; dx++)
-                                    {
-                                        int inputIndexX = x * this._stride + dx - this._padX;
-
-                                        if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
-                                        {
-                                            int inputindex = inputIndexOffset + inputIndexY * input.Shape[2] + inputIndexX;
-
-                                            result[resultIndex] += input.Data[inputindex + input.Length * b] / m;
-                                        }
-                                    }
+                                    int inputindex = inputIndexOffset + dy * input.Shape[2] + dx;
+                                    result[resultIndex] += input.Data[inputindex + input.Length * b] / m;
                                 }
                             }
 
@@ -94,31 +89,26 @@ namespace KelpNet.Functions.Poolings
 
                 for (int i = 0; i < prevInput.Shape[0]; i++)
                 {
-                    int resultIndexOffset = i * prevInput.Shape[1] * prevInput.Shape[2];
+                    int resultIndexOffset = b * prevInput.Length + i * prevInput.Shape[1] * prevInput.Shape[2];
 
                     for (int y = 0; y < prevOutput.Shape[1]; y++)
                     {
+                        int dyOffset = y * this._stride - this._padY < 0 ? 0 : y * this._stride - this._padY;
+                        int dyLimit = this._kHeight + dyOffset < prevInput.Shape[1] ? this._kHeight + dyOffset : prevInput.Shape[1];
+
                         for (int x = 0; x < prevOutput.Shape[2]; x++)
                         {
+                            int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                            int dxLimit = this._kWidth + dxOffset < prevInput.Shape[2] ? this._kWidth + dxOffset : prevInput.Shape[2];
+
                             Real gyData = gy.Data[gyIndex] / m;
 
-                            for (int dy = 0; dy < this._kHeight; dy++)
+                            for (int dy = dyOffset; dy < dyLimit; dy++)
                             {
-                                int outputIndexY = y * this._stride + dy - this._padY;
-
-                                if (outputIndexY >= 0 && outputIndexY < prevInput.Shape[1])
+                                for (int dx = dxOffset; dx < dxLimit; dx++)
                                 {
-                                    for (int dx = 0; dx < this._kWidth; dx++)
-                                    {
-                                        int outputIndexX = x * this._stride + dx - this._padX;
-
-                                        if (outputIndexX >= 0 && outputIndexX < prevInput.Shape[2])
-                                        {
-                                            int resultIndex = resultIndexOffset + outputIndexY * prevInput.Shape[2] +
-                                                              outputIndexX + b * prevInput.Length;
-                                            result[resultIndex] = gyData;
-                                        }
-                                    }
+                                    int resultIndex = resultIndexOffset + dy * prevInput.Shape[2] + dx;
+                                    result[resultIndex] = gyData;
                                 }
                             }
 
@@ -128,7 +118,7 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return BatchArray.Convert(result, gy.Shape, gy.BatchCount);
+            return BatchArray.Convert(result, prevInput.Shape, gy.BatchCount);
         }
     }
 }
