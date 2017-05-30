@@ -24,16 +24,6 @@ namespace KelpNet.Common
             return real.Value;
         }
 
-        public static Real MinValue
-        {
-            get { return RealType.MinValue; }
-        }
-
-        public static Real MaxValue
-        {
-            get { return RealType.MaxValue; }
-        }
-
         public int CompareTo(object other)
         {
             return this.Value.CompareTo(((Real)other).Value);

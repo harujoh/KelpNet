@@ -40,7 +40,8 @@ namespace KelpNet.Functions.Normalization
             this.Eps = eps ?? (Real)1e-5;
             this.IsTrain = isTrain;
 
-            this.Gamma = NdArray.Ones(channelSize);
+            this.Gamma = new NdArray(channelSize);
+            this.Gamma.Fill(1);
             this.Beta = new NdArray(channelSize);
 
             this.gGamma = NdArray.ZerosLike(this.Gamma);

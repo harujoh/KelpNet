@@ -56,30 +56,6 @@ namespace KelpNet.Common
             return new NdArray { Data = new Real[baseArray.Data.Length], Shape = baseArray.Shape.ToArray() };
         }
 
-        public static NdArray OnesLike(NdArray baseArray)
-        {
-            Real[] resutlArray = new Real[baseArray.Data.Length];
-
-            for (int i = 0; i < resutlArray.Length; i++)
-            {
-                resutlArray[i] = 1;
-            }
-
-            return new NdArray { Data = resutlArray, Shape = baseArray.Shape.ToArray() };
-        }
-
-        public static NdArray Ones(params int[] shape)
-        {
-            Real[] resutlArray = new Real[ShapeToArrayLength(shape)];
-
-            for (int i = 0; i < resutlArray.Length; i++)
-            {
-                resutlArray[i] = 1;
-            }
-
-            return new NdArray { Data = resutlArray, Shape = shape };
-        }
-
         public static int ShapeToArrayLength(params int[] shapes)
         {
             int result = 1;
