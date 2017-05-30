@@ -62,8 +62,8 @@ namespace KelpNet.Functions.Poolings
 __kernel void MaxPoolingForward(
 	__global const Real *gpuX,
 	__global int *gpuYindex,
-    const int outputHeight, const int outputWidth, const int outputSize,
-    const int inputShape0, const int inputShape1, const int inputShape2, const int inputSize,
+    const int outputHeight, const int outputWidth,
+    const int inputShape0, const int inputShape1, const int inputShape2,
     const int kHeight, const int kWidth,
     const int stride,
     const int padY, const int padX)
@@ -73,31 +73,32 @@ __kernel void MaxPoolingForward(
     int y = get_global_id(1);
     int x = get_global_id(2);
 
-    int indexOffset = i * inputSize + b * inputShape0 * inputSize;
-    gpuX += indexOffset;
-    gpuYindex += b * inputShape0 * outputSize + i * outputSize + y * outputWidth + x;
-
-    Real maxVal = -DBL_MAX;
+    int indexOffset = b * inputShape0 * inputShape1 * inputShape2 + i * inputShape1 * inputShape2;
 
     int dyOffset = y * stride - padY < 0 ? 0 : y * stride - padY;
     int dyLimit = kHeight + dyOffset < inputShape1 ? kHeight + dyOffset : inputShape1;
 
+    int dxOffset = x * stride - padX < 0 ? 0 : x * stride - padX;
+    int dxLimit = kWidth + dxOffset < inputShape2 ? kWidth + dxOffset : inputShape2;
+
+    int yIndex = indexOffset + dyOffset * inputShape2 + dxOffset;
+    Real maxVal = gpuX[yIndex];
+
     for (int dy = dyOffset; dy < dyLimit; dy++)
     {
-        int dxOffset = x * stride - padX < 0 ? 0 : x * stride - padX;
-        int dxLimit = kWidth + dxOffset < inputShape2 ? kWidth + dxOffset : inputShape2;
-
         for (int dx = dxOffset; dx < dxLimit; dx++)
         {
-            int inputIndex = dy * inputShape2 + dx;
+            int inputIndex = indexOffset + dy * inputShape2 + dx;
 
             if (maxVal < gpuX[inputIndex])
             {
                 maxVal = gpuX[inputIndex];
-                gpuYindex[0] = inputIndex + indexOffset;
+                yIndex = inputIndex;
             }
         }
     }
+
+    gpuYindex[b * inputShape0 * outputHeight * outputWidth + i * outputHeight * outputWidth + y * outputWidth + x] = yIndex;
 }";
 
         protected override BatchArray ForwardSingle(BatchArray input)
@@ -162,16 +163,14 @@ __kernel void MaxPoolingForward(
                     ForwardKernel.SetMemoryArgument(1, gpuYIndex);
                     ForwardKernel.SetValueArgument(2, outputHeight);
                     ForwardKernel.SetValueArgument(3, outputWidth);
-                    ForwardKernel.SetValueArgument(4, outputWidth * outputHeight);
-                    ForwardKernel.SetValueArgument(5, input.Shape[0]);
-                    ForwardKernel.SetValueArgument(6, input.Shape[1]);
-                    ForwardKernel.SetValueArgument(7, input.Shape[2]);
-                    ForwardKernel.SetValueArgument(8, input.Shape[1] * input.Shape[2]);
-                    ForwardKernel.SetValueArgument(9, this._kHeight);
-                    ForwardKernel.SetValueArgument(10, this._kWidth);
-                    ForwardKernel.SetValueArgument(11, this._stride);
-                    ForwardKernel.SetValueArgument(12, this._padY);
-                    ForwardKernel.SetValueArgument(13, this._padX);
+                    ForwardKernel.SetValueArgument(4, input.Shape[0]);
+                    ForwardKernel.SetValueArgument(5, input.Shape[1]);
+                    ForwardKernel.SetValueArgument(6, input.Shape[2]);
+                    ForwardKernel.SetValueArgument(7, this._kHeight);
+                    ForwardKernel.SetValueArgument(8, this._kWidth);
+                    ForwardKernel.SetValueArgument(9, this._stride);
+                    ForwardKernel.SetValueArgument(10, this._padY);
+                    ForwardKernel.SetValueArgument(11, this._padX);
 
                     Weaver.CommandQueue.Execute
                         (
