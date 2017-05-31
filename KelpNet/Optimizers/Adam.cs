@@ -12,16 +12,7 @@ namespace KelpNet.Optimizers
         public Real Beta1;
         public Real Beta2;
         public Real Epsilon;
-
-        public double LearningRate
-        {
-            get
-            {
-                double fix1 = 1 - Math.Pow(this.Beta1, UpdateCount);
-                double fix2 = 1 - Math.Pow(this.Beta2, UpdateCount);
-                return this.Alpha * Math.Sqrt(fix2) / fix1;
-            }
-        }
+        public Real LearningRate;
 
         public Adam(Real? alpha = null, Real? beta1 = null, Real? beta2 = null, Real? epsilon = null)
         {
@@ -29,6 +20,10 @@ namespace KelpNet.Optimizers
             this.Beta1 = beta1 ?? (Real)0.9;
             this.Beta2 = beta2 ?? (Real)0.999;
             this.Epsilon = epsilon ?? (Real)1e-8;
+
+            Real fix1 = 1 - Math.Pow(this.Beta1, UpdateCount);
+            Real fix2 = 1 - Math.Pow(this.Beta2, UpdateCount);
+            this.LearningRate = this.Alpha * Math.Sqrt(fix2) / fix1;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
