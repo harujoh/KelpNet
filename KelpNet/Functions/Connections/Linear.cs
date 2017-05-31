@@ -74,25 +74,26 @@ namespace KelpNet.Functions.Connections
 __kernel void LinearForward(
 	__global const Real *gpuX,
 	__global const Real *gpuW, 
-	__global Real *gpuY,
-	const int OutputCount,
-	const int InputCount)
+	__global       Real *gpuY,
+ 	         const int OutputCount,
+ 	         const int InputCount)
 {
 	int batchCount = get_global_id(0);
 	int i = get_global_id(1);
 
     gpuX += batchCount * InputCount;
     gpuW += i * InputCount;
+    gpuY += i + batchCount * OutputCount;
 
-    Real gpuYSum = 0;
+    Real gpuYSum = *gpuY;
 
     for (int j = 0; j < InputCount; j++)
     {
-        gpuYSum = mad(gpuX[j], gpuW[j], gpuYSum);
+        gpuYSum += gpuX[j] * gpuW[j];
     }
     
-    gpuY[i + batchCount * OutputCount] += gpuYSum;
-    ForwardActivate(gpuY + i + batchCount * OutputCount);
+    *gpuY = gpuYSum;
+    ForwardActivate(gpuY);
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
