@@ -31,13 +31,13 @@ namespace KelpNet.Optimizers
     {
         private readonly Real[] msg;
         private readonly Real[] msdx;
-        private readonly AdaDelta optimiser;
+        private readonly AdaDelta optimizer;
 
-        public AdaDeltaParameter(FunctionParameter functionParameter, AdaDelta optimiser) : base(functionParameter)
+        public AdaDeltaParameter(FunctionParameter functionParameter, AdaDelta optimizer) : base(functionParameter)
         {
             this.msg = new Real[functionParameter.Length];
             this.msdx = new Real[functionParameter.Length];
-            this.optimiser = optimiser;
+            this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
@@ -45,13 +45,13 @@ namespace KelpNet.Optimizers
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
                 Real grad = this.FunctionParameter.Grad.Data[i];
-                this.msg[i] *= this.optimiser.Rho;
-                this.msg[i] += (1 - this.optimiser.Rho) * grad * grad;
+                this.msg[i] *= this.optimizer.Rho;
+                this.msg[i] += (1 - this.optimizer.Rho) * grad * grad;
 
-                Real dx = (Real)Math.Sqrt((this.msdx[i] + this.optimiser.Epsilon) / (this.msg[i] + this.optimiser.Epsilon)) * grad;
+                Real dx = (Real)Math.Sqrt((this.msdx[i] + this.optimizer.Epsilon) / (this.msg[i] + this.optimizer.Epsilon)) * grad;
 
-                this.msdx[i] *= this.optimiser.Rho;
-                this.msdx[i] += (1 - this.optimiser.Rho) * dx * dx;
+                this.msdx[i] *= this.optimizer.Rho;
+                this.msdx[i] += (1 - this.optimizer.Rho) * dx * dx;
 
                 this.FunctionParameter.Param.Data[i] -= dx;
             }

@@ -160,12 +160,12 @@ namespace KelpNet.Functions.Connections
                 BatchArray ghPre2 = this.lateral2.Backward(this.gxPrev2);
                 BatchArray ghPre3 = this.lateral3.Backward(this.gxPrev3);
 
-                for (int j = 0; j < gh.BatchCount * OutputCount; j++)
+                for (int i = 0; i < gh.BatchCount * OutputCount; i++)
                 {
-                    lgh[j] += ghPre0.Data[j];
-                    lgh[j] += ghPre1.Data[j];
-                    lgh[j] += ghPre2.Data[j];
-                    lgh[j] += ghPre3.Data[j];
+                    lgh[i] += ghPre0.Data[i];
+                    lgh[i] += ghPre1.Data[i];
+                    lgh[i] += ghPre2.Data[i];
+                    lgh[i] += ghPre3.Data[i];
                 }
             }
 

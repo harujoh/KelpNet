@@ -31,12 +31,12 @@ namespace KelpNet.Optimizers
     [Serializable]
     class RMSpropParameter : OptimizerParameter
     {
-        private readonly RMSprop optimiser;
+        private readonly RMSprop optimizer;
         private readonly Real[] ms;
 
-        public RMSpropParameter(FunctionParameter parameter, RMSprop optimiser) : base(parameter)
+        public RMSpropParameter(FunctionParameter parameter, RMSprop optimizer) : base(parameter)
         {
-            this.optimiser = optimiser;
+            this.optimizer = optimizer;
             this.ms = new Real[parameter.Length];
         }
 
@@ -45,10 +45,10 @@ namespace KelpNet.Optimizers
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
                 Real grad = this.FunctionParameter.Grad.Data[i];
-                this.ms[i] *= this.optimiser.Alpha;
-                this.ms[i] += (1 - this.optimiser.Alpha) * grad * grad;
+                this.ms[i] *= this.optimizer.Alpha;
+                this.ms[i] += (1 - this.optimizer.Alpha) * grad * grad;
 
-                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / ((Real)Math.Sqrt(this.ms[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * grad / ((Real)Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
             }
         }
     }

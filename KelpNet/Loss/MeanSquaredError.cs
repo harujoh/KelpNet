@@ -15,7 +15,7 @@ namespace KelpNet.Loss
             {
                 loss = 0;
 
-                Real coeff = (Real)(2.0 / teachSignal.Length);
+                Real coeff = (Real)2 / teachSignal.Length;
 
                 for (int i = 0; i < input.Length; i++)
                 {
@@ -34,4 +34,3 @@ namespace KelpNet.Loss
         }
     }
 }
-

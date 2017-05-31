@@ -5,6 +5,7 @@ using KelpNet.Common.Functions;
 
 namespace KelpNet.Common.Activations
 {
+    [Serializable]
     public abstract class Activation : NeedPreviousOutputFunction
     {
         //GPU向けのActivate関数の文字列

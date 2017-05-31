@@ -26,9 +26,9 @@ namespace KelpNet.Common.Functions
         //傾きの補正
         public void Reduce()
         {
-            for (int j = 0; j < this.Grad.Data.Length; j++)
+            for (int i = 0; i < this.Grad.Data.Length; i++)
             {
-                this.Grad.Data[j] /= this.TrainCount;
+                this.Grad.Data[i] /= this.TrainCount;
             }
         }
 

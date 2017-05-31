@@ -5,7 +5,7 @@ namespace KelpNet.Common.Tools
     class Initializer
     {
         //初期値が入力されなかった場合、この関数で初期化を行う
-        public static void InitWeight(NdArray array, Real? masterScale = null)
+         public static void InitWeight(NdArray array, Real? masterScale = null)
         {
             Real localScale = 1 / (Real)Math.Sqrt(2);
             int fanIn = GetFans(array.Shape);

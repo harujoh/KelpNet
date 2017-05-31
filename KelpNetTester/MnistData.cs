@@ -57,12 +57,12 @@ namespace KelpNetTester
             BatchArray listY = new BatchArray(new[] { 1, 28, 28 }, dataCount);
             BatchArray listTy = new BatchArray(new[] { 1 }, dataCount);
 
-            for (int j = 0; j < dataCount; j++)
+            for (int i = 0; i < dataCount; i++)
             {
                 int index = Mother.Dice.Next(this.Y.Length);
 
-                Array.Copy(this.Y[index].Data, 0, listY.Data,j * listY.Length,listY.Length);
-                listTy.Data[j] = this.Ty[index].Data[0];
+                Array.Copy(this.Y[index].Data, 0, listY.Data,i * listY.Length,listY.Length);
+                listTy.Data[i] = this.Ty[index].Data[0];
             }
 
             return new MnistDataSet(listY, listTy);
@@ -73,12 +73,12 @@ namespace KelpNetTester
             BatchArray listX = new BatchArray(new[] { 1, 28, 28 }, dataCount);
             BatchArray listTx = new BatchArray(new[] { 1 }, dataCount);
 
-            for (int j = 0; j < dataCount; j++)
+            for (int i = 0; i < dataCount; i++)
             {
                 int index = Mother.Dice.Next(this.X.Length);
 
-                Array.Copy(this.X[index].Data, 0, listX.Data, j * listX.Length, listX.Length);
-                listTx.Data[j] = this.Tx[index].Data[0];
+                Array.Copy(this.X[index].Data, 0, listX.Data, i * listX.Length, listX.Length);
+                listTx.Data[i] = this.Tx[index].Data[0];
             }
 
             return new MnistDataSet(listX, listTx);

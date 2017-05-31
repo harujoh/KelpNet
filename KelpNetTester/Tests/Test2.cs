@@ -65,7 +65,6 @@ namespace KelpNetTester.Tests
             {
                 BatchArray result = nn.Predict(new BatchArray(val));
                 Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5 ? 1 : 0) + " " + result);
-
             }
         }
     }

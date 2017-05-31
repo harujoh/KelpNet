@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using KelpNet.Common;
 using KelpNet.Functions;
 using KelpNet.Functions.Connections;
@@ -169,14 +167,14 @@ namespace KelpNetTester.Tests
             {
                 NdArray[] result = new NdArray[miniBatchSize];
 
-                for (int j = 0; j < result.Length; j++)
+                for (int i = 0; i < result.Length; i++)
                 {
-                    result[j] = new NdArray(lengthOfSequence);
+                    result[i] = new NdArray(lengthOfSequence);
 
                     int index = Mother.Dice.Next(baseFreq.Data.Length - lengthOfSequence);
-                    for (int i = 0; i < lengthOfSequence; i++)
+                    for (int j = 0; j < lengthOfSequence; j++)
                     {
-                        result[j].Data[i] = baseFreq.Data[index + i];
+                        result[i].Data[j] = baseFreq.Data[index + j];
                     }
 
                 }

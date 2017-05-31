@@ -1,9 +1,11 @@
-﻿using KelpNet.Common;
+﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Activations;
 
 namespace KelpNet.Functions.Activations
 {
     //アクティベーションが指定されない時にセットされるダミークラス
+    [Serializable]
     class DummyActivation : Activation
     {
         public DummyActivation(string name = "Dummy", bool isGpu = false) : base(name, isGpu) { }

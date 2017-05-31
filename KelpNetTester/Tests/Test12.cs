@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using KelpNet.Common;
 using KelpNet.Common.Tools;
 using KelpNet.Functions;
@@ -44,10 +41,10 @@ namespace KelpNetTester.Tests
             {
                 Real[] tmp = new Real[(256 + 10) * BATCH_DATA_COUNT];
 
-                for (int k = 0; k < BATCH_DATA_COUNT; k++)
+                for (int i = 0; i < BATCH_DATA_COUNT; i++)
                 {
-                    tmp[256 + (int)this.Label.Data[k * this.Label.Length] + k * (256 + 10)] = 1;
-                    Array.Copy(this.Result.Data, k * this.Result.Length, tmp, k * (256 + 10), 256);
+                    tmp[256 + (int)this.Label.Data[i * this.Label.Length] + i * (256 + 10)] = 1;
+                    Array.Copy(this.Result.Data, i * this.Result.Length, tmp, i * (256 + 10), 256);
                 }
 
                 return BatchArray.Convert(tmp, new[] { 256 + 10 }, BATCH_DATA_COUNT);

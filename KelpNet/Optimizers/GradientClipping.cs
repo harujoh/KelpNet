@@ -28,11 +28,11 @@ namespace KelpNet.Optimizers
     [Serializable]
     class GradientClippingParameter : OptimizerParameter
     {
-        private readonly GradientClipping optimiser;
+        private readonly GradientClipping optimizer;
 
-        public GradientClippingParameter(FunctionParameter functionParameter, GradientClipping optimiser) : base(functionParameter)
+        public GradientClippingParameter(FunctionParameter functionParameter, GradientClipping optimizer) : base(functionParameter)
         {
-            this.optimiser = optimiser;
+            this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
@@ -46,7 +46,7 @@ namespace KelpNet.Optimizers
             }
 
             Real norm = (Real)Math.Sqrt(s);
-            Real rate = this.optimiser.Threshold / norm;
+            Real rate = this.optimizer.Threshold / norm;
 
             if (rate < 1)
             {

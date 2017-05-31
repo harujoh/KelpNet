@@ -13,6 +13,16 @@ namespace KelpNet.Optimizers
         public Real Beta2;
         public Real Epsilon;
 
+        public double LearningRate
+        {
+            get
+            {
+                double fix1 = 1 - Math.Pow(this.Beta1, UpdateCount);
+                double fix2 = 1 - Math.Pow(this.Beta2, UpdateCount);
+                return this.Alpha * Math.Sqrt(fix2) / fix1;
+            }
+        }
+
         public Adam(Real? alpha = null, Real? beta1 = null, Real? beta2 = null, Real? epsilon = null)
         {
             this.Alpha = alpha ?? (Real)0.001;
@@ -33,33 +43,29 @@ namespace KelpNet.Optimizers
     [Serializable]
     class AdamParameter : OptimizerParameter
     {
-        private readonly Adam optimiser;
+        private readonly Adam _optimizer;
 
         private readonly Real[] m;
         private readonly Real[] v;
 
-        public AdamParameter(FunctionParameter parameter, Adam optimiser) : base(parameter)
+        public AdamParameter(FunctionParameter parameter, Adam optimizer) : base(parameter)
         {
             this.m = new Real[parameter.Length];
             this.v = new Real[parameter.Length];
 
-            this.optimiser = optimiser;
+            this._optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
-            Real fix1 = 1 - (Real)Math.Pow(this.optimiser.Beta1, this.optimiser.UpdateCount);
-            Real fix2 = 1 - (Real)Math.Pow(this.optimiser.Beta2, this.optimiser.UpdateCount);
-            Real lr = this.optimiser.Alpha * (Real)Math.Sqrt(fix2) / fix1;
-
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
                 Real grad = this.FunctionParameter.Grad.Data[i];
 
-                this.m[i] += (1 - this.optimiser.Beta1) * (grad - this.m[i]);
-                this.v[i] += (1 - this.optimiser.Beta2) * (grad * grad - this.v[i]);
+                this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
+                this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Param.Data[i] -= lr * this.m[i] / ((Real)Math.Sqrt(this.v[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this._optimizer.LearningRate * this.m[i] / ((Real)Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
             }
         }
     }

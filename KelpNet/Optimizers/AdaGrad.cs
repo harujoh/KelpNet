@@ -29,13 +29,13 @@ namespace KelpNet.Optimizers
     [Serializable]
     class AdaGradParameter : OptimizerParameter
     {
-        private readonly AdaGrad optimiser;
+        private readonly AdaGrad optimizer;
         private readonly Real[] h;
 
-        public AdaGradParameter(FunctionParameter functionParameter, AdaGrad optimiser) : base(functionParameter)
+        public AdaGradParameter(FunctionParameter functionParameter, AdaGrad optimizer) : base(functionParameter)
         {
             this.h = new Real[functionParameter.Length];
-            this.optimiser = optimiser;
+            this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
@@ -46,7 +46,7 @@ namespace KelpNet.Optimizers
 
                 this.h[i] += grad * grad;
 
-                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / ((Real)Math.Sqrt(this.h[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * grad / ((Real)Math.Sqrt(this.h[i]) + this.optimizer.Epsilon);
             }
         }
     }

@@ -66,7 +66,7 @@ namespace KelpNetTester.Tests
             }, name: "l4");
 
 
-            //FunctionにOptimiserを設定
+            //FunctionにOptimizerを設定
             SGD sgd = new SGD();
             l0.SetOptimizer(sgd);
             l1.SetOptimizer(sgd);

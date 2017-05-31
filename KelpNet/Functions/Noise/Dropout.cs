@@ -108,9 +108,9 @@ __kernel void DropoutBackward(
             {
                 for (int b = 0; b < gy.BatchCount; b++)
                 {
-                    for (int j = 0; j < mask.Length; j++)
+                    for (int i = 0; i < mask.Length; i++)
                     {
-                        result[j + b * gy.Length] *= mask[j];
+                        result[i + b * gy.Length] *= mask[i];
                     }
                 }
             }
