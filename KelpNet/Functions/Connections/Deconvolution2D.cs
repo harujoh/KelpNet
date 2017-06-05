@@ -60,14 +60,14 @@ namespace KelpNet.Functions.Connections
         {
             int outputSize = (input.Shape[2] - 1) * this._subSample + this._kSize - this._trim * 2;
 
-            Real[] result = new Real[this.OutputCount * outputSize * outputSize];
+            Real[] result = new Real[input.BatchCount * this.OutputCount * outputSize * outputSize];
 
             int outSizeOffset = outputSize * outputSize;
 
             int inputSizeOffset = input.Shape[1] * input.Shape[2];
             int kSizeOffset = this.W.Shape[2] * this.W.Shape[3];
 
-            for (int b = 0; b < input.BatchCount; b++)
+            for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
             {
                 for (int och = 0; och < this.W.Shape[0]; och++)
                 {
@@ -77,7 +77,7 @@ namespace KelpNet.Functions.Connections
                         {
                             for (int ix = 0; ix < input.Shape[2]; ix++)
                             {
-                                int inputIndex = ich * inputSizeOffset + iy * input.Shape[2] + ix + b * input.BatchCount;
+                                int inputIndex = batchCount * input.Length + ich * inputSizeOffset + iy * input.Shape[2] + ix;
 
                                 for (int ky = 0; ky < this.W.Shape[2]; ky++)
                                 {
@@ -87,7 +87,7 @@ namespace KelpNet.Functions.Connections
                                     {
                                         int outIndexX = ix * this._subSample + kx - this._trim;
 
-                                        int outputIndex = och * outSizeOffset + outIndexY * outputSize + outIndexX + b * input.BatchCount;
+                                        int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + outIndexY * outputSize + outIndexX;
 
                                         int kernelIndex = och * this.W.Shape[1] * kSizeOffset + ich * kSizeOffset + ky * this.W.Shape[3] + kx;
 
@@ -105,7 +105,7 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int ox = 0; ox < outputSize; ox++)
                         {
-                            int outputIndex = och * outSizeOffset + oy * outputSize + ox + b * input.BatchCount;
+                            int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + oy * outputSize + ox;
                             result[outputIndex] += this.b.Data[och];
                         }
                     }
