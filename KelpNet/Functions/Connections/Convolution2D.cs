@@ -104,11 +104,6 @@ namespace KelpNet.Functions.Connections
 
             if (IsGpu)
             {
-                if (!(this._activation is DummyActivation))
-                {
-
-                }
-
                 ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
                 BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "Convolution2DBackward");
             }
