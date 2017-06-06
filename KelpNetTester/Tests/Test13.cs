@@ -25,15 +25,15 @@ namespace KelpNetTester.Tests
             model.SetOptimizer(optimizer);
             MeanSquaredError meanSquaredError = new MeanSquaredError();
 
-            //ランダムに点が打たれた画像を生成
-            BatchArray img_p = getRandomImage();
-
-            //目標とするフィルタで学習用の画像を出力
-            BatchArray img_core = decon_core.Forward(img_p);
-
             //移植元では同じ教育画像で教育しているが、より実践に近い学習に変更
             for (int i = 0; i < 31; i++)
             {
+                //ランダムに点が打たれた画像を生成
+                BatchArray img_p = getRandomImage();
+
+                //目標とするフィルタで学習用の画像を出力
+                BatchArray img_core = decon_core.Forward(img_p);
+
                 model.ClearGrads();
 
                 //未学習のフィルタで画像を出力
