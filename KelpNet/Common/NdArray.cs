@@ -346,5 +346,98 @@ namespace KelpNet.Common
             return DeepCopyHelper.DeepCopy(this);
         }
 
+        public NdArray Transpose(params int[] targetDimensions)
+        {
+#if DEBUG
+            if (targetDimensions.Length != 0 && this.Shape.Length != targetDimensions.Length)
+            {
+                throw new Exception("次元数がマッチしていません");
+            }
+
+            for (int i = 0; i < targetDimensions.Length; i++)
+            {
+                //自身の中にダブりがないか
+                for (int j = i + 1; j < targetDimensions.Length; j++)
+                {
+                    if (targetDimensions[i] == targetDimensions[j]) throw new Exception("指定された要素がダブっています");
+                }
+                //範囲チェック
+                if (targetDimensions[i] >= this.Shape.Length || targetDimensions[i] < 0) throw new Exception("指定された要素が範囲を超えています");
+            }
+#endif
+            //引数なしの場合単純に逆転させる
+            if (targetDimensions.Length == 0)
+            {
+                targetDimensions = Enumerable.Range(0, this.Shape.Length).ToArray();
+                Array.Reverse(targetDimensions);
+            }
+
+            //指定された次元のインデックスからShapeを作成する
+            int[] transposedShape = new int[this.Shape.Length];
+            for (int j = 0; j < this.Shape.Length; j++)
+            {
+                transposedShape[j] = this.Shape[targetDimensions[j]];
+            }
+
+            double[] resultArray = new double[this.Data.Length];
+
+
+            for (int i = 0; i < resultArray.Length; i++)
+            {
+                //データインデックスから変換元の次元インデックスを取得
+                int[] dimensionIndex = this.GetDimensionsIndex(i);
+
+                //次元インデックスを転送先インデックスに変換
+                int resultindex = 0;
+                for (int j = this.Shape.Length - 1; j >= 0; j--)
+                {
+                    int rankOffset = 1;
+                    for (int k = j + 1; k < this.Shape.Length; k++)
+                    {
+                        rankOffset *= this.Shape[k];
+                    }
+
+                    resultindex += dimensionIndex[targetDimensions[j]] * rankOffset;
+                }
+
+                resultArray[resultindex] = this.Data[i];
+            }
+
+            return new NdArray(resultArray, transposedShape);
+        }
+
+        private int[] GetDimensionsIndex(int index)
+        {
+            int[] dimensionsIndex = new int[this.Shape.Length];
+
+            for (int i = this.Shape.Length - 1; i >= 0; i--)
+            {
+                dimensionsIndex[i] = index % this.Shape[i];
+                index = index / this.Shape[i];
+            }
+
+            return dimensionsIndex;
+        }
+
+        private int GetLocalIndex(int[] indices)
+        {
+            int index = 0;
+
+            for (int i = 0; i < indices.Length; i++)
+            {
+                int rankOffset = 1;
+
+                for (int j = i + 1; j < this.Shape.Length; j++)
+                {
+                    rankOffset *= this.Shape[j];
+                }
+
+                index += indices[i] * rankOffset;
+            }
+
+            return index;
+        }
+
+
     }
 }
