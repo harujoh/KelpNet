@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -381,7 +382,6 @@ namespace KelpNet.Common
 
             double[] resultArray = new double[this.Data.Length];
 
-
             for (int i = 0; i < resultArray.Length; i++)
             {
                 //データインデックスから変換元の次元インデックスを取得
@@ -404,6 +404,63 @@ namespace KelpNet.Common
             }
 
             return new NdArray(resultArray, transposedShape);
+        }
+
+        public NdArray Rollaxis(int axis, int start = 0)
+        {
+            int n = this.Shape.Length;
+            if (axis < 0) axis += n;
+            if (start < 0) start += n;
+            if (axis == start) return this;
+
+#if DEBUG
+            string msg = "rollaxis: {0} ({1}) must be >=0 and < {2}";
+            if (!(0 <= axis && axis < n)) throw new Exception(string.Format(msg, "axis", axis, n));
+            if (!(0 <= start && start < n + 1)) throw new Exception(string.Format(msg, "start", start, n + 1));
+#endif
+
+            List<int> axes = new List<int>(Enumerable.Range(0, n).ToArray());
+            axes.RemoveAt(axis);
+            axes.Insert(start, axis);
+
+            return this.Transpose(axes.ToArray());
+        }
+
+        public static NdArray Concatenate(NdArray a, NdArray b, int axis)
+        {
+            List<int> shapeList = new List<int>();
+            for (int i = 0; i < a.Shape.Length; i++)
+            {
+                if (i == axis)
+                {
+                    shapeList.Add(a.Shape[i] + b.Shape[i]);
+                }
+                else if (a.Shape[i] != b.Shape[i])
+                {
+                    throw new Exception("配列の大きさがマッチしていません");
+                }
+                else
+                {
+                    shapeList.Add(a.Shape[i]);
+                }
+            }
+
+            NdArray result = NdArray.Zeros(shapeList.ToArray());
+
+            for (int i = 0; i < a.Data.Length; i++)
+            {
+                result.Data[result.GetLocalIndex(a.GetDimensionsIndex(i))] = a.Data[i];
+            }
+
+            for (int i = 0; i < b.Data.Length; i++)
+            {
+                int[] tmpIndex = b.GetDimensionsIndex(i);
+                tmpIndex[axis] += a.Shape[axis];
+
+                result.Data[result.GetLocalIndex(tmpIndex)] = b.Data[i];
+            }
+
+            return result;
         }
 
         private int[] GetDimensionsIndex(int index)
@@ -437,7 +494,6 @@ namespace KelpNet.Common
 
             return index;
         }
-
 
     }
 }
