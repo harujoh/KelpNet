@@ -96,12 +96,12 @@ namespace KelpNet.Functions.Connections
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
-            int outputWidth = (input.Shape[2] - 1) * this._subSample + this._kWidth - this._trimX * 2;
+            int outputWidth = (input.Shape[1] - 1) * this._subSample + this._kWidth - this._trimX * 2;
             int outputHeight = (input.Shape[2] - 1) * this._subSample + this._kHeight - this._trimY * 2;
-
-            Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
-
             int outSizeOffset = outputWidth * outputHeight;
+
+            Real[] result = new Real[input.BatchCount * this.OutputCount * outSizeOffset];
+
 
             int inputSizeOffset = input.Shape[1] * input.Shape[2];
             int kSizeOffset = this.W.Shape[2] * this.W.Shape[3];
