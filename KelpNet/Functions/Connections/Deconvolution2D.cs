@@ -97,7 +97,7 @@ namespace KelpNet.Functions.Connections
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
             int outputWidth = (input.Shape[2] - 1) * this._subSample + this._kWidth - this._trimX * 2;
-            int outputHeight = (input.Shape[2] - 1) * this._subSample + this._kHeight - this._trimY * 2;
+            int outputHeight = (input.Shape[1] - 1) * this._subSample + this._kHeight - this._trimY * 2;
 
             Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
@@ -110,41 +110,40 @@ namespace KelpNet.Functions.Connections
             {
                 for (int och = 0; och < this.W.Shape[0]; och++)
                 {
-                    for (int ich = 0; ich < input.Shape[0]; ich++)
-                    {
-                        for (int iy = 0; iy < input.Shape[1]; iy++)
-                        {
-                            int kyOffset = iy * this._subSample - this._trimY;
-                            int kyStartOffset = kyOffset < 0 ? 0 : kyOffset;
-                            int kyLimit = this.W.Shape[2] + kyOffset < outputHeight ? this.W.Shape[2] + kyOffset : outputHeight;
-
-                            for (int ix = 0; ix < input.Shape[2]; ix++)
-                            {
-                                int kxOffset = ix * this._subSample - this._trimX;
-                                int kxStartOffset = kxOffset < 0 ? 0 : kxOffset;
-                                int kxLimit = this.W.Shape[3] + kxOffset < outputWidth ? this.W.Shape[3] + kxOffset : outputWidth;
-
-                                int inputIndex = batchCount * input.Length + ich * inputSizeOffset + iy * input.Shape[2] + ix;
-
-                                for (int ky = kyStartOffset; ky < kyLimit; ky++)
-                                {
-                                    for (int kx = kxStartOffset; kx < kxLimit; kx++)
-                                    {
-                                        int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + ky * outputWidth + kx;
-                                        int kernelIndex = och * this.W.Shape[1] * kSizeOffset + ich * kSizeOffset + (ky - kyOffset) * this.W.Shape[3] + kx - kxOffset;
-
-                                        result[outputIndex] += input.Data[inputIndex] * this.W.Data[kernelIndex];
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     for (int oy = 0; oy < outputHeight; oy++)
                     {
                         for (int ox = 0; ox < outputWidth; ox++)
                         {
                             int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + oy * outputWidth + ox;
+
+                            for (int ich = 0; ich < input.Shape[0]; ich++)
+                            {
+                                int inputIndexOffset = batchCount * input.Length + ich * inputSizeOffset;
+
+                                for (int ky = 0; ky < this.W.Shape[2]; ky++)
+                                {
+                                    int iyOffset = (oy - ky + this._trimY);
+                                    int iy = iyOffset / this._subSample;
+
+                                    if (iy >= 0 && iy < input.Shape[1] && iyOffset % this._subSample == 0)
+                                    {
+                                        for (int kx = 0; kx < this.W.Shape[3]; kx++)
+                                        {
+                                            int ixOffset = (ox - kx + this._trimX);
+                                            int ix = ixOffset / this._subSample;
+
+                                            if (ix >= 0 && ix < input.Shape[2] && ixOffset % this._subSample == 0)
+                                            {
+                                                int inputIndex = inputIndexOffset + iy * input.Shape[2] + ix;
+                                                int kernelIndex = och * this.W.Shape[1] * kSizeOffset + ich * kSizeOffset + ky * this.W.Shape[3] + kx;
+
+                                                result[outputIndex] += input.Data[inputIndex] * this.W.Data[kernelIndex];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                             result[outputIndex] += this.b.Data[och];
                         }
                     }
@@ -181,44 +180,6 @@ namespace KelpNet.Functions.Connections
                     //inputインデックス用
                     int inputOffset = och * gy.Shape[1] * gy.Shape[2];
 
-                    for (int ich = 0; ich < this.gW.Shape[1]; ich++)
-                    {
-                        //Wインデックス用
-                        int inChOffset = ich * this.gW.Shape[2] * this.gW.Shape[3];
-                        int pinputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
-
-                        for (int py = 0; py < prevInput.Shape[1]; py++)
-                        {
-                            int gwyOffset = py * this._subSample - this._trimY;
-                            int gwyStartOffset = gwyOffset < 0 ? 0 : gwyOffset;
-                            int gwyLimit = this.gW.Shape[2] + gwyOffset < gy.Shape[1] ? this.gW.Shape[2] + gwyOffset : gy.Shape[1];
-
-                            for (int px = 0; px < prevInput.Shape[2]; px++)
-                            {
-                                int gwxOffset = px * this._subSample - this._trimX;
-                                int gwxStartOffset = gwxOffset < 0 ? 0 : gwxOffset;
-                                int gwxLimit = this.gW.Shape[3] + gwxOffset < gy.Shape[2] ? this.gW.Shape[3] + gwxOffset : gy.Shape[2];
-
-                                for (int gwy = gwyStartOffset; gwy < gwyLimit; gwy++)
-                                {
-                                    for (int gwx = gwxStartOffset; gwx < gwxLimit; gwx++)
-                                    {
-                                        int pInIndex = batchCount * prevInput.Length + pinputOffset + py * prevInput.Shape[2] + px;
-
-                                        int gwIndex = outChOffset + inChOffset + (gwy - gwyOffset) * this.gW.Shape[3] + gwx - gwxOffset;
-                                        int gyIndex = batchCount * gy.Length + inputOffset + gwy * gy.Shape[2] + gwx;
-
-                                        Real gyData = gy.Data[gyIndex];
-                                        this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
-
-                                        this.gW.Data[gwIndex] += prevInput.Data[pInIndex] * gyData;
-                                        gx[pInIndex] += this.W.Data[gwIndex] * gyData;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     for (int oy = 0; oy < gy.Shape[1]; oy++)
                     {
                         for (int ox = 0; ox < gy.Shape[2]; ox++)
@@ -226,6 +187,37 @@ namespace KelpNet.Functions.Connections
                             int gyIndex = batchCount * gy.Length + inputOffset + oy * gy.Shape[2] + ox;
                             Real gyData = gy.Data[gyIndex];
                             this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
+
+                            for (int ich = 0; ich < this.gW.Shape[1]; ich++)
+                            {
+                                //Wインデックス用
+                                int inChOffset = ich * this.gW.Shape[2] * this.gW.Shape[3];
+                                int pinputOffset = ich * prevInput.Shape[1] * prevInput.Shape[2];
+
+                                for (int gwy = 0; gwy < this.gW.Shape[2]; gwy++)
+                                {
+                                    int pyOffset = oy - gwy + this._trimY;
+                                    int py = pyOffset / this._subSample;
+
+                                    if (py >= 0 && py < prevInput.Shape[1] && pyOffset % this._subSample == 0)
+                                    {
+                                        for (int gwx = 0; gwx < this.gW.Shape[3]; gwx++)
+                                        {
+                                            int pxOffset = ox - gwx + this._trimX;
+                                            int px = pxOffset / this._subSample;
+
+                                            if (px >= 0 && px < prevInput.Shape[2] && pxOffset % this._subSample == 0)
+                                            {
+                                                int pInIndex = batchCount * prevInput.Length + pinputOffset + py * prevInput.Shape[2] + px;
+                                                int gwIndex = outChOffset + inChOffset + gwy * this.gW.Shape[3] + gwx;
+
+                                                this.gW.Data[gwIndex] += prevInput.Data[pInIndex] * gyData;
+                                                gx[pInIndex] += this.W.Data[gwIndex] * gyData;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
 
                             this.gb.Data[och] += gyData;
                         }
