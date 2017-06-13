@@ -353,8 +353,6 @@ __kernel void Convolution2DBackward(
 
             if (!IsGpu)
             {
-                int gyIndex = 0;
-
                 for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
                 {
                     for (int och = 0; och < gy.Shape[0]; och++)
@@ -374,8 +372,10 @@ __kernel void Convolution2DBackward(
                                 int kxStartIndex = this._padX - ox < 0 ? 0 : this._padX - ox;
                                 int kxLimit = this._kWidth < x.Shape[2] - ox + this._padX ? this._kWidth : x.Shape[2] - ox + this._padX;
 
+                                int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[1] + ox;
+
                                 Real gyData = gy.Data[gyIndex]; //gyIndex = ch * ox * oy
-                                this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex++]);
+                                this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
 
                                 for (int ich = 0; ich < x.Shape[0]; ich++)
                                 {
@@ -469,7 +469,9 @@ __kernel void Convolution2DBackward(
                             {
                                 for (int ox = 0; ox < gy.Shape[2]; ox++)
                                 {
-                                    this.gb.Data[och] += gy.Data[gyIndex++]; //gyIndex = ch * ox * oy
+                                    Real gyData = gy.Data[gyIndex];
+                                    this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex++]);
+                                    this.gb.Data[och] += gyData;
                                 }
                             }
                         }

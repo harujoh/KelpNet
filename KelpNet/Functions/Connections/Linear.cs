@@ -264,7 +264,9 @@ __kernel void LinearBackward(
                 {
                     for (int i = 0; i < this.OutputCount; i++)
                     {
-                        this.gb.Data[i] += gy.Data[batchCount + i];
+                        Real gyData = gy.Data[batchCount + i];
+                        this._activation.BackwardActivate(ref gyData, prevOutputData[batchCount + i]);
+                        this.gb.Data[i] += gyData;
                     }
                 }
             }
