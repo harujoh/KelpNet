@@ -304,23 +304,25 @@ __kernel void Convolution2DBackward(
     gpugY += batchCounter * gyShape0 * gyShape1 * gyShape2;
     gpuY += batchCounter * gyShape0 * gyShape1 * gyShape2;
 
-    for (int oy = 0; oy < gyShape1 * stride; oy += stride)
+    int index = 0;
+
+    for (int och = 0; och < gyShape0; och++)
     {
-        int kyStartIndex = padY < oy ? 0 : padY - oy;
-        int kyLimit = kHeight < xShape1 - oy + padY ? kHeight : xShape1 - oy + padY;
+        int wIndex = och * inputCount * kHeight * kWidth;
 
-        for (int ox = 0; ox < gyShape2 * stride; ox += stride)
+        for (int oy = 0; oy < gyShape1 * stride; oy += stride)
         {
-            int kxStartIndex = padX < ox ? 0 : padX - ox;
-            int kxLimit = kWidth < xShape2 - ox + padX ? kWidth : xShape2 - ox + padX;
+            int kyStartIndex = padY < oy ? 0 : padY - oy;
+            int kyLimit = kHeight < xShape1 - oy + padY ? kHeight : xShape1 - oy + padY;
 
-            for (int och = 0; och < gyShape0; och++)
+            for (int ox = 0; ox < gyShape2 * stride; ox += stride)
             {
-                int wIndex = och * inputCount * kHeight * kWidth;
-                int index = och * gyShape1 * gyShape2 + oy * gyShape1 + ox;
+                int kxStartIndex = padX < ox ? 0 : padX - ox;
+                int kxLimit = kWidth < xShape2 - ox + padX ? kWidth : xShape2 - ox + padX;
 
                 Real gyData = gpugY[index];
                 BackwardActivate(gpuY[index], &gyData);
+                index++;
 
                 for (int ky = kyStartIndex; ky < kyLimit; ky++)
                 {
