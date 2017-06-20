@@ -112,56 +112,56 @@ namespace KelpNet.Functions.Connections
         public override string ForwardKernelSource { get; } =
 @"
 __kernel void Convolution2DForward(
-    const __global __read_only  Real* gpuX,
-    const __global __read_only  Real* gpuW,
-    const __global __read_only  Real* gpub,
-          __global __write_only Real* gpuY,
-    const int inputShape1,
-    const int inputShape2,
-    const int inputLength,
-    const int outputWidth,
-    const int outputHeight,
-    const int stride,
-    const int padX,
-    const int padY,
-    const int kHeight,
-    const int kWidth,
-    const int OutputCount,
-    const int InputCount)
+	const __global __read_only	Real* gpuX,
+	const __global __read_only	Real* gpuW,
+	const __global __read_only	Real* gpub,
+		  __global __write_only Real* gpuY,
+	const int inputShape1,
+	const int inputShape2,
+	const int inputLength,
+	const int outputWidth,
+	const int outputHeight,
+	const int stride,
+	const int padX,
+	const int padY,
+	const int kHeight,
+	const int kWidth,
+	const int OutputCount,
+	const int InputCount)
 {
-    int batchCounter = get_global_id(0) / OutputCount;
-    int och = get_global_id(0) % OutputCount;
-    int oy = get_global_id(1) * stride - padY;
-    int ox = get_global_id(2) * stride - padX;
+	int batchCounter = get_global_id(0) / OutputCount;
+	int och = get_global_id(0) % OutputCount;
+	int oy = get_global_id(1) * stride - padY;
+	int ox = get_global_id(2) * stride - padX;
 
-    Real localResult = 0;
+	Real localResult = 0;
 
-    gpuW += och* InputCount * kHeight* kWidth;
-    gpuX += batchCounter * inputLength;
+	gpuW += och* InputCount * kHeight* kWidth;
+	gpuX += batchCounter * inputLength;
 
-    int kyStartIndex = oy < 0 ? 0 : oy;
-    int kyLimit = kHeight + oy < inputShape1 ? kHeight + oy : inputShape1;
+	int kyStartIndex = oy < 0 ? 0 : oy;
+	int kyLimit = kHeight + oy < inputShape1 ? kHeight + oy : inputShape1;
 
-    int kxStartIndex = ox < 0 ? 0 : ox;
-    int kxLimit = kWidth + ox < inputShape2 ? kWidth + ox : inputShape2;
+	int kxStartIndex = ox < 0 ? 0 : ox;
+	int kxLimit = kWidth + ox < inputShape2 ? kWidth + ox : inputShape2;
 
-    for (int ich = 0; ich < InputCount; ich++)
-    {
-        for (int ky = kyStartIndex; ky < kyLimit; ky++)
-        {
-            for (int kx = kxStartIndex; kx < kxLimit; kx++)
-            {
-                int inputIndex = ich * inputShape1 * inputShape2 + ky * inputShape2 + kx;
-                int wIndex = ich * kHeight * kWidth + (ky - oy) * kWidth + kx - ox;
+	for (int ich = 0; ich < InputCount; ich++)
+	{
+		for (int ky = kyStartIndex; ky < kyLimit; ky++)
+		{
+			for (int kx = kxStartIndex; kx < kxLimit; kx++)
+			{
+				int inputIndex = ich * inputShape1 * inputShape2 + ky * inputShape2 + kx;
+				int wIndex = ich * kHeight * kWidth + (ky - oy) * kWidth + kx - ox;
 
-                localResult += gpuX[inputIndex] * gpuW[wIndex];
-            }
-        }
-    }
+				localResult += gpuX[inputIndex] * gpuW[wIndex];
+			}
+		}
+	}
 
-    int index = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + get_global_id(1) * outputWidth + get_global_id(2);
-    gpuY[index] = localResult + gpub[och];
-    ForwardActivate(gpuY + index);
+	int index = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + get_global_id(1) * outputWidth + get_global_id(2);
+	gpuY[index] = localResult + gpub[och];
+	ForwardActivate(gpuY + index);
 }";
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
@@ -270,73 +270,115 @@ __kernel void Convolution2DForward(
         public override string BackwardKernelSource { get; } =
 @"
 __kernel void Convolution2DBackward(
-	const __global __read_only  Real* gpugY,
-	const __global __read_only  Real* gpuY,
-	const __global __read_only  Real* gpuX,
-	const __global __read_only  Real* gpuW, 
-	      __global __read_write Real* gpugX, 
-	      __global __read_write Real* tmpgW, 
+	const __global __read_only	Real* activatedgy,
+	const __global __read_only	Real* gpuX,
+	const __global __read_only	Real* gpuW,
+		  __global __read_write Real* gpugX,
+		  __global __read_write Real* tmpgW,
 	const int outputCount,
 	const int inputCount,
-    const int gyShape0,
-    const int gyShape1,
-    const int gyShape2,
-    const int xShape1,
-    const int xShape2,
-    const int xLength,
-    const int stride,
+	const int gyShape0,
+	const int gyShape1,
+	const int gyShape2,
+	const int xShape1,
+	const int xShape2,
+	const int xLength,
+	const int stride,
 	const int padX,
 	const int padY,
 	const int kHeight,
 	const int kWidth)
 {
-    int batchCounter = get_global_id(0);
+	int batchCounter = get_global_id(0);
 	int ich = get_global_id(1);
 
-    int wLength = outputCount * inputCount * kHeight * kWidth;
+	int wLength = outputCount * inputCount * kHeight * kWidth;
 
-    gpuW += ich * kHeight * kWidth;
-    tmpgW += batchCounter * wLength + ich * kHeight * kWidth;
+	gpuW += ich * kHeight * kWidth;
+	tmpgW += batchCounter * wLength + ich * kHeight * kWidth;
 
-    gpuX += batchCounter * xLength + ich * xShape1 * xShape2;
-    gpugX += batchCounter * xLength + ich * xShape1 * xShape2; 
+	gpuX += batchCounter * xLength + ich * xShape1 * xShape2;
+	gpugX += batchCounter * xLength + ich * xShape1 * xShape2;
 
-    gpugY += batchCounter * gyShape0 * gyShape1 * gyShape2;
-    gpuY += batchCounter * gyShape0 * gyShape1 * gyShape2;
+	activatedgy += batchCounter * gyShape0 * gyShape1 * gyShape2;
 
-    int index = 0;
+	for (int ky = 0; ky < kHeight; ky++)
+	{
+		int iyStartIndex = ky - padY < 0 ? 0 : ky - padY;
+		int iyLimit = gyShape1 * stride + ky - padY < xShape1 ? gyShape1 * stride + ky - padY : xShape1;
 
-    for (int och = 0; och < gyShape0; och++)
-    {
-        int wIndex = och * inputCount * kHeight * kWidth;
+		for (int kx = 0; kx < kWidth; kx++)
+		{
+			int ixStartIndex = kx - padX < 0 ? 0 : kx - padX;
+			int ixLimit = gyShape2 * stride + kx - padX < xShape2 ? gyShape2 * stride + kx - padX : xShape2;
 
-        for (int oy = 0; oy < gyShape1 * stride; oy += stride)
-        {
-            int kyStartIndex = padY < oy ? 0 : padY - oy;
-            int kyLimit = kHeight < xShape1 - oy + padY ? kHeight : xShape1 - oy + padY;
+			for (int och = 0; och < gyShape0; och++)
+			{
+				int outChOffset = och * inputCount * kHeight * kWidth;
+				int wIndex = outChOffset + ky * kWidth + kx;
+				int gychOffset = och * gyShape1 * gyShape2;
 
-            for (int ox = 0; ox < gyShape2 * stride; ox += stride)
-            {
-                int kxStartIndex = padX < ox ? 0 : padX - ox;
-                int kxLimit = kWidth < xShape2 - ox + padX ? kWidth : xShape2 - ox + padX;
+				Real localgW = 0;
+				for (int iy = iyStartIndex; iy < iyLimit; iy += stride)
+				{
+					int oy = iy - ky + padY;
 
-                Real gyData = gpugY[index];
-                BackwardActivate(gpuY[index], &gyData);
-                index++;
+					for (int ix = ixStartIndex; ix < ixLimit; ix += stride)
+					{
+						int ox = ix - kx + padX;
 
-                for (int ky = kyStartIndex; ky < kyLimit; ky++)
-                {
-                    for (int kx = kxStartIndex; kx < kxLimit; kx++)
-                    {
-                        int inputIndex = (ky + oy - padY) * xShape2 + kx + ox - padX;
+						int gyIndex = gychOffset + oy * gyShape1 + ox;
+						int inputIndex = iy * xShape2 + ix;
 
-                        tmpgW[wIndex + ky * kWidth + kx] += gpuX[inputIndex] * gyData;
-                        gpugX[inputIndex] += gpuW[wIndex + ky * kWidth + kx] * gyData;
-                    }
-                }
-            }
-        }
-    }
+						localgW += gpuX[inputIndex] * activatedgy[gyIndex];
+					}
+				}
+
+				tmpgW[wIndex] += localgW;
+			}
+		}
+	}
+
+	int gxIndex = 0;
+
+	for (int iy = padY; iy < xShape1 + padY; iy++)
+	{
+		int kyStart = 0 <= iy - gyShape1 * stride ? iy - gyShape1 * stride + 1 : 0;
+		int kyLimit = kHeight < iy + 1 ? kHeight : iy + 1;
+
+		for (int ix = padX; ix < xShape2 + padX; ix++)
+		{
+			int kxStart = 0 <= ix - gyShape2 * stride ? ix - gyShape2 * stride + 1 : 0;
+			int kxLimit = kWidth < ix + 1 ? kWidth : ix + 1;
+
+			Real localgX = 0;
+
+			for (int ky = kyStart; ky < kyLimit; ky++)
+			{
+				int kydiv = (iy - ky) / stride;
+
+				for (int kx = kxStart; kx < kxLimit; kx++)
+				{
+					int kxdiv = (ix - kx) / stride;
+
+					int gyIndexOffset = kydiv * gyShape1 + kxdiv;
+					int wIndexOffset = ky * kWidth + kx;
+
+					for (int och = 0; och < outputCount; och++)
+					{
+						int gyIndex = gyIndexOffset + och * gyShape1 * gyShape2;
+						int wIndex = wIndexOffset + och * inputCount * kHeight * kWidth;
+
+						localgX += gpuW[wIndex] * activatedgy[gyIndex];
+					}
+				}
+			}
+
+			gpugX[gxIndex] += localgX;
+			gxIndex++;
+		}
+	}
+
 }";
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray x)
@@ -349,6 +391,26 @@ __kernel void Convolution2DBackward(
             }
 
             Real[] gx = new Real[x.Data.Length];
+
+            Real[] activatedgy = new Real[gy.BatchCount * gy.Length];
+            for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
+            {
+                for (int och = 0; och < gy.Shape[0]; och++)
+                {
+                    for (int oy = 0; oy < gy.Shape[1]; oy++)
+                    {
+                        for (int ox = 0; ox < gy.Shape[2]; ox++)
+                        {
+                            int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[1] + ox;
+                            Real gyData = gy.Data[gyIndex];
+                            this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
+                            activatedgy[batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[1] + ox] = gyData;
+
+                            this.gb.Data[och] += gyData;
+                        }
+                    }
+                }
+            }
 
             if (!IsGpu)
             {
@@ -373,8 +435,7 @@ __kernel void Convolution2DBackward(
 
                                 int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[1] + ox;
 
-                                Real gyData = gy.Data[gyIndex]; //gyIndex = ch * ox * oy
-                                this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
+                                Real gyData = activatedgy[gyIndex]; //gyIndex = ch * ox * oy
 
                                 for (int ich = 0; ich < x.Shape[0]; ich++)
                                 {
@@ -400,8 +461,6 @@ __kernel void Convolution2DBackward(
                                         }
                                     }
                                 }
-
-                                this.gb.Data[och] += gyData;
                             }
                         }
                     }
@@ -411,33 +470,31 @@ __kernel void Convolution2DBackward(
             {
                 //集計用
                 Real[] tmpgWData = new Real[gy.BatchCount * this.gW.Data.Length];
-                
-                using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
-                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutputData))
+
+                using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))
                 using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
                 using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
                 using (ComputeBuffer<Real> tmpgW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.AllocateHostPointer, this.gW.Data.Length * gy.BatchCount))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpugY);
-                    BackwardKernel.SetMemoryArgument(1, gpuY);
-                    BackwardKernel.SetMemoryArgument(2, gpuX);
-                    BackwardKernel.SetMemoryArgument(3, gpuW);
-                    BackwardKernel.SetMemoryArgument(4, gpugX);
-                    BackwardKernel.SetMemoryArgument(5, tmpgW);
-                    BackwardKernel.SetValueArgument(6, this.OutputCount);
-                    BackwardKernel.SetValueArgument(7, this.InputCount);
-                    BackwardKernel.SetValueArgument(8, gy.Shape[0]);
-                    BackwardKernel.SetValueArgument(9, gy.Shape[1]);
-                    BackwardKernel.SetValueArgument(10, gy.Shape[2]);
-                    BackwardKernel.SetValueArgument(11, x.Shape[1]);
-                    BackwardKernel.SetValueArgument(12, x.Shape[2]);
-                    BackwardKernel.SetValueArgument(13, x.Length);
-                    BackwardKernel.SetValueArgument(14, this._stride);
-                    BackwardKernel.SetValueArgument(15, this._padX);
-                    BackwardKernel.SetValueArgument(16, this._padY);
-                    BackwardKernel.SetValueArgument(17, this._kHeight);
-                    BackwardKernel.SetValueArgument(18, this._kWidth);
+                    BackwardKernel.SetMemoryArgument(1, gpuX);
+                    BackwardKernel.SetMemoryArgument(2, gpuW);
+                    BackwardKernel.SetMemoryArgument(3, gpugX);
+                    BackwardKernel.SetMemoryArgument(4, tmpgW);
+                    BackwardKernel.SetValueArgument(5, this.OutputCount);
+                    BackwardKernel.SetValueArgument(6, this.InputCount);
+                    BackwardKernel.SetValueArgument(7, gy.Shape[0]);
+                    BackwardKernel.SetValueArgument(8, gy.Shape[1]);
+                    BackwardKernel.SetValueArgument(9, gy.Shape[2]);
+                    BackwardKernel.SetValueArgument(10, x.Shape[1]);
+                    BackwardKernel.SetValueArgument(11, x.Shape[2]);
+                    BackwardKernel.SetValueArgument(12, x.Length);
+                    BackwardKernel.SetValueArgument(13, this._stride);
+                    BackwardKernel.SetValueArgument(14, this._padX);
+                    BackwardKernel.SetValueArgument(15, this._padY);
+                    BackwardKernel.SetValueArgument(16, this._kHeight);
+                    BackwardKernel.SetValueArgument(17, this._kWidth);
 
                     Weaver.CommandQueue.Execute
                     (
@@ -453,25 +510,11 @@ __kernel void Convolution2DBackward(
                     Weaver.CommandQueue.ReadFromBuffer(tmpgW, ref tmpgWData, true, null);
 
                     //集計処理
-                    int gyIndex = 0;
                     for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
                     {
                         for (int i = 0; i < this.gW.Data.Length; i++)
                         {
                             this.gW.Data[i] += tmpgWData[batchCounter * this.gW.Data.Length + i];
-                        }
-
-                        for (int och = 0; och < gy.Shape[0]; och++)
-                        {
-                            for (int oy = 0; oy < gy.Shape[1]; oy++)
-                            {
-                                for (int ox = 0; ox < gy.Shape[2]; ox++)
-                                {
-                                    Real gyData = gy.Data[gyIndex];
-                                    this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex++]);
-                                    this.gb.Data[och] += gyData;
-                                }
-                            }
                         }
                     }
                 }
