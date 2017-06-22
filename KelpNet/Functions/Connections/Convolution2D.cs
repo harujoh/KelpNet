@@ -109,7 +109,7 @@ namespace KelpNet.Functions.Connections
 
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
+                this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
                 this.BackwardgWKernel = Weaver.CreateKernel(this.BackwardgWKernelSource, "Convolution2DgWBackward");
                 this.BackwardgXKernel = Weaver.CreateKernel(this.BackwardgXKernelSource, "Convolution2DgXBackward");
             }

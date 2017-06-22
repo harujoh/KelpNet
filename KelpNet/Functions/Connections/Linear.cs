@@ -78,8 +78,8 @@ __kernel void LinearForward(
  	         const int OutputCount,
  	         const int InputCount)
 {
-	int batchCount = get_global_id(0);
-	int i = get_global_id(1);
+	int i = get_global_id(0);
+	int batchCount = get_global_id(1);
 
     gpuX += batchCount * InputCount;
     gpuW += i * InputCount;
@@ -141,7 +141,7 @@ __kernel void LinearForward(
                         (
                             ForwardKernel,
                             null,
-                            new long[] { x.BatchCount, OutputCount },
+                            new long[] { OutputCount, x.BatchCount},
                             null,
                             null
                         );

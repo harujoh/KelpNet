@@ -92,8 +92,8 @@ __kernel void DropoutBackward(
 	__global Real *gpugX,
     int gyLength)
 {
-	int b = get_global_id(0);
-	int j = get_global_id(1);
+	int j = get_global_id(0);
+	int b = get_global_id(1);
 
     gpugX[j + b * gyLength] *= mask[j];
 }";
@@ -127,7 +127,7 @@ __kernel void DropoutBackward(
                     (
                         BackwardKernel,
                         null,
-                        new long[] { gy.BatchCount, mask.Length },
+                        new long[] { mask.Length, gy.BatchCount},
                         null,
                         null
                     );
