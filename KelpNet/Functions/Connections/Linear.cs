@@ -164,7 +164,6 @@ __kernel void LinearForward(
 @"
 __kernel void LinearBackward(
 	__global const Real *gpugY,
-	__global const Real *gpuY,
 	__global const Real *gpuX,
 	__global const Real *gpuW, 
 	__global       Real *gpugW, 
@@ -186,12 +185,10 @@ __kernel void LinearBackward(
         for(int i = 0; i < OutputCount; i += InputCount)
         {
             Real gy = *gpugY;
-            BackwardActivate(*gpuY, &gy);
 
             gpugW[i] += gpuX[b] * gy;
             gpugX[b] += gpuW[i] * gy;
             
-            gpuY++;
             gpugY++;
         }
     }
@@ -229,22 +226,34 @@ __kernel void LinearBackward(
             }
             else
             {
-                using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
-                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutputData))
+                Real[] activatedgY = new Real[gy.Data.Length];
+
+                for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
+                {
+                    for (int i = 0; i < this.OutputCount; i++)
+                    {
+                        Real gyData = gy.Data[i + batchCount * this.OutputCount];
+                        this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+                        activatedgY[i + batchCount * this.OutputCount] = gyData;
+
+                        this.gb.Data[i] += gyData;
+                    }
+                }
+
+                using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgY))
                 using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevInput.Data))
                 using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                 using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gxData))
                 {
                     BackwardKernel.SetMemoryArgument(0, gpugY);
-                    BackwardKernel.SetMemoryArgument(1, gpuY);
-                    BackwardKernel.SetMemoryArgument(2, gpuX);
-                    BackwardKernel.SetMemoryArgument(3, gpuW);
-                    BackwardKernel.SetMemoryArgument(4, gpugW);
-                    BackwardKernel.SetMemoryArgument(5, gpugX);
-                    BackwardKernel.SetValueArgument(6, gy.BatchCount * this.InputCount);
-                    BackwardKernel.SetValueArgument(7, this.OutputCount * this.InputCount);
-                    BackwardKernel.SetValueArgument(8, this.InputCount);
+                    BackwardKernel.SetMemoryArgument(1, gpuX);
+                    BackwardKernel.SetMemoryArgument(2, gpuW);
+                    BackwardKernel.SetMemoryArgument(3, gpugW);
+                    BackwardKernel.SetMemoryArgument(4, gpugX);
+                    BackwardKernel.SetValueArgument(5, gy.BatchCount * this.InputCount);
+                    BackwardKernel.SetValueArgument(6, this.OutputCount * this.InputCount);
+                    BackwardKernel.SetValueArgument(7, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                         (
@@ -258,16 +267,6 @@ __kernel void LinearBackward(
                     Weaver.CommandQueue.Finish();
                     Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
                     Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gxData, true, null);
-                }
-
-                for (int batchCount = 0; batchCount < gy.BatchCount * this.OutputCount; batchCount += this.OutputCount)
-                {
-                    for (int i = 0; i < this.OutputCount; i++)
-                    {
-                        Real gyData = gy.Data[batchCount + i];
-                        this._activation.BackwardActivate(ref gyData, prevOutputData[batchCount + i]);
-                        this.gb.Data[i] += gyData;
-                    }
                 }
             }
 
