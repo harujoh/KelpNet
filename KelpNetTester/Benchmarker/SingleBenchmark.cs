@@ -10,8 +10,8 @@ namespace KelpNetTester.Benchmarker
 {
     class SingleBenchmark
     {
-        const int INPUT_SIZE = 5000;
-        const int OUTPUT_SIZE = 5000;
+        const int INPUT_SIZE = 25088;
+        const int OUTPUT_SIZE = 4096;
 
         public static void Run()
         {
@@ -165,6 +165,9 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
+            //DropOutは入出力の値は入力と同じでなければならない
+            gradArrayCpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));
+            gradArrayGpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));
 
             //Dropout
             var dropout = new Dropout();
