@@ -479,67 +479,73 @@ __kernel void Convolution2DgXBackward(
             else
             {
                 //gyは共通で使用
-                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
-                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
                 using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))
-                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
-                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
                 {
-                    this.BackwardgWKernel.SetMemoryArgument(0, gpugY);
-                    this.BackwardgWKernel.SetMemoryArgument(1, gpuX);
-                    this.BackwardgWKernel.SetMemoryArgument(2, gpugW);
-                    this.BackwardgWKernel.SetValueArgument(3, gy.BatchCount);
-                    this.BackwardgWKernel.SetValueArgument(4, this.InputCount);
-                    this.BackwardgWKernel.SetValueArgument(5, gy.Shape[0]);
-                    this.BackwardgWKernel.SetValueArgument(6, gy.Shape[1]);
-                    this.BackwardgWKernel.SetValueArgument(7, gy.Shape[2]);
-                    this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
-                    this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
-                    this.BackwardgWKernel.SetValueArgument(10, x.Length);
-                    this.BackwardgWKernel.SetValueArgument(11, this._stride);
-                    this.BackwardgWKernel.SetValueArgument(12, this._padX);
-                    this.BackwardgWKernel.SetValueArgument(13, this._padY);
-                    this.BackwardgWKernel.SetValueArgument(14, this._kHeight);
-                    this.BackwardgWKernel.SetValueArgument(15, this._kWidth);
+                    using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
+                    using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
+                    {
+                        this.BackwardgWKernel.SetMemoryArgument(0, gpugY);
+                        this.BackwardgWKernel.SetMemoryArgument(1, gpuX);
+                        this.BackwardgWKernel.SetMemoryArgument(2, gpugW);
+                        this.BackwardgWKernel.SetValueArgument(3, gy.BatchCount);
+                        this.BackwardgWKernel.SetValueArgument(4, this.InputCount);
+                        this.BackwardgWKernel.SetValueArgument(5, gy.Shape[0]);
+                        this.BackwardgWKernel.SetValueArgument(6, gy.Shape[1]);
+                        this.BackwardgWKernel.SetValueArgument(7, gy.Shape[2]);
+                        this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
+                        this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
+                        this.BackwardgWKernel.SetValueArgument(10, x.Length);
+                        this.BackwardgWKernel.SetValueArgument(11, this._stride);
+                        this.BackwardgWKernel.SetValueArgument(12, this._padX);
+                        this.BackwardgWKernel.SetValueArgument(13, this._padY);
+                        this.BackwardgWKernel.SetValueArgument(14, this._kHeight);
+                        this.BackwardgWKernel.SetValueArgument(15, this._kWidth);
 
-                    Weaver.CommandQueue.Execute
-                    (
-                        this.BackwardgWKernel,
-                        null,
-                        new long[] { OutputCount * InputCount, this._kHeight, this._kWidth },
-                        null,
-                        null
-                    );
+                        Weaver.CommandQueue.Execute
+                        (
+                            this.BackwardgWKernel,
+                            null,
+                            new long[] { OutputCount * InputCount, this._kHeight, this._kWidth },
+                            null,
+                            null
+                        );
 
-                    this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
-                    this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
-                    this.BackwardgXKernel.SetMemoryArgument(2, gpugX);
-                    this.BackwardgXKernel.SetValueArgument(3, this.OutputCount);
-                    this.BackwardgXKernel.SetValueArgument(4, this.InputCount);
-                    this.BackwardgXKernel.SetValueArgument(5, gy.Shape[0]);
-                    this.BackwardgXKernel.SetValueArgument(6, gy.Shape[1]);
-                    this.BackwardgXKernel.SetValueArgument(7, gy.Shape[2]);
-                    this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
-                    this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
-                    this.BackwardgXKernel.SetValueArgument(10, x.Length);
-                    this.BackwardgXKernel.SetValueArgument(11, this._stride);
-                    this.BackwardgXKernel.SetValueArgument(12, this._padX);
-                    this.BackwardgXKernel.SetValueArgument(13, this._padY);
-                    this.BackwardgXKernel.SetValueArgument(14, this._kHeight);
-                    this.BackwardgXKernel.SetValueArgument(15, this._kWidth);
+                        Weaver.CommandQueue.Finish();
+                        Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
+                    }
 
-                    Weaver.CommandQueue.Execute
-                    (
-                        this.BackwardgXKernel,
-                        null,
-                        new long[] { gy.BatchCount * x.Shape[0], x.Shape[1], x.Shape[2] },
-                        null,
-                        null
-                    );
+                    using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
+                    using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
+                    {
+                        this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
+                        this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
+                        this.BackwardgXKernel.SetMemoryArgument(2, gpugX);
+                        this.BackwardgXKernel.SetValueArgument(3, this.OutputCount);
+                        this.BackwardgXKernel.SetValueArgument(4, this.InputCount);
+                        this.BackwardgXKernel.SetValueArgument(5, gy.Shape[0]);
+                        this.BackwardgXKernel.SetValueArgument(6, gy.Shape[1]);
+                        this.BackwardgXKernel.SetValueArgument(7, gy.Shape[2]);
+                        this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
+                        this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
+                        this.BackwardgXKernel.SetValueArgument(10, x.Length);
+                        this.BackwardgXKernel.SetValueArgument(11, this._stride);
+                        this.BackwardgXKernel.SetValueArgument(12, this._padX);
+                        this.BackwardgXKernel.SetValueArgument(13, this._padY);
+                        this.BackwardgXKernel.SetValueArgument(14, this._kHeight);
+                        this.BackwardgXKernel.SetValueArgument(15, this._kWidth);
 
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
-                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
+                        Weaver.CommandQueue.Execute
+                        (
+                            this.BackwardgXKernel,
+                            null,
+                            new long[] { gy.BatchCount * x.Shape[0], x.Shape[1], x.Shape[2] },
+                            null,
+                            null
+                        );
+
+                        Weaver.CommandQueue.Finish();
+                        Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
+                    }
                 }
             }
 

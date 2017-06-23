@@ -173,8 +173,8 @@ __kernel void LineargWBackward(
 			 const int OutputCount,
 			 const int InputCount)
 {
-	int i = get_global_id(0);
-	int j = get_global_id(1);
+	int j = get_global_id(0);
+	int i = get_global_id(1);
 
 	gpugY += i;
 	gpugW += i * InputCount + j;
@@ -264,48 +264,53 @@ __kernel void LineargXBackward(
                     }
                 }
 
-                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
-                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevInput.Data))
                 using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgY))
-                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
-                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gxData))
                 {
-                    BackwardgWKernel.SetMemoryArgument(0, gpugY);
-                    BackwardgWKernel.SetMemoryArgument(1, gpuX);
-                    BackwardgWKernel.SetMemoryArgument(2, gpugW);
-                    BackwardgWKernel.SetValueArgument(3, gy.BatchCount);
-                    BackwardgWKernel.SetValueArgument(4, this.OutputCount);
-                    BackwardgWKernel.SetValueArgument(5, this.InputCount);
+                    using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
+                    using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevInput.Data))
+                    {
+                        BackwardgWKernel.SetMemoryArgument(0, gpugY);
+                        BackwardgWKernel.SetMemoryArgument(1, gpuX);
+                        BackwardgWKernel.SetMemoryArgument(2, gpugW);
+                        BackwardgWKernel.SetValueArgument(3, gy.BatchCount);
+                        BackwardgWKernel.SetValueArgument(4, this.OutputCount);
+                        BackwardgWKernel.SetValueArgument(5, this.InputCount);
 
-                    Weaver.CommandQueue.Execute
-                    (
-                        BackwardgWKernel,
-                        null,
-                        new long[] { this.OutputCount, this.InputCount },
-                        null,
-                        null
-                    );
+                        Weaver.CommandQueue.Execute
+                        (
+                            BackwardgWKernel,
+                            null,
+                            new long[] { this.InputCount, this.OutputCount },
+                            null,
+                            null
+                        );
 
-                    BackwardgXKernel.SetMemoryArgument(0, gpugY);
-                    BackwardgXKernel.SetMemoryArgument(1, gpuW);
-                    BackwardgXKernel.SetMemoryArgument(2, gpugX);
-                    BackwardgXKernel.SetValueArgument(3, gy.BatchCount);
-                    BackwardgXKernel.SetValueArgument(4, this.OutputCount);
-                    BackwardgXKernel.SetValueArgument(5, this.InputCount);
+                        Weaver.CommandQueue.Finish();
+                        Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
+                    }
 
-                    Weaver.CommandQueue.Execute
-                    (
-                        BackwardgXKernel,
-                        null,
-                        new long[] { this.InputCount, gy.BatchCount },
-                        null,
-                        null
-                    );
+                    using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gxData))
+                    using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
+                    {
+                        BackwardgXKernel.SetMemoryArgument(0, gpugY);
+                        BackwardgXKernel.SetMemoryArgument(1, gpuW);
+                        BackwardgXKernel.SetMemoryArgument(2, gpugX);
+                        BackwardgXKernel.SetValueArgument(3, gy.BatchCount);
+                        BackwardgXKernel.SetValueArgument(4, this.OutputCount);
+                        BackwardgXKernel.SetValueArgument(5, this.InputCount);
 
+                        Weaver.CommandQueue.Execute
+                        (
+                            BackwardgXKernel,
+                            null,
+                            new long[] { this.InputCount, gy.BatchCount },
+                            null,
+                            null
+                        );
 
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
-                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gxData, true, null);
+                        Weaver.CommandQueue.Finish();
+                        Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gxData, true, null);
+                    }
                 }
             }
 
