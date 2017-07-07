@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -62,7 +61,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return null;
+            return new BatchArray();
         }
     }
 }

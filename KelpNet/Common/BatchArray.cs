@@ -5,7 +5,7 @@ using System.Text;
 namespace KelpNet.Common
 {
     [Serializable]
-    public class BatchArray
+    public struct BatchArray
     {
         public Real[] Data;
         public int[] Shape;
