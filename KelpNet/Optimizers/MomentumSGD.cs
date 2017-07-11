@@ -11,10 +11,10 @@ namespace KelpNet.Optimizers
         public Real LearningRate;
         public Real Momentum;
 
-        public MomentumSGD(Real? learningRate = null, Real? momentum = null)
+        public MomentumSGD(double learningRate = 0.01, double momentum = 0.9)
         {
-            this.LearningRate = learningRate ?? (Real)0.01;
-            this.Momentum = momentum ?? (Real)0.9;
+            this.LearningRate = learningRate;
+            this.Momentum = momentum;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)

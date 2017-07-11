@@ -33,11 +33,11 @@ namespace KelpNet.Functions.Normalization
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, Real? decay = null, Real? eps = null, bool isTrain = true, string name = "BatchNorm", bool isGpu = true) : base(name, isGpu)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "BatchNorm", bool isGpu = true) : base(name, isGpu)
         {
             this.ChannelSize = channelSize;
-            this.Decay = decay ?? (Real)0.9;
-            this.Eps = eps ?? (Real)1e-5;
+            this.Decay = decay;
+            this.Eps = eps;
             this.IsTrain = isTrain;
 
             this.Gamma = new NdArray(channelSize);
@@ -93,7 +93,7 @@ namespace KelpNet.Functions.Normalization
                 {
                     for (int index = 0; index < x.BatchCount; index++)
                     {
-                        this.Variance[i] += (Real)Math.Pow(x.Data[i + index * x.Length] - this.Mean[i], 2);
+                        this.Variance[i] += Math.Pow(x.Data[i + index * x.Length] - this.Mean[i], 2);
                     }
 
                     this.Variance[i] /= x.BatchCount;
@@ -113,7 +113,7 @@ namespace KelpNet.Functions.Normalization
             this.Std = new Real[this.Variance.Length];
             for (int i = 0; i < this.Variance.Length; i++)
             {
-                this.Std[i] = (Real)Math.Sqrt(this.Variance[i]);
+                this.Std[i] = Math.Sqrt(this.Variance[i]);
             }
 
             //結果を計算
@@ -133,7 +133,7 @@ namespace KelpNet.Functions.Normalization
             if (this.IsTrain)
             {
                 int m = x.BatchCount;
-                Real adjust = m / (Real)Math.Max(m - 1.0, 1.0); // unbiased estimation
+                Real adjust = m / Math.Max(m - 1.0, 1.0); // unbiased estimation
 
                 for (int i = 0; i < this.AvgMean.Data.Length; i++)
                 {
@@ -190,7 +190,7 @@ namespace KelpNet.Functions.Normalization
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
                     this.gMean.Data[i] = -gs * this.gBeta.Data[i];
-                    this.gVariance.Data[i] = (Real)(-0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i]);
+                    this.gVariance.Data[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
 
                     for (int j = 0; j < gy.BatchCount; j++)
                     {

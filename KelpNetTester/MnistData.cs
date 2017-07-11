@@ -27,7 +27,7 @@ namespace KelpNetTester
                 Real[] x = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TrainData[i].Length; j++)
                 {
-                    x[j] = this.mnistDataLoader.TrainData[i][j] / (Real)255;
+                    x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0;
                 }
                 this.X[i] = new NdArray(x, new[] { 1, 28, 28 });
 
@@ -44,7 +44,7 @@ namespace KelpNetTester
                 Real[] y = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TeachData[i].Length; j++)
                 {
-                    y[j] = this.mnistDataLoader.TeachData[i][j] / (Real)255;
+                    y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0;
                 }
                 this.Y[i] = new NdArray(y, new[] { 1, 28, 28 });
 

@@ -9,9 +9,9 @@ namespace KelpNet.Functions.Activations
         private readonly Real _beta;
         private readonly Real _betaInv;
 
-        public Softplus(Real? beta = null, string name = "Softplus", bool isGpu = true) : base(name, isGpu)
+        public Softplus(double beta = 1, string name = "Softplus", bool isGpu = true) : base(name, isGpu)
         {
-            this._beta = beta ?? 1;
+            this._beta = beta;
             this._betaInv = 1 / this._beta;
         }
 
@@ -37,7 +37,7 @@ namespace KelpNet.Functions.Activations
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = (maxval + (Real)Math.Log(1.0 + Math.Exp(-Math.Abs(x.Data[i + b * x.Length] * this._beta)))) * this._betaInv;
+                    y[i + b * x.Length] = (maxval + Math.Log(1.0 + Math.Exp(-Math.Abs(x.Data[i + b * x.Length] * this._beta)))) * this._betaInv;
                 }
 
             }
@@ -51,7 +51,7 @@ namespace KelpNet.Functions.Activations
 
             for (int i = 0; i < gx.Length; i++)
             {
-                gx[i] = (1 - 1 / (1 + (Real)Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
+                gx[i] = (1 - 1 / (1 + Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
             }
 
             return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);

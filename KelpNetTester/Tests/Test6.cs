@@ -17,7 +17,6 @@ namespace KelpNetTester.Tests
     class Test6
     {
         //ミニバッチの数
-        //ミニバッチにC#標準のParallelを使用しているため、大きくし過ぎると遅くなるので注意
         const int BATCH_DATA_COUNT = 20;
 
         //一世代あたりの訓練回数

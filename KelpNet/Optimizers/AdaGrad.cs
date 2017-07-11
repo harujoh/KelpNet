@@ -11,10 +11,10 @@ namespace KelpNet.Optimizers
         public Real LearningRate;
         public Real Epsilon;
 
-        public AdaGrad(Real? learningRate = null, Real? epsilon = null)
+        public AdaGrad(double learningRate = 0.01, double epsilon = 1e-8)
         {
-            this.LearningRate = learningRate ?? (Real)0.01;
-            this.Epsilon = epsilon ?? (Real)1e-8;
+            this.LearningRate = learningRate;
+            this.Epsilon = epsilon;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -46,7 +46,7 @@ namespace KelpNet.Optimizers
 
                 this.h[i] += grad * grad;
 
-                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * grad / ((Real)Math.Sqrt(this.h[i]) + this.optimizer.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.optimizer.Epsilon);
             }
         }
     }

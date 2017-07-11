@@ -37,10 +37,10 @@ namespace KelpNet.Loss
 
                 for (int i = 0; i < input.Length; i++)
                 {
-                    y += (Real)Math.Exp(input.Data[i + b * input.Length] - m);                    
+                    y += Math.Exp(input.Data[i + b * input.Length] - m);                    
                 }
 
-                m += (Real)Math.Log(y);
+                m += Math.Log(y);
 
                 for (int i = 0; i < input.Length; i++)
                 {
@@ -52,7 +52,7 @@ namespace KelpNet.Loss
 
                 for (int i = 0; i < logY.Length; i++)
                 {
-                    gx[i + b * input.Length] = (Real)Math.Exp(logY[i]);
+                    gx[i + b * input.Length] = Math.Exp(logY[i]);
                 }
 
                 gx[(int)maxIndex + b * input.Length] -= 1;

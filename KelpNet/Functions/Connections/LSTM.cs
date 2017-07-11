@@ -120,13 +120,13 @@ namespace KelpNet.Functions.Connections
                     int index = j * 4;
                     int batchIndex = j + i * OutputCount;
 
-                    la[batchIndex] = (Real)Math.Tanh(upwards[index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
+                    la[batchIndex] = Math.Tanh(upwards[index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
                     li[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
                     lf[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
                     lo[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
 
                     cResult[batchIndex] = la[batchIndex] * li[batchIndex] + lf[batchIndex] * cPrev[batchIndex];
-                    this.hParam[batchIndex] = lo[batchIndex] * (Real)Math.Tanh(cResult[batchIndex]);
+                    this.hParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
                 }
             }
 
@@ -195,7 +195,7 @@ namespace KelpNet.Functions.Connections
                     int prevOutputIndex = j + i * this.OutputCount;
                     int prevInputIndex = j + i * this.InputCount;
 
-                    Real co = (Real)Math.Tanh(lcParam[prevOutputIndex]);
+                    double co = Math.Tanh(lcParam[prevOutputIndex]);
 
                     this.gcPrev[prevInputIndex] += lgh[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
                     gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
@@ -246,17 +246,17 @@ namespace KelpNet.Functions.Connections
             this.hParam = null;
         }
 
-        static Real Sigmoid(Real x)
+        static double Sigmoid(double x)
         {
-            return (Real)(1 / (1 + Math.Exp(-x)));
+            return 1 / (1 + Math.Exp(-x));
         }
 
-        static Real GradSigmoid(Real x)
+        static double GradSigmoid(double x)
         {
             return x * (1 - x);
         }
 
-        static Real GradTanh(Real x)
+        static double GradTanh(double x)
         {
             return 1 - x * x;
         }

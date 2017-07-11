@@ -13,12 +13,12 @@ namespace KelpNet.Optimizers
         public Real Beta2;
         public Real Epsilon;
 
-        public Adam(Real? alpha = null, Real? beta1 = null, Real? beta2 = null, Real? epsilon = null)
+        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8)
         {
-            this.Alpha = alpha ?? (Real)0.001;
-            this.Beta1 = beta1 ?? (Real)0.9;
-            this.Beta2 = beta2 ?? (Real)0.999;
-            this.Epsilon = epsilon ?? (Real)1e-8;
+            this.Alpha = alpha;
+            this.Beta1 = beta1;
+            this.Beta2 = beta2;
+            this.Epsilon = epsilon;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -48,9 +48,9 @@ namespace KelpNet.Optimizers
 
         public override void UpdateFunctionParameters()
         {
-            Real fix1 = 1 - (Real)Math.Pow(this._optimizer.Beta1, this._optimizer.UpdateCount);
-            Real fix2 = 1 - (Real)Math.Pow(this._optimizer.Beta2, this._optimizer.UpdateCount);
-            Real learningRate = this._optimizer.Alpha * (Real)Math.Sqrt(fix2) / fix1;
+            Real fix1 = 1 - Math.Pow(this._optimizer.Beta1, this._optimizer.UpdateCount);
+            Real fix2 = 1 - Math.Pow(this._optimizer.Beta2, this._optimizer.UpdateCount);
+            Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
@@ -59,7 +59,7 @@ namespace KelpNet.Optimizers
                 this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Param.Data[i] -= learningRate * this.m[i] / ((Real)Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
             }
         }
     }

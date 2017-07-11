@@ -5,21 +5,21 @@ namespace KelpNet.Common.Tools
     class Initializer
     {
         //初期値が入力されなかった場合、この関数で初期化を行う
-         public static void InitWeight(NdArray array, Real? masterScale = null)
+        public static void InitWeight(NdArray array, double masterScale = 1)
         {
-            Real localScale = 1 / (Real)Math.Sqrt(2);
+            double localScale = 1 / Math.Sqrt(2);
             int fanIn = GetFans(array.Shape);
-            Real s = localScale * (Real)Math.Sqrt(2.0 / fanIn);
+            double s = localScale * Math.Sqrt(2.0 / fanIn);
 
             for (int i = 0; i < array.Data.Length; i++)
             {
-                array.Data[i] = Normal(s) * (masterScale ?? 1);
+                array.Data[i] = Normal(s) * masterScale;
             }
         }
 
-        private static Real Normal(Real? scale = null)
+        private static double Normal(double scale = 0.05)
         {
-            Mother.Sigma = scale ?? (Real)0.05;
+            Mother.Sigma = scale;
             return Mother.RandomNormal();
         }
 

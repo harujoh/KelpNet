@@ -31,7 +31,7 @@ namespace KelpNet.Functions.Activations
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = (Real)Math.Exp(x.Data[i + b * x.Length] - maxval);
+                    y[i + b * x.Length] = Math.Exp(x.Data[i + b * x.Length] - maxval);
                     sumval += y[i + b * x.Length];
                 }
 

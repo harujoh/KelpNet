@@ -61,7 +61,7 @@ namespace KelpNetTester.Tests
                         {
                             int tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
                             //l1 Linear
-                            BatchArray xK = model.Functions[0].Forward(new BatchArray(new[] { s[i] }));
+                            BatchArray xK = model.Functions[0].Forward(new BatchArray(new Real[] { s[i] }));
 
                             //l2 Linear
                             BatchArray l2 = model.Functions[1].Forward(h);
@@ -77,7 +77,7 @@ namespace KelpNetTester.Tests
                             BatchArray h2 = model.Functions[3].Forward(h);
 
                             Real loss;
-                            tmp.Push(softmaxCrossEntropy.Evaluate(h2, new BatchArray(new[] { tx }), out loss));
+                            tmp.Push(softmaxCrossEntropy.Evaluate(h2, new BatchArray(new Real[] { tx }), out loss));
                             accumloss += loss;
                         }
 
@@ -152,7 +152,7 @@ namespace KelpNetTester.Tests
             for (int i = 1; i < s.Count; i++)
             {
                 //l1 Linear
-                BatchArray xK = model.Functions[0].Forward(new BatchArray(new[] { s[i] }));
+                BatchArray xK = model.Functions[0].Forward(new BatchArray(new Real[] { s[i] }));
 
                 //l2 Linear
                 BatchArray l2 = model.Functions[1].Forward(h);
@@ -167,7 +167,7 @@ namespace KelpNetTester.Tests
                 //l3 Softmax(l3 Linear)
                 BatchArray yv = model.Functions[4].Forward(model.Functions[3].Forward(h));
                 Real pi = yv.Data[s[i - 1]];
-                sum -= (Real)Math.Log(pi, 2);
+                sum -= Math.Log(pi, 2);
             }
 
             return sum;

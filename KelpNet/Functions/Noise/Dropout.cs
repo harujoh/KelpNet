@@ -13,9 +13,9 @@ namespace KelpNet.Functions.Noise
         private readonly Real dropoutRatio;
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
-        public Dropout(Real? dropoutRatio = null, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
         {
-            this.dropoutRatio = dropoutRatio ?? (Real)0.5;
+            this.dropoutRatio = dropoutRatio;
 
             if (IsGpu)
             {

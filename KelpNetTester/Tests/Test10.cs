@@ -92,18 +92,17 @@ namespace KelpNetTester.Tests
 
                     if (epoch >= 6)
                     {
-                        sgd.LearningRate /= (Real)1.2;
+                        sgd.LearningRate /= 1.2;
                         Console.WriteLine("learning rate =" + sgd.LearningRate);
                     }
                 }
             }
 
             Console.WriteLine("test start");
-            Real testPerp = Evaluate(model, testData);
-            Console.WriteLine("test perplexity:" + testPerp);
+            Console.WriteLine("test perplexity:" + Evaluate(model, testData));
         }
 
-        static Real Evaluate(FunctionStack model, int[] dataset)
+        static double Evaluate(FunctionStack model, int[] dataset)
         {
             FunctionStack predictModel = model.Clone();
             predictModel.ResetState();
@@ -130,7 +129,7 @@ namespace KelpNetTester.Tests
             }
 
             //calc perplexity
-            return (Real)Math.Exp(totalLoss / (totalLossCount - 1));
+            return Math.Exp(totalLoss / (totalLossCount - 1));
         }
     }
 }

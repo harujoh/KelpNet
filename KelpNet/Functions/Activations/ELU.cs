@@ -9,9 +9,9 @@ namespace KelpNet.Functions.Activations
     {
         private readonly Real _alpha;
 
-        public ELU(Real? alpha = null, string name = "ELU", bool isGpu = true) : base(name, isGpu)
+        public ELU(double alpha = 1, string name = "ELU", bool isGpu = true) : base(name, isGpu)
         {
-            this._alpha = alpha ?? 1;
+            this._alpha = alpha;
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
@@ -26,7 +26,7 @@ namespace KelpNet.Functions.Activations
                 }
                 else
                 {
-                    result[i] = this._alpha * ((Real)Math.Exp(x.Data[i]) - 1);
+                    result[i] = this._alpha * (Math.Exp(x.Data[i]) - 1);
                 }
             }
 
@@ -45,7 +45,7 @@ namespace KelpNet.Functions.Activations
                 }
                 else
                 {
-                    result[i] = gy.Data[i] * this._alpha * (Real)Math.Exp(prevInput.Data[i]);
+                    result[i] = gy.Data[i] * this._alpha * Math.Exp(prevInput.Data[i]);
                 }
             }
 

@@ -156,7 +156,7 @@ namespace KelpNetTester.Tests
                 {
                     for (int j = 0; j < this.stepsPerCycle; j++)
                     {
-                        result.Data[j + i * this.stepsPerCycle] = (Real)Math.Sin(j * 2 * Math.PI / this.stepsPerCycle);
+                        result.Data[j + i * this.stepsPerCycle] = Math.Sin(j * 2 * Math.PI / this.stepsPerCycle);
                     }
                 }
 

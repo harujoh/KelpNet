@@ -1,20 +1,20 @@
 ﻿using System;
-using RealType = System.Double;
-//using RealType = System.Single;
+//using RealType = System.Double;
+using RealType = System.Single;
 
 namespace KelpNet.Common
 {
     [Serializable]
-    public struct Real:IComparable
+    public struct Real : IComparable<Real>
     {
         public readonly RealType Value;
 
-        private Real(RealType value)
+        private Real(double value)
         {
-            this.Value = value;
+            this.Value = (RealType)value;
         }
 
-        public static implicit operator Real(RealType value)
+        public static implicit operator Real(double value)
         {
             return new Real(value);
         }
@@ -24,9 +24,9 @@ namespace KelpNet.Common
             return real.Value;
         }
 
-        public int CompareTo(object other)
+        public int CompareTo(Real other)
         {
-            return this.Value.CompareTo(((Real)other).Value);
+            return this.Value.CompareTo(other.Value);
         }
 
         public override string ToString()

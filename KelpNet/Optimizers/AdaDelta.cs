@@ -11,10 +11,10 @@ namespace KelpNet.Optimizers
         public Real Rho;
         public Real Epsilon;
 
-        public AdaDelta(Real? rho = null, Real? epsilon = null)
+        public AdaDelta(double rho = 0.95, double epsilon = 1e-6)
         {
-            this.Rho = rho ?? (Real)0.95;
-            this.Epsilon = epsilon ?? (Real)1e-6;
+            this.Rho = rho;
+            this.Epsilon = epsilon;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -48,7 +48,7 @@ namespace KelpNet.Optimizers
                 this.msg[i] *= this.optimizer.Rho;
                 this.msg[i] += (1 - this.optimizer.Rho) * grad * grad;
 
-                Real dx = (Real)Math.Sqrt((this.msdx[i] + this.optimizer.Epsilon) / (this.msg[i] + this.optimizer.Epsilon)) * grad;
+                Real dx = Math.Sqrt((this.msdx[i] + this.optimizer.Epsilon) / (this.msg[i] + this.optimizer.Epsilon)) * grad;
 
                 this.msdx[i] *= this.optimizer.Rho;
                 this.msdx[i] += (1 - this.optimizer.Rho) * dx * dx;

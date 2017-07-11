@@ -25,7 +25,7 @@ namespace KelpNet.Common.Tools
                     for (int ch = 0; ch < bitcount; ch++)
                     {
                         result.Data[ch * input.Height * input.Width + y * input.Width + x] =
-                            imageData[y * bmpdat.Stride + x * bitcount + ch] / (Real)255;
+                            imageData[y * bmpdat.Stride + x * bitcount + ch] / 255.0;
                     }
                 }
             }

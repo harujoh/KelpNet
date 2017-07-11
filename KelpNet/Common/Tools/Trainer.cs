@@ -41,20 +41,20 @@ namespace KelpNet.Common.Tools
         }
 
         //精度測定
-        public static Real Accuracy(FunctionStack functionStack, Array x, Array y)
+        public static double Accuracy(FunctionStack functionStack, Array x, Array y)
         {
             return Accuracy(functionStack, new BatchArray(x), new BatchArray(y));
         }
 
         //精度測定
-        public static Real Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
+        public static double Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
         {
             return Accuracy(functionStack, BatchArray.FromArray(x), BatchArray.FromArray(y));
         }
 
-        public static Real Accuracy(FunctionStack functionStack, BatchArray x, BatchArray y)
+        public static double Accuracy(FunctionStack functionStack, BatchArray x, BatchArray y)
         {
-            int matchCount = 0;
+            double matchCount = 0;
 
             BatchArray forwardResult = functionStack.Predict(x);
 
@@ -78,7 +78,7 @@ namespace KelpNet.Common.Tools
                 }
             }
 
-            return matchCount / (Real)x.BatchCount;
+            return matchCount / x.BatchCount;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace KelpNet.Optimizers
     {
         public Real Threshold;
 
-        public GradientClipping(Real threshold)
+        public GradientClipping(double threshold)
         {
             this.Threshold = threshold;
         }
@@ -38,15 +38,15 @@ namespace KelpNet.Optimizers
         public override void UpdateFunctionParameters()
         {
             //_sum_sqnorm
-            Real s = 0;
+            double s = 0;
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                s += (Real)Math.Pow(this.FunctionParameter.Grad.Data[i], 2);
+                s += Math.Pow(this.FunctionParameter.Grad.Data[i], 2);
             }
 
-            Real norm = (Real)Math.Sqrt(s);
-            Real rate = this.optimizer.Threshold / norm;
+            double norm = Math.Sqrt(s);
+            double rate = this.optimizer.Threshold / norm;
 
             if (rate < 1)
             {

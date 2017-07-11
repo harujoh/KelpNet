@@ -15,12 +15,12 @@ namespace KelpNet.Loss
             {
                 loss = 0;
 
-                Real coeff = (Real)2 / teachSignal.Length;
+                Real coeff = 2.0 / teachSignal.Length;
 
                 for (int i = 0; i < input.Length; i++)
                 {
                     result[i + b * teachSignal.Length] = input.Data[i + b * input.Length] - teachSignal.Data[i + b * teachSignal.Length];
-                    loss += (Real)Math.Pow(result[i + b * teachSignal.Length], 2);
+                    loss += Math.Pow(result[i + b * teachSignal.Length], 2);
 
                     result[i + b * teachSignal.Length] *= coeff;
                 }

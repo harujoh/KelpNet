@@ -31,7 +31,7 @@ void ForwardActivate(__global Real* gpuY)
 ";
         public override void ForwardActivate(ref Real x)
         {
-            x = 1 / (1 + (Real)Math.Exp(-x));
+            x = 1 / (1 + Math.Exp(-x));
         }
 
         public override string BackwardActivateFunctionString { get; } =

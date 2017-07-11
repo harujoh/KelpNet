@@ -16,7 +16,9 @@ namespace KelpNet.Functions.Connections
         private readonly Activation _activation;
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
+        [NonSerialized]
         public ComputeKernel BackwardgWKernel;
+        [NonSerialized]
         public ComputeKernel BackwardgXKernel;
 
         public NdArray W;

@@ -29,9 +29,9 @@ namespace KelpNetTester.Tests
             for (int i = 0; i < N; i++)
             {
                 //Sin波を一周期分用意
-                Real radian = (Real)(- Math.PI + Math.PI * 2.0 * i / (N - 1));
+                Real radian = -Math.PI + Math.PI * 2.0 * i / (N - 1);
                 trainData[i] = new[] { radian };
-                trainLabel[i] = new[] { (Real)Math.Sin(radian) };
+                trainLabel[i] = new Real[] { Math.Sin(radian) };
             }
 
             //ネットワークの構成を FunctionStack に書き連ねる

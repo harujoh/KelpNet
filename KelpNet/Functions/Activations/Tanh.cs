@@ -32,7 +32,7 @@ void ForwardActivate(__global Real* gpuY)
 
         public override void ForwardActivate(ref Real x)
         {
-            x = (Real)Math.Tanh(x);
+            x = Math.Tanh(x);
         }
 
         public override string BackwardActivateFunctionString { get; } =

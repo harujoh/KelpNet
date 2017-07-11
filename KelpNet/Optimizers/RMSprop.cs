@@ -12,11 +12,11 @@ namespace KelpNet.Optimizers
         public Real Alpha;
         public Real Epsilon;
 
-        public RMSprop(Real? learningRate = null, Real? alpha = null, Real? epsilon = null)
+        public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8)
         {
-            this.LearningRate = learningRate ?? (Real)0.01;
-            this.Alpha = alpha ?? (Real)0.99;
-            this.Epsilon = epsilon ?? (Real)1e-8;
+            this.LearningRate = learningRate;
+            this.Alpha = alpha;
+            this.Epsilon = epsilon;
         }
 
         internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
@@ -48,7 +48,7 @@ namespace KelpNet.Optimizers
                 this.ms[i] *= this.optimizer.Alpha;
                 this.ms[i] += (1 - this.optimizer.Alpha) * grad * grad;
 
-                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * grad / ((Real)Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
             }
         }
     }

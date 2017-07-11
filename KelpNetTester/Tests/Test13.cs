@@ -21,7 +21,7 @@ namespace KelpNetTester.Tests
 
             Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7);
 
-            SGD optimizer = new SGD(learningRate: (Real)0.00005); //大きいと発散する
+            SGD optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
             model.SetOptimizer(optimizer);
             MeanSquaredError meanSquaredError = new MeanSquaredError();
 
@@ -78,7 +78,7 @@ namespace KelpNetTester.Tests
                 for (int py = 0; py < max_xy; py++)
                 {
                     Real r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
-                    core[py * max_xy + px] = (Real)Math.Exp(-r2 / sig2) * 1;
+                    core[py * max_xy + px] = Math.Exp(-r2 / sig2) * 1;
                 }
             }
 
