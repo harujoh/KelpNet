@@ -22,7 +22,7 @@ KelpNetはChainerを参考に全てC#で実装された深層学習のライブ�
 
 
 ## 連絡方法
-ご質問、ご要望はTwitterから適当なつぶやきに返信を頂ければ反応が早いと思います
+ご質問、ご要望はTwitterから適当なつぶやきにご返信ください
 
 Twitter: https://twitter.com/harujoh
 
