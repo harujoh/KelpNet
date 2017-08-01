@@ -113,7 +113,7 @@ namespace KelpNet.Functions.Connections
                     for (int oy = this._trimY; oy < outputHeight + this._trimY; oy++)
                     {
                         int iyLimit = oy / this._subSample + 1 < input.Shape[1] ? oy / this._subSample + 1 : input.Shape[1];
-                        int iyStart = oy - this.W.Shape[3] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSample + 1;
+                        int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSample + 1;
 
                         for (int ox = this._trimX; ox < outputWidth + this._trimX; ox++)
                         {
@@ -175,7 +175,7 @@ namespace KelpNet.Functions.Connections
                     for (int oy = this._trimY; oy < gy.Shape[1] + this._trimY; oy++)
                     {
                         int iyLimit = oy / this._subSample + 1 < prevInput.Shape[1] ? oy / this._subSample + 1 : prevInput.Shape[1];
-                        int iyStart = oy - this.W.Shape[3] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSample + 1;
+                        int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSample + 1;
 
                         for (int ox = this._trimX; ox < gy.Shape[2] + this._trimX; ox++)
                         {
