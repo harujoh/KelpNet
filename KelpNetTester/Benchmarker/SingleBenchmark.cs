@@ -165,6 +165,35 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
+
+            //Deconv2D
+            var deconv2d = new Deconvolution2D(3, 3, 3);
+
+            Console.WriteLine("\n◆" + deconv2d.Name);
+
+            sw.Restart();
+            gradImageArrayGpu = deconv2d.Forward(inputImageArrayGpu);
+            sw.Stop();
+            Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            sw.Restart();
+            deconv2d.Backward(gradImageArrayGpu);
+            sw.Stop();
+            Console.WriteLine("Backward[Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            deconv2d.IsGpu = false;
+
+            sw.Restart();
+            gradImageArrayCpu = deconv2d.Forward(inputImageArrayCpu);
+            sw.Stop();
+            Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            sw.Restart();
+            deconv2d.Backward(gradImageArrayCpu);
+            sw.Stop();
+            Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+
             //DropOutは入出力の値は入力と同じでなければならない
             gradArrayCpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));
             gradArrayGpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));

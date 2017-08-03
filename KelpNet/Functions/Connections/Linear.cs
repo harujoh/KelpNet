@@ -209,7 +209,7 @@ __kernel void LineargXBackward(
 	gpugX += b * InputCount + j;
 	gpugY += b * OutputCount;
 
-	Real tmpgX = *gpugX;
+	Real tmpgX = 0;
 
 	for(int i = 0; i < OutputCount; i++)
 	{
@@ -291,7 +291,7 @@ __kernel void LineargXBackward(
                         Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
                     }
 
-                    using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gxData))
+                    using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gxData.Length))
                     using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                     {
                         BackwardgXKernel.SetMemoryArgument(0, gpugY);

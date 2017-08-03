@@ -310,7 +310,7 @@ __kernel void Convolution2DgWBackward(
 	int ixStartIndex = kx - padX < 0 ? 0 : kx - padX;
 	int ixLimit = gyShape2 * stride + kx - padX < xShape2 ? gyShape2 * stride + kx - padX : xShape2;
 
-	Real localgW = 0;
+	Real localgW = gpugW[outChOffset + ich * kHeight * kWidth + ky * kWidth + kx];
 
 	for (int batchCounter = 0; batchCounter < batchCount; batchCounter++)
 	{
@@ -333,7 +333,7 @@ __kernel void Convolution2DgWBackward(
 		}
 	}
 
-	gpugW[outChOffset + ich * kHeight * kWidth + ky * kWidth + kx] += localgW;
+	gpugW[outChOffset + ich * kHeight * kWidth + ky * kWidth + kx] = localgW;
 }";
 
 
@@ -342,7 +342,7 @@ __kernel void Convolution2DgWBackward(
 __kernel void Convolution2DgXBackward(
 	const __global __read_only	Real* activatedgy,
 	const __global __read_only	Real* gpuW,
-		  __global __read_write Real* gpugX,
+		  __global __write_only Real* gpugX,
 	const int outputCount,
 	const int inputCount,
 	const int gyShape0,
@@ -383,7 +383,7 @@ __kernel void Convolution2DgXBackward(
 			{
 				int kxdiv = (ix - kx) / stride;
 
-				int gyIndex = gyIndexOffset + kydiv * gyShape1 + kxdiv;
+				int gyIndex = gyIndexOffset + kydiv * gyShape2 + kxdiv;
 				int wIndex = wIndexOffset + ky * kWidth + kx;
 
 				localgX += gpuW[wIndex] * activatedgy[gyIndex];
@@ -391,7 +391,7 @@ __kernel void Convolution2DgXBackward(
 		}
 	}
 
-	gpugX[batchCounter * xLength + ich * xShape1 * xShape2 + (iy - padY) * xShape2 + (ix - padX)] += localgX;
+	gpugX[batchCounter * xLength + ich * xShape1 * xShape2 + (iy - padY) * xShape2 + (ix - padX)] = localgX;
 }";
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray x)
@@ -517,7 +517,7 @@ __kernel void Convolution2DgXBackward(
                         Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
                     }
 
-                    using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
+                    using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
                     using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
                     {
                         this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
