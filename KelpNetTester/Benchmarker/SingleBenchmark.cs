@@ -50,6 +50,58 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
+            //Tanh
+            var tanh = new Tanh();
+            Console.WriteLine("\n◆" + tanh.Name);
+
+            sw.Restart();
+            tanh.Forward(inputArrayGpu);
+            sw.Stop();
+            Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            sw.Restart();
+            tanh.Backward(gradArrayGpu);
+            sw.Stop();
+            Console.WriteLine("Backward[Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            tanh.IsGpu = false;
+
+            sw.Restart();
+            tanh.Forward(inputArrayCpu);
+            sw.Stop();
+            Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            sw.Restart();
+            tanh.Backward(gradArrayCpu);
+            sw.Stop();
+            Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            //Sigmoid
+            var sigmoid = new Sigmoid();
+            Console.WriteLine("\n◆" + sigmoid.Name);
+
+            sw.Restart();
+            sigmoid.Forward(inputArrayGpu);
+            sw.Stop();
+            Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            sw.Restart();
+            sigmoid.Backward(gradArrayGpu);
+            sw.Stop();
+            Console.WriteLine("Backward[Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            sigmoid.IsGpu = false;
+
+            sw.Restart();
+            sigmoid.Forward(inputArrayCpu);
+            sw.Stop();
+            Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
+            sw.Restart();
+            sigmoid.Backward(gradArrayCpu);
+            sw.Stop();
+            Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+
             //ReLU
             var relu = new ReLU();
 
