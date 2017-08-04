@@ -17,8 +17,8 @@ namespace KelpNet.Functions.Activations
                 this.ForwardKernelSource = this.ForwardActivateFunctionString + ForwardActivateKernelString;
                 this.BackwardKernelSource = this.BackwardActivateFunctionString + BackwardActivateKernelString;
 
-                this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, this.ForwardKernelName);
-                this.BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, this.BackwardKernelName);
+                this.ForwardKernel = Weaver.CreateProgram(this.ForwardKernelSource).CreateKernel(this.ForwardKernelName);
+                this.BackwardKernel = Weaver.CreateProgram(this.BackwardKernelSource).CreateKernel(this.BackwardKernelName);
             }
         }
 

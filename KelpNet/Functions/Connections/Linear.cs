@@ -69,12 +69,13 @@ namespace KelpNet.Functions.Connections
 
             if (IsGpu)
             {
+                string forwardSource = this._activation != null ?
+                                       this._activation.ForwardActivateFunctionString + this.ForwardKernelSource + "ForwardActivate(gpuY);}" :
+                                       this.ForwardKernelSource + "}";
 
-                ForwardKernel = this._activation != null ? Weaver.CreateKernel(this._activation.ForwardActivateFunctionString + this.ForwardKernelSource + "ForwardActivate(gpuY);}", "LinearForward") : 
-                                                           Weaver.CreateKernel(this.ForwardKernelSource + "}", "LinearForward");
-
-                BackwardgWKernel = Weaver.CreateKernel(BackwardgWKernelSource, "LineargWBackward");
-                BackwardgXKernel = Weaver.CreateKernel(BackwardgXKernelSource, "LineargXBackward");
+                ForwardKernel = Weaver.CreateProgram(forwardSource).CreateKernel("LinearForward");
+                BackwardgWKernel = Weaver.CreateProgram(BackwardgWKernelSource).CreateKernel("LineargWBackward");
+                BackwardgXKernel = Weaver.CreateProgram(BackwardgXKernelSource).CreateKernel("LineargXBackward");
             }
         }
 
@@ -122,7 +123,7 @@ __kernel void LinearForward(
                             y[i + batchCount * this.OutputCount] += x.Data[j + batchCount * this.InputCount] * this.W.Data[i * this.InputCount + j];
                         }
 
-                        if(this._activation!=null) this._activation.ForwardActivate(ref y[i + batchCount * this.OutputCount]);
+                        if (this._activation != null) this._activation.ForwardActivate(ref y[i + batchCount * this.OutputCount]);
                     }
                 }
             }
@@ -242,7 +243,7 @@ __kernel void LineargXBackward(
                     for (int i = 0; i < this.OutputCount; i++)
                     {
                         Real gyData = gy.Data[i + batchCount * this.OutputCount];
-                        if(this._activation!= null)this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+                        if (this._activation != null) this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
 
                         this.gb.Data[i] += gyData;
 

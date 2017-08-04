@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Poolings
 
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
+                ForwardKernel = Weaver.CreateProgram(ForwardKernelSource).CreateKernel("MaxPoolingForward");
             }
         }
 
@@ -52,7 +52,7 @@ namespace KelpNet.Functions.Poolings
 
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
+                ForwardKernel = Weaver.CreateProgram(ForwardKernelSource).CreateKernel("MaxPoolingForward");
             }
         }
 

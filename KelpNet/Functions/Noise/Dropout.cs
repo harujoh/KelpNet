@@ -25,8 +25,8 @@ namespace KelpNet.Functions.Noise
 
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "DropoutForward");
-                BackwardKernel = Weaver.CreateKernel(this.BackwardKernelSource, "DropoutBackward");
+                ForwardKernel = Weaver.CreateProgram(this.ForwardKernelSource).CreateKernel("DropoutForward");
+                BackwardKernel = Weaver.CreateProgram(this.BackwardKernelSource).CreateKernel("DropoutBackward");
             }
         }
 
