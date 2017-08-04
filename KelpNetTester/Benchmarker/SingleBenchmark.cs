@@ -168,14 +168,12 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("\n◆" + maxPooling.Name);
 
             sw.Restart();
-            var gradImageArrayGpu = maxPooling.Forward(inputImageArrayGpu);
+            maxPooling.Forward(inputImageArrayGpu);
             sw.Stop();
             Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            sw.Restart();
-            maxPooling.Backward(gradImageArrayGpu);
-            sw.Stop();
-            Console.WriteLine("Backward[Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+            //メモリ転送のみのため実装がない
+            Console.WriteLine("Backward[Gpu] : None");
 
             maxPooling.IsGpu = false;
 
@@ -196,7 +194,7 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("\n◆" + conv2d.Name);
 
             sw.Restart();
-            gradImageArrayGpu = conv2d.Forward(inputImageArrayGpu);
+            var gradImageArrayGpu = conv2d.Forward(inputImageArrayGpu);
             sw.Stop();
             Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
