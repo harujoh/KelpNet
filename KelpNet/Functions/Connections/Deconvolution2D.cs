@@ -48,7 +48,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
 
-            this.Initialize(initialW, initialb, isGpu);
+            this.Initialize(initialW, initialb);
         }
 
         public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, int subSample = 1, Size trim = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Deconv2D", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputChannels, outputChannels)
@@ -63,10 +63,10 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
 
-            this.Initialize(initialW, initialb, isGpu);
+            this.Initialize(initialW, initialb);
         }
 
-        void Initialize(Real[,,,] initialW = null, Real[] initialb = null, bool isGpu = true)
+        void Initialize(Real[,,,] initialW = null, Real[] initialb = null)
         {
             this.W = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
