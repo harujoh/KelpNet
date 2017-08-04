@@ -55,22 +55,25 @@ typedef REAL Real;
                 .Where(d => (long)d.Type == (long)selectedComputeDeviceTypes)
                 .ToArray();
 
-            Context = new ComputeContext(
-                Devices,
-                new ComputeContextPropertyList(Platform),
-                null,
-                IntPtr.Zero
-                );
-
-            CommandQueue = new ComputeCommandQueue(
-                Context,
-                Devices[DeviceIndex],
-                ComputeCommandQueueFlags.None
-                );
-
             DeviceIndex = deviceIndex;
 
-            Enable = true;
+            if (Devices.Length > 0)
+            {
+                Context = new ComputeContext(
+                    Devices,
+                    new ComputeContextPropertyList(Platform),
+                    null,
+                    IntPtr.Zero
+                    );
+
+                CommandQueue = new ComputeCommandQueue(
+                    Context,
+                    Devices[DeviceIndex],
+                    ComputeCommandQueueFlags.None
+                    );
+
+                Enable = true;
+            }
         }
 
         public static ComputeProgram CreateProgram(string source)

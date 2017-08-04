@@ -5,15 +5,15 @@ using KelpNetTester.Tests;
 
 namespace KelpNetTester
 {
+    //実行したいテストのコメントを外して下さい
     class Program
     {
         [STAThread]
-        //実行したいテストのコメントを外して下さい
         static void Main(string[] args)
         {
-            //GPUを初期化
+            //全て.Net Framework上で実行したい場合はこちらをコメントアウト
             Weaver.Initialize(ComputeDeviceTypes.Gpu);
-            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1);
+            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
 
             //MLPによるXORの学習
             //Test1.Run();
