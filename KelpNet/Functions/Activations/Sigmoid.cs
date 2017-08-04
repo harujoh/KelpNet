@@ -7,8 +7,8 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Sigmoid : Activation
     {
-        public override string ForwardKernelSource { get; }
-        public override string BackwardKernelSource { get; }
+        public string ForwardKernelSource { get; }
+        public string BackwardKernelSource { get; }
 
         public Sigmoid(string name = "Sigmoid", bool isGpu = true) : base(name, isGpu)
         {

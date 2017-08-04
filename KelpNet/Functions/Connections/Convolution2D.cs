@@ -7,7 +7,6 @@ using KelpNet.Common;
 using KelpNet.Common.Activations;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
 
 namespace KelpNet.Functions.Connections
 {
@@ -45,12 +44,7 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this._activation = activation ?? new DummyActivation();
-
-            if (IsGpu)
-            {
-                this.ForwardKernelSource = this._activation.ForwardActivateFunctionString + ForwardKernelSource;
-            }
+            this._activation = activation;
 
             this.Initialize(initialW, initialb);
         }
@@ -70,12 +64,7 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this._activation = activation ?? new DummyActivation();
-
-            if (IsGpu)
-            {
-                this.ForwardKernelSource = this._activation.ForwardActivateFunctionString + ForwardKernelSource;
-            }
+            this._activation = activation;
 
             this.Initialize(initialW, initialb);
         }
@@ -112,13 +101,15 @@ namespace KelpNet.Functions.Connections
 
             if (IsGpu)
             {
-                this.ForwardKernel = Weaver.CreateKernel(this.ForwardKernelSource, "Convolution2DForward");
+                this.ForwardKernel = this._activation != null ? Weaver.CreateKernel(this._activation.ForwardActivateFunctionString + this.ForwardKernelSource + "ForwardActivate(gpuY + index);}", "Convolution2DForward") :
+                                                                Weaver.CreateKernel(this.ForwardKernelSource + "}", "Convolution2DForward");
+
                 this.BackwardgWKernel = Weaver.CreateKernel(this.BackwardgWKernelSource, "Convolution2DgWBackward");
                 this.BackwardgXKernel = Weaver.CreateKernel(this.BackwardgXKernelSource, "Convolution2DgXBackward");
             }
         }
 
-        public override string ForwardKernelSource { get; } =
+        public string ForwardKernelSource { get; } =
 @"
 __kernel void Convolution2DForward(
 	const __global __read_only	Real* gpuX,
@@ -170,8 +161,8 @@ __kernel void Convolution2DForward(
 
 	int index = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + get_global_id(1) * outputWidth + get_global_id(2);
 	gpuY[index] = localResult + gpub[och];
-	ForwardActivate(gpuY + index);
-}";
+//} Don't close for activation.
+";
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
@@ -222,7 +213,7 @@ __kernel void Convolution2DForward(
                                 }
 
                                 result[resultIndex] += this.b.Data[och];
-                                this._activation.ForwardActivate(ref result[resultIndex]);
+                                if (this._activation != null) this._activation.ForwardActivate(ref result[resultIndex]);
                                 resultIndex++;
                             }
                         }
@@ -268,7 +259,7 @@ __kernel void Convolution2DForward(
             }
 
             BatchArray output = BatchArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount);
-            if (!(this._activation is DummyActivation))
+            if (this._activation != null)
             {
                 this._prevOutput.Add(output);
             }
@@ -397,7 +388,7 @@ __kernel void Convolution2DgXBackward(
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray x)
         {
             Real[] prevOutputData = new Real[gy.Data.Length];
-            if (!(this._activation is DummyActivation))
+            if (this._activation != null)
             {
                 prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
                 this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
@@ -416,7 +407,10 @@ __kernel void Convolution2DgXBackward(
                         {
                             int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox;
                             Real gyData = gy.Data[gyIndex];
-                            this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
+                            if (this._activation != null)
+                            {
+                                this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
+                            }
                             activatedgy[batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox] = gyData;
 
                             this.gb.Data[och] += gyData;

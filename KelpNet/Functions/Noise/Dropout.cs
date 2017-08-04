@@ -24,7 +24,7 @@ namespace KelpNet.Functions.Noise
             }
         }
 
-        public override string ForwardKernelSource { get; } =
+        public string ForwardKernelSource { get; } =
 @"
 __kernel void DropoutForward(
 	__global const Real *gpuX,
@@ -85,7 +85,7 @@ __kernel void DropoutForward(
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        public override string BackwardKernelSource { get; } =
+        public string BackwardKernelSource { get; } =
 @"
 __kernel void DropoutBackward(
 	__global const Real *mask,

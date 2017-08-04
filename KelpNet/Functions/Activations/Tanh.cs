@@ -7,8 +7,8 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Tanh : Activation
     {
-        public override string ForwardKernelSource { get; }
-        public override string BackwardKernelSource { get; }
+        public string ForwardKernelSource { get; }
+        public string BackwardKernelSource { get; }
 
         public Tanh(string name = "Tanh", bool isGpu = true) : base(name, isGpu)
         {

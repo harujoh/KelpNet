@@ -26,9 +26,6 @@ namespace KelpNet.Common.Functions
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
 
-        public virtual string ForwardKernelSource { get; }
-        public virtual string BackwardKernelSource { get; }
-
         //コンストラクタ
         protected Function(string name, bool isGpu, int inputCount = 0, int oututCount = 0)
         {

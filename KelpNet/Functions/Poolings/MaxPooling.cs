@@ -57,7 +57,7 @@ namespace KelpNet.Functions.Poolings
             }
         }
 
-        public override string ForwardKernelSource { get; } =
+        public string ForwardKernelSource { get; } =
 @"
 __kernel void MaxPoolingForward(
 	__global const Real *gpuX,

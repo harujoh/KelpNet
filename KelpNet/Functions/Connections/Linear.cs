@@ -6,7 +6,6 @@ using KelpNet.Common;
 using KelpNet.Common.Activations;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
 
 namespace KelpNet.Functions.Connections
 {
@@ -63,18 +62,19 @@ namespace KelpNet.Functions.Connections
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
 
-            this._activation = activation ?? new DummyActivation();
+            this._activation = activation;
+
             if (IsGpu)
             {
-                this.ForwardKernelSource = this._activation.ForwardActivateFunctionString + ForwardKernelSource;
-                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "LinearForward");
+                ForwardKernel = this._activation != null ? Weaver.CreateKernel(this._activation.ForwardActivateFunctionString + this.ForwardKernelSource + "ForwardActivate(gpuY);}", "LinearForward") : 
+                                                           Weaver.CreateKernel(this.ForwardKernelSource + "}", "LinearForward");
 
                 BackwardgWKernel = Weaver.CreateKernel(BackwardgWKernelSource, "LineargWBackward");
                 BackwardgXKernel = Weaver.CreateKernel(BackwardgXKernelSource, "LineargXBackward");
             }
         }
 
-        public override string ForwardKernelSource { get; } =
+        public string ForwardKernelSource { get; } =
 @"
 __kernel void LinearForward(
 	__global const Real *gpuX,
@@ -98,8 +98,8 @@ __kernel void LinearForward(
 	}
 
 	*gpuY = gpuYSum;
-	ForwardActivate(gpuY);
-}";
+//} Don't close for activation.
+";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
@@ -118,7 +118,7 @@ __kernel void LinearForward(
                             y[i + batchCount * this.OutputCount] += x.Data[j + batchCount * this.InputCount] * this.W.Data[i * this.InputCount + j];
                         }
 
-                        this._activation.ForwardActivate(ref y[i + batchCount * this.OutputCount]);
+                        if(this._activation!=null) this._activation.ForwardActivate(ref y[i + batchCount * this.OutputCount]);
                     }
                 }
             }
@@ -157,7 +157,7 @@ __kernel void LinearForward(
             }
 
             BatchArray output = BatchArray.Convert(y, new[] { OutputCount }, x.BatchCount);
-            if (!(this._activation is DummyActivation))
+            if (this._activation != null)
             {
                 this._prevOutput.Add(output);
             }
@@ -223,7 +223,7 @@ __kernel void LineargXBackward(
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             Real[] prevOutputData = new Real[gy.Data.Length];
-            if (!(this._activation is DummyActivation))
+            if (this._activation != null)
             {
                 prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
                 this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
@@ -238,7 +238,7 @@ __kernel void LineargXBackward(
                     for (int i = 0; i < this.OutputCount; i++)
                     {
                         Real gyData = gy.Data[i + batchCount * this.OutputCount];
-                        this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+                        if(this._activation!= null)this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
 
                         this.gb.Data[i] += gyData;
 
@@ -259,7 +259,7 @@ __kernel void LineargXBackward(
                     for (int i = 0; i < this.OutputCount; i++)
                     {
                         Real gyData = gy.Data[i + batchCount * this.OutputCount];
-                        this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+                        if (this._activation != null) this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
                         activatedgY[i + batchCount * this.OutputCount] = gyData;
 
                         this.gb.Data[i] += gyData;

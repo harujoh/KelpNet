@@ -7,8 +7,8 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class ReLU : Activation
     {
-        public override string ForwardKernelSource { get; }
-        public override string BackwardKernelSource { get; }
+        public string ForwardKernelSource { get; }
+        public string BackwardKernelSource { get; }
 
         public ReLU(string name = "ReLU", bool isGpu = true) : base(name, isGpu)
         {

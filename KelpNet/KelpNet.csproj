@@ -53,7 +53,6 @@
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Common\Tools\NdArrayConverter.cs" />
     <Compile Include="Common\Weaver.cs" />
-    <Compile Include="Functions\Activations\DummyActivation.cs" />
     <Compile Include="Functions\FunctionStack.cs" />
     <Compile Include="Common\Functions\Function.cs" />
     <Compile Include="Functions\Activations\ELU.cs" />

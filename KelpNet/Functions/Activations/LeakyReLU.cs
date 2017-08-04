@@ -7,8 +7,8 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class LeakyReLU : Activation
     {
-        public override string ForwardKernelSource { get; }
-        public override string BackwardKernelSource { get; }
+        public string ForwardKernelSource { get; }
+        public string BackwardKernelSource { get; }
 
         private readonly Real _slope;
 
