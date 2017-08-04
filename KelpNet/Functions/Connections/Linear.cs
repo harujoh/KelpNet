@@ -16,6 +16,9 @@ namespace KelpNet.Functions.Connections
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
         [NonSerialized]
+        public ComputeKernel ForwardKernel;
+
+        [NonSerialized]
         public ComputeKernel BackwardgWKernel;
         [NonSerialized]
         public ComputeKernel BackwardgXKernel;
@@ -66,6 +69,7 @@ namespace KelpNet.Functions.Connections
 
             if (IsGpu)
             {
+
                 ForwardKernel = this._activation != null ? Weaver.CreateKernel(this._activation.ForwardActivateFunctionString + this.ForwardKernelSource + "ForwardActivate(gpuY);}", "LinearForward") : 
                                                            Weaver.CreateKernel(this.ForwardKernelSource + "}", "LinearForward");
 

@@ -22,6 +22,9 @@ namespace KelpNet.Functions.Poolings
         private int _prevInputDataLength;
         private int _prevInputBatchCount;
 
+        [NonSerialized]
+        public ComputeKernel ForwardKernel;
+
         public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling", bool isGpu = true) : base(name, isGpu)
         {
             this._kHeight = ksize;
@@ -30,7 +33,10 @@ namespace KelpNet.Functions.Poolings
             this._padX = pad;
             this._stride = stride;
 
-            InitKernel();
+            if (IsGpu)
+            {
+                ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
+            }
         }
 
         public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "MaxPooling", bool isGpu = true) : base(name, isGpu)
@@ -44,18 +50,12 @@ namespace KelpNet.Functions.Poolings
             this._padX = pad.Width;
             this._stride = stride;
 
-            this.InitKernel();
-        }
-
-        public void InitKernel()
-        {
             if (IsGpu)
             {
                 ForwardKernel = Weaver.CreateKernel(ForwardKernelSource, "MaxPoolingForward");
-                //メモリ転送のみの為不要
-                //BackwardKernel = Weaver.CreateKernel("", "");
             }
         }
+
 
         public string ForwardKernelSource { get; } =
 @"

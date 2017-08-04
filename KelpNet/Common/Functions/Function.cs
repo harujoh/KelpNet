@@ -1,5 +1,4 @@
 ﻿using System;
-using Cloo;
 using KelpNet.Common.Optimizers;
 
 namespace KelpNet.Common.Functions
@@ -17,15 +16,6 @@ namespace KelpNet.Common.Functions
         protected readonly int OutputCount;
         protected readonly int InputCount;
 
-        [NonSerialized]
-        public ComputeKernel ForwardKernel;
-
-        [NonSerialized]
-        public ComputeKernel BackwardKernel;
-
-        public string ForwardKernelName { get; }
-        public string BackwardKernelName { get; }
-
         //コンストラクタ
         protected Function(string name, bool isGpu, int inputCount = 0, int oututCount = 0)
         {
@@ -34,9 +24,6 @@ namespace KelpNet.Common.Functions
             this.OutputCount = oututCount;
 
             this.IsGpu = isGpu && Weaver.Enable;
-
-            this.ForwardKernelName = name.Replace(" ", "") + "Forward";
-            this.BackwardKernelName = name.Replace(" ", "") + "Backward";
         }
 
         public void SetOptimizer(params Optimizer[] optimizers)

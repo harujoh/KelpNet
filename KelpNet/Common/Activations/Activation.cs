@@ -8,6 +8,12 @@ namespace KelpNet.Common.Activations
     [Serializable]
     public abstract class Activation : NeedPreviousOutputFunction
     {
+        [NonSerialized]
+        public ComputeKernel ForwardKernel;
+
+        [NonSerialized]
+        public ComputeKernel BackwardKernel;
+
         //GPU向けのActivate関数の文字列
         public abstract string ForwardActivateFunctionString { get; }
         public abstract string BackwardActivateFunctionString { get; }
@@ -16,21 +22,27 @@ namespace KelpNet.Common.Activations
         public abstract void ForwardActivate(ref Real x);
         public abstract void BackwardActivate(ref Real gy, Real y);
 
+        public string ForwardKernelName { get; }
+        public string BackwardKernelName { get; }
+
         protected Activation(string name, bool isGpu) : base(name, isGpu)
         {
-            this.ForwardActivateKernelString = String.Format(this.ForwardActivateKernelString, this.ForwardKernelName);
-            this.BackwardActivateKernelString = String.Format(this.BackwardActivateKernelString, this.BackwardKernelName);
+            string kernelNameBase = name.Replace(" ", "");
+            this.ForwardKernelName = kernelNameBase + "Forward";
+            this.BackwardKernelName = kernelNameBase + "Backward";
+            string kernaelHeader = "__kernel void " + kernelNameBase;
+
+            this.ForwardActivateKernelString = kernaelHeader + this.ForwardActivateKernelString;
+            this.BackwardActivateKernelString = kernaelHeader + this.BackwardActivateKernelString;
         }
 
         protected string ForwardActivateKernelString =
-@"
-__kernel void {0}(
-    __global Real *gpuY)
-{{
+@"Forward(__global Real *gpuY)
+{
 	int i = get_global_id(0);
 
     ForwardActivate(gpuY + i);
-}}";
+}";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
@@ -67,18 +79,16 @@ __kernel void {0}(
         }
 
         protected string BackwardActivateKernelString =
-@"
-__kernel void {0}(
-	__global read_only Real *gpuY,
-	__global Real *gpugX)
-{{
+@"Backward(__global read_only Real *gpuY,
+           __global Real *gpugX)
+{
 	int i = get_global_id(0);
 
     Real gpugY = gpugX[i];
     BackwardActivate(gpuY[i], &gpugY);
     
     gpugX[i] = gpugY;
-}}";
+}";
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {

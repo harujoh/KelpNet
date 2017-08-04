@@ -73,7 +73,12 @@ typedef REAL Real;
             Enable = true;
         }
 
-        public static ComputeKernel CreateKernel(string source, string kernelName)
+        public static ComputeKernel CreateKernel(string source, string kenrlName)
+        {
+            return CreateProgram(source).CreateKernel(kenrlName);
+        }
+
+        public static ComputeProgram CreateProgram(string source)
         {
             string realType = Marshal.SizeOf(typeof(Real)) == Marshal.SizeOf(typeof(double)) ? "double" : "float";
 
@@ -97,7 +102,7 @@ typedef REAL Real;
                 MessageBox.Show(program.GetBuildLog(Devices[DeviceIndex]));
             }
 
-            return program.CreateKernel(kernelName);
+            return program;
         }
     }
 }
