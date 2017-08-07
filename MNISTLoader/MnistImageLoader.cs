@@ -63,24 +63,28 @@ namespace MNISTLoader
                 return null;
             }
 
-            // バイト配列を分解する
-            FileStream stream = new FileStream(path, FileMode.Open);
-            BinaryReaderBE reader = new BinaryReaderBE(stream);
-
             MnistImageLoader loader = new MnistImageLoader();
-            loader.magicNumber = reader.ReadInt32();
-            loader.numberOfImages = reader.ReadInt32();
-            loader.numberOfRows = reader.ReadInt32();
-            loader.numberOfColumns = reader.ReadInt32();
 
-            int pixelCount = loader.numberOfRows * loader.numberOfColumns;
-            for (int i = 0; i < loader.numberOfImages; i++)
+            // バイト配列を分解する
+            using (FileStream stream = new FileStream(path, FileMode.Open))
             {
-                byte[] pixels = reader.ReadBytes(pixelCount);
-                loader.bitmapList.Add(pixels);
+                BinaryReaderBE reader = new BinaryReaderBE(stream);
+
+                loader.magicNumber = reader.ReadInt32();
+                loader.numberOfImages = reader.ReadInt32();
+                loader.numberOfRows = reader.ReadInt32();
+                loader.numberOfColumns = reader.ReadInt32();
+
+                int pixelCount = loader.numberOfRows * loader.numberOfColumns;
+                for (int i = 0; i < loader.numberOfImages; i++)
+                {
+                    byte[] pixels = reader.ReadBytes(pixelCount);
+                    loader.bitmapList.Add(pixels);
+                }
+
+                reader.Close();
             }
 
-            reader.Close();
             return loader;
         }
 

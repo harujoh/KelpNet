@@ -46,16 +46,20 @@ namespace MNISTLoader
                 return null;
             }
 
-            // バイト配列を分解する
-            FileStream stream = new FileStream(path, FileMode.Open);
-            BinaryReaderBE reader = new BinaryReaderBE(stream);
-
             MnistLabelLoader loader = new MnistLabelLoader();
-            loader.magicNumber = reader.ReadInt32();
-            loader.numberOfItems = reader.ReadInt32();
-            loader.labelList = reader.ReadBytes(loader.numberOfItems);
 
-            reader.Close();
+            // バイト配列を分解する
+            using (FileStream stream = new FileStream(path, FileMode.Open))
+            {
+                BinaryReaderBE reader = new BinaryReaderBE(stream);
+
+                loader.magicNumber = reader.ReadInt32();
+                loader.numberOfItems = reader.ReadInt32();
+                loader.labelList = reader.ReadBytes(loader.numberOfItems);
+
+                reader.Close();
+            }
+
             return loader;
         }
 
