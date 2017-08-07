@@ -17,11 +17,11 @@ namespace KelpNetTester.Benchmarker
         {
             Stopwatch sw = new Stopwatch();
 
-            BatchArray inputArrayCpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));
-            BatchArray gradArrayCpu = new BatchArray(BenchDataMaker.GetDoubleArray(OUTPUT_SIZE));
+            BatchArray inputArrayCpu = new BatchArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
+            BatchArray gradArrayCpu = new BatchArray(BenchDataMaker.GetRealArray(OUTPUT_SIZE));
 
-            BatchArray inputArrayGpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));
-            BatchArray gradArrayGpu = new BatchArray(BenchDataMaker.GetDoubleArray(OUTPUT_SIZE));
+            BatchArray inputArrayGpu = new BatchArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
+            BatchArray gradArrayGpu = new BatchArray(BenchDataMaker.GetRealArray(OUTPUT_SIZE));
 
             //Linear
             var linear = new Linear(INPUT_SIZE, OUTPUT_SIZE);
@@ -159,8 +159,8 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
 
-            BatchArray inputImageArrayGpu = new BatchArray(BenchDataMaker.GetDoubleArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
-            BatchArray inputImageArrayCpu = new BatchArray(BenchDataMaker.GetDoubleArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
+            BatchArray inputImageArrayGpu = new BatchArray(BenchDataMaker.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
+            BatchArray inputImageArrayCpu = new BatchArray(BenchDataMaker.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
 
             //MaxPooling
             var maxPooling = new MaxPooling(3);
@@ -244,9 +244,9 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
 
-            //DropOutは入出力の値は入力と同じでなければならない
-            gradArrayCpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));
-            gradArrayGpu = new BatchArray(BenchDataMaker.GetDoubleArray(INPUT_SIZE));
+            //DropOutは出力のサイズが入力と同じでなければならない
+            gradArrayCpu = new BatchArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
+            gradArrayGpu = new BatchArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
 
             //Dropout
             var dropout = new Dropout();

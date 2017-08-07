@@ -4,7 +4,7 @@ namespace KelpNetTester.Benchmarker
 {
     class BenchDataMaker
     {
-        public static Real[] GetDoubleArray(int length)
+        public static Real[] GetRealArray(int length)
         {
             Real[] result = new Real[length];
             for (int i = 0; i < result.Length; i++)

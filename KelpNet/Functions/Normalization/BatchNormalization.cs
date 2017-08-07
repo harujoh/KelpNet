@@ -10,7 +10,7 @@ namespace KelpNet.Functions.Normalization
     {
         private bool IsTrain;
 
-        private readonly NdArray Gamma;
+        private NdArray Gamma;
         private readonly NdArray gGamma;
 
         private readonly NdArray Beta;
