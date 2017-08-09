@@ -36,7 +36,9 @@ namespace KelpNet.Functions.Connections
         private int _trimX;
         private int _trimY;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Deconv2D", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputChannels, outputChannels)
+        public bool IsGpu;
+
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Deconv2D", bool isGpu = true, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -47,10 +49,11 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
 
+            this.IsGpu = isGpu && Weaver.Enable;
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, int subSample = 1, Size trim = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Deconv2D", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputChannels, outputChannels)
+        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, int subSample = 1, Size trim = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Deconv2D", bool isGpu = true, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize.Width;
             this._kHeight = kSize.Height;
@@ -62,6 +65,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
 
+            this.IsGpu = isGpu && Weaver.Enable;
             this.Initialize(initialW, initialb);
         }
 

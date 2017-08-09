@@ -33,7 +33,7 @@ namespace KelpNet.Functions.Normalization
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "BatchNorm", bool isGpu = true) : base(name, isGpu)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, bool isTrain = true, string name = "BatchNorm") : base(name)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;

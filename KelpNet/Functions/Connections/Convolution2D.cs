@@ -36,7 +36,9 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputChannels, outputChannels)
+        public bool IsGpu;
+
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -48,10 +50,12 @@ namespace KelpNet.Functions.Connections
 
             this._activation = activation;
 
+            this.IsGpu = isGpu && Weaver.Enable;
+
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = "Conv2D", bool isGpu = true, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
             {
@@ -67,6 +71,8 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
             this._activation = activation;
+
+            this.IsGpu = isGpu && Weaver.Enable;
 
             this.Initialize(initialW, initialb);
         }

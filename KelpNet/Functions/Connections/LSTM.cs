@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Connections
 
         private bool initialized = false;
 
-        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM", bool isGpu = true) : base(name, isGpu, inSize, outSize)
+        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
         {
             this.Parameters = new FunctionParameter[12];
 

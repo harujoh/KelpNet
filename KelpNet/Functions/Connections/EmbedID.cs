@@ -12,7 +12,7 @@ namespace KelpNet.Functions.Connections
         public NdArray W;
         public NdArray gW;
 
-        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = "EmbedID", bool isGpu = true) : base(name, isGpu, inputCount, outputCount)
+        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = "EmbedID") : base(name, inputCount, outputCount)
         {
             this.W = new NdArray(inputCount, outputCount);
             this.gW = NdArray.ZerosLike(this.W);

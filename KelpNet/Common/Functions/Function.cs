@@ -8,7 +8,6 @@ namespace KelpNet.Common.Functions
     public abstract class Function
     {
         public string Name;
-        public bool IsGpu;
 
         public FunctionParameter[] Parameters = { };
         public Optimizer[] Optimizers;
@@ -17,13 +16,11 @@ namespace KelpNet.Common.Functions
         protected readonly int InputCount;
 
         //コンストラクタ
-        protected Function(string name, bool isGpu, int inputCount = 0, int oututCount = 0)
+        protected Function(string name, int inputCount = 0, int oututCount = 0)
         {
             this.Name = name;
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
-
-            this.IsGpu = isGpu && Weaver.Enable;
         }
 
         public void SetOptimizer(params Optimizer[] optimizers)

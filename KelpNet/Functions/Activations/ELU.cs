@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Activations
     {
         private readonly Real _alpha;
 
-        public ELU(double alpha = 1, string name = "ELU", bool isGpu = true) : base(name, isGpu)
+        public ELU(double alpha = 1, string name = "ELU") : base(name)
         {
             this._alpha = alpha;
         }

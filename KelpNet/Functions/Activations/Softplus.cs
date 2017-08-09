@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Activations
         private readonly Real _beta;
         private readonly Real _betaInv;
 
-        public Softplus(double beta = 1, string name = "Softplus", bool isGpu = true) : base(name, isGpu)
+        public Softplus(double beta = 1, string name = "Softplus") : base(name)
         {
             this._beta = beta;
             this._betaInv = 1 / this._beta;

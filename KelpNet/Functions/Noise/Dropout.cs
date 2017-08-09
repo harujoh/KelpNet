@@ -19,10 +19,13 @@ namespace KelpNet.Functions.Noise
         [NonSerialized]
         public ComputeKernel BackwardKernel;
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = true) : base(name, isGpu)
+        public bool IsGpu;
+
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = true) : base(name)
         {
             this.dropoutRatio = dropoutRatio;
 
+            this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {
                 ForwardKernel = Weaver.CreateProgram(this.ForwardKernelSource).CreateKernel("DropoutForward");

@@ -16,7 +16,7 @@ namespace KelpNet.Functions
         public readonly Function[] Functions;
 
         //コンストラクタ
-        public FunctionStack(params Function[] functions) : base("FunctionStack", true)
+        public FunctionStack(params Function[] functions) : base("FunctionStack")
         {
             this.Functions = functions;
 

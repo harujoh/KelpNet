@@ -14,7 +14,7 @@ namespace KelpNet.Functions.Poolings
         private int _padX;
         private int _stride;
 
-        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling", bool isGpu = true) : base(name, isGpu)
+        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling") : base(name)
         {
             this._kWidth = ksize;
             this._kHeight = ksize;
@@ -23,7 +23,7 @@ namespace KelpNet.Functions.Poolings
             this._stride = stride;
         }
 
-        public AveragePooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "AvgPooling", bool isGpu = true) : base(name, isGpu)
+        public AveragePooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "AvgPooling") : base(name)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);

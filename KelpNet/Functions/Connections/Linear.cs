@@ -11,6 +11,8 @@ namespace KelpNet.Functions.Connections
     [Serializable]
     public class Linear : NeedPreviousInputFunction
     {
+        public bool IsGpu;
+
         private readonly Activation _activation;
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
@@ -30,7 +32,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = true, Activation activation = null) : base(name, isGpu, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = true, Activation activation = null) : base(name, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = new NdArray(outputCount, inputCount);
@@ -66,6 +68,7 @@ namespace KelpNet.Functions.Connections
 
             this._activation = activation;
 
+            this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {
                 string forwardSource = this._activation != null ?

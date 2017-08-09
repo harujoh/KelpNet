@@ -7,6 +7,8 @@ namespace KelpNet.Common.Functions
     [Serializable]
     public abstract class Activation : NeedPreviousOutputFunction
     {
+        public bool IsGpu;
+
         [NonSerialized]
         public ComputeKernel ForwardKernel;
 
@@ -24,7 +26,7 @@ namespace KelpNet.Common.Functions
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
 
-        protected Activation(string name, bool isGpu) : base(name, isGpu)
+        protected Activation(string name, bool isGpu) : base(name)
         {
             string kernelNameBase = name.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";
