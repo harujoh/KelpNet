@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Activations\Activation.cs" />
+    <Compile Include="Common\Functions\Activation.cs" />
     <Compile Include="Common\BatchArray.cs" />
     <Compile Include="Common\Real.cs" />
     <Compile Include="Common\Tools\DeepCopyHelper.cs" />

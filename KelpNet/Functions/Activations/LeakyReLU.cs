@@ -1,6 +1,6 @@
 ﻿using System;
 using KelpNet.Common;
-using KelpNet.Common.Activations;
+using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Activations
 {

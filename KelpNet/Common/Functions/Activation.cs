@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Cloo;
-using KelpNet.Common.Functions;
 
-namespace KelpNet.Common.Activations
+namespace KelpNet.Common.Functions
 {
     [Serializable]
     public abstract class Activation : NeedPreviousOutputFunction
@@ -59,11 +58,11 @@ namespace KelpNet.Common.Activations
             {
                 using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
                 {
-                    ForwardKernel.SetMemoryArgument(0, gpuY);
+                    this.ForwardKernel.SetMemoryArgument(0, gpuY);
 
                     Weaver.CommandQueue.Execute
                         (
-                            ForwardKernel,
+                            this.ForwardKernel,
                             null,
                             new long[] { x.Data.Length },
                             null,
@@ -106,12 +105,12 @@ namespace KelpNet.Common.Activations
                 using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
                 {
-                    BackwardKernel.SetMemoryArgument(0, gpuY);
-                    BackwardKernel.SetMemoryArgument(1, gpugX);
+                    this.BackwardKernel.SetMemoryArgument(0, gpuY);
+                    this.BackwardKernel.SetMemoryArgument(1, gpugX);
 
                     Weaver.CommandQueue.Execute
                         (
-                            BackwardKernel,
+                            this.BackwardKernel,
                             null,
                             new long[] { gy.Data.Length },
                             null,

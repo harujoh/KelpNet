@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using Cloo;
 using KelpNet.Common;
-using KelpNet.Common.Activations;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
 
