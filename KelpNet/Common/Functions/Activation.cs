@@ -33,6 +33,7 @@ namespace KelpNet.Common.Functions
             this.BackwardKernelName = kernelNameBase + "Backward";
             string kernaelHeader = "__kernel void " + kernelNameBase;
 
+            this.IsGpu = isGpu && Weaver.Enable;
             this.ForwardActivateKernelString = kernaelHeader + this.ForwardActivateKernelString;
             this.BackwardActivateKernelString = kernaelHeader + this.BackwardActivateKernelString;
         }

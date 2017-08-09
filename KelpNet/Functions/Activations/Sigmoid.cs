@@ -10,7 +10,7 @@ namespace KelpNet.Functions.Activations
         public string ForwardKernelSource { get; }
         public string BackwardKernelSource { get; }
 
-        public Sigmoid(string name = "Sigmoid", bool isGpu = true) : base(name, isGpu)
+        public Sigmoid(string name = "Sigmoid", bool isGpu = false) : base(name, isGpu)
         {
             if (IsGpu)
             {

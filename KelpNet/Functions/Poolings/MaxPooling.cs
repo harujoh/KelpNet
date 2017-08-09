@@ -27,7 +27,7 @@ namespace KelpNet.Functions.Poolings
 
         public bool IsGpu;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling", bool isGpu = true) : base(name)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling", bool isGpu = false) : base(name)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -42,7 +42,7 @@ namespace KelpNet.Functions.Poolings
             }
         }
 
-        public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "MaxPooling", bool isGpu = true) : base(name)
+        public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "MaxPooling", bool isGpu = false) : base(name)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);

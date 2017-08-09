@@ -21,7 +21,7 @@ namespace KelpNet.Functions.Noise
 
         public bool IsGpu;
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = true) : base(name)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = false) : base(name)
         {
             this.dropoutRatio = dropoutRatio;
 

@@ -12,7 +12,7 @@ namespace KelpNet.Functions.Activations
 
         private readonly Real _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isGpu = true) : base(name, isGpu)
+        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isGpu = false) : base(name, isGpu)
         {
             this._slope = slope;
 

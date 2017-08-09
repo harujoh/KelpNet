@@ -23,6 +23,9 @@ namespace KelpNet.Common.Functions
             this.OutputCount = oututCount;
         }
 
+        protected abstract BatchArray ForwardSingle(BatchArray x);
+        protected abstract BatchArray BackwardSingle(BatchArray gy);
+
         public void SetOptimizer(params Optimizer[] optimizers)
         {
             this.Optimizers = optimizers;
@@ -39,9 +42,9 @@ namespace KelpNet.Common.Functions
             return this.ForwardSingle(x);
         }
 
+        //外部公開用
         public virtual BatchArray Backward(BatchArray gy)
         {
-            //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
             foreach (FunctionParameter parameter in this.Parameters)
             {
                 parameter.TrainCount++;
@@ -49,11 +52,6 @@ namespace KelpNet.Common.Functions
 
             return this.BackwardSingle(gy);
         }
-
-        //通常であれば非バッチ呼び出しを仮想とするが、
-        //バッチ専用関数がスタンダードで非バッチ関数がイレギュラーであるため
-        protected abstract BatchArray ForwardSingle(BatchArray x);
-        protected abstract BatchArray BackwardSingle(BatchArray gy);
 
         //評価関数
         public virtual BatchArray Predict(BatchArray input)

@@ -32,7 +32,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = true, Activation activation = null) : base(name, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = false, Activation activation = null) : base(name, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = new NdArray(outputCount, inputCount);

@@ -10,7 +10,7 @@ namespace KelpNet.Functions.Activations
         public string ForwardKernelSource { get; }
         public string BackwardKernelSource { get; }
 
-        public ReLU(string name = "ReLU", bool isGpu = true) : base(name, isGpu)
+        public ReLU(string name = "ReLU", bool isGpu = false) : base(name, isGpu)
         {
             if (IsGpu)
             {

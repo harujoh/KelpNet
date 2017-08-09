@@ -34,13 +34,13 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D", activation: new ReLU(name: "l1 ReLU")),
-                new MaxPooling(2, 2, name: "l1 MaxPooling"),
-                new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D", activation: new ReLU(name: "l2 ReLU")),
-                new MaxPooling(2, 2, name: "l2 MaxPooling"),
-                new Linear(7 * 7 * 64, 1024, name: "l3 Linear", activation: new ReLU(name: "l3 ReLU")),
-                new Dropout(name: "l3 DropOut", isGpu: false),
-                new Linear(1024, 10, name: "l4 Linear")
+                new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D", activation: new ReLU(name: "l1 ReLU"), isGpu: true),
+                new MaxPooling(2, 2, name: "l1 MaxPooling", isGpu: true),
+                new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D", activation: new ReLU(name: "l2 ReLU"), isGpu: true),
+                new MaxPooling(2, 2, name: "l2 MaxPooling", isGpu: true),
+                new Linear(7 * 7 * 64, 1024, name: "l3 Linear", activation: new ReLU(name: "l3 ReLU"), isGpu: true),
+                new Dropout(name: "l3 DropOut"),
+                new Linear(1024, 10, name: "l4 Linear", isGpu: true)
             );
 
             //optimizerを宣言

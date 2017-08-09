@@ -24,7 +24,7 @@ namespace KelpNetTester.Benchmarker
             BatchArray gradArrayGpu = new BatchArray(BenchDataMaker.GetRealArray(OUTPUT_SIZE));
 
             //Linear
-            var linear = new Linear(INPUT_SIZE, OUTPUT_SIZE);
+            var linear = new Linear(INPUT_SIZE, OUTPUT_SIZE, isGpu: true);
 
             Console.WriteLine("◆" + linear.Name);
 
@@ -51,7 +51,7 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
             //Tanh
-            var tanh = new Tanh();
+            var tanh = new Tanh(isGpu: true);
             Console.WriteLine("\n◆" + tanh.Name);
 
             sw.Restart();
@@ -77,7 +77,7 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
             //Sigmoid
-            var sigmoid = new Sigmoid();
+            var sigmoid = new Sigmoid(isGpu: true);
             Console.WriteLine("\n◆" + sigmoid.Name);
 
             sw.Restart();
@@ -103,7 +103,7 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
             //ReLU
-            var relu = new ReLU();
+            var relu = new ReLU(isGpu: true);
 
             Console.WriteLine("\n◆" + relu.Name);
 
@@ -130,7 +130,7 @@ namespace KelpNetTester.Benchmarker
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
             //LeakyReLU
-            var leakyRelu = new LeakyReLU();
+            var leakyRelu = new LeakyReLU(isGpu: true);
 
             Console.WriteLine("\n◆" + leakyRelu.Name);
 
@@ -163,7 +163,7 @@ namespace KelpNetTester.Benchmarker
             BatchArray inputImageArrayCpu = new BatchArray(BenchDataMaker.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
 
             //MaxPooling
-            var maxPooling = new MaxPooling(3);
+            var maxPooling = new MaxPooling(3, isGpu:true);
 
             Console.WriteLine("\n◆" + maxPooling.Name);
 
@@ -189,7 +189,7 @@ namespace KelpNetTester.Benchmarker
 
 
             //Conv2D
-            var conv2d = new Convolution2D(3, 3, 3);
+            var conv2d = new Convolution2D(3, 3, 3, isGpu: true);
 
             Console.WriteLine("\n◆" + conv2d.Name);
 
@@ -217,7 +217,7 @@ namespace KelpNetTester.Benchmarker
 
 
             //Deconv2D
-            var deconv2d = new Deconvolution2D(3, 3, 3);
+            var deconv2d = new Deconvolution2D(3, 3, 3, isGpu: true);
 
             Console.WriteLine("\n◆" + deconv2d.Name);
 
@@ -249,7 +249,7 @@ namespace KelpNetTester.Benchmarker
             gradArrayGpu = new BatchArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
 
             //Dropout
-            var dropout = new Dropout();
+            var dropout = new Dropout(isGpu: true);
 
             Console.WriteLine("\n◆" + dropout.Name);
 
