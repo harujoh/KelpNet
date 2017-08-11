@@ -5,34 +5,32 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class Tanh : NeedPreviousOutputFunction
+    public class Tanh : Activation
     {
-        public Tanh(string name = "Tanh", bool isParallel = true) : base(name, isParallel)
+        const string FUNCTION_NAME = "Tanh";
+
+        public Tanh(string name = FUNCTION_NAME, bool isGpu = false) : base(name, isGpu)
         {
+            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME);
+
+            if (IsGpu)
+            {
+                var KernelSource = this.ActivateFunctionString + ActivateKernelString;
+
+                var program = Weaver.CreateProgram(KernelSource);
+                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
+            }
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        public override void ForwardActivate(ref Real x)
         {
-            double[] y = new double[x.Length];
-
-            for (int i = 0; i < y.Length; i++)
-            {
-                y[i] = Math.Tanh(x.Data[i]);
-            }
-
-            return NdArray.Convert(y, x.Shape);
+            x = Math.Tanh(x);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        public override void BackwardActivate(ref Real gy, Real y)
         {
-            double[] gx = new double[gy.Length];
-
-            for (int i = 0; i < gx.Length; i++)
-            {
-                gx[i] = gy.Data[i] * (1 - prevOutput.Data[i] * prevOutput.Data[i]);
-            }
-
-            return NdArray.Convert(gx, gy.Shape);
+            gy *= 1 - y * y;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -20,28 +19,30 @@ namespace KelpNet.Functions.Connections
         public Linear lateral2;
         public Linear lateral3;
 
-        private List<double[]>[] aParam;
-        private List<double[]>[] iParam;
-        private List<double[]>[] fParam;
-        private List<double[]>[] oParam;
-        private List<double[]>[] cParam;
+        private List<Real[]> aParam;
+        private List<Real[]> iParam;
+        private List<Real[]> fParam;
+        private List<Real[]> oParam;
+        private List<Real[]> cParam;
 
-        private double[][] hParam;
+        private Real[] hParam;
 
-        private NdArray[] gxPrev0;
-        private NdArray[] gxPrev1;
-        private NdArray[] gxPrev2;
-        private NdArray[] gxPrev3;
-        private double[,] gcPrev;
+        BatchArray gxPrev0;
+        BatchArray gxPrev1;
+        BatchArray gxPrev2;
+        BatchArray gxPrev3;
+        Real[] gcPrev;
 
-        public LSTM(int inSize, int outSize, Array initialUpwardW = null, Array initialUpwardb = null, Array initialLateralW = null, string name = "LSTM", bool isParallel = true) : base(name, isParallel, inSize, outSize)
+        private bool initialized = false;
+
+        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
         {
             this.Parameters = new FunctionParameter[12];
 
-            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0", isParallel: isParallel);
-            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1", isParallel: isParallel);
-            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2", isParallel: isParallel);
-            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3", isParallel: isParallel);
+            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward0");
+            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward1");
+            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward2");
+            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, isGpu: false, name: "upward3");
             this.Parameters[0] = this.upward0.Parameters[0];
             this.Parameters[1] = this.upward0.Parameters[1];
             this.Parameters[2] = this.upward1.Parameters[0];
@@ -52,303 +53,197 @@ namespace KelpNet.Functions.Connections
             this.Parameters[7] = this.upward3.Parameters[1];
 
             //lateralはBiasは無し
-            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0", isParallel: isParallel);
-            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1", isParallel: isParallel);
-            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2", isParallel: isParallel);
-            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3", isParallel: isParallel);
+            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral0");
+            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral1");
+            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral2");
+            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, isGpu: false, name: "lateral3");
             this.Parameters[8] = this.lateral0.Parameters[0];
             this.Parameters[9] = this.lateral1.Parameters[0];
             this.Parameters[10] = this.lateral2.Parameters[0];
             this.Parameters[11] = this.lateral3.Parameters[0];
         }
 
-        protected override NdArray[] ForwardSingle(NdArray[] x)
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
-            NdArray[] result = new NdArray[x.Length];
-
-            NdArray[] upwards0 = this.upward0.Forward(x);
-            NdArray[] upwards1 = this.upward1.Forward(x);
-            NdArray[] upwards2 = this.upward2.Forward(x);
-            NdArray[] upwards3 = this.upward3.Forward(x);
+            BatchArray[] upwards = new BatchArray[4];
+            upwards[0] = this.upward0.Forward(x);
+            upwards[1] = this.upward1.Forward(x);
+            upwards[2] = this.upward2.Forward(x);
+            upwards[3] = this.upward3.Forward(x);
 
             if (this.hParam == null)
             {
                 //値がなければ初期化
-                this.InitBatch(x.Length);
+                this.aParam = new List<Real[]>();
+                this.iParam = new List<Real[]>();
+                this.fParam = new List<Real[]>();
+                this.oParam = new List<Real[]>();
+                this.cParam = new List<Real[]>();
+                this.hParam = new Real[x.BatchCount * this.OutputCount];
+                this.gcPrev = new Real[x.BatchCount * this.InputCount];
             }
             else
             {
-                NdArray[] prevInput = new NdArray[this.hParam.Length];
-                for (int i = 0; i < prevInput.Length; i++)
-                {
-                    prevInput[i] = NdArray.FromArray(this.hParam[i]);
-                }
+                BatchArray prevInput = new BatchArray(this.hParam, new[] { OutputCount }, x.BatchCount);
+                BatchArray laterals0 = this.lateral0.Forward(prevInput);
+                BatchArray laterals1 = this.lateral1.Forward(prevInput);
+                BatchArray laterals2 = this.lateral2.Forward(prevInput);
+                BatchArray laterals3 = this.lateral3.Forward(prevInput);
 
-                NdArray[] laterals0 = this.lateral0.Forward(prevInput);
-                NdArray[] laterals1 = this.lateral1.Forward(prevInput);
-                NdArray[] laterals2 = this.lateral2.Forward(prevInput);
-                NdArray[] laterals3 = this.lateral3.Forward(prevInput);
-
-                for (int i = 0; i < laterals0.Length; i++)
+                for (int i = 0; i < OutputCount * x.BatchCount; i++)
                 {
-                    for (int j = 0; j < laterals0[i].Length; j++)
-                    {
-                        upwards0[i].Data[j] += laterals0[i].Data[j];
-                        upwards1[i].Data[j] += laterals1[i].Data[j];
-                        upwards2[i].Data[j] += laterals2[i].Data[j];
-                        upwards3[i].Data[j] += laterals3[i].Data[j];
-                    }
+                    upwards[0].Data[i] += laterals0.Data[i];
+                    upwards[1].Data[i] += laterals1.Data[i];
+                    upwards[2].Data[i] += laterals2.Data[i];
+                    upwards[3].Data[i] += laterals3.Data[i];
                 }
             }
 
-            if (IsParallel)
+
+            if (this.cParam.Count == 0)
             {
-                Parallel.For(0, x.Length, i =>
-                {
-                    if (this.cParam[i].Count == 0)
-                    {
-                        this.cParam[i].Add(new double[this.OutputCount]);
-                    }
-
-                    //再配置
-                    double[,] r = this.ExtractGates(upwards0[i].Data, upwards1[i].Data, upwards2[i].Data, upwards3[i].Data);
-
-                    double[] la = new double[this.OutputCount];
-                    double[] li = new double[this.OutputCount];
-                    double[] lf = new double[this.OutputCount];
-                    double[] lo = new double[this.OutputCount];
-                    double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
-                    double[] cResult = new double[cPrev.Length];
-
-                    for (int j = 0; j < this.hParam[i].Length; j++)
-                    {
-                        la[j] = Math.Tanh(r[0, j]);
-                        li[j] = Sigmoid(r[1, j]);
-                        lf[j] = Sigmoid(r[2, j]);
-                        lo[j] = Sigmoid(r[3, j]);
-
-                        cResult[j] = la[j] * li[j] + lf[j] * cPrev[j];
-                        this.hParam[i][j] = lo[j] * Math.Tanh(cResult[j]);
-                    }
-
-                    //Backward用
-                    this.cParam[i].Add(cResult);
-                    this.aParam[i].Add(la);
-                    this.iParam[i].Add(li);
-                    this.fParam[i].Add(lf);
-                    this.oParam[i].Add(lo);
-
-                    result[i] = NdArray.Convert(this.hParam[i]);
-                });
+                this.cParam.Add(new Real[this.OutputCount * x.BatchCount]);
             }
-            else
+
+            Real[] la = new Real[this.OutputCount * x.BatchCount];
+            Real[] li = new Real[this.OutputCount * x.BatchCount];
+            Real[] lf = new Real[this.OutputCount * x.BatchCount];
+            Real[] lo = new Real[this.OutputCount * x.BatchCount];
+            Real[] cPrev = this.cParam[this.cParam.Count - 1];
+            Real[] cResult = new Real[cPrev.Length];
+
+            for (int i = 0; i < x.BatchCount; i++)
             {
-                for (int i = 0; i < x.Length; i++)
+                //再配置
+                for (int j = 0; j < this.OutputCount; j++)
                 {
-                    if (this.cParam[i].Count == 0)
-                    {
-                        this.cParam[i].Add(new double[this.OutputCount]);
-                    }
+                    int index = j * 4;
+                    int batchIndex = j + i * OutputCount;
 
-                    //再配置
-                    double[,] r = this.ExtractGates(upwards0[i].Data, upwards1[i].Data, upwards2[i].Data, upwards3[i].Data);
+                    la[batchIndex] = Math.Tanh(upwards[index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
+                    li[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
+                    lf[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
+                    lo[batchIndex] = Sigmoid(upwards[++index / this.OutputCount].Data[index % this.OutputCount + i * OutputCount]);
 
-                    double[] la = new double[this.OutputCount];
-                    double[] li = new double[this.OutputCount];
-                    double[] lf = new double[this.OutputCount];
-                    double[] lo = new double[this.OutputCount];
-                    double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
-                    double[] cResult = new double[cPrev.Length];
-
-                    for (int j = 0; j < this.hParam[i].Length; j++)
-                    {
-                        la[j] = Math.Tanh(r[0, j]);
-                        li[j] = Sigmoid(r[1, j]);
-                        lf[j] = Sigmoid(r[2, j]);
-                        lo[j] = Sigmoid(r[3, j]);
-
-                        cResult[j] = la[j] * li[j] + lf[j] * cPrev[j];
-                        this.hParam[i][j] = lo[j] * Math.Tanh(cResult[j]);
-                    }
-
-                    //Backward用
-                    this.cParam[i].Add(cResult);
-                    this.aParam[i].Add(la);
-                    this.iParam[i].Add(li);
-                    this.fParam[i].Add(lf);
-                    this.oParam[i].Add(lo);
-
-                    result[i] = NdArray.FromArray(this.hParam[i]);
+                    cResult[batchIndex] = la[batchIndex] * li[batchIndex] + lf[batchIndex] * cPrev[batchIndex];
+                    this.hParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
                 }
             }
 
-            return result;
+            //Backward用
+            this.cParam.Add(cResult);
+            this.aParam.Add(la);
+            this.iParam.Add(li);
+            this.fParam.Add(lf);
+            this.oParam.Add(lo);
+
+            return new BatchArray(this.hParam, new[] { OutputCount }, x.BatchCount);
         }
 
-        protected override NdArray[] BackwardSingle(NdArray[] gh)
+        protected override BatchArray BackwardSingle(BatchArray gh)
         {
-            NdArray[] lgh = gh.ToArray();
-            NdArray[] result = new NdArray[lgh.Length];
+            Real[] lgh = gh.Data.ToArray();
 
-            if (this.gxPrev0 == null)
+            if (!initialized)
             {
                 //値がなければ初期化
-                this.gxPrev0 = new NdArray[lgh.Length];
-                this.gxPrev1 = new NdArray[lgh.Length];
-                this.gxPrev2 = new NdArray[lgh.Length];
-                this.gxPrev3 = new NdArray[lgh.Length];
+                this.gxPrev0 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
+                this.gxPrev1 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
+                this.gxPrev2 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
+                this.gxPrev3 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
+                initialized = true;
             }
             else
             {
-                NdArray[] ghPre0 = this.lateral0.Backward(this.gxPrev0);
-                NdArray[] ghPre1 = this.lateral1.Backward(this.gxPrev1);
-                NdArray[] ghPre2 = this.lateral2.Backward(this.gxPrev2);
-                NdArray[] ghPre3 = this.lateral3.Backward(this.gxPrev3);
+                BatchArray ghPre0 = this.lateral0.Backward(this.gxPrev0);
+                BatchArray ghPre1 = this.lateral1.Backward(this.gxPrev1);
+                BatchArray ghPre2 = this.lateral2.Backward(this.gxPrev2);
+                BatchArray ghPre3 = this.lateral3.Backward(this.gxPrev3);
 
-                for (int j = 0; j < ghPre0.Length; j++)
+                for (int i = 0; i < gh.BatchCount * OutputCount; i++)
                 {
-                    for (int k = 0; k < ghPre0[j].Length; k++)
-                    {
-                        lgh[j].Data[k] += ghPre0[j].Data[k];
-                        lgh[j].Data[k] += ghPre1[j].Data[k];
-                        lgh[j].Data[k] += ghPre2[j].Data[k];
-                        lgh[j].Data[k] += ghPre3[j].Data[k];
-                    }
+                    lgh[i] += ghPre0.Data[i];
+                    lgh[i] += ghPre1.Data[i];
+                    lgh[i] += ghPre2.Data[i];
+                    lgh[i] += ghPre3.Data[i];
                 }
             }
 
-            if (IsParallel)
+            Real[] lcParam = this.cParam[this.cParam.Count - 1];
+            this.cParam.RemoveAt(this.cParam.Count - 1);
+
+            Real[] laParam = this.aParam[this.aParam.Count - 1];
+            this.aParam.RemoveAt(this.aParam.Count - 1);
+
+            Real[] liParam = this.iParam[this.iParam.Count - 1];
+            this.iParam.RemoveAt(this.iParam.Count - 1);
+
+            Real[] lfParam = this.fParam[this.fParam.Count - 1];
+            this.fParam.RemoveAt(this.fParam.Count - 1);
+
+            Real[] loParam = this.oParam[this.oParam.Count - 1];
+            this.oParam.RemoveAt(this.oParam.Count - 1);
+
+            Real[] cPrev = this.cParam[this.cParam.Count - 1];
+
+            for (int i = 0; i < gh.BatchCount; i++)
             {
-                Parallel.For(0, lgh.Length, i =>
+                Real[] gParam = new Real[this.InputCount * 4];
+
+                for (int j = 0; j < this.InputCount; j++)
                 {
-                    this.CalcgxPrev(lgh[i].Data, i);
-                });
+                    int prevOutputIndex = j + i * this.OutputCount;
+                    int prevInputIndex = j + i * this.InputCount;
 
-                NdArray[] gArray0 = this.upward0.Backward(this.gxPrev0);
-                NdArray[] gArray1 = this.upward1.Backward(this.gxPrev1);
-                NdArray[] gArray2 = this.upward2.Backward(this.gxPrev2);
-                NdArray[] gArray3 = this.upward3.Backward(this.gxPrev3);
+                    double co = Math.Tanh(lcParam[prevOutputIndex]);
 
-                Parallel.For(0, lgh.Length, i =>
-                {
-                    double[] gx = new double[this.InputCount];
+                    this.gcPrev[prevInputIndex] += lgh[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
+                    gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
+                    gParam[j + InputCount * 1] = this.gcPrev[prevInputIndex] * laParam[prevOutputIndex] * GradSigmoid(liParam[prevOutputIndex]);
+                    gParam[j + InputCount * 2] = this.gcPrev[prevInputIndex] * cPrev[prevOutputIndex] * GradSigmoid(lfParam[prevOutputIndex]);
+                    gParam[j + InputCount * 3] = lgh[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
 
-                    for (int j = 0; j < gx.Length; j++)
-                    {
-                        gx[j] += gArray0[i].Data[j];
-                        gx[j] += gArray1[i].Data[j];
-                        gx[j] += gArray2[i].Data[j];
-                        gx[j] += gArray3[i].Data[j];
-                    }
-
-                    result[i] = NdArray.Convert(gx);
-                });
-            }
-            else
-            {
-                for (int i = 0; i < lgh.Length; i++)
-                {
-                    this.CalcgxPrev(lgh[i].Data, i);
+                    this.gcPrev[prevInputIndex] *= lfParam[prevOutputIndex];
                 }
 
-                NdArray[] gArray0 = this.upward0.Backward(this.gxPrev0);
-                NdArray[] gArray1 = this.upward1.Backward(this.gxPrev1);
-                NdArray[] gArray2 = this.upward2.Backward(this.gxPrev2);
-                NdArray[] gArray3 = this.upward3.Backward(this.gxPrev3);
+                Real[] resultParam = new Real[this.OutputCount * 4];
 
-                for (int i = 0; i < lgh.Length; i++)
+                //配置換え
+                for (int j = 0; j < this.OutputCount * 4; j++)
                 {
-                    double[] gx = new double[this.InputCount];
+                    //暗黙的に切り捨て
+                    int index = j / this.OutputCount;
+                    resultParam[j % this.OutputCount + index * OutputCount] = gParam[j / 4 + j % 4 * InputCount];
+                }
 
-                    for (int j = 0; j < gx.Length; j++)
-                    {
-                        gx[j] += gArray0[i].Data[j];
-                        gx[j] += gArray1[i].Data[j];
-                        gx[j] += gArray2[i].Data[j];
-                        gx[j] += gArray3[i].Data[j];
-                    }
-
-                    result[i] = NdArray.Convert(gx);
+                for (int j = 0; j < OutputCount; j++)
+                {
+                    this.gxPrev0.Data[i * this.OutputCount + j] = resultParam[j + 0 * this.OutputCount];
+                    this.gxPrev1.Data[i * this.OutputCount + j] = resultParam[j + 1 * this.OutputCount];
+                    this.gxPrev2.Data[i * this.OutputCount + j] = resultParam[j + 2 * this.OutputCount];
+                    this.gxPrev3.Data[i * this.OutputCount + j] = resultParam[j + 3 * this.OutputCount];
                 }
             }
 
-            return result;
-        }
+            BatchArray gArray0 = this.upward0.Backward(this.gxPrev0);
+            BatchArray gArray1 = this.upward1.Backward(this.gxPrev1);
+            BatchArray gArray2 = this.upward2.Backward(this.gxPrev2);
+            BatchArray gArray3 = this.upward3.Backward(this.gxPrev3);
 
-        public void CalcgxPrev(double[] gh, int i)
-        {
-            double[] ga = new double[this.InputCount];
-            double[] gi = new double[this.InputCount];
-            double[] gf = new double[this.InputCount];
-            double[] go = new double[this.InputCount];
+            Real[] gx = new Real[gh.BatchCount * this.InputCount];
 
-            double[] lcParam = this.cParam[i][this.cParam[i].Count - 1];
-            this.cParam[i].RemoveAt(this.cParam[i].Count - 1);
-
-            double[] laParam = this.aParam[i][this.aParam[i].Count - 1];
-            this.aParam[i].RemoveAt(this.aParam[i].Count - 1);
-
-            double[] liParam = this.iParam[i][this.iParam[i].Count - 1];
-            this.iParam[i].RemoveAt(this.iParam[i].Count - 1);
-
-            double[] lfParam = this.fParam[i][this.fParam[i].Count - 1];
-            this.fParam[i].RemoveAt(this.fParam[i].Count - 1);
-
-            double[] loParam = this.oParam[i][this.oParam[i].Count - 1];
-            this.oParam[i].RemoveAt(this.oParam[i].Count - 1);
-
-            double[] cPrev = this.cParam[i][this.cParam[i].Count - 1];
-
-            for (int j = 0; j < this.InputCount; j++)
+            for (int i = 0; i < gx.Length; i++)
             {
-                double co = Math.Tanh(lcParam[j]);
-
-                this.gcPrev[i, j] += gh[j] * loParam[j] * GradTanh(co);
-                ga[j] = this.gcPrev[i, j] * liParam[j] * GradTanh(laParam[j]);
-                gi[j] = this.gcPrev[i, j] * laParam[j] * GradSigmoid(liParam[j]);
-                gf[j] = this.gcPrev[i, j] * cPrev[j] * GradSigmoid(lfParam[j]);
-                go[j] = gh[j] * co * GradSigmoid(loParam[j]);
-
-                this.gcPrev[i, j] *= lfParam[j];
+                gx[i] = gArray0.Data[i] + gArray1.Data[i] + gArray2.Data[i] + gArray3.Data[i];
             }
 
-            NdArray[] r = this.RestoreGates(ga, gi, gf, go);
-
-            this.gxPrev0[i] = r[0];
-            this.gxPrev1[i] = r[1];
-            this.gxPrev2[i] = r[2];
-            this.gxPrev3[i] = r[3];
+            return BatchArray.Convert(gx, new[] { InputCount }, gh.BatchCount);
         }
 
         public override void ResetState()
         {
+            initialized = false;
             this.hParam = null;
-            this.gxPrev0 = null;
-            this.gxPrev1 = null;
-            this.gxPrev2 = null;
-            this.gxPrev3 = null;
-        }
-
-        //バッチ実行時にバッティングするメンバをバッチ数分用意
-        void InitBatch(int batchCount)
-        {
-            this.aParam = new List<double[]>[batchCount];
-            this.iParam = new List<double[]>[batchCount];
-            this.fParam = new List<double[]>[batchCount];
-            this.oParam = new List<double[]>[batchCount];
-            this.cParam = new List<double[]>[batchCount];
-            this.hParam = new double[batchCount][];
-            this.gcPrev = new double[batchCount, this.InputCount];
-
-            for (int i = 0; i < batchCount; i++)
-            {
-                this.aParam[i] = new List<double[]>();
-                this.iParam[i] = new List<double[]>();
-                this.fParam[i] = new List<double[]>();
-                this.oParam[i] = new List<double[]>();
-                this.cParam[i] = new List<double[]>();
-                this.hParam[i] = new double[this.OutputCount];
-            }
         }
 
         static double Sigmoid(double x)
@@ -364,44 +259,6 @@ namespace KelpNet.Functions.Connections
         static double GradTanh(double x)
         {
             return 1 - x * x;
-        }
-
-        //Forward用
-        double[,] ExtractGates(params double[][] x)
-        {
-            double[,] r = new double[4, this.OutputCount];
-
-            for (int i = 0; i < this.OutputCount; i++)
-            {
-                int index = i * 4;
-
-                r[0, i] = x[index / this.OutputCount][index % this.OutputCount];
-                r[1, i] = x[++index / this.OutputCount][index % this.OutputCount];
-                r[2, i] = x[++index / this.OutputCount][index % this.OutputCount];
-                r[3, i] = x[++index / this.OutputCount][index % this.OutputCount];
-            }
-
-            return r;
-        }
-
-        //Backward用
-        NdArray[] RestoreGates(params double[][] x)
-        {
-            NdArray[] result =
-            {
-                NdArray.Zeros(this.OutputCount),
-                NdArray.Zeros(this.OutputCount),
-                NdArray.Zeros(this.OutputCount),
-                NdArray.Zeros(this.OutputCount)
-            };
-
-            for (int i = 0; i < this.OutputCount * 4; i++)
-            {
-                //暗黙的に切り捨て
-                result[i / this.OutputCount].Data[i % this.OutputCount] = x[i % 4][i / 4];
-            }
-
-            return result;
         }
     }
 }

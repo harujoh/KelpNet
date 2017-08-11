@@ -11,7 +11,7 @@ namespace KelpNet.Common.Tools
         public static NdArray Image2NdArray(Bitmap input)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
-            NdArray result = NdArray.Zeros(bitcount, input.Height, input.Width);
+            NdArray result = new NdArray(bitcount, input.Height, input.Width);
 
             BitmapData bmpdat = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly, input.PixelFormat);
             byte[] imageData = new byte[bmpdat.Stride * bmpdat.Height];
@@ -54,7 +54,7 @@ namespace KelpNet.Common.Tools
             return null;
         }
 
-        static Bitmap CreateMonoImage(double[] data, int width, int height)
+        static Bitmap CreateMonoImage(Real[] data, int width, int height)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
 
@@ -69,7 +69,7 @@ namespace KelpNet.Common.Tools
 
             byte[] resultData = new byte[bmpdat.Stride * height];
 
-            double datamax = data.Max();
+            Real datamax = data.Max();
 
             for (int y = 0; y < result.Height; y++)
             {
@@ -85,7 +85,7 @@ namespace KelpNet.Common.Tools
             return result;
         }
 
-        static Bitmap CreateColorImage(double[] data, int width, int height)
+        static Bitmap CreateColorImage(Real[] data, int width, int height)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format24bppRgb);
             int bitcount = Image.GetPixelFormatSize(result.PixelFormat) / 8;
@@ -94,7 +94,7 @@ namespace KelpNet.Common.Tools
 
             byte[] resultData = new byte[bmpdat.Stride * height];
 
-            double datamax = data.Max();
+            Real datamax = data.Max();
 
             for (int y = 0; y < result.Height; y++)
             {

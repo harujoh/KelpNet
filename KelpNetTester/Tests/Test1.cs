@@ -19,28 +19,28 @@ namespace KelpNetTester.Tests
             const int learningCount = 10000;
 
             //訓練データ
-            double[][] trainData =
+            Real[][] trainData =
             {
-                new[] { 0.0, 0.0 },
-                new[] { 1.0, 0.0 },
-                new[] { 0.0, 1.0 },
-                new[] { 1.0, 1.0 }
+                new Real[] { 0, 0 },
+                new Real[] { 1, 0 },
+                new Real[] { 0, 1 },
+                new Real[] { 1, 1 }
             };
 
             //訓練データラベル
-            double[][] trainLabel =
+            Real[][] trainLabel =
             {
-                new[] { 0.0 },
-                new[] { 1.0 },
-                new[] { 1.0 },
-                new[] { 0.0 }
+                new Real[] { 0 },
+                new Real[] { 1 },
+                new Real[] { 1 },
+                new Real[] { 0 }
             };
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(2, 2, name: "l1 Linear",isParallel:false),
-                new Sigmoid(name: "l1 Sigmoid", isParallel: false),
-                new Linear(2, 2, name: "l2 Linear", isParallel: false)
+                new Linear(2, 2, name: "l1 Linear"),
+                new Sigmoid(name: "l1 Sigmoid"),
+                new Linear(2, 2, name: "l2 Linear")
             );
 
             //optimizerを宣言
@@ -59,9 +59,9 @@ namespace KelpNetTester.Tests
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (double[] input in trainData)
+            foreach (Real[] input in trainData)
             {
-                NdArray result = nn.Predict(NdArray.FromArray(input));
+                BatchArray result = nn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
@@ -73,13 +73,12 @@ namespace KelpNetTester.Tests
             FunctionStack testnn = ModelIO.Load("test.nn");
 
             Console.WriteLine("Test Start...");
-            foreach (double[] input in trainData)
+            foreach (Real[] input in trainData)
             {
-                NdArray result = testnn.Predict(NdArray.FromArray(input));
+                BatchArray result = testnn.Predict(new BatchArray(input));
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
-
         }
     }
 }

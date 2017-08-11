@@ -1,16 +1,22 @@
 ﻿using System;
+using KelpNet.Common;
+using KelpNetTester.Benchmarker;
 using KelpNetTester.Tests;
 
 namespace KelpNetTester
 {
+    //実行したいテストのコメントを外して下さい
     class Program
     {
         [STAThread]
-        //実行したいテストのコメントを外して下さい
         static void Main(string[] args)
         {
+            //全て.Net Framework上で実行したい場合はこちらをコメントアウト
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
+
             //MLPによるXORの学習
-            Test1.Run();
+            //Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -48,8 +54,14 @@ namespace KelpNetTester
             //Deconvolution2Dのテスト(Winform)
             //new Test13WinForm().ShowDialog();
 
+            //Test6を連結して実行
+            //Test14.Run();
+
             //Linearの分割実行
             //TestX.Run();
+
+            //ベンチマーク
+            SingleBenchmark.Run();
 
             Console.WriteLine("Test Done...");
             Console.Read();

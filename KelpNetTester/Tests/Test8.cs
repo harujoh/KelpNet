@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Functions;
 using KelpNet.Functions.Connections;
@@ -30,9 +29,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成は FunctionStack に書き連ねる
             FunctionStack model = new FunctionStack(
-                new Linear(1, 5, name: "Linear l1", isParallel: false),
-                new LSTM(5, 5, name: "LSTM l2", isParallel: false),
-                new Linear(5, 1, name: "Linear l3", isParallel: false)
+                new Linear(1, 5, name: "Linear l1"),
+                new LSTM(5, 5, name: "LSTM l2"),
+                new Linear(5, 1, name: "Linear l3")
             );
 
             //optimizerを宣言
@@ -44,7 +43,7 @@ namespace KelpNetTester.Tests
             {
                 NdArray[] sequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 
-                double loss = ComputeLoss(model, sequences);
+                Real loss = ComputeLoss(model, sequences);
 
                 model.Update();
 
@@ -63,26 +62,26 @@ namespace KelpNetTester.Tests
             predict(testSequences[sample_index], model, PREDICTION_LENGTH);
         }
 
-        static double ComputeLoss(FunctionStack model, NdArray[] sequences)
+        static Real ComputeLoss(FunctionStack model, NdArray[] sequences)
         {
             //全体での誤差を集計
-            List<double> totalLoss = new List<double>();
-            NdArray[] x = new NdArray[MINI_BATCH_SIZE];
-            NdArray[] t = new NdArray[MINI_BATCH_SIZE];
+            Real totalLoss = 0;
+            BatchArray x = new BatchArray(new[] { 1 }, MINI_BATCH_SIZE);
+            BatchArray t = new BatchArray(new[] { 1 }, MINI_BATCH_SIZE);
 
-            Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
+            Stack<BatchArray> backNdArrays = new Stack<BatchArray>();
 
             for (int i = 0; i < LENGTH_OF_SEQUENCE - 1; i++)
             {
                 for (int j = 0; j < MINI_BATCH_SIZE; j++)
                 {
-                    x[j] = NdArray.FromArray(new[] { sequences[j].Data[i] });
-                    t[j] = NdArray.FromArray(new[] { sequences[j].Data[i + 1] });
+                    x.Data[j] = sequences[j].Data[i];
+                    t.Data[j] = sequences[j].Data[i + 1];
                 }
 
-                double sumLoss;
+                Real sumLoss;
                 backNdArrays.Push(new MeanSquaredError().Evaluate(model.Forward(x), t, out sumLoss));
-                totalLoss.Add(sumLoss);
+                totalLoss += sumLoss;
             }
 
             for (int i = 0; backNdArrays.Count > 0; i++)
@@ -90,27 +89,27 @@ namespace KelpNetTester.Tests
                 model.Backward(backNdArrays.Pop());
             }
 
-            return totalLoss.Average();
+            return totalLoss / (LENGTH_OF_SEQUENCE - 1);
         }
 
         static void predict(NdArray seq, FunctionStack model, int pre_length)
         {
-            double[] pre_input_seq = new double[seq.Length / 4];
+            Real[] pre_input_seq = new Real[seq.Data.Length / 4];
             if (pre_input_seq.Length < 1)
             {
-                pre_input_seq = new double[1];
+                pre_input_seq = new Real[1];
             }
-            Buffer.BlockCopy(seq.Data, 0, pre_input_seq, 0, sizeof(double) * pre_input_seq.Length);
+            Array.Copy(seq.Data, pre_input_seq, pre_input_seq.Length);
 
-            List<double> input_seq = new List<double>();
+            List<Real> input_seq = new List<Real>();
             input_seq.AddRange(pre_input_seq);
 
-            List<double> output_seq = new List<double>();
+            List<Real> output_seq = new List<Real>();
             output_seq.Add(input_seq[input_seq.Count - 1]);
 
             for (int i = 0; i < pre_length; i++)
             {
-                double future = predict_sequence(model, input_seq);
+                Real future = predict_sequence(model, input_seq);
                 input_seq.RemoveAt(0);
                 input_seq.Add(future);
                 output_seq.Add(future);
@@ -124,15 +123,15 @@ namespace KelpNetTester.Tests
             Console.WriteLine(seq);
         }
 
-        static double predict_sequence(FunctionStack model, List<double> input_seq)
+        static Real predict_sequence(FunctionStack model, List<Real> input_seq)
         {
             model.ResetState();
 
-            NdArray result = NdArray.Zeros(1);
+            BatchArray result = new BatchArray(new Real[1]);
 
             for (int i = 0; i < input_seq.Count; i++)
             {
-                result = model.Predict(NdArray.FromArray(new[] {input_seq[i]}));
+                result = model.Predict(new BatchArray(new[] { input_seq[i] }));
             }
 
             return result.Data[0];
@@ -151,7 +150,7 @@ namespace KelpNetTester.Tests
 
             public NdArray Make()
             {
-                NdArray result = NdArray.Zeros(this.stepsPerCycle * this.numberOfCycles);
+                NdArray result = new NdArray(this.stepsPerCycle * this.numberOfCycles);
 
                 for (int i = 0; i < this.numberOfCycles; i++)
                 {
@@ -168,14 +167,14 @@ namespace KelpNetTester.Tests
             {
                 NdArray[] result = new NdArray[miniBatchSize];
 
-                for (int j = 0; j < result.Length; j++)
+                for (int i = 0; i < result.Length; i++)
                 {
-                    result[j] = NdArray.Zeros(lengthOfSequence);
+                    result[i] = new NdArray(lengthOfSequence);
 
-                    int index = Mother.Dice.Next(baseFreq.Length - lengthOfSequence);
-                    for (int i = 0; i < lengthOfSequence; i++)
+                    int index = Mother.Dice.Next(baseFreq.Data.Length - lengthOfSequence);
+                    for (int j = 0; j < lengthOfSequence; j++)
                     {
-                        result[j].Data[i] = baseFreq.Data[index + i];
+                        result[i].Data[j] = baseFreq.Data[index + j];
                     }
 
                 }

@@ -1,48 +1,44 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class LeakyReLU : NeedPreviousOutputFunction
+    public class LeakyReLU : Activation
     {
-        private readonly double _slope;
+        const string FUNCTION_NAME = "LeakyReLU";
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isParallel = true) : base(name,isParallel)
+        private readonly Real _slope;
+
+        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, bool isGpu = false) : base(name, isGpu)
         {
             this._slope = slope;
+
+            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME).Replace("/*slope*/", this._slope.ToString());
+
+            if (IsGpu)
+            {
+                var program = Weaver.CreateProgram(ActivateFunctionString + ActivateKernelString);
+                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
+            }
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        public override void ForwardActivate(ref Real x)
         {
-            double[] y = x.Data.ToArray();
-
-            for (int i = 0; i < x.Length; i++)
+            if (x < 0)
             {
-                if (y[i] < 0)
-                {
-                    y[i] *= this._slope;
-                }
+                x *= this._slope;
             }
-
-            return NdArray.Convert(y, x.Shape);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        public override void BackwardActivate(ref Real gy, Real y)
         {
-            double[] gx = gy.Data.ToArray();
-
-            for (int i = 0; i < prevOutput.Data.Length; i++)
+            if (y <= 0)
             {
-                if (prevOutput.Data[i] <= 0)
-                {
-                    gx[i] = prevOutput.Data[i] * this._slope;
-                }
+                gy = y * this._slope;
             }
-
-            return NdArray.Convert(gx, gy.Shape);
         }
     }
 }

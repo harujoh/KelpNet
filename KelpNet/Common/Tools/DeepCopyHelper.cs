@@ -10,23 +10,25 @@ namespace KelpNet.Common.Tools
     {
         public static T DeepCopy<T>(T target)
         {
-            BinaryFormatter bf = new BinaryFormatter();
-            MemoryStream mem = new MemoryStream();
-
             T result;
-            try
+
+            using (MemoryStream mem = new MemoryStream())
             {
-                bf.Serialize(mem, target);
-                mem.Position = 0;
-                result = (T)bf.Deserialize(mem);
-            }
-            finally
-            {
-                mem.Close();
+                BinaryFormatter bf = new BinaryFormatter();
+
+                try
+                {
+                    bf.Serialize(mem, target);
+                    mem.Position = 0;
+                    result = (T) bf.Deserialize(mem);
+                }
+                finally
+                {
+                    mem.Close();
+                }
             }
 
             return result;
-
         }
     }
 }

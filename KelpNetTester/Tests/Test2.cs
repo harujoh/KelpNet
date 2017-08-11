@@ -18,28 +18,28 @@ namespace KelpNetTester.Tests
             const int learningCount = 10000;
 
             //訓練データ
-            double[][] trainData = 
+            Real[][] trainData =
             {
-                new[] { 0.0, 0.0 },
-                new[] { 1.0, 0.0 },
-                new[] { 0.0, 1.0 },
-                new[] { 1.0, 1.0 }
+                new Real[] { 0, 0 },
+                new Real[] { 1, 0 },
+                new Real[] { 0, 1 },
+                new Real[] { 1, 1 }
             };
 
             //訓練データラベル
-            double[][] trainLabel = 
+            Real[][] trainLabel =
             {
-                new[] { 0.0 },
-                new[] { 1.0 },
-                new[] { 1.0 },
-                new[] { 0.0 }
+                new Real[] { 0 },
+                new Real[] { 1 },
+                new Real[] { 1 },
+                new Real[] { 0 }
             };
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(2, 2, name: "l1 Linear", isParallel: false),
-                new ReLU(name: "l1 ReLU", isParallel: false),
-                new Linear(2, 1, name: "l2 Linear", isParallel: false)
+                new Linear(2, 2, name: "l1 Linear"),
+                new ReLU(name: "l1 ReLU"),
+                new Linear(2, 1, name: "l2 Linear")
             );
 
             //optimizerを宣言(今回はAdam)
@@ -61,11 +61,10 @@ namespace KelpNetTester.Tests
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (double[] val in trainData)
+            foreach (Real[] val in trainData)
             {
-                NdArray result = nn.Predict(NdArray.FromArray(val));
-                Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5?1:0) + " " + result);
-
+                BatchArray result = nn.Predict(new BatchArray(val));
+                Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5 ? 1 : 0) + " " + result);
             }
         }
     }

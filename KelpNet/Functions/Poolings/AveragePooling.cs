@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -7,104 +8,117 @@ namespace KelpNet.Functions.Poolings
     [Serializable]
     public class AveragePooling : NeedPreviousDataFunction
     {
-        private int _kSize;
+        private int _kHeight;
+        private int _kWidth;
+        private int _padY;
+        private int _padX;
         private int _stride;
-        private int _pad;
 
-        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling", bool isParallel = true) : base(name, isParallel)
+        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling") : base(name)
         {
-            this._kSize = ksize;
+            this._kWidth = ksize;
+            this._kHeight = ksize;
+            this._padY = pad;
+            this._padX = pad;
             this._stride = stride;
-            this._pad = pad;
         }
 
-        protected override NdArray NeedPreviousForward(NdArray input)
+        public AveragePooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "AvgPooling") : base(name)
         {
-            int outputSize = (int)Math.Floor((input.Shape[2] - this._kSize + this._pad * 2.0) / this._stride) + 1;
-            double[] result = new double[input.Shape[0] * outputSize * outputSize];
+            if (pad == Size.Empty)
+                pad = new Size(0, 0);
 
-            double m = this._kSize * this._kSize;
+            this._kWidth = ksize.Width;
+            this._kHeight = ksize.Height;
+            this._padY = pad.Height;
+            this._padX = pad.Width;
+            this._stride = stride;
+        }
 
-            int resultIndex = 0;
+        protected override BatchArray NeedPreviousForward(BatchArray input)
+        {
+            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
+            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
+            Real[] result = new Real[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
+            Real m = this._kHeight * this._kWidth;
 
-            for (int i = 0; i < input.Shape[0]; i++)
+            for (int b = 0; b < input.BatchCount; b++)
             {
-                int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
+                int resultIndex = b * input.Shape[0] * outputHeight * outputWidth;
 
-                for (int y = 0; y < outputSize; y++)
+                for (int i = 0; i < input.Shape[0]; i++)
                 {
-                    for (int x = 0; x < outputSize; x++)
+                    int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
+
+                    for (int y = 0; y < outputHeight; y++)
                     {
-                        for (int dy = 0; dy < this._kSize; dy++)
+                        int dyOffset = y * this._stride - this._padY < 0 ? 0 : y * this._stride - this._padY;
+                        int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
+
+                        for (int x = 0; x < outputWidth; x++)
                         {
-                            int inputIndexY = y * this._stride + dy - this._pad;
+                            int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                            int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
 
-                            if (inputIndexY >= 0 && inputIndexY < input.Shape[1])
+                            for (int dy = dyOffset; dy < dyLimit; dy++)
                             {
-                                for (int dx = 0; dx < this._kSize; dx++)
+                                for (int dx = dxOffset; dx < dxLimit; dx++)
                                 {
-                                    int inputIndexX = x * this._stride + dx - this._pad;
-
-                                    if (inputIndexX >= 0 && inputIndexX < input.Shape[2])
-                                    {
-                                        int inputindex = inputIndexOffset + inputIndexY * input.Shape[2] + inputIndexX;
-
-                                        result[resultIndex] += input.Data[inputindex] / m;
-                                    }
+                                    int inputindex = inputIndexOffset + dy * input.Shape[2] + dx;
+                                    result[resultIndex] += input.Data[inputindex + input.Length * b] / m;
                                 }
                             }
-                        }
 
-                        resultIndex++;
+                            resultIndex++;
+                        }
                     }
                 }
             }
 
-            return NdArray.Convert(result, new[] { input.Shape[0], outputSize, outputSize });
+            return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevInput, NdArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
         {
-            double[] result = new double[prevInput.Length];
+            Real[] result = new Real[prevInput.Data.Length];
+            Real m = this._kHeight * this._kWidth;
 
-            double m = this._kSize * this._kSize;
-
-            int gyIndex = 0;
-
-            for (int i = 0; i < prevInput.Shape[0]; i++)
+            for (int b = 0; b < gy.BatchCount; b++)
             {
-                int resultIndexOffset = i * prevInput.Shape[1] * prevInput.Shape[2];
-                for (int y = 0; y < prevOutput.Shape[1]; y++)
+                int gyIndex = b * gy.Length;
+
+                for (int i = 0; i < prevInput.Shape[0]; i++)
                 {
-                    for (int x = 0; x < prevOutput.Shape[2]; x++)
+                    int resultIndexOffset = b * prevInput.Length + i * prevInput.Shape[1] * prevInput.Shape[2];
+
+                    for (int y = 0; y < prevOutput.Shape[1]; y++)
                     {
-                        double gyData = gy.Data[gyIndex] / m;
+                        int dyOffset = y * this._stride - this._padY < 0 ? 0 : y * this._stride - this._padY;
+                        int dyLimit = this._kHeight + dyOffset < prevInput.Shape[1] ? this._kHeight + dyOffset : prevInput.Shape[1];
 
-                        for (int dy = 0; dy < this._kSize; dy++)
+                        for (int x = 0; x < prevOutput.Shape[2]; x++)
                         {
-                            int outputIndexY = y * this._stride + dy - this._pad;
+                            int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                            int dxLimit = this._kWidth + dxOffset < prevInput.Shape[2] ? this._kWidth + dxOffset : prevInput.Shape[2];
 
-                            if (outputIndexY >= 0 && outputIndexY < prevInput.Shape[1])
+                            Real gyData = gy.Data[gyIndex] / m;
+
+                            for (int dy = dyOffset; dy < dyLimit; dy++)
                             {
-                                for (int dx = 0; dx < this._kSize; dx++)
+                                for (int dx = dxOffset; dx < dxLimit; dx++)
                                 {
-                                    int outputIndexX = x * this._stride + dx - this._pad;
-
-                                    if (outputIndexX >= 0 && outputIndexX < prevInput.Shape[2])
-                                    {
-                                        int resultIndex = resultIndexOffset + outputIndexY * prevInput.Shape[2] + outputIndexX;
-                                        result[resultIndex] = gyData;
-                                    }
+                                    int resultIndex = resultIndexOffset + dy * prevInput.Shape[2] + dx;
+                                    result[resultIndex] = gyData;
                                 }
                             }
-                        }
 
-                        gyIndex++;
+                            gyIndex++;
+                        }
                     }
                 }
             }
 
-            return NdArray.Convert(result, prevInput.Shape);
+            return BatchArray.Convert(result, prevInput.Shape, gy.BatchCount);
         }
     }
 }

@@ -17,27 +17,31 @@ namespace VocabularyMaker
 
         public int[] LoadData(string fileName)
         {
-            FileStream fs = new FileStream(fileName, FileMode.Open);
-            StreamReader sr = new StreamReader(fs);
-            string strText = sr.ReadToEnd();
-            sr.Close();
+            int[] result;
 
-            string[] replace = strText.Replace("\r\n","\n").Replace("\n", "<EOS>").Trim().Split(new[]{' '}, StringSplitOptions.RemoveEmptyEntries);
-
-            //ダブリを除いて辞書に追加
-            this.Data.AddRange(replace);
-
-            this.Data = new List<string>(this.Data.Distinct());
-
-            int[] result = new int[replace.Length];
-            for (int i = 0; i < replace.Length; i++)
+            using (FileStream fs = new FileStream(fileName, FileMode.Open))
             {
-                result[i] = this.Data.IndexOf(replace[i]);
-            }
+                StreamReader sr = new StreamReader(fs);
+                string strText = sr.ReadToEnd();
+                sr.Close();
 
-            if (this.EosID == -1)
-            {
-                this.EosID = this.Data.IndexOf("<EOS>");
+                string[] replace = strText.Replace("\r\n", "\n").Replace("\n", "<EOS>").Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                //ダブリを除いて辞書に追加
+                this.Data.AddRange(replace);
+
+                this.Data = new List<string>(this.Data.Distinct());
+
+                result = new int[replace.Length];
+                for (int i = 0; i < replace.Length; i++)
+                {
+                    result[i] = this.Data.IndexOf(replace[i]);
+                }
+
+                if (this.EosID == -1)
+                {
+                    this.EosID = this.Data.IndexOf("<EOS>");
+                }
             }
 
             return result;

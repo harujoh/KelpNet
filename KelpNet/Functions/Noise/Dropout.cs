@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
+using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -9,103 +10,148 @@ namespace KelpNet.Functions.Noise
     [Serializable]
     public class Dropout : Function
     {
-        private readonly double dropoutRatio;
-        private readonly List<double[]> maskStack = new List<double[]>();
+        private readonly Real dropoutRatio;
+        private readonly List<Real[]> maskStack = new List<Real[]>();
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isParallel = true) : base(name, isParallel)
+        [NonSerialized]
+        public ComputeKernel ForwardKernel;
+
+        [NonSerialized]
+        public ComputeKernel BackwardKernel;
+
+        public bool IsGpu;
+
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = false) : base(name)
         {
             this.dropoutRatio = dropoutRatio;
+
+            this.IsGpu = isGpu && Weaver.Enable;
+            if (IsGpu)
+            {
+                ForwardKernel = Weaver.CreateProgram(this.ForwardKernelSource).CreateKernel("DropoutForward");
+                BackwardKernel = Weaver.CreateProgram(this.BackwardKernelSource).CreateKernel("DropoutBackward");
+            }
         }
 
-        protected override NdArray[] ForwardSingle(NdArray[] x)
+        public string ForwardKernelSource { get; } =
+@"
+__kernel void DropoutForward(
+	__global const Real *gpuX,
+	__global const Real *mask,
+	__global Real *gpuY,
+    int maskLength)
+{
+	int i = get_global_id(0);
+
+    gpuY[i] = gpuX[i] * mask[i % maskLength];
+}";
+
+        protected override BatchArray ForwardSingle(BatchArray x)
         {
-            NdArray[] result = new NdArray[x.Length];
-            double[] mask = new double[x[0].Length];
-            double scale = 1.0 / (1.0 - this.dropoutRatio);
+            Real[] result = new Real[x.Data.Length];
+            Real[] mask = new Real[x.Length];
+            Real scale = 1 / (1 - this.dropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)
             {
                 mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
 
-            if (IsParallel)
+            if (!IsGpu)
             {
-                Parallel.For(0, x.Length, i =>
+                for (int i = 0; i < x.Data.Length; i++)
                 {
-                    double[] y = new double[x[i].Length];
-
-                    for (int j = 0; j < mask.Length; j++)
-                    {
-                        y[j] = x[i].Data[j] * mask[j];
-                    }
-
-                    result[i] = NdArray.Convert(y, x[i].Shape);
-                });
+                    result[i] = x.Data[i] * mask[i % mask.Length];
+                }
             }
             else
             {
-                for (int i = 0; i < x.Length; i++)
+                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
+                using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
+                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
                 {
-                    double[] y = new double[x[i].Length];
+                    ForwardKernel.SetMemoryArgument(0, gpuX);
+                    ForwardKernel.SetMemoryArgument(1, gpuMask);
+                    ForwardKernel.SetMemoryArgument(2, gpuY);
+                    ForwardKernel.SetValueArgument(3, mask.Length);
 
-                    for (int j = 0; j < mask.Length; j++)
-                    {
-                        y[j] = x[i].Data[j] * mask[j];
-                    }
+                    Weaver.CommandQueue.Execute
+                        (
+                            ForwardKernel,
+                            null,
+                            new long[] { x.Data.Length },
+                            null,
+                            null
+                        );
 
-                    result[i] = NdArray.Convert(y, x[i].Shape);
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
                 }
             }
 
             this.maskStack.Add(mask);
 
-            return result;
+            return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray[] BackwardSingle(NdArray[] gy)
-        {
-            NdArray[] result = new NdArray[gy.Length];
+        public string BackwardKernelSource { get; } =
+@"
+__kernel void DropoutBackward(
+	__global const Real *mask,
+	__global Real *gpugX,
+    int gyLength)
+{
+	int j = get_global_id(0);
+	int b = get_global_id(1);
 
-            double[] mask = this.maskStack[this.maskStack.Count - 1];
+    gpugX[j + b * gyLength] *= mask[j];
+}";
+
+        protected override BatchArray BackwardSingle(BatchArray gy)
+        {
+            Real[] result = gy.Data.ToArray();
+            Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
-            if (IsParallel)
+            if (!IsGpu)
             {
-                Parallel.For(0, gy.Length, i =>
+                for (int b = 0; b < gy.BatchCount; b++)
                 {
-                    double[] gx = new double[gy[i].Length];
-
-                    for (int j = 0; j < mask.Length; j++)
+                    for (int i = 0; i < mask.Length; i++)
                     {
-                        gx[j] = gy[i].Data[j] * mask[j];
+                        result[i + b * gy.Length] *= mask[i];
                     }
-
-                    result[i] = NdArray.Convert(gx, gy[i].Shape);
-                });
+                }
             }
             else
             {
-                for (int i = 0; i < gy.Length; i++)
+                using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
+                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
                 {
-                    double[] gx = new double[gy[i].Length];
+                    BackwardKernel.SetMemoryArgument(0, gpuMask);
+                    BackwardKernel.SetMemoryArgument(1, gpugX);
+                    BackwardKernel.SetValueArgument(2, gy.Length);
 
-                    for (int j = 0; j < mask.Length; j++)
-                    {
-                        gx[j] = gy[i].Data[j] * mask[j];
-                    }
+                    Weaver.CommandQueue.Execute
+                    (
+                        BackwardKernel,
+                        null,
+                        new long[] { mask.Length, gy.BatchCount},
+                        null,
+                        null
+                    );
 
-                    result[i] = NdArray.Convert(gx, gy[i].Shape);
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref result, true, null);
                 }
             }
-
-            return result;
+            return BatchArray.Convert(result, gy.Shape, gy.BatchCount);
         }
 
         //Predict時に何もしない
-        public override NdArray[] Predict(NdArray[] input)
+        public override BatchArray Predict(BatchArray input)
         {
             return input;
         }
-
     }
 }

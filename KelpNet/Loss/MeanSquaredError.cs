@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Loss;
 
@@ -7,40 +6,31 @@ namespace KelpNet.Loss
 {
     public class MeanSquaredError : ILossFunction
     {
-        public NdArray Evaluate(NdArray input, NdArray teachSignal, out double loss)
+        public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out Real loss)
         {
-            loss = 0.0;
+            Real lossList = 0;
+            Real[] result = new Real[teachSignal.Data.Length];
 
-            double[] diff = new double[teachSignal.Length];
-            double coeff = 2.0 / diff.Length;
-
-            for (int i = 0; i < input.Length; i++)
+            for (int b = 0; b < input.BatchCount; b++)
             {
-                diff[i] = input.Data[i] - teachSignal.Data[i];
-                loss += Math.Pow(diff[i], 2);
+                loss = 0;
 
-                diff[i] *= coeff;
+                Real coeff = 2.0 / teachSignal.Length;
+
+                for (int i = 0; i < input.Length; i++)
+                {
+                    result[i + b * teachSignal.Length] = input.Data[i + b * input.Length] - teachSignal.Data[i + b * teachSignal.Length];
+                    loss += Math.Pow(result[i + b * teachSignal.Length], 2);
+
+                    result[i + b * teachSignal.Length] *= coeff;
+                }
+
+                lossList += loss / teachSignal.Length;
             }
 
-            loss /= diff.Length;
+            loss = lossList / input.BatchCount;
 
-            return NdArray.Convert(diff, teachSignal.Shape);
-        }
-
-        public NdArray[] Evaluate(NdArray[] input, NdArray[] teachSignal, out double loss)
-        {
-            double[] lossList = new double[input.Length];
-            NdArray[] result = new NdArray[input.Length];
-
-            for (int i = 0; i < input.Length; i++)
-            {
-                result[i] = this.Evaluate(input[i], teachSignal[i], out lossList[i]);
-            }
-
-            loss = lossList.Average();
-
-            return result;
+            return BatchArray.Convert(result, teachSignal.Shape, teachSignal.BatchCount);
         }
     }
 }
-

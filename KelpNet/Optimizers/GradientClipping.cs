@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -8,7 +9,7 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class GradientClipping : Optimizer
     {
-        public double Threshold;
+        public Real Threshold;
 
         public GradientClipping(double threshold)
         {
@@ -27,17 +28,17 @@ namespace KelpNet.Optimizers
     [Serializable]
     class GradientClippingParameter : OptimizerParameter
     {
-        private readonly GradientClipping optimiser;
+        private readonly GradientClipping optimizer;
 
-        public GradientClippingParameter(FunctionParameter functionParameter, GradientClipping optimiser) : base(functionParameter)
+        public GradientClippingParameter(FunctionParameter functionParameter, GradientClipping optimizer) : base(functionParameter)
         {
-            this.optimiser = optimiser;
+            this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
             //_sum_sqnorm
-            double s = 0.0;
+            double s = 0;
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
@@ -45,7 +46,7 @@ namespace KelpNet.Optimizers
             }
 
             double norm = Math.Sqrt(s);
-            double rate = this.optimiser.Threshold / norm;
+            double rate = this.optimizer.Threshold / norm;
 
             if (rate < 1)
             {

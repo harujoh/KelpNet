@@ -15,8 +15,8 @@ namespace KelpNet.Common
 #endif
         static double Alpha, Beta, BoxMuller1, BoxMuller2;
         static bool Flip;
-        public static double Mu = 0.0;
-        public static double Sigma = 1.0;
+        public static double Mu = 0;
+        public static double Sigma = 1;
 
         // 平均mu, 標準偏差sigmaの正規分布乱数を得る。Box-Muller法による。
         public static double RandomNormal()

@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -7,7 +8,7 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class SGD : Optimizer
     {
-        public double LearningRate;
+        public Real LearningRate;
 
         public SGD(double learningRate = 0.1)
         {
@@ -26,18 +27,18 @@ namespace KelpNet.Optimizers
     [Serializable]
     class SGDParameter : OptimizerParameter
     {
-        private readonly SGD optimiser;
+        private readonly SGD optimizer;
 
-        public SGDParameter(FunctionParameter functionParameter, SGD optimiser) : base(functionParameter)
+        public SGDParameter(FunctionParameter functionParameter, SGD optimizer) : base(functionParameter)
         {
-            this.optimiser = optimiser;
+            this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * this.FunctionParameter.Grad.Data[i];
+                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * this.FunctionParameter.Grad.Data[i];
             }
         }
     }

@@ -46,6 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Benchmarker\BenchDataMaker.cs" />
+    <Compile Include="Benchmarker\SingleBenchmark.cs" />
     <Compile Include="MnistData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -59,6 +61,7 @@
       <DependentUpon>Test13WinForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Tests\Test13.cs" />
+    <Compile Include="Tests\Test14.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />

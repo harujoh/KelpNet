@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using KelpNet.Common;
 using KelpNet.Common.Tools;
 using KelpNet.Functions;
 using KelpNet.Functions.Activations;
@@ -14,7 +13,6 @@ namespace KelpNetTester.Tests
     class Test4
     {
         //ミニバッチの数
-        //ミニバッチにC#標準のParallelを使用しているため、大きくし過ぎると遅くなるので注意
         const int BATCH_DATA_COUNT = 20;
 
         //一世代あたりの訓練回数
@@ -35,9 +33,9 @@ namespace KelpNetTester.Tests
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Linear(28 * 28, 1024, name: "l1 Linear"),
+                new Linear(28 * 28, 1024, name: "l1 Linear", isGpu: true),
                 new Sigmoid(name: "l1 Sigmoid"),
-                new Linear(1024, 10, name: "l2 Linear")
+                new Linear(1024, 10, name: "l2 Linear", isGpu: true)
             );
 
             //optimizerを宣言
@@ -49,34 +47,36 @@ namespace KelpNetTester.Tests
                 Console.WriteLine("epoch " + (epoch + 1));
 
                 //全体での誤差を集計
-                List<double> totalLoss = new List<double>();
+                Real totalLoss = 0;
+                long totalLossCount = 0;
 
                 //何回バッチを実行するか
-                for (int i = 1; i < TRAIN_DATA_COUNT+1; i++)
+                for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
 
                     //訓練データからランダムにデータを取得
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    double sumLoss = Trainer.BatchTrain(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
-                    totalLoss.Add(sumLoss);
+                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    totalLoss = sumLoss;
+                    totalLossCount++;
 
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)
                     {
                         Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
                         //結果出力
-                        Console.WriteLine("total loss " + totalLoss.Average());
+                        Console.WriteLine("total loss " + totalLoss / totalLossCount);
                         Console.WriteLine("local loss " + sumLoss);
 
                         Console.WriteLine("\nTesting...");
-                        
+
                         //テストデータからランダムにデータを取得
                         MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        double accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

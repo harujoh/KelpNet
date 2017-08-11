@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using KelpNet.Common;
 using MNISTLoader;
 
@@ -23,14 +23,14 @@ namespace KelpNetTester
 
             for (int i = 0; i < this.mnistDataLoader.TrainData.Length; i++)
             {
-                double[] x = new double[28 * 28];
+                Real[] x = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TrainData[i].Length; j++)
                 {
                     x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0;
                 }
                 this.X[i] = new NdArray(x, new[] { 1, 28, 28 });
 
-                this.Tx[i] = NdArray.FromArray(new[] { (int)this.mnistDataLoader.TrainLabel[i] });
+                this.Tx[i] = NdArray.FromArray(new[] { (Real)this.mnistDataLoader.TrainLabel[i] });
             }
 
             //教師データ
@@ -40,56 +40,56 @@ namespace KelpNetTester
 
             for (int i = 0; i < this.mnistDataLoader.TeachData.Length; i++)
             {
-                double[] y = new double[28 * 28];
+                Real[] y = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TeachData[i].Length; j++)
                 {
                     y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0;
                 }
                 this.Y[i] = new NdArray(y, new[] { 1, 28, 28 });
 
-                this.Ty[i] = NdArray.FromArray(new[] { (int)this.mnistDataLoader.TeachLabel[i] });
+                this.Ty[i] = NdArray.FromArray(new[] { (Real)this.mnistDataLoader.TeachLabel[i] });
             }
         }
 
         public MnistDataSet GetRandomYSet(int dataCount)
         {
-            List<NdArray> listY = new List<NdArray>();
-            List<NdArray> listTy = new List<NdArray>();
+            BatchArray listY = new BatchArray(new[] { 1, 28, 28 }, dataCount);
+            BatchArray listTy = new BatchArray(new[] { 1 }, dataCount);
 
-            for (int j = 0; j < dataCount; j++)
+            for (int i = 0; i < dataCount; i++)
             {
                 int index = Mother.Dice.Next(this.Y.Length);
 
-                listY.Add(this.Y[index]);
-                listTy.Add(this.Ty[index]);
+                Array.Copy(this.Y[index].Data, 0, listY.Data,i * listY.Length,listY.Length);
+                listTy.Data[i] = this.Ty[index].Data[0];
             }
 
-            return new MnistDataSet(listY.ToArray(), listTy.ToArray());
+            return new MnistDataSet(listY, listTy);
         }
 
         public MnistDataSet GetRandomXSet(int dataCount)
         {
-            List<NdArray> listX = new List<NdArray>();
-            List<NdArray> listTx = new List<NdArray>();
+            BatchArray listX = new BatchArray(new[] { 1, 28, 28 }, dataCount);
+            BatchArray listTx = new BatchArray(new[] { 1 }, dataCount);
 
-            for (int j = 0; j < dataCount; j++)
+            for (int i = 0; i < dataCount; i++)
             {
                 int index = Mother.Dice.Next(this.X.Length);
 
-                listX.Add(this.X[index]);
-                listTx.Add(this.Tx[index]);
+                Array.Copy(this.X[index].Data, 0, listX.Data, i * listX.Length, listX.Length);
+                listTx.Data[i] = this.Tx[index].Data[0];
             }
 
-            return new MnistDataSet(listX.ToArray(), listTx.ToArray());
+            return new MnistDataSet(listX, listTx);
         }
     }
 
     public class MnistDataSet
     {
-        public NdArray[] Data;
-        public NdArray[] Label;
+        public BatchArray Data;
+        public BatchArray Label;
 
-        public MnistDataSet(NdArray[] data, NdArray[] label)
+        public MnistDataSet(BatchArray data, BatchArray label)
         {
             this.Data = data;
             this.Label = label;

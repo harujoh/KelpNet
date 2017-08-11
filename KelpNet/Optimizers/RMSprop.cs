@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
@@ -7,9 +8,9 @@ namespace KelpNet.Optimizers
     [Serializable]
     public class RMSprop : Optimizer
     {
-        public double LearningRate;
-        public double Alpha;
-        public double Epsilon;
+        public Real LearningRate;
+        public Real Alpha;
+        public Real Epsilon;
 
         public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8)
         {
@@ -30,24 +31,24 @@ namespace KelpNet.Optimizers
     [Serializable]
     class RMSpropParameter : OptimizerParameter
     {
-        private readonly RMSprop optimiser;
-        private readonly double[] ms;
+        private readonly RMSprop optimizer;
+        private readonly Real[] ms;
 
-        public RMSpropParameter(FunctionParameter parameter, RMSprop optimiser) : base(parameter)
+        public RMSpropParameter(FunctionParameter parameter, RMSprop optimizer) : base(parameter)
         {
-            this.optimiser = optimiser;
-            this.ms = new double[parameter.Length];
+            this.optimizer = optimizer;
+            this.ms = new Real[parameter.Length];
         }
 
         public override void UpdateFunctionParameters()
         {
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                double grad = this.FunctionParameter.Grad.Data[i];
-                this.ms[i] *= this.optimiser.Alpha;
-                this.ms[i] += (1 - this.optimiser.Alpha) * grad * grad;
+                Real grad = this.FunctionParameter.Grad.Data[i];
+                this.ms[i] *= this.optimizer.Alpha;
+                this.ms[i] += (1 - this.optimizer.Alpha) * grad * grad;
 
-                this.FunctionParameter.Param.Data[i] -= this.optimiser.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimiser.Epsilon);
+                this.FunctionParameter.Param.Data[i] -= this.optimizer.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
             }
         }
     }

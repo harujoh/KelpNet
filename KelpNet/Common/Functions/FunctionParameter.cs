@@ -20,15 +20,15 @@ namespace KelpNet.Common.Functions
             this.Grad = grad;
             this.Name = name;
 
-            this.Length = this.Param.Length;
+            this.Length = this.Param.Data.Length;
         }
 
         //傾きの補正
         public void Reduce()
         {
-            for (int j = 0; j < this.Grad.Length; j++)
+            for (int i = 0; i < this.Grad.Data.Length; i++)
             {
-                this.Grad.Data[j] /= this.TrainCount;
+                this.Grad.Data[i] /= this.TrainCount;
             }
         }
 
@@ -36,7 +36,7 @@ namespace KelpNet.Common.Functions
         public void ClearGrad()
         {
             //0埋め
-            this.Grad.Fill(0);
+            this.Grad.Clear();
 
             //カウンタをリセット
             this.TrainCount = 0;

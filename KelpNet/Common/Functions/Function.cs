@@ -7,8 +7,6 @@ namespace KelpNet.Common.Functions
     [Serializable]
     public abstract class Function
     {
-        protected bool IsParallel;
-
         public string Name;
 
         public FunctionParameter[] Parameters = { };
@@ -18,18 +16,15 @@ namespace KelpNet.Common.Functions
         protected readonly int InputCount;
 
         //コンストラクタ
-        protected Function(string name, bool isParallel = true, int inputCount = 0, int oututCount = 0)
+        protected Function(string name, int inputCount = 0, int oututCount = 0)
         {
             this.Name = name;
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
-#if DEBUG
-            //デバッグ時は並列処理を行わない
-            this.IsParallel = false;
-#else
-            this.IsParallel = isParallel;
-#endif
         }
+
+        protected abstract BatchArray ForwardSingle(BatchArray x);
+        protected abstract BatchArray BackwardSingle(BatchArray gy);
 
         public void SetOptimizer(params Optimizer[] optimizers)
         {
@@ -42,34 +37,13 @@ namespace KelpNet.Common.Functions
         }
 
         //外部公開用
-        public virtual NdArray[] Forward(NdArray[] x)
+        public virtual BatchArray Forward(BatchArray x)
         {
             return this.ForwardSingle(x);
         }
 
-        public virtual NdArray[] Backward(NdArray[] gy)
-        {
-            //バッチは内部で割引を行うためgy.Lengthでの加算の必要がない
-            foreach (FunctionParameter parameter in this.Parameters)
-            {
-                parameter.TrainCount++;
-            }
-
-            return this.BackwardSingle(gy);
-        }
-
-        //通常であれば非バッチ呼び出しを仮想とするが、
-        //バッチ専用関数がスタンダードで非バッチ関数がイレギュラーであるため
-        protected abstract NdArray[] ForwardSingle(NdArray[] x);
-        protected abstract NdArray[] BackwardSingle(NdArray[] gy);
-
-        //外部公開用非バッチ関数
-        public virtual NdArray Forward(NdArray x)
-        {
-            return this.ForwardSingle(x);
-        }
-
-        public virtual NdArray Backward(NdArray gy)
+        //外部公開用
+        public virtual BatchArray Backward(BatchArray gy)
         {
             foreach (FunctionParameter parameter in this.Parameters)
             {
@@ -77,26 +51,10 @@ namespace KelpNet.Common.Functions
             }
 
             return this.BackwardSingle(gy);
-        }
-
-        //任意で個別に非バッチ関数が書けるように用意
-        protected virtual NdArray ForwardSingle(NdArray x)
-        {
-            return this.ForwardSingle(new[] { x })[0];
-        }
-
-        protected virtual NdArray BackwardSingle(NdArray gy)
-        {
-            return this.BackwardSingle(new[] { gy })[0];
         }
 
         //評価関数
-        public virtual NdArray[] Predict(NdArray[] input)
-        {
-            return this.ForwardSingle(input);
-        }
-
-        public virtual NdArray Predict(NdArray input)
+        public virtual BatchArray Predict(BatchArray input)
         {
             return this.ForwardSingle(input);
         }

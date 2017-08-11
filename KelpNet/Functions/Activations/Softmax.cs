@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -8,48 +7,64 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Softmax : NeedPreviousOutputFunction
     {
-        public Softmax(string name = "Softmax", bool isParallel = true) : base(name, isParallel)
+        public Softmax(string name = "Softmax") : base(name)
         {
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        protected override BatchArray NeedPreviousForward(BatchArray x)
         {
-            double[] y = new double[x.Length];
+            Real[] y = new Real[x.Data.Length];
 
-            double maxval = x.Data.Max();
-            double sumval = 0.0;
-
-            for (int i = 0; i < y.Length; i++)
+            for (int b = 0; b < x.BatchCount; b++)
             {
-                y[i] = Math.Exp(x.Data[i] - maxval);
-                sumval += y[i];
+                Real maxval = x.Data[b * x.Length];
+
+                for (int i = 1; i < x.Length; i++)
+                {
+                    if (maxval < x.Data[i + b * x.Length])
+                    {
+                        maxval = x.Data[i + b * x.Length];
+                    }
+                }
+
+                Real sumval = 0;
+
+                for (int i = 0; i < x.Length; i++)
+                {
+                    y[i + b * x.Length] = Math.Exp(x.Data[i + b * x.Length] - maxval);
+                    sumval += y[i + b * x.Length];
+                }
+
+                for (int i = 0; i < x.Length; i++)
+                {
+                    y[i + b * x.Length] /= sumval;
+                }
             }
 
-            for (int i = 0; i < y.Length; i++)
-            {
-                y[i] /= sumval;
-            }
-
-            return NdArray.Convert(y, x.Shape);
+            return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
         {
-            double[] gx = new double[gy.Length];
-            double sumdx = 0.0;
+            Real[] gx = new Real[gy.Data.Length];
 
-            for (int i = 0; i < gx.Length; i++)
+            for (int b = 0; b < gy.BatchCount; b++)
             {
-                gx[i] = prevOutput.Data[i] * gy.Data[i];
-                sumdx += gx[i];
+                Real sumdx = 0;
+
+                for (int i = 0; i < gy.Length; i++)
+                {
+                    gx[i + b * gy.Length] = prevOutput.Data[i + b * prevOutput.Length] * gy.Data[i + b * gy.Length];
+                    sumdx += gx[i + b * gy.Length];
+                }
+
+                for (int i = 0; i < gy.Length; i++)
+                {
+                    gx[i + b * gy.Length] -= prevOutput.Data[i + b * prevOutput.Length] * sumdx;
+                }
             }
 
-            for (int i = 0; i < gx.Length; i++)
-            {
-                gx[i] -= prevOutput.Data[i] * sumdx;
-            }
-
-            return NdArray.Convert(gx, gy.Shape);
+            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

@@ -1,45 +1,41 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class ReLU : NeedPreviousOutputFunction
+    public class ReLU : Activation
     {
-        public ReLU(string name = "ReLU", bool isParallel = true) : base(name, isParallel)
+        const string FUNCTION_NAME = "ReLU";
+
+        public ReLU(string name = FUNCTION_NAME, bool isGpu = false) : base(name, isGpu)
         {
+            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME);
+
+            if (IsGpu)
+            {
+                var program = Weaver.CreateProgram(this.ActivateFunctionString + ActivateKernelString);
+                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
+            }
         }
 
-        protected override NdArray NeedPreviousForward(NdArray x)
+        public override void ForwardActivate(ref Real x)
         {
-            double[] y = x.Data.ToArray();
-
-            for (int i = 0; i < y.Length; i++)
+            if (x < 0)
             {
-                if (y[i] < 0)
-                {
-                    y[i] = 0;
-                }
+                x = 0;
             }
-
-            return NdArray.Convert(y, x.Shape);
         }
 
-        protected override NdArray NeedPreviousBackward(NdArray gy, NdArray prevOutput)
+
+        public override void BackwardActivate(ref Real gy, Real y)
         {
-            double[] gx = gy.Data.ToArray();
-
-            for (int i = 0; i < prevOutput.Data.Length; i++)
+            if (y <= 0)
             {
-                if (prevOutput.Data[i] <= 0)
-                {
-                    gx[i] = 0.0;
-                }
+                gy = 0;
             }
-
-            return NdArray.Convert(gx, gy.Shape);
         }
     }
 }
