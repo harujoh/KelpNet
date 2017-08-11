@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using Cloo;
+using KelpNet.Properties;
 
 namespace KelpNet.Common
 {
@@ -45,6 +51,23 @@ typedef REAL Real;
         public static int DeviceIndex;
         public static bool Enable;
         public static ComputePlatform Platform;
+        public static Dictionary<string, string> KernelSources = new Dictionary<string, string>();
+
+        public static string GetKernelSource(string functionName)
+        {
+            if (!KernelSources.ContainsKey(functionName))
+            {
+                var binary = (byte[])Resources.ResourceManager.GetObject(functionName);
+                if (binary == null) throw new Exception("リソースファイルの取得に失敗しました\nリソース名:" + functionName);
+
+                using (var reader = new StreamReader(new MemoryStream(binary)))
+                {
+                    KernelSources.Add(functionName, reader.ReadToEnd());
+                }
+            }
+
+            return KernelSources[functionName];
+        }
 
         public static void Initialize(ComputeDeviceTypes selectedComputeDeviceTypes, int platformId = 0, int deviceIndex = 0)
         {

@@ -89,12 +89,36 @@
     <Compile Include="Optimizers\SGD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Tools\Trainer.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cloo\Cloo.csproj">
       <Project>{656e96ce-2587-4ccc-a4db-06d36267133a}</Project>
       <Name>Cloo</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenCL\Activations\Activation.cl" />
+    <None Include="OpenCL\Activations\LeakyReLU.cl" />
+    <None Include="OpenCL\Activations\ReLU.cl" />
+    <None Include="OpenCL\Activations\Sigmoid.cl" />
+    <None Include="OpenCL\Activations\Tanh.cl" />
+    <None Include="OpenCL\Connections\Deconvolution2D.cl" />
+    <None Include="OpenCL\Connections\Linear.cl" />
+    <None Include="OpenCL\Poolings\MaxPooling.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenCL\Connections\Convolution2D.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

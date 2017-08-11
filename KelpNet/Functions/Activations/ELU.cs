@@ -7,9 +7,11 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class ELU : NeedPreviousDataFunction
     {
+        const string FUNCTION_NAME = "ELU";
+
         private readonly Real _alpha;
 
-        public ELU(double alpha = 1, string name = "ELU") : base(name)
+        public ELU(double alpha = 1, string name = FUNCTION_NAME) : base(name)
         {
             this._alpha = alpha;
         }

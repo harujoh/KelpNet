@@ -11,6 +11,8 @@ namespace KelpNet.Functions.Connections
     [Serializable]
     public class Linear : NeedPreviousInputFunction
     {
+        const string FUNCTION_NAME = "Linear";
+
         public bool IsGpu;
 
         private readonly Activation _activation;
@@ -21,6 +23,7 @@ namespace KelpNet.Functions.Connections
 
         [NonSerialized]
         public ComputeKernel BackwardgWKernel;
+
         [NonSerialized]
         public ComputeKernel BackwardgXKernel;
 
@@ -32,7 +35,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = "Linear", bool isGpu = false, Activation activation = null) : base(name, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = new NdArray(outputCount, inputCount);
@@ -71,42 +74,19 @@ namespace KelpNet.Functions.Connections
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {
-                string forwardSource = this._activation != null ?
-                                       this._activation.ForwardActivateFunctionString + this.ForwardKernelSource + "ForwardActivate(gpuY);}" :
-                                       this.ForwardKernelSource + "}";
+                var KernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
 
-                ForwardKernel = Weaver.CreateProgram(forwardSource).CreateKernel("LinearForward");
-                BackwardgWKernel = Weaver.CreateProgram(BackwardgWKernelSource).CreateKernel("LineargWBackward");
-                BackwardgXKernel = Weaver.CreateProgram(BackwardgXKernelSource).CreateKernel("LineargXBackward");
+                if (this._activation != null)
+                {
+                    KernelSource = this._activation.ActivateFunctionString + KernelSource.Replace("/*ForwardActivate*/", "ForwardActivate(gpuY);");
+                }
+
+                var program = Weaver.CreateProgram(KernelSource);
+                ForwardKernel = program.CreateKernel("LinearForward");
+                BackwardgWKernel = program.CreateKernel("LineargWBackward");
+                BackwardgXKernel = program.CreateKernel("LineargXBackward");
             }
         }
-
-        public string ForwardKernelSource { get; } =
-@"
-__kernel void LinearForward(
-	__global const Real *gpuX,
-	__global const Real *gpuW,
-	__global	   Real *gpuY,
- 			 const int OutputCount,
- 			 const int InputCount)
-{
-	int i = get_global_id(0);
-	int batchCount = get_global_id(1);
-
-	gpuX += batchCount * InputCount;
-	gpuW += i * InputCount;
-	gpuY += i + batchCount * OutputCount;
-
-	Real gpuYSum = *gpuY;
-
-	for (int j = 0; j < InputCount; j++)
-	{
-		gpuYSum += gpuX[j] * gpuW[j];
-	}
-
-	*gpuY = gpuYSum;
-//} Don't close for activation.
-";
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
         {
@@ -171,61 +151,6 @@ __kernel void LinearForward(
 
             return output;
         }
-
-        string BackwardgWKernelSource { get; } =
-@"
-__kernel void LineargWBackward(
-	__global const Real *gpugY,
-	__global const Real *gpuX,
-	__global	   Real *gpugW,
-			 const int BatchCount,
-			 const int OutputCount,
-			 const int InputCount)
-{
-	int j = get_global_id(0);
-	int i = get_global_id(1);
-
-	gpugY += i;
-	gpugW += i * InputCount + j;
-	gpuX += j;
-
-	Real tmpgW = *gpugW;
-
-	for(int b = 0; b < BatchCount; b++)
-	{
-		tmpgW += gpuX[b * InputCount] * gpugY[b * OutputCount];
-	}
-
-	*gpugW = tmpgW;
-}";
-
-        string BackwardgXKernelSource { get; } =
-@"
-__kernel void LineargXBackward(
-	__global const Real *gpugY,
-	__global const Real *gpuW,
-	__global	   Real *gpugX,
-			 const int BatchCount,
-			 const int OutputCount,
-			 const int InputCount)
-{
-	int j = get_global_id(0);
-	int b = get_global_id(1);
-
-	gpuW += j;
-	gpugX += b * InputCount + j;
-	gpugY += b * OutputCount;
-
-	Real tmpgX = 0;
-
-	for(int i = 0; i < OutputCount; i++)
-	{
-		tmpgX += gpuW[i * InputCount] * gpugY[i];
-	}
-
-	*gpugX = tmpgX;
-}
-";
 
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {

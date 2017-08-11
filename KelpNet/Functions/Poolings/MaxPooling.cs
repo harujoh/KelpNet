@@ -11,6 +11,8 @@ namespace KelpNet.Functions.Poolings
     [Serializable]
     public class MaxPooling : Function
     {
+        const string FUNCTION_NAME = "MaxPooling";
+
         private int _kWidth;
         private int _kHeight;
         private int _padX;
@@ -27,7 +29,7 @@ namespace KelpNet.Functions.Poolings
 
         public bool IsGpu;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = "MaxPooling", bool isGpu = false) : base(name)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -38,11 +40,11 @@ namespace KelpNet.Functions.Poolings
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateProgram(ForwardKernelSource).CreateKernel("MaxPoolingForward");
+                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
             }
         }
 
-        public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "MaxPooling", bool isGpu = false) : base(name)
+        public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -56,54 +58,9 @@ namespace KelpNet.Functions.Poolings
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateProgram(ForwardKernelSource).CreateKernel("MaxPoolingForward");
+                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
             }
         }
-
-
-        public string ForwardKernelSource { get; } =
-@"
-__kernel void MaxPoolingForward(
-	__global const Real *gpuX,
-	__global int *gpuYindex,
-    const int outputHeight, const int outputWidth,
-    const int inputShape0, const int inputShape1, const int inputShape2,
-    const int kHeight, const int kWidth,
-    const int stride,
-    const int padY, const int padX)
-{
-	int b = get_global_id(0) / inputShape0;
-	int i = get_global_id(0) % inputShape0;
-    int y = get_global_id(1);
-    int x = get_global_id(2);
-
-    int indexOffset = b * inputShape0 * inputShape1 * inputShape2 + i * inputShape1 * inputShape2;
-
-    int dyOffset = y * stride - padY < 0 ? 0 : y * stride - padY;
-    int dyLimit = kHeight + dyOffset < inputShape1 ? kHeight + dyOffset : inputShape1;
-
-    int dxOffset = x * stride - padX < 0 ? 0 : x * stride - padX;
-    int dxLimit = kWidth + dxOffset < inputShape2 ? kWidth + dxOffset : inputShape2;
-
-    int yIndex = indexOffset + dyOffset * inputShape2 + dxOffset;
-    Real maxVal = gpuX[yIndex];
-
-    for (int dy = dyOffset; dy < dyLimit; dy++)
-    {
-        for (int dx = dxOffset; dx < dxLimit; dx++)
-        {
-            int inputIndex = indexOffset + dy * inputShape2 + dx;
-
-            if (maxVal < gpuX[inputIndex])
-            {
-                maxVal = gpuX[inputIndex];
-                yIndex = inputIndex;
-            }
-        }
-    }
-
-    gpuYindex[b * inputShape0 * outputHeight * outputWidth + i * outputHeight * outputWidth + y * outputWidth + x] = yIndex;
-}";
 
         protected override BatchArray ForwardSingle(BatchArray input)
         {

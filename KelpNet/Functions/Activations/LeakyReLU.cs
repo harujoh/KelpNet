@@ -7,35 +7,23 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class LeakyReLU : Activation
     {
-        public string ForwardKernelSource { get; }
-        public string BackwardKernelSource { get; }
+        const string FUNCTION_NAME = "LeakyReLU";
 
         private readonly Real _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", bool isGpu = false) : base(name, isGpu)
+        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, bool isGpu = false) : base(name, isGpu)
         {
             this._slope = slope;
 
+            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME).Replace("/*slope*/", this._slope.ToString());
+
             if (IsGpu)
             {
-                this.ForwardKernelSource = String.Format(this.ForwardActivateFunctionString, this._slope) + ForwardActivateKernelString;
-                this.BackwardKernelSource = String.Format(this.BackwardActivateFunctionString, this._slope) + BackwardActivateKernelString;
-
-                this.ForwardKernel = Weaver.CreateProgram(this.ForwardKernelSource).CreateKernel(this.ForwardKernelName);
-                this.BackwardKernel = Weaver.CreateProgram(this.BackwardKernelSource).CreateKernel(this.BackwardKernelName);
+                var program = Weaver.CreateProgram(ActivateFunctionString + ActivateKernelString);
+                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
             }
         }
-
-        public override string ForwardActivateFunctionString { get; } =
-@"
-void ForwardActivate(__global Real* gpuY)
-{{
-    if(*gpuY < 0.0)
-    {{
-        *gpuY *= {0};
-    }}
-}}
-";
 
         public override void ForwardActivate(ref Real x)
         {
@@ -44,16 +32,6 @@ void ForwardActivate(__global Real* gpuY)
                 x *= this._slope;
             }
         }
-
-        public override string BackwardActivateFunctionString { get; } =
-@"
-void BackwardActivate(Real gpuY, Real* gpugX)
-{{
-    if(gpuY <= 0.0)
-    {{
-        *gpugX = gpuY * {0};
-    }}
-}}";
 
         public override void BackwardActivate(ref Real gy, Real y)
         {

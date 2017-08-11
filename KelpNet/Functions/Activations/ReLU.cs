@@ -7,31 +7,19 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class ReLU : Activation
     {
-        public string ForwardKernelSource { get; }
-        public string BackwardKernelSource { get; }
+        const string FUNCTION_NAME = "ReLU";
 
-        public ReLU(string name = "ReLU", bool isGpu = false) : base(name, isGpu)
+        public ReLU(string name = FUNCTION_NAME, bool isGpu = false) : base(name, isGpu)
         {
+            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME);
+
             if (IsGpu)
             {
-                this.ForwardKernelSource = this.ForwardActivateFunctionString + ForwardActivateKernelString;
-                this.BackwardKernelSource = this.BackwardActivateFunctionString + BackwardActivateKernelString;
-
-                this.ForwardKernel = Weaver.CreateProgram(this.ForwardKernelSource).CreateKernel(this.ForwardKernelName);
-                this.BackwardKernel = Weaver.CreateProgram(this.BackwardKernelSource).CreateKernel(this.BackwardKernelName);
+                var program = Weaver.CreateProgram(this.ActivateFunctionString + ActivateKernelString);
+                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
             }
         }
-
-        public override string ForwardActivateFunctionString { get; } =
-@"
-void ForwardActivate(__global Real* gpuY)
-{
-    if(*gpuY < 0.0)
-    {
-        *gpuY = 0.0;
-    }
-}
-";
 
         public override void ForwardActivate(ref Real x)
         {
@@ -41,16 +29,6 @@ void ForwardActivate(__global Real* gpuY)
             }
         }
 
-        public override string BackwardActivateFunctionString { get; } =
-@"
-void BackwardActivate(Real gpuY, Real* gpugX)
-{
-    if(gpuY <= 0.0)
-    {
-        *gpugX = 0.0;
-    }
-}
-";
 
         public override void BackwardActivate(ref Real gy, Real y)
         {
