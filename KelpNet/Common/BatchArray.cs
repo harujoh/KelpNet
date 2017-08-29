@@ -73,7 +73,7 @@ namespace KelpNet.Common
             return new NdArray(data, this.Shape);
         }
 
-        public static BatchArray FromArray(Array[] data)
+        public static BatchArray FromArrays(Array[] data)
         {
             NdArray[] result = new NdArray[data.Length];
 

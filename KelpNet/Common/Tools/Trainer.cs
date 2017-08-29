@@ -16,7 +16,7 @@ namespace KelpNet.Common.Tools
         //バッチで学習処理を行う
         public static Real Train(FunctionStack functionStack, Array[] input, Array[] teach, ILossFunction lossFunction, bool isUpdate = true)
         {
-            return Train(functionStack, BatchArray.FromArray(input), BatchArray.FromArray(teach), lossFunction, isUpdate);
+            return Train(functionStack, BatchArray.FromArrays(input), BatchArray.FromArrays(teach), lossFunction, isUpdate);
         }
 
         //バッチで学習処理を行う
@@ -49,7 +49,7 @@ namespace KelpNet.Common.Tools
         //精度測定
         public static double Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
         {
-            return Accuracy(functionStack, BatchArray.FromArray(x), BatchArray.FromArray(y));
+            return Accuracy(functionStack, BatchArray.FromArrays(x), BatchArray.FromArrays(y));
         }
 
         public static double Accuracy(FunctionStack functionStack, BatchArray x, BatchArray y)
