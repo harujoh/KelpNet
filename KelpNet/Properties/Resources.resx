@@ -127,6 +127,9 @@
   <data name="Deconvolution2D" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\opencl\connections\deconvolution2d.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="Dropout" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\opencl\noise\dropout.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="LeakyReLU" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\opencl\activations\leakyrelu.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

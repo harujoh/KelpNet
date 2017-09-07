@@ -93,6 +93,16 @@ namespace KelpNet.Properties {
         /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
+        internal static byte[] Dropout {
+            get {
+                object obj = ResourceManager.GetObject("Dropout", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Byte[] のローカライズされたリソースを検索します。
+        /// </summary>
         internal static byte[] LeakyReLU {
             get {
                 object obj = ResourceManager.GetObject("LeakyReLU", resourceCulture);

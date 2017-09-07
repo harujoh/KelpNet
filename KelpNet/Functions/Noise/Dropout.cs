@@ -10,6 +10,8 @@ namespace KelpNet.Functions.Noise
     [Serializable]
     public class Dropout : Function
     {
+        const string FUNCTION_NAME = "Dropout";
+
         private readonly Real dropoutRatio;
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
@@ -21,30 +23,20 @@ namespace KelpNet.Functions.Noise
 
         public bool IsGpu;
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", bool isGpu = false) : base(name)
+        public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             this.dropoutRatio = dropoutRatio;
 
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {
-                ForwardKernel = Weaver.CreateProgram(this.ForwardKernelSource).CreateKernel("DropoutForward");
-                BackwardKernel = Weaver.CreateProgram(this.BackwardKernelSource).CreateKernel("DropoutBackward");
+                var KernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
+                var program = Weaver.CreateProgram(KernelSource);
+
+                ForwardKernel = program.CreateKernel("DropoutForward");
+                BackwardKernel = program.CreateKernel("DropoutBackward");
             }
         }
-
-        public string ForwardKernelSource { get; } =
-@"
-__kernel void DropoutForward(
-	__global const Real *gpuX,
-	__global const Real *mask,
-	__global Real *gpuY,
-    int maskLength)
-{
-	int i = get_global_id(0);
-
-    gpuY[i] = gpuX[i] * mask[i % maskLength];
-}";
 
         protected override BatchArray ForwardSingle(BatchArray x)
         {
@@ -93,19 +85,6 @@ __kernel void DropoutForward(
 
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
-
-        public string BackwardKernelSource { get; } =
-@"
-__kernel void DropoutBackward(
-	__global const Real *mask,
-	__global Real *gpugX,
-    int gyLength)
-{
-	int j = get_global_id(0);
-	int b = get_global_id(1);
-
-    gpugX[j + b * gyLength] *= mask[j];
-}";
 
         protected override BatchArray BackwardSingle(BatchArray gy)
         {
