@@ -36,7 +36,7 @@ namespace KelpNet.Common.Functions
         public void ClearGrad()
         {
             //0埋め
-            this.Grad.Clear();
+            this.Grad.Fill(0);
 
             //カウンタをリセット
             this.TrainCount = 0;
