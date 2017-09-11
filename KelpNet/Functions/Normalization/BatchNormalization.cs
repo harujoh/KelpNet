@@ -93,7 +93,7 @@ namespace KelpNet.Functions.Normalization
                 {
                     for (int index = 0; index < x.BatchCount; index++)
                     {
-                        this.Variance[i] += Math.Pow(x.Data[i + index * x.Length] - this.Mean[i], 2);
+                        this.Variance[i] += (x.Data[i + index * x.Length] - this.Mean[i]) * (x.Data[i + index * x.Length] - this.Mean[i]);
                     }
 
                     this.Variance[i] /= x.BatchCount;

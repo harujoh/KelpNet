@@ -48,8 +48,18 @@ namespace KelpNet.Optimizers
 
         public override void UpdateFunctionParameters()
         {
-            Real fix1 = 1 - Math.Pow(this._optimizer.Beta1, this._optimizer.UpdateCount);
-            Real fix2 = 1 - Math.Pow(this._optimizer.Beta2, this._optimizer.UpdateCount);
+            Real fix1 = this._optimizer.Beta1;
+            Real fix2 = this._optimizer.Beta2;
+
+            for (int i = 1; i < this._optimizer.UpdateCount; i++)
+            {
+                fix1 *= this._optimizer.Beta1;
+                fix2 *= this._optimizer.Beta2;
+            }
+
+            fix1 = 1 - fix1;
+            fix2 = 1 - fix2;
+
             Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)

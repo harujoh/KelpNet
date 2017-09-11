@@ -20,7 +20,7 @@ namespace KelpNet.Loss
                 for (int i = 0; i < input.Length; i++)
                 {
                     result[i + b * teachSignal.Length] = input.Data[i + b * input.Length] - teachSignal.Data[i + b * teachSignal.Length];
-                    loss += Math.Pow(result[i + b * teachSignal.Length], 2);
+                    loss += result[i + b * teachSignal.Length] * result[i + b * teachSignal.Length];
 
                     result[i + b * teachSignal.Length] *= coeff;
                 }

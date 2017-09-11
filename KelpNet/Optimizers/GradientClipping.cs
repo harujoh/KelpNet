@@ -42,7 +42,7 @@ namespace KelpNet.Optimizers
 
             for (int i = 0; i < this.FunctionParameter.Length; i++)
             {
-                s += Math.Pow(this.FunctionParameter.Grad.Data[i], 2);
+                s += this.FunctionParameter.Grad.Data[i] * this.FunctionParameter.Grad.Data[i];
             }
 
             double norm = Math.Sqrt(s);
