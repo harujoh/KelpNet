@@ -8,7 +8,8 @@
 	const int inputLength,
 	const int outputWidth,
 	const int outputHeight,
-	const int subSample,
+	const int subSampleX,
+	const int subSampleY,
 	const int trimX,
 	const int trimY,
 	const int kHeight,
@@ -21,11 +22,11 @@
 	int oy = get_global_id(1) + trimY;
 	int ox = get_global_id(2) + trimX;
 
-	int iyLimit = oy / subSample + 1 < inputShape1 ? oy / subSample + 1 : inputShape1;
-	int iyStart = oy - kHeight < 0 ? 0 : (oy - kHeight) / subSample + 1;
+	int iyLimit = oy / subSampleY + 1 < inputShape1 ? oy / subSampleY + 1 : inputShape1;
+	int iyStart = oy - kHeight < 0 ? 0 : (oy - kHeight) / subSampleY + 1;
 
-	int ixLimit = ox / subSample + 1 < inputShape2 ? ox / subSample + 1 : inputShape2;
-	int ixStart = ox - kWidth < 0 ? 0 : (ox - kWidth) / subSample + 1;
+	int ixLimit = ox / subSampleX + 1 < inputShape2 ? ox / subSampleX + 1 : inputShape2;
+	int ixStart = ox - kWidth < 0 ? 0 : (ox - kWidth) / subSampleX + 1;
 
 	Real result = 0;
 
@@ -39,7 +40,7 @@
 			for (int ix = ixStart; ix < ixLimit; ix++)
 			{
 				int inputIndex = inputIndexOffset + iy * inputShape2 + ix;
-				int kernelIndex = kernelIndexOffset + (oy - iy * subSample) * kWidth + (ox - ix * subSample);
+				int kernelIndex = kernelIndexOffset + (oy - iy * subSampleY) * kWidth + (ox - ix * subSampleX);
 
 				result += gpuX[inputIndex] * gpuW[kernelIndex];
 			}
@@ -63,7 +64,8 @@ __kernel void Convolution2DgWBackward(
 	const int xShape1,
 	const int xShape2,
 	const int xLength,
-	const int subSample,
+	const int subSampleX,
+	const int subSampleY,
 	const int trimX,
 	const int trimY,
 	const int kHeight,
@@ -80,11 +82,11 @@ __kernel void Convolution2DgWBackward(
 
 	int iyOffset = ky - trimY;
 	int iyStart = iyOffset < 0 ? 0 : iyOffset;
-	int iyLimit = gyShape1 < xShape1 * subSample + iyOffset ? gyShape1 : xShape1 * subSample + iyOffset;
+	int iyLimit = gyShape1 < xShape1 * subSampleY + iyOffset ? gyShape1 : xShape1 * subSampleY + iyOffset;
 
 	int ixOffset = kx - trimX;
 	int ixStart = ixOffset < 0 ? 0 : ixOffset;
-	int ixLimit = gyShape2 < xShape2 * subSample + ixOffset ? gyShape2 : xShape2 * subSample + ixOffset;
+	int ixLimit = gyShape2 < xShape2 * subSampleX + ixOffset ? gyShape2 : xShape2 * subSampleX + ixOffset;
 
 	int gwIndex = och * inputCount * kHeight * kWidth + ich * kHeight * kWidth + ky * kWidth + kx;
 
@@ -95,12 +97,12 @@ __kernel void Convolution2DgWBackward(
 		int xIndexOffset = batchCount * xLength + xChannelOffest;
 		int gyIndexOffset = batchCount * gyLength + gyChannelOffest;
 
-		for (int iy = iyStart; iy < iyLimit; iy += subSample)
+		for (int iy = iyStart; iy < iyLimit; iy += subSampleY)
 		{
-			for (int ix = ixStart; ix < ixLimit; ix += subSample)
+			for (int ix = ixStart; ix < ixLimit; ix += subSampleX)
 			{
 				int gyIndex = gyIndexOffset + iy * gyShape2 + ix;
-				int xIndex = xIndexOffset + (iy / subSample - iyOffset) * xShape2 + ix / subSample - ixOffset;
+				int xIndex = xIndexOffset + (iy / subSampleY - iyOffset) * xShape2 + ix / subSampleX - ixOffset;
 
 				localgW += gpuX[xIndex] * activatedgy[gyIndex];
 			}
@@ -122,7 +124,8 @@ __kernel void Convolution2DgXBackward(
 	const int xShape1,
 	const int xShape2,
 	const int xLength,
-	const int subSample,
+	const int subSampleX,
+	const int subSampleY,
 	const int trimX,
 	const int trimY,
 	const int kHeight,
@@ -130,8 +133,8 @@ __kernel void Convolution2DgXBackward(
 {
 	int batchCounter = get_global_id(0) / inputCount;
 	int ich = get_global_id(0) % inputCount;
-	int iy = get_global_id(1) * subSample;
-	int ix = get_global_id(2) * subSample;
+	int iy = get_global_id(1) * subSampleY;
+	int ix = get_global_id(2) * subSampleX;
 
 	int kyOffset = iy - trimY;
 	int kyStart = kyOffset < 0 ? 0 : kyOffset;

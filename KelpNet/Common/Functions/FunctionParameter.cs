@@ -35,7 +35,7 @@ namespace KelpNet.Common.Functions
         //傾きの初期化
         public void ClearGrad()
         {
-            //0埋め
+            //参照値であるためClearは使ってはいけない
             this.Grad.Fill(0);
 
             //カウンタをリセット

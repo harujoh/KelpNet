@@ -34,17 +34,19 @@ namespace KelpNet.Functions.Connections
 
         private readonly int _kWidth;
         private readonly int _kHeight;
-        private readonly int _stride;
+        private readonly int _strideX;
+        private readonly int _strideY;
         private readonly int _padX;
         private readonly int _padY;
 
         public bool IsGpu;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
-            this._stride = stride;
+            this._strideX = stride;
+            this._strideY = stride;
             this._padX = pad;
             this._padY = pad;
 
@@ -57,7 +59,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, int stride = 1, Size pad = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride, Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
             {
@@ -66,7 +68,8 @@ namespace KelpNet.Functions.Connections
 
             this._kWidth = kSize.Width;
             this._kHeight = kSize.Height;
-            this._stride = stride;
+            this._strideX = stride.Width;
+            this._strideY = stride.Height;
             this._padX = pad.Width;
             this._padY = pad.Height;
 
@@ -79,7 +82,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb);
         }
 
-        void Initialize(Real[,,,] initialW = null, Real[] initialb = null)
+        void Initialize(Array initialW = null, Array initialb = null)
         {
             this.W = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
@@ -103,7 +106,7 @@ namespace KelpNet.Functions.Connections
             {
                 if (initialb != null)
                 {
-                    this.b.Data = initialb.ToArray();
+                    this.b.Data = initialb.Cast<Real>().ToArray();
                 }
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
@@ -127,8 +130,8 @@ namespace KelpNet.Functions.Connections
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
-            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
-            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
+            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
+            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
 
             Real[] result = new Real[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
 
@@ -143,12 +146,12 @@ namespace KelpNet.Functions.Connections
                         //Wインデックス用
                         int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
 
-                        for (int oy = 0; oy < outputHeight * this._stride; oy += this._stride)
+                        for (int oy = 0; oy < outputHeight * this._strideY; oy += this._strideY)
                         {
                             int kyStartIndex = oy - this._padY < 0 ? 0 : oy - this._padY;
                             int kyLimit = this._kHeight + oy - this._padY < input.Shape[1] ? this._kHeight + oy - this._padY : input.Shape[1];
 
-                            for (int ox = 0; ox < outputWidth * this._stride; ox += this._stride)
+                            for (int ox = 0; ox < outputWidth * this._strideX; ox += this._strideX)
                             {
                                 int kxStartIndex = ox - this._padX < 0 ? 0 : ox - this._padX;
                                 int kxLimit = this._kWidth + ox - this._padX < input.Shape[2] ? this._kWidth + ox - this._padX : input.Shape[2];
@@ -197,13 +200,14 @@ namespace KelpNet.Functions.Connections
                     ForwardKernel.SetValueArgument(6, input.Length);
                     ForwardKernel.SetValueArgument(7, outputWidth);
                     ForwardKernel.SetValueArgument(8, outputHeight);
-                    ForwardKernel.SetValueArgument(9, this._stride);
-                    ForwardKernel.SetValueArgument(10, this._padX);
-                    ForwardKernel.SetValueArgument(11, this._padY);
-                    ForwardKernel.SetValueArgument(12, this._kHeight);
-                    ForwardKernel.SetValueArgument(13, this._kWidth);
-                    ForwardKernel.SetValueArgument(14, this.OutputCount);
-                    ForwardKernel.SetValueArgument(15, this.InputCount);
+                    ForwardKernel.SetValueArgument(9, this._strideX);
+                    ForwardKernel.SetValueArgument(10, this._strideY);
+                    ForwardKernel.SetValueArgument(11, this._padX);
+                    ForwardKernel.SetValueArgument(12, this._padY);
+                    ForwardKernel.SetValueArgument(13, this._kHeight);
+                    ForwardKernel.SetValueArgument(14, this._kWidth);
+                    ForwardKernel.SetValueArgument(15, this.OutputCount);
+                    ForwardKernel.SetValueArgument(16, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                     (
@@ -271,13 +275,13 @@ namespace KelpNet.Functions.Connections
                         //gWインデックス用
                         int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
 
-                        for (int oy = 0; oy < gy.Shape[1] * this._stride; oy += this._stride)
+                        for (int oy = 0; oy < gy.Shape[1] * this._strideY; oy += this._strideY)
                         {
                             //計算省略のためにジャンプ
                             int kyStartIndex = this._padY - oy < 0 ? 0 : this._padY - oy;
                             int kyLimit = this._kHeight < x.Shape[1] - oy + this._padY ? this._kHeight : x.Shape[1] - oy + this._padY;
 
-                            for (int ox = 0; ox < gy.Shape[2] * this._stride; ox += this._stride)
+                            for (int ox = 0; ox < gy.Shape[2] * this._strideX; ox += this._strideX)
                             {
                                 //計算省略のためにジャンプ
                                 int kxStartIndex = this._padX - ox < 0 ? 0 : this._padX - ox;
@@ -335,11 +339,12 @@ namespace KelpNet.Functions.Connections
                         this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
                         this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
                         this.BackwardgWKernel.SetValueArgument(10, x.Length);
-                        this.BackwardgWKernel.SetValueArgument(11, this._stride);
-                        this.BackwardgWKernel.SetValueArgument(12, this._padX);
-                        this.BackwardgWKernel.SetValueArgument(13, this._padY);
-                        this.BackwardgWKernel.SetValueArgument(14, this._kHeight);
-                        this.BackwardgWKernel.SetValueArgument(15, this._kWidth);
+                        this.BackwardgWKernel.SetValueArgument(11, this._strideX);
+                        this.BackwardgWKernel.SetValueArgument(12, this._strideY);
+                        this.BackwardgWKernel.SetValueArgument(13, this._padX);
+                        this.BackwardgWKernel.SetValueArgument(14, this._padY);
+                        this.BackwardgWKernel.SetValueArgument(15, this._kHeight);
+                        this.BackwardgWKernel.SetValueArgument(16, this._kWidth);
 
                         Weaver.CommandQueue.Execute
                         (
@@ -368,11 +373,12 @@ namespace KelpNet.Functions.Connections
                         this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
                         this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
                         this.BackwardgXKernel.SetValueArgument(10, x.Length);
-                        this.BackwardgXKernel.SetValueArgument(11, this._stride);
-                        this.BackwardgXKernel.SetValueArgument(12, this._padX);
-                        this.BackwardgXKernel.SetValueArgument(13, this._padY);
-                        this.BackwardgXKernel.SetValueArgument(14, this._kHeight);
-                        this.BackwardgXKernel.SetValueArgument(15, this._kWidth);
+                        this.BackwardgXKernel.SetValueArgument(11, this._strideX);
+                        this.BackwardgXKernel.SetValueArgument(12, this._strideY);
+                        this.BackwardgXKernel.SetValueArgument(13, this._padX);
+                        this.BackwardgXKernel.SetValueArgument(14, this._padY);
+                        this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
+                        this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
 
                         Weaver.CommandQueue.Execute
                         (

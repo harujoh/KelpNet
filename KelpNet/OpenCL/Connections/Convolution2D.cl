@@ -8,7 +8,8 @@
 	const int inputLength,
 	const int outputWidth,
 	const int outputHeight,
-	const int stride,
+	const int strideX,
+	const int strideY,
 	const int padX,
 	const int padY,
 	const int kHeight,
@@ -18,8 +19,8 @@
 {
 	int batchCounter = get_global_id(0) / OutputCount;
 	int och = get_global_id(0) % OutputCount;
-	int oy = get_global_id(1) * stride - padY;
-	int ox = get_global_id(2) * stride - padX;
+	int oy = get_global_id(1) * strideY - padY;
+	int ox = get_global_id(2) * strideX - padX;
 
 	Real localResult = 0;
 
@@ -63,7 +64,8 @@ __kernel void Convolution2DgWBackward(
 	const int xShape1,
 	const int xShape2,
 	const int xLength,
-	const int stride,
+	const int strideX,
+	const int strideY,
 	const int padX,
 	const int padY,
 	const int kHeight,
@@ -78,10 +80,10 @@ __kernel void Convolution2DgWBackward(
 	int gychOffset = och * gyShape1 * gyShape2;
 
 	int iyStartIndex = ky - padY < 0 ? 0 : ky - padY;
-	int iyLimit = gyShape1 * stride + ky - padY < xShape1 ? gyShape1 * stride + ky - padY : xShape1;
+	int iyLimit = gyShape1 * strideY + ky - padY < xShape1 ? gyShape1 * strideY + ky - padY : xShape1;
 
 	int ixStartIndex = kx - padX < 0 ? 0 : kx - padX;
-	int ixLimit = gyShape2 * stride + kx - padX < xShape2 ? gyShape2 * stride + kx - padX : xShape2;
+	int ixLimit = gyShape2 * strideX + kx - padX < xShape2 ? gyShape2 * strideX + kx - padX : xShape2;
 
 	Real localgW = gpugW[outChOffset + ich * kHeight * kWidth + ky * kWidth + kx];
 
@@ -90,11 +92,11 @@ __kernel void Convolution2DgWBackward(
 		int gpuXIndex = batchCounter * xLength + ich * xShape1 * xShape2;
 		int gyIndexOffset = batchCounter * gyShape0 * gyShape1 * gyShape2;
 
-		for (int iy = iyStartIndex; iy < iyLimit; iy += stride)
+		for (int iy = iyStartIndex; iy < iyLimit; iy += strideY)
 		{
 			int oy = iy - ky + padY;
 
-			for (int ix = ixStartIndex; ix < ixLimit; ix += stride)
+			for (int ix = ixStartIndex; ix < ixLimit; ix += strideX)
 			{
 				int ox = ix - kx + padX;
 
@@ -121,7 +123,8 @@ __kernel void Convolution2DgXBackward(
 	const int xShape1,
 	const int xShape2,
 	const int xLength,
-	const int stride,
+	const int strideX,
+	const int strideY,
 	const int padX,
 	const int padY,
 	const int kHeight,
@@ -132,10 +135,10 @@ __kernel void Convolution2DgXBackward(
 	int iy = get_global_id(1) + padY;
 	int ix = get_global_id(2) + padX;
 
-	int kyStart = 0 <= iy - gyShape1 * stride ? iy - gyShape1 * stride + 1 : 0;
+	int kyStart = 0 <= iy - gyShape1 * strideY ? iy - gyShape1 * strideY + 1 : 0;
 	int kyLimit = kHeight < iy + 1 ? kHeight : iy + 1;
 
-	int kxStart = 0 <= ix - gyShape2 * stride ? ix - gyShape2 * stride + 1 : 0;
+	int kxStart = 0 <= ix - gyShape2 * strideX ? ix - gyShape2 * strideX + 1 : 0;
 	int kxLimit = kWidth < ix + 1 ? kWidth : ix + 1;
 
 	Real localgX = 0;
@@ -147,11 +150,11 @@ __kernel void Convolution2DgXBackward(
 
 		for (int ky = kyStart; ky < kyLimit; ky++)
 		{
-			int kydiv = (iy - ky) / stride;
+			int kydiv = (iy - ky) / strideY;
 
 			for (int kx = kxStart; kx < kxLimit; kx++)
 			{
-				int kxdiv = (ix - kx) / stride;
+				int kxdiv = (ix - kx) / strideX;
 
 				int gyIndex = gyIndexOffset + kydiv * gyShape2 + kxdiv;
 				int wIndex = wIndexOffset + ky * kWidth + kx;

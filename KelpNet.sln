@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet", "KelpNet\KelpNet.csproj", "{750BB541-BF90-471D-A93F-54230B6FB07D}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNetWaifu2x", "KelpNetWaifu2x\KelpNetWaifu2x.csproj", "{30EAE301-9B83-467A-867C-42D26CAE7CEA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloo", "Cloo\Cloo.csproj", "{6EC82C77-96BA-4102-9589-AD89E3F4E068}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaffemodelLoader", "CaffemodelLoader\CaffemodelLoader.csproj", "{722B0015-E108-4952-9F86-7CBFBE84A9AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,8 +47,15 @@ Global
 		{6EC82C77-96BA-4102-9589-AD89E3F4E068}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EC82C77-96BA-4102-9589-AD89E3F4E068}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EC82C77-96BA-4102-9589-AD89E3F4E068}.Release|Any CPU.Build.0 = Release|Any CPU
+		{722B0015-E108-4952-9F86-7CBFBE84A9AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{722B0015-E108-4952-9F86-7CBFBE84A9AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{722B0015-E108-4952-9F86-7CBFBE84A9AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{722B0015-E108-4952-9F86-7CBFBE84A9AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FB8C477F-3400-40A1-95C2-369EBB7ED407}
 	EndGlobalSection
 EndGlobal

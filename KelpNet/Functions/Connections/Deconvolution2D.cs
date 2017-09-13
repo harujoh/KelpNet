@@ -25,7 +25,8 @@ namespace KelpNet.Functions.Connections
 
         private int _kWidth;
         private int _kHeight;
-        private int _subSample;
+        private int _subSampleX;
+        private int _subSampleY;
         private int _trimX;
         private int _trimY;
 
@@ -39,13 +40,14 @@ namespace KelpNet.Functions.Connections
         [NonSerialized]
         public ComputeKernel BackwardgXKernel;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
             this._trimX = trim;
             this._trimY = trim;
-            this._subSample = subSample;
+            this._subSampleX = subSample;
+            this._subSampleY = subSample;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
@@ -54,14 +56,15 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, int subSample = 1, Size trim = new Size(), bool noBias = false, Real[,,,] initialW = null, Real[] initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
+        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize.Width;
             this._kHeight = kSize.Height;
             this._trimX = trim.Width;
             this._trimY = trim.Height;
 
-            this._subSample = subSample;
+            this._subSampleX = subSample.Width;
+            this._subSampleY = subSample.Height;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
@@ -70,7 +73,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb);
         }
 
-        void Initialize(Real[,,,] initialW = null, Real[] initialb = null)
+        void Initialize(Array initialW = null, Array initialb = null)
         {
             this.W = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.gW = NdArray.ZerosLike(this.W);
@@ -94,7 +97,7 @@ namespace KelpNet.Functions.Connections
             {
                 if (initialb != null)
                 {
-                    this.b.Data = initialb.ToArray();
+                    this.b.Data = initialb.Cast<Real>().ToArray();
                 }
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
@@ -118,8 +121,8 @@ namespace KelpNet.Functions.Connections
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
-            int outputHeight = (input.Shape[1] - 1) * this._subSample + this._kHeight - this._trimY * 2;
-            int outputWidth = (input.Shape[2] - 1) * this._subSample + this._kWidth - this._trimX * 2;
+            int outputHeight = (input.Shape[1] - 1) * this._subSampleY + this._kHeight - this._trimY * 2;
+            int outputWidth = (input.Shape[2] - 1) * this._subSampleX + this._kWidth - this._trimX * 2;
 
             Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
@@ -136,13 +139,13 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int oy = this._trimY; oy < outputHeight + this._trimY; oy++)
                         {
-                            int iyLimit = oy / this._subSample + 1 < input.Shape[1] ? oy / this._subSample + 1 : input.Shape[1];
-                            int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSample + 1;
+                            int iyLimit = oy / this._subSampleY + 1 < input.Shape[1] ? oy / this._subSampleY + 1 : input.Shape[1];
+                            int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSampleY + 1;
 
                             for (int ox = this._trimX; ox < outputWidth + this._trimX; ox++)
                             {
-                                int ixLimit = ox / this._subSample + 1 < input.Shape[2] ? ox / this._subSample + 1 : input.Shape[2];
-                                int ixStart = ox - this.W.Shape[3] < 0 ? 0 : (ox - this.W.Shape[3]) / this._subSample + 1;
+                                int ixLimit = ox / this._subSampleX + 1 < input.Shape[2] ? ox / this._subSampleX + 1 : input.Shape[2];
+                                int ixStart = ox - this.W.Shape[3] < 0 ? 0 : (ox - this.W.Shape[3]) / this._subSampleX + 1;
 
                                 int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._trimY) * outputWidth + ox - this._trimX;
 
@@ -156,7 +159,7 @@ namespace KelpNet.Functions.Connections
                                         for (int ix = ixStart; ix < ixLimit; ix++)
                                         {
                                             int inputIndex = inputIndexOffset + iy * input.Shape[2] + ix;
-                                            int kernelIndex = kernelIndexOffset + (oy - iy * this._subSample) * this.W.Shape[3] + (ox - ix * this._subSample);
+                                            int kernelIndex = kernelIndexOffset + (oy - iy * this._subSampleY) * this.W.Shape[3] + (ox - ix * this._subSampleX);
 
                                             result[outputIndex] += input.Data[inputIndex] * this.W.Data[kernelIndex];
                                         }
@@ -187,13 +190,14 @@ namespace KelpNet.Functions.Connections
                     ForwardKernel.SetValueArgument(6, input.Length);
                     ForwardKernel.SetValueArgument(7, outputWidth);
                     ForwardKernel.SetValueArgument(8, outputHeight);
-                    ForwardKernel.SetValueArgument(9, this._subSample);
-                    ForwardKernel.SetValueArgument(10, this._trimX);
-                    ForwardKernel.SetValueArgument(11, this._trimY);
-                    ForwardKernel.SetValueArgument(12, this._kHeight);
-                    ForwardKernel.SetValueArgument(13, this._kWidth);
-                    ForwardKernel.SetValueArgument(14, this.OutputCount);
-                    ForwardKernel.SetValueArgument(15, this.InputCount);
+                    ForwardKernel.SetValueArgument(9, this._subSampleX);
+                    ForwardKernel.SetValueArgument(10, this._subSampleY);
+                    ForwardKernel.SetValueArgument(11, this._trimX);
+                    ForwardKernel.SetValueArgument(12, this._trimY);
+                    ForwardKernel.SetValueArgument(13, this._kHeight);
+                    ForwardKernel.SetValueArgument(14, this._kWidth);
+                    ForwardKernel.SetValueArgument(15, this.OutputCount);
+                    ForwardKernel.SetValueArgument(16, this.InputCount);
 
                     Weaver.CommandQueue.Execute
                         (
@@ -272,13 +276,13 @@ namespace KelpNet.Functions.Connections
 
                         for (int oy = this._trimY; oy < gy.Shape[1] + this._trimY; oy++)
                         {
-                            int iyLimit = oy / this._subSample + 1 < x.Shape[1] ? oy / this._subSample + 1 : x.Shape[1];
-                            int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSample + 1;
+                            int iyLimit = oy / this._subSampleY + 1 < x.Shape[1] ? oy / this._subSampleY + 1 : x.Shape[1];
+                            int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSampleY + 1;
 
                             for (int ox = this._trimX; ox < gy.Shape[2] + this._trimX; ox++)
                             {
-                                int ixLimit = ox / this._subSample + 1 < x.Shape[2] ? ox / this._subSample + 1 : x.Shape[2];
-                                int ixStart = ox - this.W.Shape[3] < 0 ? 0 : (ox - this.W.Shape[3]) / this._subSample + 1;
+                                int ixLimit = ox / this._subSampleX + 1 < x.Shape[2] ? ox / this._subSampleX + 1 : x.Shape[2];
+                                int ixStart = ox - this.W.Shape[3] < 0 ? 0 : (ox - this.W.Shape[3]) / this._subSampleX + 1;
 
                                 int gyIndex = batchCount * gy.Length + inputOffset + (oy - this._trimY) * gy.Shape[2] + ox - this._trimX;
                                 Real gyData = activatedgy[gyIndex];
@@ -293,7 +297,7 @@ namespace KelpNet.Functions.Connections
                                         for (int ix = ixStart; ix < ixLimit; ix++)
                                         {
                                             int pInIndex = pinputOffset + iy * x.Shape[2] + ix;
-                                            int gwIndex = inChOffset + (oy - iy * this._subSample) * this.gW.Shape[3] + (ox - ix * this._subSample);
+                                            int gwIndex = inChOffset + (oy - iy * this._subSampleY) * this.gW.Shape[3] + (ox - ix * this._subSampleX);
 
                                             gw[gwIndex] += x.Data[pInIndex] * gyData;
                                             gx[pInIndex] += this.W.Data[gwIndex] * gyData;
@@ -326,11 +330,12 @@ namespace KelpNet.Functions.Connections
                         this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
                         this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
                         this.BackwardgWKernel.SetValueArgument(10, x.Length);
-                        this.BackwardgWKernel.SetValueArgument(11, this._subSample);
-                        this.BackwardgWKernel.SetValueArgument(12, this._trimX);
-                        this.BackwardgWKernel.SetValueArgument(13, this._trimY);
-                        this.BackwardgWKernel.SetValueArgument(14, this._kHeight);
-                        this.BackwardgWKernel.SetValueArgument(15, this._kWidth);
+                        this.BackwardgWKernel.SetValueArgument(11, this._subSampleX);
+                        this.BackwardgWKernel.SetValueArgument(12, this._subSampleY);
+                        this.BackwardgWKernel.SetValueArgument(13, this._trimX);
+                        this.BackwardgWKernel.SetValueArgument(14, this._trimY);
+                        this.BackwardgWKernel.SetValueArgument(15, this._kHeight);
+                        this.BackwardgWKernel.SetValueArgument(16, this._kWidth);
 
                         Weaver.CommandQueue.Execute
                         (
@@ -359,11 +364,12 @@ namespace KelpNet.Functions.Connections
                         this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
                         this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
                         this.BackwardgXKernel.SetValueArgument(10, x.Length);
-                        this.BackwardgXKernel.SetValueArgument(11, this._subSample);
-                        this.BackwardgXKernel.SetValueArgument(12, this._trimX);
-                        this.BackwardgXKernel.SetValueArgument(13, this._trimY);
-                        this.BackwardgXKernel.SetValueArgument(14, this._kHeight);
-                        this.BackwardgXKernel.SetValueArgument(15, this._kWidth);
+                        this.BackwardgXKernel.SetValueArgument(11, this._subSampleX);
+                        this.BackwardgXKernel.SetValueArgument(12, this._subSampleY);
+                        this.BackwardgXKernel.SetValueArgument(13, this._trimX);
+                        this.BackwardgXKernel.SetValueArgument(14, this._trimY);
+                        this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
+                        this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
 
                         Weaver.CommandQueue.Execute
                         (
