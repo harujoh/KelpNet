@@ -43,12 +43,11 @@ namespace KelpNet.Common
 
         public static Real[] GetArray(Array data)
         {
+            Type arrayType = data.GetType().GetElementType();
             Real[] resultData = new Real[data.Length];
 
-            Type arrayType = data.GetType().GetElementType();
-
             //型の不一致をここで吸収
-            if (arrayType != typeof(RealType))
+            if (arrayType != typeof(RealType) && arrayType != typeof(Real))
             {
                 //一次元の長さの配列を用意
                 Array array = Array.CreateInstance(arrayType, data.Length);
