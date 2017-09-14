@@ -17,7 +17,8 @@ namespace KelpNet.Functions.Poolings
         private int _kHeight;
         private int _padX;
         private int _padY;
-        private int _stride;
+        private int _strideX;
+        private int _strideY;
 
         private readonly List<int[]> _outputIndicesList = new List<int[]>();
         private int[] _prevInputShape;
@@ -35,7 +36,8 @@ namespace KelpNet.Functions.Poolings
             this._kWidth = ksize;
             this._padY = pad;
             this._padX = pad;
-            this._stride = stride;
+            this._strideX = stride;
+            this._strideY = stride;
 
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
@@ -44,16 +46,20 @@ namespace KelpNet.Functions.Poolings
             }
         }
 
-        public MaxPooling(Size ksize, int stride = 1, Size pad = new Size(), string name = FUNCTION_NAME, bool isGpu = false) : base(name)
+        public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
+
+            if (stride == Size.Empty)
+                stride = new Size(0, 0);
 
             this._kHeight = ksize.Height;
             this._kWidth = ksize.Width;
             this._padY = pad.Height;
             this._padX = pad.Width;
-            this._stride = stride;
+            this._strideX = stride.Width;
+            this._strideY = stride.Height;
 
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
@@ -64,8 +70,8 @@ namespace KelpNet.Functions.Poolings
 
         protected override BatchArray ForwardSingle(BatchArray input)
         {
-            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
-            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
+            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
+            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             Real[] result = new Real[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
             int[] outputIndices = new int[result.Length];
             this._prevInputShape = input.Shape.ToArray();
@@ -84,12 +90,12 @@ namespace KelpNet.Functions.Poolings
 
                         for (int y = 0; y < outputHeight; y++)
                         {
-                            int dyOffset = y * this._stride + -this._padY < 0 ? 0 : y * this._stride + -this._padY;
+                            int dyOffset = y * this._strideY + -this._padY < 0 ? 0 : y * this._strideY + -this._padY;
                             int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
 
                             for (int x = 0; x < outputWidth; x++)
                             {
-                                int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                                int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
                                 int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
 
                                 outputIndices[resultIndex] = inputIndexOffset + dyOffset * input.Shape[2] + dxOffset;
@@ -129,9 +135,10 @@ namespace KelpNet.Functions.Poolings
                     ForwardKernel.SetValueArgument(6, input.Shape[2]);
                     ForwardKernel.SetValueArgument(7, this._kHeight);
                     ForwardKernel.SetValueArgument(8, this._kWidth);
-                    ForwardKernel.SetValueArgument(9, this._stride);
-                    ForwardKernel.SetValueArgument(10, this._padY);
-                    ForwardKernel.SetValueArgument(11, this._padX);
+                    ForwardKernel.SetValueArgument(9, this._strideX);
+                    ForwardKernel.SetValueArgument(10, this._strideY);
+                    ForwardKernel.SetValueArgument(11, this._padY);
+                    ForwardKernel.SetValueArgument(12, this._padX);
 
                     Weaver.CommandQueue.Execute
                         (

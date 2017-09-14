@@ -35,7 +35,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Real[,] initialW = null, Real[] initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = new NdArray(outputCount, inputCount);
@@ -63,7 +63,7 @@ namespace KelpNet.Functions.Connections
             {
                 if (initialb != null)
                 {
-                    this.b.Data = initialb.ToArray();
+                    this.b.Data = initialb.Cast<Real>().ToArray();
                 }
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");

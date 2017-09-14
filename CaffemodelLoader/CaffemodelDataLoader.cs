@@ -40,29 +40,19 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Convolution:
-                    return SetupConvolution2D(layer);
+                    return SetupConvolution(layer);
 
                 case V1LayerParameter.LayerType.Dropout:
-                    return new Dropout();
+                    return new Dropout(layer.DropoutParam.DropoutRatio);
 
                 case V1LayerParameter.LayerType.Pooling:
-                    var poolingParam = layer.PoolingParam;
-
-                    switch (poolingParam.Pool)
-                    {
-                        case PoolingParameter.PoolMethod.Max:
-                            return new MaxPooling(0);
-
-                        case PoolingParameter.PoolMethod.Ave:
-                            return new AveragePooling(0);
-                    }
-                    break;
+                    return SetupPooling(layer);
 
                 case V1LayerParameter.LayerType.Relu:
-                    return new ReLU();
+                    return new LeakyReLU(layer.ReluParam.NegativeSlope);
 
                 case V1LayerParameter.LayerType.InnerProduct:
-                    return new Linear(0, 0);
+                    return SetupInnerProduct(layer);
             }
 
             Console.WriteLine("Skip the layer \"{0}\", since CaffemodelLoader does not support {0} layer", layer.Type);
@@ -70,7 +60,26 @@ namespace CaffemodelLoader
             return null;
         }
 
-        static Convolution2D SetupConvolution2D(V1LayerParameter layer)
+        static Function SetupPooling(V1LayerParameter layer)
+        {
+            var param = layer.PoolingParam;
+            var ksize = GetKernelSize(param);
+            var stride = GetKernelStride(param);
+            var pad = GetKernelPad(param);
+
+            switch (param.Pool)
+            {
+                case PoolingParameter.PoolMethod.Max:
+                    return new MaxPooling(ksize, stride, pad);
+
+                case PoolingParameter.PoolMethod.Ave:
+                    return new AveragePooling(ksize, stride, pad);
+            }
+
+            return null;
+        }
+
+        static Convolution2D SetupConvolution(V1LayerParameter layer)
         {
             var blobs = layer.Blobs;
             var param = layer.ConvolutionParam;
@@ -96,7 +105,57 @@ namespace CaffemodelLoader
             return new Convolution2D(nIn, nOut, ksize, stride, pad);
         }
 
-        static Size GetKernelSize(ConvolutionParameter param)
+        static Linear SetupInnerProduct(V1LayerParameter layer)
+        {
+            var param = layer.InnerProductParam;
+
+            if (param.Axis != 1)
+            {
+                throw new Exception("Non-default axis in InnerProduct is not supported");
+            }
+
+            var blobs = layer.Blobs;
+            var width = GetWidth(blobs[0]);
+            var height = GetHeight(blobs[0]);
+
+            var w = blobs[0].Datas;
+            if (param.BiasTerm)
+            {
+                return new Linear(width, height, false, w, blobs[1].Datas);
+            }
+
+            return new Linear(width, height, initialW: w);
+        }
+
+        static int GetHeight(BlobProto blob)
+        {
+            if (blob.Height > 0)
+                return blob.Height;
+
+            if (blob.Shape.Dims.Length == 2)
+                return (int)blob.Shape.Dims[0];
+
+            if (blob.Shape.Dims.Length == 4)
+                return (int)blob.Shape.Dims[2];
+
+            throw new Exception(blob.Shape.Dims.Length + "-dimentional array is not supported");
+        }
+
+        static int GetWidth(BlobProto blob)
+        {
+            if (blob.Width > 0)
+                return blob.Width;
+
+            if (blob.Shape.Dims.Length == 2)
+                return (int)blob.Shape.Dims[1];
+
+            if (blob.Shape.Dims.Length == 4)
+                return (int)blob.Shape.Dims[3];
+
+            throw new Exception(blob.Shape.Dims.Length + "-dimentional array is not supported");
+        }
+
+        static Size GetKernelSize(dynamic param)
         {
             if (param.KernelH > 0)
             {
@@ -111,7 +170,7 @@ namespace CaffemodelLoader
             return new Size((int)param.KernelSizes[1], (int)param.KernelSizes[0]);
         }
 
-        static Size GetKernelStride(ConvolutionParameter param)
+        static Size GetKernelStride(dynamic param)
         {
             if (param.StrideH > 0)
             {
@@ -126,7 +185,7 @@ namespace CaffemodelLoader
             return new Size((int)param.Strides[1], (int)param.Strides[0]);
         }
 
-        static Size GetKernelPad(ConvolutionParameter param)
+        static Size GetKernelPad(dynamic param)
         {
             if (param.PadH > 0)
             {

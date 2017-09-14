@@ -58,6 +58,12 @@ namespace KelpNet.Functions.Connections
 
         public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
+            if (subSample == Size.Empty)
+                subSample = new Size(0, 0);
+
+            if (trim == Size.Empty)
+                trim = new Size(0, 0);
+
             this._kWidth = kSize.Width;
             this._kHeight = kSize.Height;
             this._trimX = trim.Width;

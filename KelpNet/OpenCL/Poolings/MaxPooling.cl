@@ -4,7 +4,7 @@
 	const int outputHeight, const int outputWidth,
 	const int inputShape0, const int inputShape1, const int inputShape2,
 	const int kHeight, const int kWidth,
-	const int stride,
+	const int strideX, const int strideY,
 	const int padY, const int padX)
 {
 	int b = get_global_id(0) / inputShape0;
@@ -14,10 +14,10 @@
 
 	int indexOffset = b * inputShape0 * inputShape1 * inputShape2 + i * inputShape1 * inputShape2;
 
-	int dyOffset = y * stride - padY < 0 ? 0 : y * stride - padY;
+	int dyOffset = y * strideY - padY < 0 ? 0 : y * strideY - padY;
 	int dyLimit = kHeight + dyOffset < inputShape1 ? kHeight + dyOffset : inputShape1;
 
-	int dxOffset = x * stride - padX < 0 ? 0 : x * stride - padX;
+	int dxOffset = x * strideX - padX < 0 ? 0 : x * strideX - padX;
 	int dxLimit = kWidth + dxOffset < inputShape2 ? kWidth + dxOffset : inputShape2;
 
 	int yIndex = indexOffset + dyOffset * inputShape2 + dxOffset;

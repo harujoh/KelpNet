@@ -12,7 +12,8 @@ namespace KelpNet.Functions.Poolings
         private int _kWidth;
         private int _padY;
         private int _padX;
-        private int _stride;
+        private int _strideX;
+        private int _strideY;
 
         public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = "AvgPooling") : base(name)
         {
@@ -20,25 +21,30 @@ namespace KelpNet.Functions.Poolings
             this._kHeight = ksize;
             this._padY = pad;
             this._padX = pad;
-            this._stride = stride;
+            this._strideX = stride;
+            this._strideY = stride;
         }
 
-        public AveragePooling(Size ksize, int stride = 1, Size pad = new Size(), string name = "AvgPooling") : base(name)
+        public AveragePooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = "AvgPooling") : base(name)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
+
+            if (stride == Size.Empty)
+                stride = new Size(0, 0);
 
             this._kWidth = ksize.Width;
             this._kHeight = ksize.Height;
             this._padY = pad.Height;
             this._padX = pad.Width;
-            this._stride = stride;
+            this._strideX = stride.Width;
+            this._strideY = stride.Height;
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
         {
-            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._stride) + 1;
-            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._stride) + 1;
+            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
+            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             Real[] result = new Real[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
             Real m = this._kHeight * this._kWidth;
 
@@ -52,12 +58,12 @@ namespace KelpNet.Functions.Poolings
 
                     for (int y = 0; y < outputHeight; y++)
                     {
-                        int dyOffset = y * this._stride - this._padY < 0 ? 0 : y * this._stride - this._padY;
+                        int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
                         int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
 
                         for (int x = 0; x < outputWidth; x++)
                         {
-                            int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                            int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
                             int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
 
                             for (int dy = dyOffset; dy < dyLimit; dy++)
@@ -93,12 +99,12 @@ namespace KelpNet.Functions.Poolings
 
                     for (int y = 0; y < prevOutput.Shape[1]; y++)
                     {
-                        int dyOffset = y * this._stride - this._padY < 0 ? 0 : y * this._stride - this._padY;
+                        int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
                         int dyLimit = this._kHeight + dyOffset < prevInput.Shape[1] ? this._kHeight + dyOffset : prevInput.Shape[1];
 
                         for (int x = 0; x < prevOutput.Shape[2]; x++)
                         {
-                            int dxOffset = x * this._stride - this._padX < 0 ? 0 : x * this._stride - this._padX;
+                            int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
                             int dxLimit = this._kWidth + dxOffset < prevInput.Shape[2] ? this._kWidth + dxOffset : prevInput.Shape[2];
 
                             Real gyData = gy.Data[gyIndex] / m;

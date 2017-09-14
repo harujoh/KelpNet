@@ -59,12 +59,13 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride, Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
-            {
                 pad = new Size(0, 0);
-            }
+
+            if (stride == Size.Empty)
+                stride = new Size(0, 0);
 
             this._kWidth = kSize.Width;
             this._kHeight = kSize.Height;
