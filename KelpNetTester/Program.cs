@@ -57,6 +57,9 @@ namespace KelpNetTester
             //Test6を連結して実行
             //Test14.Run();
 
+            //CaffemodelLoadテスト
+            //Test15.Run();
+
             //Linearの分割実行
             //TestX.Run();
 

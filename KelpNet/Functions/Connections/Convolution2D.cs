@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -94,7 +93,7 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                this.W.Data = initialW.Cast<Real>().ToArray();
+                this.W.Data = Real.GetArray(initialW);
             }
 
             this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
@@ -107,7 +106,7 @@ namespace KelpNet.Functions.Connections
             {
                 if (initialb != null)
                 {
-                    this.b.Data = initialb.Cast<Real>().ToArray();
+                    this.b.Data = Real.GetArray(initialb);
                 }
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");

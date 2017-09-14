@@ -1,9 +1,16 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using RealType = System.Double;
 //using RealType = System.Single;
 
 namespace KelpNet.Common
 {
+    class RealTool
+    {
+        [DllImport("kernel32.dll")]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
+    }
+
     [Serializable]
     public struct Real : IComparable<Real>
     {
@@ -32,6 +39,37 @@ namespace KelpNet.Common
         public override string ToString()
         {
             return this.Value.ToString();
+        }
+
+        public static Real[] GetArray(Array data)
+        {
+            Real[] resultData = new Real[data.Length];
+
+            Type arrayType = data.GetType().GetElementType();
+
+            //型の不一致をここで吸収
+            if (arrayType != typeof(RealType))
+            {
+                //一次元の長さの配列を用意
+                Array array = Array.CreateInstance(arrayType, data.Length);
+                //一次元化して
+                Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * resultData.Length);
+
+                data = new RealType[array.Length];
+
+                //型変換しつつコピー
+                Array.Copy(array, data, array.Length);
+            }
+
+            //データを叩き込む
+            int size = Marshal.SizeOf(typeof(RealType)) * data.Length;
+            GCHandle gchObj = GCHandle.Alloc(data, GCHandleType.Pinned);
+            GCHandle gchBytes = GCHandle.Alloc(resultData, GCHandleType.Pinned);
+            RealTool.CopyMemory(gchBytes.AddrOfPinnedObject(), gchObj.AddrOfPinnedObject(), size);
+            gchObj.Free();
+            gchBytes.Free();
+
+            return resultData;
         }
     }
 }

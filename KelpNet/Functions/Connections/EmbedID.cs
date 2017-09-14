@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -24,7 +23,7 @@ namespace KelpNet.Functions.Connections
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                this.W.Data = initialW.Cast<Real>().ToArray();
+                this.W.Data = Real.GetArray(initialW);
             }
 
             this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };

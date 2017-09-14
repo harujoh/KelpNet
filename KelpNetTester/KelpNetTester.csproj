@@ -62,6 +62,7 @@
     </Compile>
     <Compile Include="Tests\Test13.cs" />
     <Compile Include="Tests\Test14.cs" />
+    <Compile Include="Tests\Test15.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />
@@ -74,6 +75,10 @@
     <Compile Include="Tests\TestX.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CaffemodelLoader\CaffemodelLoader.csproj">
+      <Project>{722b0015-e108-4952-9f86-7cbfbe84a9ab}</Project>
+      <Name>CaffemodelLoader</Name>
+    </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
       <Name>KelpNet</Name>

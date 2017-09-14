@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using KelpNet.Common.Tools;
 
@@ -71,40 +70,12 @@ namespace KelpNet.Common
 
         public static NdArray FromArray(Array data)
         {
-            Real[] resultData = new Real[data.Length];
-            int[] resultShape;
+            Real[] resultData = Real.GetArray(data);
 
-            if (data.Rank == 1)
+            int[] resultShape = new int[data.Rank];
+            for (int i = 0; i < data.Rank; i++)
             {
-                //型変換を兼ねる
-                Array.Copy(data, resultData, data.Length);
-
-                resultShape = new[] { data.Length };
-            }
-            else
-            {
-                //型の不一致をここで吸収
-                if (data.GetType().GetElementType() != typeof(Real))
-                {
-                    Type arrayType = data.GetType().GetElementType();
-                    //一次元の長さの配列を用意
-                    Array array = Array.CreateInstance(arrayType, data.Length);
-                    //一次元化して
-                    Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * resultData.Length);
-
-                    //型変換しつつコピー
-                    Array.Copy(array, resultData, array.Length);
-                }
-                else
-                {
-                    resultData = data.Cast<Real>().ToArray();
-                }
-
-                resultShape = new int[data.Rank];
-                for (int i = 0; i < data.Rank; i++)
-                {
-                    resultShape[i] = data.GetLength(i);
-                }
+                resultShape[i] = data.GetLength(i);
             }
 
             return new NdArray { Data = resultData, Shape = resultShape };
