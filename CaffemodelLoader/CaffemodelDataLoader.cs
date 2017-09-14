@@ -25,6 +25,7 @@ namespace CaffemodelLoader
                 foreach (var layer in netparam.Layers)
                 {
                     var func = CreateFunction(layer);
+
                     if (func != null)
                     {
                         result.Add(func);
@@ -99,10 +100,10 @@ namespace CaffemodelLoader
             if (param.BiasTerm)
             {
                 var b = blobs[1].Datas;
-                return new Convolution2D(nIn, nOut, ksize, stride, pad, false, w, b);
+                return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b);
             }
 
-            return new Convolution2D(nIn, nOut, ksize, stride, pad);
+            return new Convolution2D(nIn, nOut, ksize, stride, pad,!param.BiasTerm, w);
         }
 
         static Linear SetupInnerProduct(V1LayerParameter layer)
@@ -121,10 +122,10 @@ namespace CaffemodelLoader
             var w = blobs[0].Datas;
             if (param.BiasTerm)
             {
-                return new Linear(width, height, false, w, blobs[1].Datas);
+                return new Linear(width, height, !param.BiasTerm, w, blobs[1].Datas);
             }
 
-            return new Linear(width, height, initialW: w);
+            return new Linear(width, height, !param.BiasTerm, w);
         }
 
         static int GetHeight(BlobProto blob)
