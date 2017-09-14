@@ -5,7 +5,7 @@ KelpNetはC#で実装された深層学習のライブラリです
 - 行列演算をライブラリに頼らないため全ソースが可読になっており、どこで何をしているかを全て観測できます
 - KerasやChainerが採用している、関数を積み重ねるように記述するコーディングスタイルを採用しています
 - C#特有の記述を極力避けているため、C#以外のプログラマーでも読み切れるようになっています
-- 並列演算にOpenCLを採用しているためGPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
+- 並列演算にOpenCLを採用しているため、GPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
 > ※OpenCLを使用するためには対応するドライバの追加インストールが必要になることがあります
 > - Intel製 CPU GPU: https://software.intel.com/en-us/articles/opencl-drivers
 > - AMD製 CPU GPU: http://www.amd.com/ja-jp/solutions/professional/hpc/opencl
