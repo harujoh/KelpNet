@@ -24,7 +24,7 @@ KelpNetはC#で実装された深層学習のライブラリです
 
 
 ## 連絡方法
-ご質問、ご要望は Issues へご登録頂くか Twitter からご連絡ください
+ご質問、ご要望は Issues へご登録頂くか Twitter からご連絡ください。
 細やかなことでも構いませんので、何かお気づきの点が御座いましたら、お気軽にご連絡ください。
 
 Twitter: https://twitter.com/harujoh
