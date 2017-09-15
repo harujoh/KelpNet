@@ -24,12 +24,12 @@ namespace KelpNetTester.Tests
             ClientSize = new Size(128 * 4, 128 * 4);
 
             //目標とするフィルタを作成（実践であればココは不明な値となる）
-            this.decon_core = new Deconvolution2D(1, 1, 15, 1, 7)
+            this.decon_core = new Deconvolution2D(1, 1, 15, 1, 7, isGpu: true)
             {
                 W = { Data = MakeOneCore() }
             };
 
-            this.model = new Deconvolution2D(1, 1, 15, 1, 7);
+            this.model = new Deconvolution2D(1, 1, 15, 1, 7, isGpu: true);
 
             this.optimizer = new SGD(learningRate: 0.01); //大きいと発散する
             this.model.SetOptimizer(this.optimizer);

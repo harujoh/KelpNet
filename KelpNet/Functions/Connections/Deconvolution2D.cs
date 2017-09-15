@@ -240,9 +240,6 @@ namespace KelpNet.Functions.Connections
             }
 
             Real[] gx = new Real[x.Data.Length];
-            Real[] gw = new Real[this.gW.Data.Length];
-            Array.Copy(this.gW.Data, gw, gw.Length);
-
             Real[] activatedgy = new Real[gy.BatchCount * gy.Length];
 
             for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
@@ -304,7 +301,7 @@ namespace KelpNet.Functions.Connections
                                             int pInIndex = pinputOffset + iy * x.Shape[2] + ix;
                                             int gwIndex = inChOffset + (oy - iy * this._subSampleY) * this.gW.Shape[3] + (ox - ix * this._subSampleX);
 
-                                            gw[gwIndex] += x.Data[pInIndex] * gyData;
+                                            this.gW.Data[gwIndex] += x.Data[pInIndex] * gyData;
                                             gx[pInIndex] += this.W.Data[gwIndex] * gyData;
                                         }
                                     }
@@ -313,8 +310,6 @@ namespace KelpNet.Functions.Connections
                         }
                     }
                 }
-
-                this.gW.Data = gw;
             }
             else
             {

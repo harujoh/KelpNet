@@ -14,12 +14,12 @@ namespace KelpNetTester.Tests
         public static void Run()
         {
             //目標とするフィルタを作成（実践であればココは不明な値となる）
-            Deconvolution2D decon_core = new Deconvolution2D(1, 1, 15, 1, 7)
+            Deconvolution2D decon_core = new Deconvolution2D(1, 1, 15, 1, 7, isGpu: true)
             {
                 W = { Data = MakeOneCore() }
             };
 
-            Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7);
+            Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7, isGpu: true);
 
             SGD optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
             model.SetOptimizer(optimizer);

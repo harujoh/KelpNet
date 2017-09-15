@@ -12,6 +12,7 @@ namespace KelpNetTester.Tests
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
+                //モデルを読み込む
                 var test = CaffemodelDataLoader.ModelLoad(ofd.FileName);
             }
         }

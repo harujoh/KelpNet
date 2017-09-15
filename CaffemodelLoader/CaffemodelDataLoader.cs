@@ -14,7 +14,7 @@ namespace CaffemodelLoader
 {
     public class CaffemodelDataLoader
     {
-        public static FunctionStack ModelLoad(string path)
+        public static List<Function> ModelLoad(string path)
         {
             List<Function> result = new List<Function>();
 
@@ -33,7 +33,7 @@ namespace CaffemodelLoader
                 }
             }
 
-            return new FunctionStack(result.ToArray());
+            return result;
         }
 
         static Function CreateFunction(V1LayerParameter layer)
