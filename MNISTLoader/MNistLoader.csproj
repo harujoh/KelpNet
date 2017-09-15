@@ -50,18 +50,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\t10k-images.idx3-ubyte">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Data\t10k-labels.idx1-ubyte">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Data\train-images.idx3-ubyte">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Data\train-labels.idx1-ubyte">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\TestDataManager\TestDataManager.csproj">
+      <Project>{6d41064e-38db-4a3d-9336-bec27ed9f2db}</Project>
+      <Name>TestDataManager</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

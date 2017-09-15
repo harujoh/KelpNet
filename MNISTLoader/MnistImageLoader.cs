@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -66,9 +67,10 @@ namespace MNISTLoader
             MnistImageLoader loader = new MnistImageLoader();
 
             // バイト配列を分解する
-            using (FileStream stream = new FileStream(path, FileMode.Open))
+            using (FileStream inStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (GZipStream decompStream = new GZipStream(inStream, CompressionMode.Decompress))
             {
-                BinaryReaderBE reader = new BinaryReaderBE(stream);
+                BinaryReaderBE reader = new BinaryReaderBE(decompStream);
 
                 loader.magicNumber = reader.ReadInt32();
                 loader.numberOfImages = reader.ReadInt32();

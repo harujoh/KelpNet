@@ -6,6 +6,7 @@ using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
+using TestDataManager;
 using VocabularyMaker;
 
 namespace KelpNetTester.Tests
@@ -17,13 +18,20 @@ namespace KelpNetTester.Tests
         const int TRAINING_EPOCHS = 5;
         const int N_UNITS = 100;
 
+        const string DOWNLOAD_URL = "https://raw.githubusercontent.com/wojzaremba/lstm/master/data/";
+        const string TRAIN_FILE = "ptb.train.txt";
+        const string TEST_FILE = "ptb.test.txt";
+
         public static void Run()
         {
             Console.WriteLine("Build Vocabulary.");
 
             Vocabulary vocabulary = new Vocabulary();
-            int[] trainData = vocabulary.LoadData("data/ptb.train.txt");
-            int[] testData = vocabulary.LoadData("data/ptb.test.txt");
+            var trainPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_FILE, TRAIN_FILE);
+            var testPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEST_FILE, TEST_FILE);
+
+            int[] trainData = vocabulary.LoadData(trainPath);
+            int[] testData = vocabulary.LoadData(testPath);
 
             int nVocab = vocabulary.Length;
 

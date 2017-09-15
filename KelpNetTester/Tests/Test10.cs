@@ -6,6 +6,7 @@ using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
+using TestDataManager;
 using VocabularyMaker;
 
 namespace KelpNetTester.Tests
@@ -20,15 +21,25 @@ namespace KelpNetTester.Tests
         const int BPROP_LEN = 35;
         const int GRAD_CLIP = 5;
 
+        const string DOWNLOAD_URL = "https://raw.githubusercontent.com/wojzaremba/lstm/master/data/";
+
+        const string TRAIN_FILE = "ptb.train.txt";
+        const string VALID_FILE = "ptb.valid.txt";
+        const string TEST_FILE = "ptb.test.txt";
+
         public static void Run()
         {
             Console.WriteLine("Build Vocabulary.");
 
             Vocabulary vocabulary = new Vocabulary();
 
-            int[] trainData = vocabulary.LoadData("data/ptb.train.txt");
-            int[] validData = vocabulary.LoadData("data/ptb.valid.txt");
-            int[] testData = vocabulary.LoadData("data/ptb.test.txt");
+            var trainPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_FILE, TRAIN_FILE);
+            var validPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + VALID_FILE, VALID_FILE);
+            var testPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEST_FILE, TEST_FILE);
+
+            int[] trainData = vocabulary.LoadData(trainPath);
+            int[] validData = vocabulary.LoadData(validPath);
+            int[] testData = vocabulary.LoadData(testPath);
 
             int nVocab = vocabulary.Length;
 

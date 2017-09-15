@@ -87,6 +87,10 @@
       <Project>{6782a5ff-52ad-4757-b7e4-2f661459e812}</Project>
       <Name>MNistLoader</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TestDataManager\TestDataManager.csproj">
+      <Project>{6d41064e-38db-4a3d-9336-bec27ed9f2db}</Project>
+      <Name>TestDataManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VocabularyMaker\VocabularyMaker.csproj">
       <Project>{97349e4b-e378-40d2-a712-8922d5f80406}</Project>
       <Name>VocabularyMaker</Name>

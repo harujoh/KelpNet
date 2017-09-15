@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.IO.Compression;
 using System.Text;
 
 namespace MNISTLoader
@@ -26,13 +27,6 @@ namespace MNISTLoader
         public byte[] labelList;
 
         /// <summary>
-        /// コンストラクタ.
-        /// </summary>
-        public MnistLabelLoader()
-        {
-        }
-
-        /// <summary>
         /// MNIST のラベルファイルをロードする.
         /// 失敗した時は null を返す.
         /// </summary>
@@ -47,11 +41,11 @@ namespace MNISTLoader
             }
 
             MnistLabelLoader loader = new MnistLabelLoader();
-
-            // バイト配列を分解する
-            using (FileStream stream = new FileStream(path, FileMode.Open))
+            using (FileStream inStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (GZipStream decompStream = new GZipStream(inStream, CompressionMode.Decompress))
             {
-                BinaryReaderBE reader = new BinaryReaderBE(stream);
+                // バイト配列を分解する
+                BinaryReaderBE reader = new BinaryReaderBE(decompStream);
 
                 loader.magicNumber = reader.ReadInt32();
                 loader.numberOfItems = reader.ReadInt32();
