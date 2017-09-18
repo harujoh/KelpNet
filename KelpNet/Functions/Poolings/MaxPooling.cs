@@ -42,15 +42,6 @@ namespace KelpNet.Functions.Poolings
             SetIsGpu(isGpu);
         }
 
-        public void SetIsGpu(bool isGpu)
-        {
-            this.IsGpu = isGpu && Weaver.Enable;
-            if (IsGpu)
-            {
-                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
-            }
-        }
-
         public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             if (pad == Size.Empty)
@@ -66,6 +57,11 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride.Width;
             this._strideY = stride.Height;
 
+            SetIsGpu(isGpu);
+        }
+
+        public void SetIsGpu(bool isGpu)
+        {
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {

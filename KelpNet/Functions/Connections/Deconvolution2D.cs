@@ -51,8 +51,8 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
 
-            this.IsGpu = isGpu && Weaver.Enable;
             this.Initialize(initialW, initialb);
+            SetIsGpu(isGpu);
         }
 
         public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)

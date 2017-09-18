@@ -53,9 +53,9 @@ namespace KelpNet.Functions.Connections
 
             this._activation = activation;
 
-            this.IsGpu = isGpu && Weaver.Enable;
-
             this.Initialize(initialW, initialb);
+
+            SetIsGpu(isGpu);
         }
 
         public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
