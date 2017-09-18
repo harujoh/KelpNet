@@ -57,7 +57,7 @@ namespace KelpNetTester
             //Test6を連結して実行
             //Test14.Run();
 
-            //CaffemodelLoadテスト
+            //CaffeモデルのVGG16を読み込んで画像分類をさせるテスト
             //Test15.Run();
 
             //Linearの分割実行

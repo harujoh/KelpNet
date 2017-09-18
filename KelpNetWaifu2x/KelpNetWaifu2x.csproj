@@ -82,10 +82,6 @@
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
       <Name>KelpNet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TestDataManager\TestDataManager.csproj">
-      <Project>{6d41064e-38db-4a3d-9336-bec27ed9f2db}</Project>
-      <Name>TestDataManager</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
