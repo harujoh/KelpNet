@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*--------------------------------------------------------------------------
+* DynamicJson
+* ver 1.2.0.0 (May. 21th, 2010)
+*
+* created and maintained by neuecc <ils@neue.cc>
+* licensed under Microsoft Public License(Ms-PL)
+* http://neue.cc/
+* https://github.com/neuecc/DynamicJson
+*--------------------------------------------------------------------------*/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +21,6 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-// From : http://dynamicjson.codeplex.com/
 namespace KelpNetWaifu2x
 {
     public class DynamicJson : DynamicObject
@@ -175,38 +184,38 @@ namespace KelpNetWaifu2x
         /// <summary>create blank JSObject</summary>
         public DynamicJson()
         {
-            this.xml = new XElement("root", CreateTypeAttr(JsonType.@object));
-            this.jsonType = JsonType.@object;
+            xml = new XElement("root", CreateTypeAttr(JsonType.@object));
+            jsonType = JsonType.@object;
         }
 
         private DynamicJson(XElement element, JsonType type)
         {
             Debug.Assert(type == JsonType.array || type == JsonType.@object);
 
-            this.xml = element;
-            this.jsonType = type;
+            xml = element;
+            jsonType = type;
         }
 
-        public bool IsObject { get { return this.jsonType == JsonType.@object; } }
+        public bool IsObject { get { return jsonType == JsonType.@object; } }
 
-        public bool IsArray { get { return this.jsonType == JsonType.array; } }
+        public bool IsArray { get { return jsonType == JsonType.array; } }
 
         /// <summary>has property or not</summary>
         public bool IsDefined(string name)
         {
-            return this.IsObject && (this.xml.Element(name) != null);
+            return IsObject && (xml.Element(name) != null);
         }
 
         /// <summary>has property or not</summary>
         public bool IsDefined(int index)
         {
-            return this.IsArray && (this.xml.Elements().ElementAtOrDefault(index) != null);
+            return IsArray && (xml.Elements().ElementAtOrDefault(index) != null);
         }
 
         /// <summary>delete property</summary>
         public bool Delete(string name)
         {
-            var elem = this.xml.Element(name);
+            var elem = xml.Element(name);
             if (elem != null)
             {
                 elem.Remove();
@@ -218,7 +227,7 @@ namespace KelpNetWaifu2x
         /// <summary>delete property</summary>
         public bool Delete(int index)
         {
-            var elem = this.xml.Elements().ElementAtOrDefault(index);
+            var elem = xml.Elements().ElementAtOrDefault(index);
             if (elem != null)
             {
                 elem.Remove();
@@ -235,7 +244,7 @@ namespace KelpNetWaifu2x
 
         private object Deserialize(Type type)
         {
-            return (this.IsArray) ? DeserializeArray(type) : DeserializeObject(type);
+            return (IsArray) ? DeserializeArray(type) : DeserializeObject(type);
         }
 
         private dynamic DeserializeValue(XElement element, Type elementType)
@@ -254,7 +263,7 @@ namespace KelpNetWaifu2x
             var dict = targetType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanWrite)
                 .ToDictionary(pi => pi.Name, pi => pi);
-            foreach (var item in this.xml.Elements())
+            foreach (var item in xml.Elements())
             {
                 PropertyInfo propertyInfo;
                 if (!dict.TryGetValue(item.Name.LocalName, out propertyInfo)) continue;
@@ -269,9 +278,9 @@ namespace KelpNetWaifu2x
             if (targetType.IsArray) // Foo[]
             {
                 var elemType = targetType.GetElementType();
-                dynamic array = Array.CreateInstance(elemType, this.xml.Elements().Count());
+                dynamic array = Array.CreateInstance(elemType, xml.Elements().Count());
                 var index = 0;
-                foreach (var item in this.xml.Elements())
+                foreach (var item in xml.Elements())
                 {
                     array[index++] = DeserializeValue(item, elemType);
                 }
@@ -281,7 +290,7 @@ namespace KelpNetWaifu2x
             {
                 var elemType = targetType.GetGenericArguments()[0];
                 dynamic list = Activator.CreateInstance(targetType);
-                foreach (var item in this.xml.Elements())
+                foreach (var item in xml.Elements())
                 {
                     list.Add(DeserializeValue(item, elemType));
                 }
@@ -292,7 +301,7 @@ namespace KelpNetWaifu2x
         // Delete
         public override bool TryInvoke(InvokeBinder binder, object[] args, out object result)
         {
-            result = (this.IsArray)
+            result = (IsArray)
                 ? Delete((int)args[0])
                 : Delete((string)args[0]);
             return true;
@@ -316,9 +325,9 @@ namespace KelpNetWaifu2x
         {
             if (binder.Type == typeof(IEnumerable) || binder.Type == typeof(object[]))
             {
-                var ie = (this.IsArray)
-                    ? this.xml.Elements().Select(x => ToValue(x))
-                    : this.xml.Elements().Select(x => (dynamic)new KeyValuePair<string, object>(x.Name.LocalName, ToValue(x)));
+                var ie = (IsArray)
+                    ? xml.Elements().Select(x => ToValue(x))
+                    : xml.Elements().Select(x => (dynamic)new KeyValuePair<string, object>(x.Name.LocalName, ToValue(x)));
                 result = (binder.Type == typeof(object[])) ? ie.ToArray() : ie;
             }
             else
@@ -342,25 +351,25 @@ namespace KelpNetWaifu2x
 
         public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
         {
-            return (this.IsArray)
-                ? TryGet(this.xml.Elements().ElementAtOrDefault((int)indexes[0]), out result)
-                : TryGet(this.xml.Element((string)indexes[0]), out result);
+            return (IsArray)
+                ? TryGet(xml.Elements().ElementAtOrDefault((int)indexes[0]), out result)
+                : TryGet(xml.Element((string)indexes[0]), out result);
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            return (this.IsArray)
-                ? TryGet(this.xml.Elements().ElementAtOrDefault(int.Parse(binder.Name)), out result)
-                : TryGet(this.xml.Element(binder.Name), out result);
+            return (IsArray)
+                ? TryGet(xml.Elements().ElementAtOrDefault(int.Parse(binder.Name)), out result)
+                : TryGet(xml.Element(binder.Name), out result);
         }
 
         private bool TrySet(string name, object value)
         {
             var type = GetJsonType(value);
-            var element = this.xml.Element(name);
+            var element = xml.Element(name);
             if (element == null)
             {
-                this.xml.Add(new XElement(name, CreateTypeAttr(type), CreateJsonNode(value)));
+                xml.Add(new XElement(name, CreateTypeAttr(type), CreateJsonNode(value)));
             }
             else
             {
@@ -374,10 +383,10 @@ namespace KelpNetWaifu2x
         private bool TrySet(int index, object value)
         {
             var type = GetJsonType(value);
-            var e = this.xml.Elements().ElementAtOrDefault(index);
+            var e = xml.Elements().ElementAtOrDefault(index);
             if (e == null)
             {
-                this.xml.Add(new XElement("item", CreateTypeAttr(type), CreateJsonNode(value)));
+                xml.Add(new XElement("item", CreateTypeAttr(type), CreateJsonNode(value)));
             }
             else
             {
@@ -390,34 +399,34 @@ namespace KelpNetWaifu2x
 
         public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
         {
-            return (this.IsArray)
+            return (IsArray)
                 ? TrySet((int)indexes[0], value)
                 : TrySet((string)indexes[0], value);
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            return (this.IsArray)
+            return (IsArray)
                 ? TrySet(int.Parse(binder.Name), value)
                 : TrySet(binder.Name, value);
         }
 
         public override IEnumerable<string> GetDynamicMemberNames()
         {
-            return (this.IsArray)
-                ? this.xml.Elements().Select((x, i) => i.ToString())
-                : this.xml.Elements().Select(x => x.Name.LocalName);
+            return (IsArray)
+                ? xml.Elements().Select((x, i) => i.ToString())
+                : xml.Elements().Select(x => x.Name.LocalName);
         }
 
         /// <summary>Serialize to JsonString</summary>
         public override string ToString()
         {
             // <foo type="null"></foo> is can't serialize. replace to <foo type="null" />
-            foreach (var elem in this.xml.Descendants().Where(x => x.Attribute("type").Value == "null"))
+            foreach (var elem in xml.Descendants().Where(x => x.Attribute("type").Value == "null"))
             {
                 elem.RemoveNodes();
             }
-            return CreateJsonString(new XStreamingElement("root", CreateTypeAttr(this.jsonType), this.xml.Elements()));
+            return CreateJsonString(new XStreamingElement("root", CreateTypeAttr(jsonType), xml.Elements()));
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using KelpNet.Common;
@@ -16,6 +15,9 @@ using KelpNet.Functions.Connections;
 
 namespace KelpNetWaifu2x
 {
+    /* モデルファイルを https://github.com/nagadomi/waifu2x/tree/master/models/upconv_7/art よりダウンロードしてください*/
+    /* サンプルは scale2.0x_model.json にて動作を確認しています*/
+
     public partial class FormMain : Form
     {
         FunctionStack nn;
@@ -33,7 +35,6 @@ namespace KelpNetWaifu2x
             OpenFileDialog ofd = new OpenFileDialog
             {
                 Filter = "Jsonファイル(*.json)|*.json|すべてのファイル(*.*)|*.*",
-                InitialDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Model")
             };
 
             if (ofd.ShowDialog() == DialogResult.OK)
