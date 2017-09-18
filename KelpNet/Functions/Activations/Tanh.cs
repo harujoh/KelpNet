@@ -15,9 +15,9 @@ namespace KelpNet.Functions.Activations
 
             if (IsGpu)
             {
-                var KernelSource = this.ActivateFunctionString + ActivateKernelString;
+                var kernelSource = this.ActivateFunctionString + ActivateKernelString;
 
-                var program = Weaver.CreateProgram(KernelSource);
+                var program = Weaver.CreateProgram(kernelSource);
                 this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
                 this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
             }

@@ -30,8 +30,8 @@ namespace KelpNet.Functions.Noise
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {
-                var KernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
-                var program = Weaver.CreateProgram(KernelSource);
+                var kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
+                var program = Weaver.CreateProgram(kernelSource);
 
                 ForwardKernel = program.CreateKernel("DropoutForward");
                 BackwardKernel = program.CreateKernel("DropoutBackward");
