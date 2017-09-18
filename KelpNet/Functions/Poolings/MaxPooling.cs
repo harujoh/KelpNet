@@ -39,6 +39,11 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride;
             this._strideY = stride;
 
+            SetIsGpu(isGpu);
+        }
+
+        public void SetIsGpu(bool isGpu)
+        {
             this.IsGpu = isGpu && Weaver.Enable;
             if (IsGpu)
             {

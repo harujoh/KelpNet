@@ -8,8 +8,11 @@ using System.Linq;
 using System.Windows.Forms;
 using CaffemodelLoader;
 using KelpNet.Common;
+using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
 using KelpNet.Functions;
+using KelpNet.Functions.Connections;
+using KelpNet.Functions.Poolings;
 using TestDataManager;
 
 namespace KelpNetTester.Tests
@@ -32,6 +35,46 @@ namespace KelpNetTester.Tests
                 var modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + MODEL_FILE, MODEL_FILE);
                 var vgg16Net = CaffemodelDataLoader.ModelLoad(modelFilePath);
                 var classList = File.ReadAllLines(CLASS_LIST_PATH);
+
+                //層を圧縮
+                for (int i = 0; i < vgg16Net.Count-1; i++)
+                {
+                    if (vgg16Net[i] is Convolution2D)
+                    {
+                        if (vgg16Net[i + 1] is Activation)
+                        {
+                            ((Convolution2D) vgg16Net[i]).SetActivation((Activation) vgg16Net[i + 1],true);
+                            vgg16Net.RemoveAt(i + 1);
+                        }
+                        else
+                        {
+                            ((Convolution2D)vgg16Net[i]).SetIsGpu(true);
+                        }
+                    }
+                    else if (vgg16Net[i] is Linear)
+                    {
+                        if (vgg16Net[i + 1] is Activation)
+                        {
+                            ((Linear) vgg16Net[i]).SetActivation((Activation) vgg16Net[i + 1], true);
+                            vgg16Net.RemoveAt(i + 1);
+                        }
+                        else
+                        {
+                            ((Linear)vgg16Net[i]).SetIsGpu(true);
+                        }
+                    }
+                    else if (vgg16Net[i] is MaxPooling)
+                    {
+                        ((MaxPooling)vgg16Net[i]).SetIsGpu(true);
+                    }
+                }
+
+                //最終層のLinearにフラグセット
+                if (vgg16Net[vgg16Net.Count - 1] is Linear)
+                {
+                    ((Linear)vgg16Net[vgg16Net.Count - 1]).SetIsGpu(true);
+                }
+
 
                 var nn = new FunctionStack(vgg16Net.ToArray());
 

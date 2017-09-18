@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Connections
     {
         const string FUNCTION_NAME = "Deconvolution2D";
 
-        private readonly Activation _activation;
+        private Activation _activation;
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
         public NdArray W;
@@ -74,8 +74,8 @@ namespace KelpNet.Functions.Connections
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
             this._activation = activation;
 
-            this.IsGpu = isGpu && Weaver.Enable;
             this.Initialize(initialW, initialb);
+            SetIsGpu(isGpu);
         }
 
         void Initialize(Array initialW = null, Array initialb = null)
@@ -107,7 +107,22 @@ namespace KelpNet.Functions.Connections
 
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
+        }
 
+        public void SetActivation(Activation activation, bool isGpu)
+        {
+            this._activation = activation;
+            SetIsGpu(isGpu);
+        }
+
+        public void SetIsGpu(bool isGpu)
+        {
+            this.IsGpu = isGpu && Weaver.Enable;
+            InitGpu();
+        }
+
+        void InitGpu()
+        {
             if (IsGpu)
             {
                 var KernelSource = Weaver.GetKernelSource(FUNCTION_NAME);

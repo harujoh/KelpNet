@@ -14,7 +14,7 @@ namespace KelpNet.Functions.Connections
 
         public bool IsGpu;
 
-        private readonly Activation _activation;
+        private Activation _activation;
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
         [NonSerialized]
@@ -70,7 +70,23 @@ namespace KelpNet.Functions.Connections
 
             this._activation = activation;
 
+            SetIsGpu(isGpu);
+        }
+
+        public void SetActivation(Activation activation, bool isGpu)
+        {
+            this._activation = activation;
+            SetIsGpu(isGpu);
+        }
+
+        public void SetIsGpu(bool isGpu)
+        {
             this.IsGpu = isGpu && Weaver.Enable;
+            InitGpu();
+        }
+
+        void InitGpu()
+        {
             if (IsGpu)
             {
                 var KernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
