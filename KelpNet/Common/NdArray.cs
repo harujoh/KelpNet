@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Cloo;
 using KelpNet.Common.Tools;
 
 namespace KelpNet.Common
@@ -14,11 +15,15 @@ namespace KelpNet.Common
         public Real[] Data;
         public int[] Shape;
 
+        [NonSerialized]
+        public ComputeBuffer<Real> GpuData;
+
         public NdArray(Real[] data, int[] shape)
         {
             //コンストラクタはコピーを作成する
             this.Data = data.ToArray();
             this.Shape = shape.ToArray();
+            this.GpuData = null;
         }
 
         public NdArray(NdArray ndArray)
@@ -26,12 +31,14 @@ namespace KelpNet.Common
             //コンストラクタはコピーを作成する
             this.Data = ndArray.Data.ToArray();
             this.Shape = ndArray.Shape.ToArray();
+            this.GpuData = null;
         }
 
         public NdArray (params int[] shape)
         {
             Data = new Real[ShapeToArrayLength(shape)];
             Shape = shape.ToArray();
+            this.GpuData = null;
         }
 
         public int Rank

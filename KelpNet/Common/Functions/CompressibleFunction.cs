@@ -1,5 +1,8 @@
-﻿namespace KelpNet.Common.Functions
+﻿using System;
+
+namespace KelpNet.Common.Functions
 {
+    [Serializable]
     public abstract class CompressibleFunction : NeedPreviousInputFunction
     {
         protected CompressibleActivation Activation;
