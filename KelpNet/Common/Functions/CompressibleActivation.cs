@@ -5,11 +5,9 @@ using Cloo;
 namespace KelpNet.Common.Functions
 {
     [Serializable]
-    public abstract class Activation : NeedPreviousOutputFunction
+    public abstract class CompressibleActivation : NeedPreviousOutputFunction
     {
         const string FUNCTION_NAME = "Activation";
-
-        public bool IsGpu;
 
         [NonSerialized]
         public ComputeKernel ForwardKernel;
@@ -29,14 +27,22 @@ namespace KelpNet.Common.Functions
 
         protected string ActivateKernelString;
 
-        protected Activation(string name, bool isGpu) : base(name)
+        protected CompressibleActivation(string name) : base(name)
         {
             string kernelNameBase = name.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";
             this.BackwardKernelName = kernelNameBase + "Backward";
 
-            this.IsGpu = isGpu && Weaver.Enable;
             this.ActivateKernelString = Weaver.GetKernelSource(FUNCTION_NAME).Replace("/*kernelNameBase*/", kernelNameBase);
+        }
+
+        protected override void CreateKernel()
+        {
+            string kernelSource = this.ActivateFunctionString + ActivateKernelString;
+
+            ComputeProgram program = Weaver.CreateProgram(kernelSource);
+            this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+            this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray x)

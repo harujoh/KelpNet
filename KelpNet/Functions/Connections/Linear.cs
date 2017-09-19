@@ -8,13 +8,10 @@ using KelpNet.Common.Tools;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class Linear : NeedPreviousInputFunction
+    public class Linear : CompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";
 
-        public bool IsGpu;
-
-        private Activation _activation;
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
         [NonSerialized]
@@ -34,7 +31,7 @@ namespace KelpNet.Functions.Connections
 
         private readonly bool noBias;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputCount, outputCount)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, CompressibleActivation activation = null) : base(name, inputCount, outputCount)
         {
             this.noBias = noBias;
             this.W = new NdArray(outputCount, inputCount);
@@ -68,39 +65,27 @@ namespace KelpNet.Functions.Connections
                 this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
             }
 
-            this._activation = activation;
+            this.Activation = activation;
 
-            SetIsGpu(isGpu);
-        }
-
-        public void SetActivation(Activation activation, bool isGpu)
-        {
-            this._activation = activation;
-            SetIsGpu(isGpu);
-        }
-
-        public void SetIsGpu(bool isGpu)
-        {
-            this.IsGpu = isGpu && Weaver.Enable;
-            InitGpu();
-        }
-
-        void InitGpu()
-        {
-            if (IsGpu)
+            if (isGpu)
             {
-                string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
-
-                if (this._activation != null)
-                {
-                    kernelSource = this._activation.ActivateFunctionString + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate(gpuY);");
-                }
-
-                ComputeProgram program = Weaver.CreateProgram(kernelSource);
-                ForwardKernel = program.CreateKernel("LinearForward");
-                BackwardgWKernel = program.CreateKernel("LineargWBackward");
-                BackwardgXKernel = program.CreateKernel("LineargXBackward");
+                InitGpu();
             }
+        }
+
+        protected override void CreateKernel()
+        {
+            string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
+
+            if (this.Activation != null)
+            {
+                kernelSource = this.Activation.ActivateFunctionString + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate(gpuY);");
+            }
+
+            ComputeProgram program = Weaver.CreateProgram(kernelSource);
+            ForwardKernel = program.CreateKernel("LinearForward");
+            BackwardgWKernel = program.CreateKernel("LineargWBackward");
+            BackwardgXKernel = program.CreateKernel("LineargXBackward");
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray x)
@@ -120,7 +105,7 @@ namespace KelpNet.Functions.Connections
                             y[i + batchCount * this.OutputCount] += x.Data[j + batchCount * this.InputCount] * this.W.Data[i * this.InputCount + j];
                         }
 
-                        if (this._activation != null) this._activation.ForwardActivate(ref y[i + batchCount * this.OutputCount]);
+                        if (this.Activation != null) this.Activation.ForwardActivate(ref y[i + batchCount * this.OutputCount]);
                     }
                 }
             }
@@ -159,7 +144,7 @@ namespace KelpNet.Functions.Connections
             }
 
             BatchArray output = BatchArray.Convert(y, new[] { OutputCount }, x.BatchCount);
-            if (this._activation != null)
+            if (this.Activation != null)
             {
                 this._prevOutput.Add(output);
             }
@@ -170,7 +155,7 @@ namespace KelpNet.Functions.Connections
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
         {
             Real[] prevOutputData = new Real[gy.Data.Length];
-            if (this._activation != null)
+            if (this.Activation != null)
             {
                 prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
                 this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
@@ -185,7 +170,7 @@ namespace KelpNet.Functions.Connections
                     for (int i = 0; i < this.OutputCount; i++)
                     {
                         Real gyData = gy.Data[i + batchCount * this.OutputCount];
-                        if (this._activation != null) this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+                        if (this.Activation != null) this.Activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
 
                         this.gb.Data[i] += gyData;
 
@@ -206,7 +191,7 @@ namespace KelpNet.Functions.Connections
                     for (int i = 0; i < this.OutputCount; i++)
                     {
                         Real gyData = gy.Data[i + batchCount * this.OutputCount];
-                        if (this._activation != null) this._activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+                        if (this.Activation != null) this.Activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
                         activatedgY[i + batchCount * this.OutputCount] = gyData;
 
                         this.gb.Data[i] += gyData;

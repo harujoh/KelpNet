@@ -21,21 +21,23 @@ namespace KelpNet.Functions.Noise
         [NonSerialized]
         public ComputeKernel BackwardKernel;
 
-        public bool IsGpu;
-
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             this.dropoutRatio = dropoutRatio;
 
-            this.IsGpu = isGpu && Weaver.Enable;
-            if (IsGpu)
+            if (isGpu)
             {
-                string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
-                ComputeProgram program = Weaver.CreateProgram(kernelSource);
-
-                ForwardKernel = program.CreateKernel("DropoutForward");
-                BackwardKernel = program.CreateKernel("DropoutBackward");
+                InitGpu();
             }
+        }
+
+        protected override void CreateKernel()
+        {
+            string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
+            ComputeProgram program = Weaver.CreateProgram(kernelSource);
+
+            ForwardKernel = program.CreateKernel("DropoutForward");
+            BackwardKernel = program.CreateKernel("DropoutBackward");
         }
 
         protected override BatchArray ForwardSingle(BatchArray x)

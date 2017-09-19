@@ -6,21 +6,17 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class Sigmoid : Activation
+    public class Sigmoid : CompressibleActivation
     {
         const string FUNCTION_NAME = "Sigmoid";
 
-        public Sigmoid(string name = FUNCTION_NAME, bool isGpu = false) : base(name, isGpu)
+        public Sigmoid(string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME);
 
-            if (IsGpu)
+            if (isGpu)
             {
-                string kernelSource = this.ActivateFunctionString + ActivateKernelString;
-
-                ComputeProgram program = Weaver.CreateProgram(kernelSource);
-                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
-                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
+                InitGpu();
             }
         }
 

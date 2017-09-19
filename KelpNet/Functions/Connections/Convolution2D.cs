@@ -9,11 +9,10 @@ using KelpNet.Common.Tools;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class Convolution2D : NeedPreviousInputFunction
+    public class Convolution2D : CompressibleFunction
     {
         const string FUNCTION_NAME = "Convolution2D";
 
-        private Activation _activation;
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
         [NonSerialized]
@@ -38,9 +37,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public bool IsGpu;
-
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -51,14 +48,17 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this._activation = activation;
+            this.Activation = activation;
 
             this.Initialize(initialW, initialb);
 
-            SetIsGpu(isGpu);
+            if (isGpu)
+            {
+                InitGpu();
+            }
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, Activation activation = null) : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -75,11 +75,14 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this._activation = activation;
+            this.Activation = activation;
 
             this.Initialize(initialW, initialb);
 
-            SetIsGpu(isGpu);
+            if (isGpu)
+            {
+                InitGpu();
+            }
         }
 
         void Initialize(Array initialW = null, Array initialb = null)
@@ -113,34 +116,19 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        public void SetActivation(Activation activation, bool isGpu)
+        protected override void CreateKernel()
         {
-            this._activation = activation;
-            SetIsGpu(isGpu);
-        }
+            string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
 
-        public void SetIsGpu(bool isGpu)
-        {
-            this.IsGpu = isGpu && Weaver.Enable;
-            InitGpu();
-        }
-
-        void InitGpu()
-        {
-            if (IsGpu)
+            if (this.Activation != null)
             {
-                string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
-
-                if (this._activation != null)
-                {
-                    kernelSource = this._activation.ActivateFunctionString + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate(gpuY + index);");
-                }
-
-                ComputeProgram program = Weaver.CreateProgram(kernelSource);
-                this.ForwardKernel = program.CreateKernel("Convolution2DForward");
-                this.BackwardgWKernel = program.CreateKernel("Convolution2DgWBackward");
-                this.BackwardgXKernel = program.CreateKernel("Convolution2DgXBackward");
+                kernelSource = this.Activation.ActivateFunctionString + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate(gpuY + index);");
             }
+
+            ComputeProgram program = Weaver.CreateProgram(kernelSource);
+            this.ForwardKernel = program.CreateKernel("Convolution2DForward");
+            this.BackwardgWKernel = program.CreateKernel("Convolution2DgWBackward");
+            this.BackwardgXKernel = program.CreateKernel("Convolution2DgXBackward");
         }
 
         protected override BatchArray NeedPreviousForward(BatchArray input)
@@ -192,7 +180,7 @@ namespace KelpNet.Functions.Connections
                                 }
 
                                 result[resultIndex] += this.b.Data[och];
-                                if (this._activation != null) this._activation.ForwardActivate(ref result[resultIndex]);
+                                if (this.Activation != null) this.Activation.ForwardActivate(ref result[resultIndex]);
                                 resultIndex++;
                             }
                         }
@@ -239,7 +227,7 @@ namespace KelpNet.Functions.Connections
             }
 
             BatchArray output = BatchArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount);
-            if (this._activation != null)
+            if (this.Activation != null)
             {
                 this._prevOutput.Add(output);
             }
@@ -250,7 +238,7 @@ namespace KelpNet.Functions.Connections
         protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray x)
         {
             Real[] prevOutputData = new Real[gy.Data.Length];
-            if (this._activation != null)
+            if (this.Activation != null)
             {
                 prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
                 this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
@@ -269,9 +257,9 @@ namespace KelpNet.Functions.Connections
                         {
                             int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox;
                             Real gyData = gy.Data[gyIndex];
-                            if (this._activation != null)
+                            if (this.Activation != null)
                             {
-                                this._activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
+                                this.Activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
                             }
                             activatedgy[batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox] = gyData;
 

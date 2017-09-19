@@ -44,8 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Functions\Activation.cs" />
+    <Compile Include="Common\Functions\CompressibleActivation.cs" />
     <Compile Include="Common\BatchArray.cs" />
+    <Compile Include="Common\Functions\CompressibleFunction.cs" />
     <Compile Include="Common\Real.cs" />
     <Compile Include="Common\Tools\DeepCopyHelper.cs" />
     <Compile Include="Common\Functions\FunctionParameter.cs" />
@@ -96,12 +97,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cloo\Cloo.csproj">
-      <Project>{656e96ce-2587-4ccc-a4db-06d36267133a}</Project>
-      <Name>Cloo</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="OpenCL\Activations\Activation.cl" />
     <None Include="OpenCL\Activations\LeakyReLU.cl" />
     <None Include="OpenCL\Activations\ReLU.cl" />
@@ -120,6 +115,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cloo\Cloo.csproj">
+      <Project>{6ec82c77-96ba-4102-9589-ad89e3f4e068}</Project>
+      <Name>Cloo</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

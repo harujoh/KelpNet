@@ -28,8 +28,6 @@ namespace KelpNet.Functions.Poolings
         [NonSerialized]
         public ComputeKernel ForwardKernel;
 
-        public bool IsGpu;
-
         public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             this._kHeight = ksize;
@@ -39,7 +37,7 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride;
             this._strideY = stride;
 
-            SetIsGpu(isGpu);
+            if (isGpu) InitGpu();
         }
 
         public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, bool isGpu = false) : base(name)
@@ -57,16 +55,12 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride.Width;
             this._strideY = stride.Height;
 
-            SetIsGpu(isGpu);
+            if (isGpu) InitGpu();
         }
 
-        public void SetIsGpu(bool isGpu)
+        protected override void CreateKernel()
         {
-            this.IsGpu = isGpu && Weaver.Enable;
-            if (IsGpu)
-            {
-                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
-            }
+            ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
         }
 
         protected override BatchArray ForwardSingle(BatchArray input)

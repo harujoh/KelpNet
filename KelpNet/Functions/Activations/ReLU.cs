@@ -6,19 +6,17 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class ReLU : Activation
+    public class ReLU : CompressibleActivation
     {
         const string FUNCTION_NAME = "ReLU";
 
-        public ReLU(string name = FUNCTION_NAME, bool isGpu = false) : base(name, isGpu)
+        public ReLU(string name = FUNCTION_NAME, bool isGpu = false) : base(name)
         {
             this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME);
 
-            if (IsGpu)
+            if (isGpu)
             {
-                ComputeProgram program = Weaver.CreateProgram(this.ActivateFunctionString + ActivateKernelString);
-                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
-                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
+                InitGpu();
             }
         }
 

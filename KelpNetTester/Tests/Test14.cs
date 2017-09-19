@@ -12,7 +12,7 @@ using KelpNet.Optimizers;
 
 namespace KelpNetTester.Tests
 {
-    //5層CNNによるMNIST（手書き文字）の学習 の連結実行版
+    //5層CNNによるMNIST（手書き文字）の学習 の連結宣言版
     class Test14
     {
         //ミニバッチの数

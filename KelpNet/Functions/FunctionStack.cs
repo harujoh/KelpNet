@@ -13,7 +13,7 @@ namespace KelpNet.Functions
     public class FunctionStack : Function
     {
         //すべての層がココにFunctionクラスとして保管される
-        public readonly Function[] Functions;
+        public Function[] Functions;
 
         //コンストラクタ
         public FunctionStack(params Function[] functions) : base("FunctionStack")
@@ -31,6 +31,26 @@ namespace KelpNet.Functions
             }
 
             this.Parameters = result.ToArray();
+        }
+
+        public void Compress()
+        {
+            List<Function> functionList = new List<Function>(Functions);
+
+            //層を圧縮
+            for (int i = 0; i < functionList.Count - 1; i++)
+            {
+                if (functionList[i] is CompressibleFunction)
+                {
+                    if (functionList[i + 1] is CompressibleActivation)
+                    {
+                        ((CompressibleFunction)functionList[i]).SetActivation((CompressibleActivation)functionList[i + 1]);
+                        functionList.RemoveAt(i + 1);
+                    }
+                }
+            }
+
+            this.Functions = functionList.ToArray();
         }
 
         //Functionとして呼び出された時にバトンを渡す

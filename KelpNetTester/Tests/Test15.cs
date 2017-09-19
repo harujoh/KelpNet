@@ -36,40 +36,27 @@ namespace KelpNetTester.Tests
                 List<Function> vgg16Net = CaffemodelDataLoader.ModelLoad(modelFilePath);
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
-                //層を圧縮（最終層はSoftmaxなので無視）
+                //GPUを初期化
                 for (int i = 0; i < vgg16Net.Count-1; i++)
                 {
                     if (vgg16Net[i] is Convolution2D)
                     {
-                        if (vgg16Net[i + 1] is Activation)
-                        {
-                            ((Convolution2D) vgg16Net[i]).SetActivation((Activation) vgg16Net[i + 1],true);
-                            vgg16Net.RemoveAt(i + 1);
-                        }
-                        else
-                        {
-                            ((Convolution2D)vgg16Net[i]).SetIsGpu(true);
-                        }
+                        ((Convolution2D)vgg16Net[i]).InitGpu();
                     }
                     else if (vgg16Net[i] is Linear)
                     {
-                        if (vgg16Net[i + 1] is Activation)
-                        {
-                            ((Linear) vgg16Net[i]).SetActivation((Activation) vgg16Net[i + 1], true);
-                            vgg16Net.RemoveAt(i + 1);
-                        }
-                        else
-                        {
-                            ((Linear)vgg16Net[i]).SetIsGpu(true);
-                        }
+                        ((Linear)vgg16Net[i]).InitGpu();
                     }
                     else if (vgg16Net[i] is MaxPooling)
                     {
-                        ((MaxPooling)vgg16Net[i]).SetIsGpu(true);
+                        ((MaxPooling)vgg16Net[i]).InitGpu();
                     }
                 }
 
                 FunctionStack nn = new FunctionStack(vgg16Net.ToArray());
+
+                //層を圧縮
+                nn.Compress();
 
                 //ネットワークへ入力する前に解像度を 224px x 224px x 3ch にしておく
                 Bitmap resultImage = new Bitmap(224, 224, PixelFormat.Format24bppRgb);

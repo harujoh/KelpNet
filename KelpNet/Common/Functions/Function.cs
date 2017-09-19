@@ -9,6 +9,8 @@ namespace KelpNet.Common.Functions
     {
         public string Name;
 
+        public bool IsGpu { get; private set; }
+
         public FunctionParameter[] Parameters = { };
         public Optimizer[] Optimizers;
 
@@ -88,6 +90,21 @@ namespace KelpNet.Common.Functions
         //ある処理実行後に特定のデータを初期値に戻す処理
         public virtual void ResetState()
         {
+        }
+
+        public bool InitGpu()
+        {
+            this.IsGpu = Weaver.Enable;
+            if (this.IsGpu)
+            {
+                CreateKernel();
+            }
+
+            return this.IsGpu;
+        }
+
+        protected virtual void CreateKernel()
+        {            
         }
 
         //名前を返す
