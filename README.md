@@ -1,8 +1,8 @@
 # KelpNet
 KelpNetはC#で実装された深層学習のライブラリです
 
- - ChainerStyle
 ```csharp
+/* ChainerStyle */
 FunctionStack nn = new FunctionStack(
     new Convolution2D(32, 64, 5, pad: 2, name: "l1 Conv2D"),
     new ReLU(name: "l1 ReLU"),
@@ -13,8 +13,8 @@ FunctionStack nn = new FunctionStack(
     new Linear(1024, 10, name: "l3 Linear")
 );
 ```
- - KerasStyle
 ```csharp
+/* KerasStyle */
 FunctionStack nn = new FunctionStack(
     new Convolution2D(32, 64, 5, pad: 2, name: "l1 Conv2D", activation: new ReLU(name: "l1 ReLU")),
     new MaxPooling(2, 2, name: "l1 MaxPooling"),
