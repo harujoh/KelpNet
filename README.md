@@ -1,7 +1,7 @@
 # KelpNet
 KelpNetはC#で実装された深層学習のライブラリです
 
-```csharp
+```java
 /* SampleCode */
 FunctionStack nn = new FunctionStack(
     new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D"),
