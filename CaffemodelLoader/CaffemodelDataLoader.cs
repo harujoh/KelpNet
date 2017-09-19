@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using KelpNet.Common.Functions;
-using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
@@ -20,11 +19,11 @@ namespace CaffemodelLoader
 
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
-                var netparam = Serializer.Deserialize<NetParameter>(stream);
+                NetParameter netparam = Serializer.Deserialize<NetParameter>(stream);
 
-                foreach (var layer in netparam.Layers)
+                foreach (V1LayerParameter layer in netparam.Layers)
                 {
-                    var func = CreateFunction(layer);
+                    Function func = CreateFunction(layer);
 
                     if (func != null)
                     {
@@ -54,6 +53,12 @@ namespace CaffemodelLoader
 
                 case V1LayerParameter.LayerType.InnerProduct:
                     return SetupInnerProduct(layer);
+
+                case V1LayerParameter.LayerType.Softmax:
+                    return new Softmax();
+
+                case V1LayerParameter.LayerType.SoftmaxLoss:
+                    return null;
             }
 
             Console.WriteLine("Skip the layer \"{0}\", since CaffemodelLoader does not support {0} layer", layer.Type);
@@ -63,10 +68,10 @@ namespace CaffemodelLoader
 
         static Function SetupPooling(V1LayerParameter layer)
         {
-            var param = layer.PoolingParam;
-            var ksize = GetKernelSize(param);
-            var stride = GetKernelStride(param);
-            var pad = GetKernelPad(param);
+            PoolingParameter param = layer.PoolingParam;
+            Size ksize = GetKernelSize(param);
+            Size stride = GetKernelStride(param);
+            Size pad = GetKernelPad(param);
 
             switch (param.Pool)
             {
@@ -82,20 +87,20 @@ namespace CaffemodelLoader
 
         static Convolution2D SetupConvolution(V1LayerParameter layer)
         {
-            var blobs = layer.Blobs;
-            var param = layer.ConvolutionParam;
-            var ksize = GetKernelSize(param);
-            var stride = GetKernelStride(param);
-            var pad = GetKernelPad(param);
-            var num = GetNum(blobs[0]);
-            var channels = GetChannels(blobs[0]);
-            var nIn = channels * (int)param.Group;
-            var nOut = num;
-            var w = blobs[0].Datas;
+            List<BlobProto> blobs = layer.Blobs;
+            ConvolutionParameter param = layer.ConvolutionParam;
+            Size ksize = GetKernelSize(param);
+            Size stride = GetKernelStride(param);
+            Size pad = GetKernelPad(param);
+            int num = GetNum(blobs[0]);
+            int channels = GetChannels(blobs[0]);
+            int nIn = channels * (int)param.Group;
+            int nOut = num;
+            float[] w = blobs[0].Datas;
 
             if (param.BiasTerm)
             {
-                var b = blobs[1].Datas;
+                float[] b = blobs[1].Datas;
                 return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b, layer.Name);
             }
 
@@ -104,17 +109,17 @@ namespace CaffemodelLoader
 
         static Linear SetupInnerProduct(V1LayerParameter layer)
         {
-            var param = layer.InnerProductParam;
+            InnerProductParameter param = layer.InnerProductParam;
 
             if (param.Axis != 1)
             {
                 throw new Exception("Non-default axis in InnerProduct is not supported");
             }
 
-            var blobs = layer.Blobs;
-            var width = GetWidth(blobs[0]);
-            var height = GetHeight(blobs[0]);
-            var w = blobs[0].Datas;
+            List<BlobProto> blobs = layer.Blobs;
+            int width = GetWidth(blobs[0]);
+            int height = GetHeight(blobs[0]);
+            float[] w = blobs[0].Datas;
 
             if (param.BiasTerm)
             {

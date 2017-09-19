@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -30,13 +30,13 @@ namespace KelpNetTester.Tests
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                var baseImage = new Bitmap(ofd.FileName);
+                Bitmap baseImage = new Bitmap(ofd.FileName);
 
-                var modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + MODEL_FILE, MODEL_FILE);
-                var vgg16Net = CaffemodelDataLoader.ModelLoad(modelFilePath);
-                var classList = File.ReadAllLines(CLASS_LIST_PATH);
+                string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + MODEL_FILE, MODEL_FILE);
+                List<Function> vgg16Net = CaffemodelDataLoader.ModelLoad(modelFilePath);
+                string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
-                //層を圧縮
+                //層を圧縮（最終層はSoftmaxなので無視）
                 for (int i = 0; i < vgg16Net.Count-1; i++)
                 {
                     if (vgg16Net[i] is Convolution2D)
@@ -69,35 +69,23 @@ namespace KelpNetTester.Tests
                     }
                 }
 
-                //最終層のLinearにフラグセット
-                if (vgg16Net[vgg16Net.Count - 1] is Linear)
-                {
-                    ((Linear)vgg16Net[vgg16Net.Count - 1]).SetIsGpu(true);
-                }
+                FunctionStack nn = new FunctionStack(vgg16Net.ToArray());
 
-
-                var nn = new FunctionStack(vgg16Net.ToArray());
-
-                //ネットワークへ入力する前に解像度を 224 x 224 にしておく必要がある
+                //ネットワークへ入力する前に解像度を 224px x 224px x 3ch にしておく
                 Bitmap resultImage = new Bitmap(224, 224, PixelFormat.Format24bppRgb);
                 Graphics g = Graphics.FromImage(resultImage);
-
-                //補間にニアレストネイバーを使用
-                g.InterpolationMode = InterpolationMode.NearestNeighbor;
-
-                //画像を拡大して描画する
                 g.DrawImage(baseImage, 0, 0, 224, 224);
                 g.Dispose();
 
                 BatchArray image = new BatchArray(NdArrayConverter.Image2NdArray(resultImage));
 
                 Stopwatch sw = Stopwatch.StartNew();
-                var result = nn.Predict(image);
+                BatchArray result = nn.Predict(image);
                 sw.Stop();
+
                 Console.WriteLine("Result Time : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-                var maxIndex = result.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => max.V > working.V ? max : working).I;
-
+                int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine("[" + result.Data[maxIndex] + "] : " + classList[maxIndex]);
             }
         }

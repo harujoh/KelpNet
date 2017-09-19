@@ -54,10 +54,10 @@ typedef REAL Real;
         {
             if (!KernelSources.ContainsKey(functionName))
             {
-                var binary = (byte[])Resources.ResourceManager.GetObject(functionName);
+                byte[] binary = (byte[])Resources.ResourceManager.GetObject(functionName);
                 if (binary == null) throw new Exception("リソースファイルの取得に失敗しました\nリソース名:" + functionName);
 
-                using (var reader = new StreamReader(new MemoryStream(binary)))
+                using (StreamReader reader = new StreamReader(new MemoryStream(binary)))
                 {
                     KernelSources.Add(functionName, reader.ReadToEnd());
                 }

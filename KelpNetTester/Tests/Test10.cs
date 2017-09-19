@@ -33,9 +33,9 @@ namespace KelpNetTester.Tests
 
             Vocabulary vocabulary = new Vocabulary();
 
-            var trainPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_FILE, TRAIN_FILE);
-            var validPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + VALID_FILE, VALID_FILE);
-            var testPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEST_FILE, TEST_FILE);
+            string trainPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_FILE, TRAIN_FILE);
+            string validPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + VALID_FILE, VALID_FILE);
+            string testPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEST_FILE, TEST_FILE);
 
             int[] trainData = vocabulary.LoadData(trainPath);
             int[] validData = vocabulary.LoadData(validPath);

@@ -129,14 +129,14 @@ namespace KelpNet.Functions.Connections
         {
             if (IsGpu)
             {
-                var kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
+                string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
 
                 if (this._activation != null)
                 {
                     kernelSource = this._activation.ActivateFunctionString + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate(gpuY + index);");
                 }
 
-                var program = Weaver.CreateProgram(kernelSource);
+                ComputeProgram program = Weaver.CreateProgram(kernelSource);
                 this.ForwardKernel = program.CreateKernel("Convolution2DForward");
                 this.BackwardgWKernel = program.CreateKernel("Convolution2DgWBackward");
                 this.BackwardgXKernel = program.CreateKernel("Convolution2DgXBackward");

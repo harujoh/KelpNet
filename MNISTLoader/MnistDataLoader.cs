@@ -19,20 +19,20 @@ namespace MNISTLoader
 
         public MnistDataLoader()
         {
-            var trainlabelPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_LABEL, TRAIN_LABEL);
+            string trainlabelPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_LABEL, TRAIN_LABEL);
             MnistLabelLoader trainLabelLoader = MnistLabelLoader.Load(trainlabelPath);
             this.TrainLabel = trainLabelLoader.labelList;
 
-            var trainimagePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_IMAGE, TRAIN_IMAGE);
+            string trainimagePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_IMAGE, TRAIN_IMAGE);
             MnistImageLoader trainImageLoader = MnistImageLoader.Load(trainimagePath);
             this.TrainData = trainImageLoader.bitmapList.ToArray();
 
 
-            var teachlabelPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEACH_LABEL, TEACH_LABEL);
+            string teachlabelPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEACH_LABEL, TEACH_LABEL);
             MnistLabelLoader teachLabelLoader = MnistLabelLoader.Load(teachlabelPath);
             this.TeachLabel = teachLabelLoader.labelList;
 
-            var teachimagePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEACH_IMAGE, TEACH_IMAGE);
+            string teachimagePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEACH_IMAGE, TEACH_IMAGE);
             MnistImageLoader teachImageLoader = MnistImageLoader.Load(teachimagePath);
             this.TeachData = teachImageLoader.bitmapList.ToArray();
         }

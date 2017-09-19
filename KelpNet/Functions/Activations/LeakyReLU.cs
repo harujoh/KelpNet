@@ -1,4 +1,5 @@
 ﻿using System;
+using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -19,7 +20,7 @@ namespace KelpNet.Functions.Activations
 
             if (IsGpu)
             {
-                var program = Weaver.CreateProgram(ActivateFunctionString + ActivateKernelString);
+                ComputeProgram program = Weaver.CreateProgram(ActivateFunctionString + ActivateKernelString);
                 this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
                 this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
             }

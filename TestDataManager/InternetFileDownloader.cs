@@ -32,7 +32,7 @@ namespace TestDataManager
                 }
 
                 //非同期ダウンロードを開始する
-                var task = Task.Factory.StartNew(() => downloadClient.DownloadFile(new Uri(url), savedPath));
+                Task task = Task.Factory.StartNew(() => downloadClient.DownloadFile(new Uri(url), savedPath));
                 task.Wait();
             }
 
