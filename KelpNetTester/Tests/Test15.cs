@@ -26,7 +26,7 @@ namespace KelpNetTester.Tests
 
         public static void Run()
         {
-            OpenFileDialog ofd = new OpenFileDialog { Filter = "画像ファイル(*.jpg;*.png)|*.jpg;*.png|すべてのファイル(*.*)|*.*" };
+            OpenFileDialog ofd = new OpenFileDialog { Filter = "画像ファイル(*.jpg;*.png;*.gif;*.bmp)|*.jpg;*.png;*.gif;*.bmp|すべてのファイル(*.*)|*.*" };
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
