@@ -15,12 +15,25 @@ namespace KelpNet.Common.Optimizers
 
         public void Update()
         {
+            bool isUpdated = false;
+
             for (int i = 0; i < this.OptimizerParameters.Count; i++)
             {
-                this.OptimizerParameters[i].UpdateFunctionParameters();
+                //傾きの割引を実行して更新があったかチェックをする
+                if (this.OptimizerParameters[i].FunctionParameter.Reduce())
+                {
+                    this.OptimizerParameters[i].UpdateFunctionParameters();
+
+                    this.OptimizerParameters[i].FunctionParameter.ClearGrad();
+
+                    isUpdated = true;
+                }
             }
 
-            this.UpdateCount++;
+            if (isUpdated)
+            {
+                this.UpdateCount++;
+            }
         }
     }
 
@@ -28,7 +41,7 @@ namespace KelpNet.Common.Optimizers
     [Serializable]
     public abstract class OptimizerParameter
     {
-        protected FunctionParameter FunctionParameter;
+        public FunctionParameter FunctionParameter;
 
         protected OptimizerParameter(FunctionParameter functionParameter)
         {

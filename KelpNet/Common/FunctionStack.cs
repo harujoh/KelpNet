@@ -1,36 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 using KelpNet.Common.Tools;
 
-namespace KelpNet.Functions
+namespace KelpNet.Common
 {
     //層を積み上げるこのライブラリのメインとなるクラス
     //一回のForward、Backward、Updateで同時に実行される関数の集まり
     [Serializable]
-    public class FunctionStack : Function
+    public class FunctionStack
     {
         //すべての層がココにFunctionクラスとして保管される
-        public Function[] Functions;
+        public Function[] Functions { get; private set; }
 
         //コンストラクタ
-        public FunctionStack(params Function[] functions) : base("FunctionStack")
+        public FunctionStack(params Function[] functions)
         {
             this.Functions = functions;
+        }
 
-            List<FunctionParameter> result = new List<FunctionParameter>();
+        public FunctionStack(params FunctionStack[] functionStacks)
+        {
+            List<Function> functionList = new List<Function>();
 
-            foreach (Function function in this.Functions)
+            foreach (FunctionStack functionStack in functionStacks)
             {
-                foreach (FunctionParameter parameter in function.Parameters)
+                foreach (Function function in functionStack.Functions)
                 {
-                    result.Add(parameter);
+                    functionList.Add(function);
                 }
             }
 
-            this.Parameters = result.ToArray();
+            this.Functions = functionList.ToArray();
         }
 
         public void Compress()
@@ -53,20 +55,8 @@ namespace KelpNet.Functions
             this.Functions = functionList.ToArray();
         }
 
-        //Functionとして呼び出された時にバトンを渡す
-        protected override BatchArray ForwardSingle(BatchArray x)
-        {
-            return this.Forward(x);
-        }
-
-        //Functionとして呼び出された時にバトンを渡す
-        protected override BatchArray BackwardSingle(BatchArray gy)
-        {
-            return this.Backward(gy);
-        }
-
         //Forward
-        public override BatchArray Forward(BatchArray input)
+        public BatchArray Forward(BatchArray input)
         {
             BatchArray result = this.Functions[0].Forward(input);
 
@@ -79,7 +69,7 @@ namespace KelpNet.Functions
         }
 
         //Backward
-        public override BatchArray Backward(BatchArray backwardResult)
+        public BatchArray Backward(BatchArray backwardResult)
         {
             for (int i = this.Functions.Length - 1; i >= 0; i--)
             {
@@ -90,21 +80,17 @@ namespace KelpNet.Functions
         }
 
         //重みの更新処理
-        public override void Update()
+        public void Update()
         {
-            //更新実行前に訓練カウントを使って各Functionの傾きを補正
-            this.Reduce();
-
-            foreach (Optimizer optimizer in this.Optimizers)
+            foreach (var function in Functions)
             {
-                optimizer.Update();
+                //更新実行前に訓練カウントを使って各Functionの傾きを補正
+                function.Update();
             }
-
-            this.ClearGrads();
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理
-        public override void ResetState()
+        public void ResetState()
         {
             foreach (Function function in this.Functions)
             {
@@ -113,7 +99,7 @@ namespace KelpNet.Functions
         }
 
         //予想を実行する
-        public override BatchArray Predict(BatchArray forwardResult)
+        public BatchArray Predict(BatchArray forwardResult)
         {
             foreach (Function function in this.Functions)
             {
@@ -127,6 +113,14 @@ namespace KelpNet.Functions
         public FunctionStack Clone()
         {
             return DeepCopyHelper.DeepCopy(this);
+        }
+
+        public void SetOptimizer(params Optimizer[] optimizers)
+        {
+            foreach (Function function in this.Functions)
+            {
+                function.SetOptimizer(optimizers);
+            }
         }
     }
 }

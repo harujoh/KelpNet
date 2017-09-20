@@ -24,12 +24,18 @@ namespace KelpNet.Common.Functions
         }
 
         //傾きの補正
-        public void Reduce()
+        public bool Reduce()
         {
-            for (int i = 0; i < this.Grad.Data.Length; i++)
+            if (this.TrainCount > 0)
             {
-                this.Grad.Data[i] /= this.TrainCount;
+                for (int i = 0; i < this.Grad.Data.Length; i++)
+                {
+                    this.Grad.Data[i] /= this.TrainCount;
+                }
+
+                return true;
             }
+            return false;
         }
 
         //傾きの初期化

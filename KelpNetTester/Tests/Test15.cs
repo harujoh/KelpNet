@@ -10,7 +10,6 @@ using CaffemodelLoader;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
-using KelpNet.Functions;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Poolings;
 using TestDataManager;
@@ -20,8 +19,8 @@ namespace KelpNetTester.Tests
     //CaffeモデルのVGG16を読み込んで画像分類をさせるテスト
     class Test15
     {
-        const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/";
-        const string MODEL_FILE = "VGG_ILSVRC_16_layers.caffemodel";
+        private const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/";
+        private const string MODEL_FILE = "VGG_ILSVRC_16_layers.caffemodel";
         private const string CLASS_LIST_PATH = "data/synset_words.txt";
 
         public static void Run()

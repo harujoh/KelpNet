@@ -1,6 +1,5 @@
 ﻿using System;
 using KelpNet.Common.Loss;
-using KelpNet.Functions;
 
 namespace KelpNet.Common.Tools
 {

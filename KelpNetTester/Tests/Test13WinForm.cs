@@ -81,8 +81,6 @@ namespace KelpNetTester.Tests
                 //目標とするフィルタで学習用の画像を出力
                 BatchArray img_core = this.decon_core.Forward(img_p);
 
-                this.model.ClearGrads();
-
                 //未学習のフィルタで画像を出力
                 BatchArray img_y = this.model.Forward(img_p);
 
@@ -93,7 +91,6 @@ namespace KelpNetTester.Tests
                 BatchArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);
 
                 this.model.Backward(gy);
-
                 this.model.Update();
 
                 this.Text = "[epoch" + this.counter + "] Loss : " + string.Format("{0:F4}", loss);

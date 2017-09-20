@@ -61,29 +61,12 @@ namespace KelpNet.Common.Functions
             return this.ForwardSingle(input);
         }
 
-        //訓練カウントを使って各Functionの傾きを補正
-        public virtual void Reduce()
-        {
-            foreach (FunctionParameter parameter in this.Parameters)
-            {
-                parameter.Reduce();
-            }
-        }
-
         public virtual void Update()
         {
             //更新実行前に訓練カウントを使って各Functionの傾きを補正
             foreach (Optimizer optimizer in this.Optimizers)
             {
                 optimizer.Update();
-            }
-        }
-
-        public virtual void ClearGrads()
-        {
-            foreach (FunctionParameter parameter in this.Parameters)
-            {
-                parameter.ClearGrad();
             }
         }
 

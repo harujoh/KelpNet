@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using KelpNet.Common;
 using KelpNet.Common.Tools;
-using KelpNet.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
