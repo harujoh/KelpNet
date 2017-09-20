@@ -8,9 +8,17 @@ namespace KelpNet.Common.Tools
     public class NdArrayConverter
     {
         //Bitmapは [RGBRGB...]でデータが格納されているが多くの機械学習は[RR..GG..BB..]を前提にしているため入れ替えを行っている
-        public static NdArray Image2NdArray(Bitmap input)
+        //Biasのチャンネル順は入力イメージに準ずる
+        public static NdArray Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, Real[] bias = null)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
+            if (bias == null || bitcount != bias.Length)
+            {
+                bias = new Real[bitcount];
+            }
+
+            Real norm = isNorm ? 255 : 1;
+
             NdArray result = new NdArray(bitcount, input.Height, input.Width);
 
             BitmapData bmpdat = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly, input.PixelFormat);
@@ -18,45 +26,62 @@ namespace KelpNet.Common.Tools
 
             Marshal.Copy(bmpdat.Scan0, imageData, 0, imageData.Length);
 
-            for (int y = 0; y < input.Height; y++)
+            if (isToBgrArray)
             {
-                for (int x = 0; x < input.Width; x++)
+                for (int y = 0; y < input.Height; y++)
                 {
-                    for (int ch = 0; ch < bitcount; ch++)
+                    for (int x = 0; x < input.Width; x++)
                     {
-                        result.Data[ch * input.Height * input.Width + y * input.Width + x] =
-                            imageData[y * bmpdat.Stride + x * bitcount + ch] / 255.0;
+                        for (int ch = bitcount - 1; ch >= 0; ch--)
+                        {
+                            result.Data[ch * input.Height * input.Width + y * input.Width + x] =
+                                (imageData[y * bmpdat.Stride + x * bitcount + ch] + bias[ch]) / norm;
+                        }
                     }
                 }
             }
-
+            else
+            {
+                for (int y = 0; y < input.Height; y++)
+                {
+                    for (int x = 0; x < input.Width; x++)
+                    {
+                        for (int ch = 0; ch < bitcount; ch++)
+                        {
+                            result.Data[ch * input.Height * input.Width + y * input.Width + x] =
+                                (imageData[y * bmpdat.Stride + x * bitcount + ch] + bias[ch]) / norm;
+                        }
+                    }
+                }
+            }
             return result;
         }
 
-        public static Bitmap NdArray2Image(NdArray input)
+        public static Bitmap NdArray2Image(NdArray input, bool isNorm = true, bool isFromBgrArray = false)
         {
             if (input.Shape.Length == 2)
             {
-                return CreateMonoImage(input.Data, input.Shape[0], input.Shape[1]);
+                return CreateMonoImage(input.Data, input.Shape[0], input.Shape[1], isNorm);
             }
             else if (input.Shape.Length == 3)
             {
                 if (input.Shape[0] == 1)
                 {
-                    return CreateMonoImage(input.Data, input.Shape[1], input.Shape[2]);
+                    return CreateMonoImage(input.Data, input.Shape[1], input.Shape[2], isNorm);
                 }
                 else if (input.Shape[0] == 3)
                 {
-                    return CreateColorImage(input.Data, input.Shape[1], input.Shape[2]);
+                    return CreateColorImage(input.Data, input.Shape[1], input.Shape[2], isNorm, isFromBgrArray);
                 }
             }
 
             return null;
         }
 
-        static Bitmap CreateMonoImage(Real[] data, int width, int height)
+        static Bitmap CreateMonoImage(Real[] data, int width, int height, bool isNorm)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+            Real norm = isNorm ? 255 : 1;
 
             ColorPalette pal = result.Palette;
             for (int i = 0; i < 255; i++)
@@ -75,7 +100,7 @@ namespace KelpNet.Common.Tools
             {
                 for (int x = 0; x < result.Width; x++)
                 {
-                    resultData[y * bmpdat.Stride + x] = (byte)(data[y * width + x] / datamax * 255);
+                    resultData[y * bmpdat.Stride + x] = (byte)(data[y * width + x] / datamax * norm);
                 }
             }
 
@@ -85,9 +110,10 @@ namespace KelpNet.Common.Tools
             return result;
         }
 
-        static Bitmap CreateColorImage(Real[] data, int width, int height)
+        static Bitmap CreateColorImage(Real[] data, int width, int height, bool isNorm, bool isFromBgrArray)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            Real norm = isNorm ? 255 : 1;
             int bitcount = Image.GetPixelFormatSize(result.PixelFormat) / 8;
 
             BitmapData bmpdat = result.LockBits(new Rectangle(0, 0, result.Width, result.Height), ImageLockMode.WriteOnly, result.PixelFormat);
@@ -96,13 +122,28 @@ namespace KelpNet.Common.Tools
 
             Real datamax = data.Max();
 
-            for (int y = 0; y < result.Height; y++)
+            if (isFromBgrArray)
             {
-                for (int x = 0; x < result.Width; x++)
+                for (int y = 0; y < result.Height; y++)
                 {
-                    resultData[y * bmpdat.Stride + x * bitcount + 0] = (byte)(data[0 * height * width + y * width + x] / datamax * 255);
-                    resultData[y * bmpdat.Stride + x * bitcount + 1] = (byte)(data[1 * height * width + y * width + x] / datamax * 255);
-                    resultData[y * bmpdat.Stride + x * bitcount + 2] = (byte)(data[2 * height * width + y * width + x] / datamax * 255);
+                    for (int x = 0; x < result.Width; x++)
+                    {
+                        resultData[y * bmpdat.Stride + x * bitcount + 0] = (byte)(data[2 * height * width + y * width + x] / datamax * norm);
+                        resultData[y * bmpdat.Stride + x * bitcount + 1] = (byte)(data[1 * height * width + y * width + x] / datamax * norm);
+                        resultData[y * bmpdat.Stride + x * bitcount + 2] = (byte)(data[0 * height * width + y * width + x] / datamax * norm);
+                    }
+                }
+            }
+            else
+            {
+                for (int y = 0; y < result.Height; y++)
+                {
+                    for (int x = 0; x < result.Width; x++)
+                    {
+                        resultData[y * bmpdat.Stride + x * bitcount + 0] = (byte)(data[0 * height * width + y * width + x] / datamax * norm);
+                        resultData[y * bmpdat.Stride + x * bitcount + 1] = (byte)(data[1 * height * width + y * width + x] / datamax * norm);
+                        resultData[y * bmpdat.Stride + x * bitcount + 2] = (byte)(data[2 * height * width + y * width + x] / datamax * norm);
+                    }
                 }
             }
 

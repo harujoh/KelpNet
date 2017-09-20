@@ -37,7 +37,7 @@ namespace KelpNetTester.Tests
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
-                for (int i = 0; i < vgg16Net.Count-1; i++)
+                for (int i = 0; i < vgg16Net.Count - 1; i++)
                 {
                     if (vgg16Net[i] is Convolution2D)
                     {
@@ -64,10 +64,11 @@ namespace KelpNetTester.Tests
                 g.DrawImage(baseImage, 0, 0, 224, 224);
                 g.Dispose();
 
-                BatchArray image = new BatchArray(NdArrayConverter.Image2NdArray(resultImage));
+                Real[] bias = { -123.68, -116.779, -103.939 };//補正のチャンネル順は入力画像に従うため
+                BatchArray imageArray = new BatchArray(NdArrayConverter.Image2NdArray(resultImage, false, true, bias));
 
                 Stopwatch sw = Stopwatch.StartNew();
-                BatchArray result = nn.Predict(image);
+                BatchArray result = nn.Predict(imageArray);
                 sw.Stop();
 
                 Console.WriteLine("Result Time : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
