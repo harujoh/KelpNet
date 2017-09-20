@@ -30,8 +30,7 @@ namespace KelpNetTester.Tests
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                Bitmap baseImage = new Bitmap(ofd.FileName);
-
+                Console.WriteLine("Model Loading.");
                 string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + MODEL_FILE, MODEL_FILE);
                 List<Function> vgg16Net = CaffemodelDataLoader.ModelLoad(modelFilePath);
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
@@ -50,15 +49,19 @@ namespace KelpNetTester.Tests
                 //層を圧縮
                 nn.Compress();
 
+                Console.WriteLine("Model Loading done.");
+
                 //ネットワークへ入力する前に解像度を 224px x 224px x 3ch にしておく
+                Bitmap baseImage = new Bitmap(ofd.FileName);
                 Bitmap resultImage = new Bitmap(224, 224, PixelFormat.Format24bppRgb);
                 Graphics g = Graphics.FromImage(resultImage);
                 g.DrawImage(baseImage, 0, 0, 224, 224);
                 g.Dispose();
 
                 Real[] bias = { -123.68, -116.779, -103.939 };  //補正のチャンネル順は入力画像に従う
-                BatchArray imageArray = new BatchArray(NdArrayConverter.Image2NdArray(resultImage, true, true, bias));
+                BatchArray imageArray = new BatchArray(NdArrayConverter.Image2NdArray(resultImage, false, true, bias));
 
+                Console.WriteLine("Start predict.");
                 Stopwatch sw = Stopwatch.StartNew();
                 BatchArray result = nn.Predict(imageArray);
                 sw.Stop();
