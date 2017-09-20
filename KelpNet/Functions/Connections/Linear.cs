@@ -250,5 +250,10 @@ namespace KelpNet.Functions.Connections
 
             return BatchArray.Convert(gxData, prevInput.Shape, prevInput.BatchCount);
         }
+
+        public Convolution2D AsConvolution2D()
+        {
+            return new Convolution2D(this);
+        }
     }
 }

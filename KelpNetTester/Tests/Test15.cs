@@ -39,17 +39,9 @@ namespace KelpNetTester.Tests
                 //GPUを初期化
                 for (int i = 0; i < vgg16Net.Count - 1; i++)
                 {
-                    if (vgg16Net[i] is Convolution2D)
+                    if (vgg16Net[i] is Convolution2D || vgg16Net[i] is Linear || vgg16Net[i] is MaxPooling)
                     {
-                        ((Convolution2D)vgg16Net[i]).InitGpu();
-                    }
-                    else if (vgg16Net[i] is Linear)
-                    {
-                        ((Linear)vgg16Net[i]).InitGpu();
-                    }
-                    else if (vgg16Net[i] is MaxPooling)
-                    {
-                        ((MaxPooling)vgg16Net[i]).InitGpu();
+                        vgg16Net[i].InitGpu();
                     }
                 }
 
@@ -64,8 +56,8 @@ namespace KelpNetTester.Tests
                 g.DrawImage(baseImage, 0, 0, 224, 224);
                 g.Dispose();
 
-                Real[] bias = { -123.68, -116.779, -103.939 };//補正のチャンネル順は入力画像に従うため
-                BatchArray imageArray = new BatchArray(NdArrayConverter.Image2NdArray(resultImage, false, true, bias));
+                Real[] bias = { -123.68, -116.779, -103.939 };  //補正のチャンネル順は入力画像に従う
+                BatchArray imageArray = new BatchArray(NdArrayConverter.Image2NdArray(resultImage, true, true, bias));
 
                 Stopwatch sw = Stopwatch.StartNew();
                 BatchArray result = nn.Predict(imageArray);

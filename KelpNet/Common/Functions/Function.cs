@@ -14,8 +14,8 @@ namespace KelpNet.Common.Functions
         public FunctionParameter[] Parameters = { };
         public Optimizer[] Optimizers;
 
-        protected readonly int OutputCount;
-        protected readonly int InputCount;
+        public readonly int OutputCount;
+        public readonly int InputCount;
 
         //コンストラクタ
         protected Function(string name, int inputCount = 0, int oututCount = 0)

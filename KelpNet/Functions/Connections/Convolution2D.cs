@@ -64,7 +64,7 @@ namespace KelpNet.Functions.Connections
                 pad = new Size(0, 0);
 
             if (stride == Size.Empty)
-                stride = new Size(0, 0);
+                stride = new Size(1, 1);
 
             this._kWidth = kSize.Width;
             this._kHeight = kSize.Height;
@@ -83,6 +83,23 @@ namespace KelpNet.Functions.Connections
             {
                 InitGpu();
             }
+        }
+
+        public Convolution2D(Linear linear) : base(linear.Name, linear.InputCount, linear.OutputCount)
+        {
+            this._kWidth = 1;
+            this._kHeight = 1;
+            this._strideX = 1;
+            this._strideY = 1;
+            this._padX = 0;
+            this._padY = 0;
+
+            this.Parameters = linear.Parameters;
+            this.Activation = linear.Activation;
+
+            this.W = linear.W;
+            this.W.Shape = new[] {OutputCount, InputCount, this._kHeight, this._kWidth};
+            this.b = linear.b;
         }
 
         void Initialize(Array initialW = null, Array initialb = null)

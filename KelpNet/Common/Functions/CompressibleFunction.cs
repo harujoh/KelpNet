@@ -5,7 +5,7 @@ namespace KelpNet.Common.Functions
     [Serializable]
     public abstract class CompressibleFunction : NeedPreviousInputFunction
     {
-        protected CompressibleActivation Activation;
+        public CompressibleActivation Activation { get; protected set; }
 
         protected CompressibleFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
         {
