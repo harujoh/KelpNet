@@ -37,7 +37,7 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride;
             this._strideY = stride;
 
-            if (isGpu) InitGpu();
+            if (isGpu) SetUpGpu();
         }
 
         public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, bool isGpu = false) : base(name)
@@ -55,7 +55,7 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride.Width;
             this._strideY = stride.Height;
 
-            if (isGpu) InitGpu();
+            if (isGpu) SetUpGpu();
         }
 
         protected override void CreateKernel()

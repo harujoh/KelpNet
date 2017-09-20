@@ -27,7 +27,7 @@ namespace KelpNet.Functions.Noise
 
             if (isGpu)
             {
-                InitGpu();
+                SetUpGpu();
             }
         }
 

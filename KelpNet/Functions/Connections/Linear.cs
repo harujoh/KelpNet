@@ -69,7 +69,7 @@ namespace KelpNet.Functions.Connections
 
             if (isGpu)
             {
-                InitGpu();
+                SetUpGpu();
             }
         }
 

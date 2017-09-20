@@ -16,7 +16,7 @@ namespace KelpNet.Functions.Activations
 
             if (isGpu)
             {
-                InitGpu();
+                SetUpGpu();
             }
         }
 

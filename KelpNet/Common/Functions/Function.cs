@@ -75,7 +75,7 @@ namespace KelpNet.Common.Functions
         {
         }
 
-        public bool InitGpu()
+        public bool SetUpGpu()
         {
             this.IsGpu = Weaver.Enable;
             if (this.IsGpu)

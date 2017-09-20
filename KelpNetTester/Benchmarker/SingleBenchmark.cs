@@ -35,7 +35,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
             
-            if (linear.InitGpu())
+            if (linear.SetUpGpu())
             {
                 sw.Restart();
                 BatchArray gradArrayGpu = linear.Forward(inputArrayGpu);
@@ -63,7 +63,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (tanh.InitGpu())
+            if (tanh.SetUpGpu())
             {
                 sw.Restart();
                 BatchArray gradArrayGpu = tanh.Forward(inputArrayGpu);
@@ -91,7 +91,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (sigmoid.InitGpu())
+            if (sigmoid.SetUpGpu())
             {
                 sw.Restart();
                 BatchArray gradArrayGpu = sigmoid.Forward(inputArrayGpu);
@@ -119,7 +119,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (relu.InitGpu())
+            if (relu.SetUpGpu())
             {
                 sw.Restart();
                 BatchArray gradArrayGpu = relu.Forward(inputArrayGpu);
@@ -149,7 +149,7 @@ namespace KelpNetTester.Benchmarker
 
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (leakyRelu.InitGpu())
+            if (leakyRelu.SetUpGpu())
             {
                 sw.Restart();
                 BatchArray gradArrayGpu = leakyRelu.Forward(inputArrayGpu);
@@ -181,7 +181,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (maxPooling.InitGpu())
+            if (maxPooling.SetUpGpu())
             {
                 sw.Restart();
                 maxPooling.Forward(inputImageArrayGpu);
@@ -207,7 +207,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (conv2d.InitGpu())
+            if (conv2d.SetUpGpu())
             {
                 sw.Restart();
                 BatchArray gradImageArrayGpu = conv2d.Forward(inputImageArrayGpu);
@@ -235,7 +235,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (deconv2d.InitGpu())
+            if (deconv2d.SetUpGpu())
             {
                 sw.Restart();
                 BatchArray gradImageArrayGpu = deconv2d.Forward(inputImageArrayGpu);
@@ -266,7 +266,7 @@ namespace KelpNetTester.Benchmarker
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (dropout.InitGpu())
+            if (dropout.SetUpGpu())
             {
                 BatchArray gradArrayGpu = new BatchArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
 
