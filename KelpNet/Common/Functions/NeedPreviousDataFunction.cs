@@ -11,14 +11,16 @@ namespace KelpNet.Common.Functions
         private readonly List<BatchArray> _prevInput = new List<BatchArray>();
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
 
-        protected abstract BatchArray NeedPreviousForward(BatchArray x);
-        protected abstract BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput);
+        protected Func<BatchArray, BatchArray> NeedPreviousForward;
+        protected Func<BatchArray, BatchArray, BatchArray, BatchArray> NeedPreviousBackward;
 
         protected NeedPreviousDataFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
         {
+            Forward = ForwardCpu;
+            Backward = BackwardCpu;
         }
 
-        protected override BatchArray ForwardSingle(BatchArray x)
+        public BatchArray ForwardCpu(BatchArray x)
         {
             this._prevInput.Add(x);
 
@@ -28,8 +30,10 @@ namespace KelpNet.Common.Functions
             return prevoutput;
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gy)
+        public BatchArray BackwardCpu(BatchArray gy)
         {
+            BackwardCountUp();
+
             BatchArray prevInput = this._prevInput[this._prevInput.Count - 1];
             this._prevInput.RemoveAt(this._prevInput.Count - 1);
 

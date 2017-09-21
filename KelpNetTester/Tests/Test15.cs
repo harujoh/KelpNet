@@ -39,7 +39,7 @@ namespace KelpNetTester.Tests
                 {
                     if (vgg16Net[i] is Convolution2D || vgg16Net[i] is Linear || vgg16Net[i] is MaxPooling)
                     {
-                        vgg16Net[i].SetUpGpu();
+                        ((IParallelizable) vgg16Net[i]).SetGpuEnable(true);
                     }
                 }
 

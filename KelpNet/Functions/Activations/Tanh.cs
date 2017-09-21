@@ -10,14 +10,8 @@ namespace KelpNet.Functions.Activations
     {
         const string FUNCTION_NAME = "Tanh";
 
-        public Tanh(string name = FUNCTION_NAME, bool isGpu = false) : base(name)
+        public Tanh(string name = FUNCTION_NAME, bool gpuEnable = false) : base(name, gpuEnable, FUNCTION_NAME)
         {
-            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME);
-
-            if (isGpu)
-            {
-                SetUpGpu();
-            }
         }
 
         public override void ForwardActivate(ref Real x)

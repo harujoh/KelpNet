@@ -9,13 +9,16 @@ namespace KelpNet.Common.Functions
     {
         public string Name;
 
-        public bool IsGpu { get; private set; }
+        public bool GpuEnable{get; protected set;}
 
         public FunctionParameter[] Parameters = { };
         public Optimizer[] Optimizers;
 
         public readonly int OutputCount;
         public readonly int InputCount;
+
+        public Func<BatchArray, BatchArray> Forward;
+        public Func<BatchArray, BatchArray> Backward;
 
         //コンストラクタ
         protected Function(string name, int inputCount = 0, int oututCount = 0)
@@ -24,9 +27,6 @@ namespace KelpNet.Common.Functions
             this.InputCount = inputCount;
             this.OutputCount = oututCount;
         }
-
-        protected abstract BatchArray ForwardSingle(BatchArray x);
-        protected abstract BatchArray BackwardSingle(BatchArray gy);
 
         public void SetOptimizer(params Optimizer[] optimizers)
         {
@@ -38,32 +38,23 @@ namespace KelpNet.Common.Functions
             }
         }
 
-        //外部公開用
-        public virtual BatchArray Forward(BatchArray x)
-        {
-            return this.ForwardSingle(x);
-        }
-
-        //外部公開用
-        public virtual BatchArray Backward(BatchArray gy)
+        //パラメータを更新する時に呼ぶ関数
+        protected void BackwardCountUp()
         {
             foreach (FunctionParameter parameter in this.Parameters)
             {
-                parameter.TrainCount++;
+                parameter.CountUp();
             }
-
-            return this.BackwardSingle(gy);
         }
 
         //評価関数
         public virtual BatchArray Predict(BatchArray input)
         {
-            return this.ForwardSingle(input);
+            return this.Forward(input);
         }
 
         public virtual void Update()
         {
-            //更新実行前に訓練カウントを使って各Functionの傾きを補正
             foreach (Optimizer optimizer in this.Optimizers)
             {
                 optimizer.Update();
@@ -73,21 +64,6 @@ namespace KelpNet.Common.Functions
         //ある処理実行後に特定のデータを初期値に戻す処理
         public virtual void ResetState()
         {
-        }
-
-        public bool SetUpGpu()
-        {
-            this.IsGpu = Weaver.Enable;
-            if (this.IsGpu)
-            {
-                CreateKernel();
-            }
-
-            return this.IsGpu;
-        }
-
-        protected virtual void CreateKernel()
-        {            
         }
 
         //名前を返す

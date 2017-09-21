@@ -52,7 +52,7 @@
 	/*ForwardActivate*/
 }
 
-__kernel void Convolution2DgWBackward(
+__kernel void Deconvolution2DgWBackward(
 	const __global __read_only	Real* activatedgy,
 	const __global __read_only	Real* gpuX,
 	__global __read_write Real* gpugW,
@@ -112,7 +112,7 @@ __kernel void Convolution2DgWBackward(
 	gpugW[gwIndex] = localgW;
 }
 
-__kernel void Convolution2DgXBackward(
+__kernel void Deconvolution2DgXBackward(
 	const __global __read_only	Real* activatedgy,
 	const __global __read_only	Real* gpuW,
 	__global __write_only Real* gpugX,

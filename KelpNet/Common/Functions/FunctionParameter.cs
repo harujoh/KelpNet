@@ -23,6 +23,11 @@ namespace KelpNet.Common.Functions
             this.Length = this.Param.Data.Length;
         }
 
+        public void CountUp()
+        {
+            TrainCount++;
+        }
+
         //傾きの補正
         public bool Reduce()
         {
@@ -35,6 +40,7 @@ namespace KelpNet.Common.Functions
 
                 return true;
             }
+
             return false;
         }
 

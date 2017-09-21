@@ -14,9 +14,12 @@ namespace KelpNet.Functions.Activations
         public ELU(double alpha = 1, string name = FUNCTION_NAME) : base(name)
         {
             this._alpha = alpha;
+
+            NeedPreviousForward = NeedPreviousForwardCpu;
+            NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        protected BatchArray NeedPreviousForwardCpu(BatchArray x)
         {
             Real[] result = new Real[x.Data.Length];
 
@@ -35,7 +38,7 @@ namespace KelpNet.Functions.Activations
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
+        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
         {
             Real[] result = new Real[gy.Data.Length];
 

@@ -27,9 +27,12 @@ namespace KelpNet.Functions.Connections
             }
 
             this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
+
+            NeedPreviousForward = NeedPreviousForwardCpu;
+            NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        protected BatchArray NeedPreviousForwardCpu(BatchArray x)
         {
             Real[] result = new Real[x.Data.Length * this.OutputCount];
 
@@ -47,7 +50,7 @@ namespace KelpNet.Functions.Connections
             return BatchArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput)
+        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput)
         {
             for (int b = 0; b < gy.BatchCount; b++)
             {

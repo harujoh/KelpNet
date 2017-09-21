@@ -1,5 +1,4 @@
 ﻿using System;
-using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -10,14 +9,8 @@ namespace KelpNet.Functions.Activations
     {
         const string FUNCTION_NAME = "Sigmoid";
 
-        public Sigmoid(string name = FUNCTION_NAME, bool isGpu = false) : base(name)
+        public Sigmoid(string name = FUNCTION_NAME, bool gpuEnable = false) : base(name, gpuEnable, FUNCTION_NAME)
         {
-            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME);
-
-            if (isGpu)
-            {
-                SetUpGpu();
-            }
         }
 
         public override void ForwardActivate(ref Real x)

@@ -64,9 +64,12 @@ namespace KelpNet.Functions.Normalization
                 this.Parameters[2] = new FunctionParameter(this.AvgMean, this.gMean, this.Name + " Mean");
                 this.Parameters[3] = new FunctionParameter(this.AvgVar, this.gVariance, this.Name + " Variance");
             }
+
+            Forward = ForwardCpu;
+            Backward = BackwardCpu;
         }
 
-        protected override BatchArray ForwardSingle(BatchArray x)
+        public BatchArray ForwardCpu(BatchArray x)
         {
             //計算用パラメータの取得
             if (this.IsTrain)
@@ -150,8 +153,10 @@ namespace KelpNet.Functions.Normalization
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray BackwardSingle(BatchArray gy)
+        public BatchArray BackwardCpu(BatchArray gy)
         {
+            BackwardCountUp();
+
             Real[] gx = new Real[gy.BatchCount * this.ChannelSize];
 
             this.gBeta.Clear();
@@ -211,14 +216,14 @@ namespace KelpNet.Functions.Normalization
                 //Predictはトレーニングしない
                 this.IsTrain = false;
 
-                result = this.ForwardSingle(input);
+                result = this.Forward(input);
 
                 //フラグをリセット
                 this.IsTrain = true;
             }
             else
             {
-                result = this.ForwardSingle(input);
+                result = this.Forward(input);
             }
 
             return result;

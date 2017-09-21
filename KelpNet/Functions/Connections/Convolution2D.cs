@@ -12,17 +12,10 @@ namespace KelpNet.Functions.Connections
     public class Convolution2D : CompressibleFunction
     {
         const string FUNCTION_NAME = "Convolution2D";
+        private const string PARAM_NAME = "/*ForwardActivate*/";
+        private const string PARAM_VALUE = "ForwardActivate(gpuY + index);";
 
         private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
-
-        [NonSerialized]
-        public ComputeKernel ForwardKernel;
-
-        [NonSerialized]
-        public ComputeKernel BackwardgWKernel;
-
-        [NonSerialized]
-        public ComputeKernel BackwardgXKernel;
 
         public NdArray W;
         public NdArray b;
@@ -37,7 +30,7 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -48,17 +41,10 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.Activation = activation;
-
             this.Initialize(initialW, initialb);
-
-            if (isGpu)
-            {
-                SetUpGpu();
-            }
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool isGpu = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels)
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -75,17 +61,10 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
-            this.Activation = activation;
-
             this.Initialize(initialW, initialb);
-
-            if (isGpu)
-            {
-                SetUpGpu();
-            }
         }
 
-        public Convolution2D(Linear linear) : base(linear.Name, linear.InputCount, linear.OutputCount)
+        public Convolution2D(Linear linear) : base(linear.Name, linear.InputCount, linear.OutputCount, linear.GpuEnable, FUNCTION_NAME, linear.Activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             this._kWidth = 1;
             this._kHeight = 1;
@@ -95,10 +74,9 @@ namespace KelpNet.Functions.Connections
             this._padY = 0;
 
             this.Parameters = linear.Parameters;
-            this.Activation = linear.Activation;
 
             this.W = linear.W;
-            this.W.Shape = new[] {OutputCount, InputCount, this._kHeight, this._kWidth};
+            this.W.Shape = new[] { OutputCount, InputCount, this._kHeight, this._kWidth };
             this.b = linear.b;
         }
 
@@ -133,117 +111,113 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        protected override void CreateKernel()
-        {
-            string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
-
-            if (this.Activation != null)
-            {
-                kernelSource = this.Activation.ActivateFunctionString + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate(gpuY + index);");
-            }
-
-            ComputeProgram program = Weaver.CreateProgram(kernelSource);
-            this.ForwardKernel = program.CreateKernel("Convolution2DForward");
-            this.BackwardgWKernel = program.CreateKernel("Convolution2DgWBackward");
-            this.BackwardgXKernel = program.CreateKernel("Convolution2DgXBackward");
-        }
-
-        protected override BatchArray NeedPreviousForward(BatchArray input)
+        protected override BatchArray NeedPreviousForwardCpu(BatchArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
 
             Real[] result = new Real[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
 
-            if (!IsGpu)
+            for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
             {
-                for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
+                int resultIndex = batchCounter * this.OutputCount * outputHeight * outputWidth;
+
+                for (int och = 0; och < this.OutputCount; och++)
                 {
-                    int resultIndex = batchCounter * this.OutputCount * outputHeight * outputWidth;
+                    //Wインデックス用
+                    int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
 
-                    for (int och = 0; och < this.OutputCount; och++)
+                    for (int oy = 0; oy < outputHeight * this._strideY; oy += this._strideY)
                     {
-                        //Wインデックス用
-                        int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+                        int kyStartIndex = oy - this._padY < 0 ? 0 : oy - this._padY;
+                        int kyLimit = this._kHeight + oy - this._padY < input.Shape[1] ? this._kHeight + oy - this._padY : input.Shape[1];
 
-                        for (int oy = 0; oy < outputHeight * this._strideY; oy += this._strideY)
+                        for (int ox = 0; ox < outputWidth * this._strideX; ox += this._strideX)
                         {
-                            int kyStartIndex = oy - this._padY < 0 ? 0 : oy - this._padY;
-                            int kyLimit = this._kHeight + oy - this._padY < input.Shape[1] ? this._kHeight + oy - this._padY : input.Shape[1];
+                            int kxStartIndex = ox - this._padX < 0 ? 0 : ox - this._padX;
+                            int kxLimit = this._kWidth + ox - this._padX < input.Shape[2] ? this._kWidth + ox - this._padX : input.Shape[2];
 
-                            for (int ox = 0; ox < outputWidth * this._strideX; ox += this._strideX)
+                            for (int ich = 0; ich < this.InputCount; ich++)
                             {
-                                int kxStartIndex = ox - this._padX < 0 ? 0 : ox - this._padX;
-                                int kxLimit = this._kWidth + ox - this._padX < input.Shape[2] ? this._kWidth + ox - this._padX : input.Shape[2];
+                                //Wインデックス用
+                                int inChOffset = ich * this._kHeight * this._kWidth;
 
-                                for (int ich = 0; ich < this.InputCount; ich++)
+                                //inputインデックス用
+                                int inputOffset = ich * input.Shape[1] * input.Shape[2];
+
+                                for (int ky = kyStartIndex; ky < kyLimit; ky++)
                                 {
-                                    //Wインデックス用
-                                    int inChOffset = ich * this._kHeight * this._kWidth;
-
-                                    //inputインデックス用
-                                    int inputOffset = ich * input.Shape[1] * input.Shape[2];
-
-                                    for (int ky = kyStartIndex; ky < kyLimit; ky++)
+                                    for (int kx = kxStartIndex; kx < kxLimit; kx++)
                                     {
-                                        for (int kx = kxStartIndex; kx < kxLimit; kx++)
-                                        {
-                                            int wIndex = outChOffset + inChOffset + (ky - oy + this._padY) * this._kWidth + kx - ox + this._padX;
-                                            int inputIndex = inputOffset + ky * input.Shape[2] + kx + batchCounter * input.Length;
+                                        int wIndex = outChOffset + inChOffset + (ky - oy + this._padY) * this._kWidth + kx - ox + this._padX;
+                                        int inputIndex = inputOffset + ky * input.Shape[2] + kx + batchCounter * input.Length;
 
-                                            result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
-                                        }
+                                        result[resultIndex] += input.Data[inputIndex] * this.W.Data[wIndex];
                                     }
                                 }
-
-                                result[resultIndex] += this.b.Data[och];
-                                if (this.Activation != null) this.Activation.ForwardActivate(ref result[resultIndex]);
-                                resultIndex++;
                             }
+
+                            result[resultIndex] += this.b.Data[och];
+                            if (this.Activation != null) this.Activation.ForwardActivate(ref result[resultIndex]);
+                            resultIndex++;
                         }
                     }
                 }
             }
-            else
+
+            return GetForwardResult(result, outputWidth, outputHeight, input.BatchCount);
+        }
+
+        protected override BatchArray NeedPreviousForwardGpu(BatchArray input)
+        {
+            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
+            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
+
+            Real[] result = new Real[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
+
+            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
+            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
+            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data))
+            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
             {
-                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
-                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
-                using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data))
-                using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
-                {
-                    ForwardKernel.SetMemoryArgument(0, gpuX);
-                    ForwardKernel.SetMemoryArgument(1, gpuW);
-                    ForwardKernel.SetMemoryArgument(2, gpub);
-                    ForwardKernel.SetMemoryArgument(3, gpuY);
-                    ForwardKernel.SetValueArgument(4, input.Shape[1]);
-                    ForwardKernel.SetValueArgument(5, input.Shape[2]);
-                    ForwardKernel.SetValueArgument(6, input.Length);
-                    ForwardKernel.SetValueArgument(7, outputWidth);
-                    ForwardKernel.SetValueArgument(8, outputHeight);
-                    ForwardKernel.SetValueArgument(9, this._strideX);
-                    ForwardKernel.SetValueArgument(10, this._strideY);
-                    ForwardKernel.SetValueArgument(11, this._padX);
-                    ForwardKernel.SetValueArgument(12, this._padY);
-                    ForwardKernel.SetValueArgument(13, this._kHeight);
-                    ForwardKernel.SetValueArgument(14, this._kWidth);
-                    ForwardKernel.SetValueArgument(15, this.OutputCount);
-                    ForwardKernel.SetValueArgument(16, this.InputCount);
+                ForwardKernel.SetMemoryArgument(0, gpuX);
+                ForwardKernel.SetMemoryArgument(1, gpuW);
+                ForwardKernel.SetMemoryArgument(2, gpub);
+                ForwardKernel.SetMemoryArgument(3, gpuY);
+                ForwardKernel.SetValueArgument(4, input.Shape[1]);
+                ForwardKernel.SetValueArgument(5, input.Shape[2]);
+                ForwardKernel.SetValueArgument(6, input.Length);
+                ForwardKernel.SetValueArgument(7, outputWidth);
+                ForwardKernel.SetValueArgument(8, outputHeight);
+                ForwardKernel.SetValueArgument(9, this._strideX);
+                ForwardKernel.SetValueArgument(10, this._strideY);
+                ForwardKernel.SetValueArgument(11, this._padX);
+                ForwardKernel.SetValueArgument(12, this._padY);
+                ForwardKernel.SetValueArgument(13, this._kHeight);
+                ForwardKernel.SetValueArgument(14, this._kWidth);
+                ForwardKernel.SetValueArgument(15, this.OutputCount);
+                ForwardKernel.SetValueArgument(16, this.InputCount);
 
-                    Weaver.CommandQueue.Execute
-                    (
-                        ForwardKernel,
-                        null,
-                        new long[] { input.BatchCount * OutputCount, outputHeight, outputWidth },
-                        null,
-                        null
-                    );
+                Weaver.CommandQueue.Execute
+                (
+                    ForwardKernel,
+                    null,
+                    new long[] { input.BatchCount * OutputCount, outputHeight, outputWidth },
+                    null,
+                    null
+                );
 
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
-                }
+                Weaver.CommandQueue.Finish();
+                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
             }
 
-            BatchArray output = BatchArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount);
+            return GetForwardResult(result, outputWidth, outputHeight, input.BatchCount);
+        }
+
+        BatchArray GetForwardResult(Real[] result, int outputWidth, int outputHeight, int batchCount)
+        {
+            BatchArray output = BatchArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, batchCount);
+
             if (this.Activation != null)
             {
                 this._prevOutput.Add(output);
@@ -252,18 +226,18 @@ namespace KelpNet.Functions.Connections
             return output;
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray x)
+        Real[] GetActivatedgy(BatchArray gy)
         {
             Real[] prevOutputData = new Real[gy.Data.Length];
+
             if (this.Activation != null)
             {
                 prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
                 this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
             }
 
-            Real[] gx = new Real[x.Data.Length];
-
             Real[] activatedgy = new Real[gy.BatchCount * gy.Length];
+
             for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
             {
                 for (int och = 0; och < gy.Shape[0]; och++)
@@ -274,65 +248,71 @@ namespace KelpNet.Functions.Connections
                         {
                             int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox;
                             Real gyData = gy.Data[gyIndex];
+
                             if (this.Activation != null)
                             {
                                 this.Activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
                             }
-                            activatedgy[batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox] = gyData;
 
+                            activatedgy[batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox] = gyData;
                             this.gb.Data[och] += gyData;
                         }
                     }
                 }
             }
 
-            if (!IsGpu)
-            {
-                for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
-                {
-                    for (int och = 0; och < gy.Shape[0]; och++)
-                    {
-                        //gWインデックス用
-                        int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+            return activatedgy;
+        }
 
-                        for (int oy = 0; oy < gy.Shape[1] * this._strideY; oy += this._strideY)
+        protected override BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray x)
+        {
+            Real[] gx = new Real[x.Data.Length];
+            Real[] activatedgy = GetActivatedgy(gy);
+
+            for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
+            {
+                for (int och = 0; och < gy.Shape[0]; och++)
+                {
+                    //gWインデックス用
+                    int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+
+                    for (int oy = 0; oy < gy.Shape[1] * this._strideY; oy += this._strideY)
+                    {
+                        //計算省略のためにジャンプ
+                        int kyStartIndex = this._padY - oy < 0 ? 0 : this._padY - oy;
+                        int kyLimit = this._kHeight < x.Shape[1] - oy + this._padY ? this._kHeight : x.Shape[1] - oy + this._padY;
+
+                        for (int ox = 0; ox < gy.Shape[2] * this._strideX; ox += this._strideX)
                         {
                             //計算省略のためにジャンプ
-                            int kyStartIndex = this._padY - oy < 0 ? 0 : this._padY - oy;
-                            int kyLimit = this._kHeight < x.Shape[1] - oy + this._padY ? this._kHeight : x.Shape[1] - oy + this._padY;
+                            int kxStartIndex = this._padX - ox < 0 ? 0 : this._padX - ox;
+                            int kxLimit = this._kWidth < x.Shape[2] - ox + this._padX ? this._kWidth : x.Shape[2] - ox + this._padX;
 
-                            for (int ox = 0; ox < gy.Shape[2] * this._strideX; ox += this._strideX)
+                            int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox;
+
+                            Real gyData = activatedgy[gyIndex]; //gyIndex = ch * ox * oy
+
+                            for (int ich = 0; ich < x.Shape[0]; ich++)
                             {
-                                //計算省略のためにジャンプ
-                                int kxStartIndex = this._padX - ox < 0 ? 0 : this._padX - ox;
-                                int kxLimit = this._kWidth < x.Shape[2] - ox + this._padX ? this._kWidth : x.Shape[2] - ox + this._padX;
+                                //gWインデックス用
+                                int inChOffset = ich * this._kHeight * this._kWidth;
 
-                                int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox;
+                                //inputインデックス用
+                                int inputOffset = ich * x.Shape[1] * x.Shape[2] + batchCounter * x.Length;
 
-                                Real gyData = activatedgy[gyIndex]; //gyIndex = ch * ox * oy
-
-                                for (int ich = 0; ich < x.Shape[0]; ich++)
+                                for (int ky = kyStartIndex; ky < kyLimit; ky++)
                                 {
-                                    //gWインデックス用
-                                    int inChOffset = ich * this._kHeight * this._kWidth;
-
-                                    //inputインデックス用
-                                    int inputOffset = ich * x.Shape[1] * x.Shape[2] + batchCounter * x.Length;
-
-                                    for (int ky = kyStartIndex; ky < kyLimit; ky++)
+                                    for (int kx = kxStartIndex; kx < kxLimit; kx++)
                                     {
-                                        for (int kx = kxStartIndex; kx < kxLimit; kx++)
-                                        {
-                                            //WとgWのshapeは等しい
-                                            int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
+                                        //WとgWのshapeは等しい
+                                        int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
 
-                                            //xとgxのshapeは等しい
-                                            int inputIndex = inputOffset + (ky + oy - this._padY) * x.Shape[2] + kx + ox - this._padX;
+                                        //xとgxのshapeは等しい
+                                        int inputIndex = inputOffset + (ky + oy - this._padY) * x.Shape[2] + kx + ox - this._padX;
 
-                                            this.gW.Data[wIndex] += x.Data[inputIndex] * gyData;
+                                        this.gW.Data[wIndex] += x.Data[inputIndex] * gyData;
 
-                                            gx[inputIndex] += this.W.Data[wIndex] * gyData;
-                                        }
+                                        gx[inputIndex] += this.W.Data[wIndex] * gyData;
                                     }
                                 }
                             }
@@ -340,78 +320,84 @@ namespace KelpNet.Functions.Connections
                     }
                 }
             }
-            else
+
+            return BatchArray.Convert(gx, x.Shape, x.BatchCount);
+        }
+
+        protected override BatchArray NeedPreviousBackwardGpu(BatchArray gy, BatchArray x)
+        {
+            Real[] gx = new Real[x.Data.Length];
+            Real[] activatedgy = GetActivatedgy(gy);
+
+            //gyは共通で使用
+            using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))
             {
-                //gyは共通で使用
-                using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))
+                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
+                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
                 {
-                    using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
-                    using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
-                    {
-                        this.BackwardgWKernel.SetMemoryArgument(0, gpugY);
-                        this.BackwardgWKernel.SetMemoryArgument(1, gpuX);
-                        this.BackwardgWKernel.SetMemoryArgument(2, gpugW);
-                        this.BackwardgWKernel.SetValueArgument(3, gy.BatchCount);
-                        this.BackwardgWKernel.SetValueArgument(4, this.InputCount);
-                        this.BackwardgWKernel.SetValueArgument(5, gy.Shape[0]);
-                        this.BackwardgWKernel.SetValueArgument(6, gy.Shape[1]);
-                        this.BackwardgWKernel.SetValueArgument(7, gy.Shape[2]);
-                        this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
-                        this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
-                        this.BackwardgWKernel.SetValueArgument(10, x.Length);
-                        this.BackwardgWKernel.SetValueArgument(11, this._strideX);
-                        this.BackwardgWKernel.SetValueArgument(12, this._strideY);
-                        this.BackwardgWKernel.SetValueArgument(13, this._padX);
-                        this.BackwardgWKernel.SetValueArgument(14, this._padY);
-                        this.BackwardgWKernel.SetValueArgument(15, this._kHeight);
-                        this.BackwardgWKernel.SetValueArgument(16, this._kWidth);
+                    this.BackwardgWKernel.SetMemoryArgument(0, gpugY);
+                    this.BackwardgWKernel.SetMemoryArgument(1, gpuX);
+                    this.BackwardgWKernel.SetMemoryArgument(2, gpugW);
+                    this.BackwardgWKernel.SetValueArgument(3, gy.BatchCount);
+                    this.BackwardgWKernel.SetValueArgument(4, this.InputCount);
+                    this.BackwardgWKernel.SetValueArgument(5, gy.Shape[0]);
+                    this.BackwardgWKernel.SetValueArgument(6, gy.Shape[1]);
+                    this.BackwardgWKernel.SetValueArgument(7, gy.Shape[2]);
+                    this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
+                    this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
+                    this.BackwardgWKernel.SetValueArgument(10, x.Length);
+                    this.BackwardgWKernel.SetValueArgument(11, this._strideX);
+                    this.BackwardgWKernel.SetValueArgument(12, this._strideY);
+                    this.BackwardgWKernel.SetValueArgument(13, this._padX);
+                    this.BackwardgWKernel.SetValueArgument(14, this._padY);
+                    this.BackwardgWKernel.SetValueArgument(15, this._kHeight);
+                    this.BackwardgWKernel.SetValueArgument(16, this._kWidth);
 
-                        Weaver.CommandQueue.Execute
-                        (
-                            this.BackwardgWKernel,
-                            null,
-                            new long[] { OutputCount * InputCount, this._kHeight, this._kWidth },
-                            null,
-                            null
-                        );
+                    Weaver.CommandQueue.Execute
+                    (
+                        this.BackwardgWKernel,
+                        null,
+                        new long[] { OutputCount * InputCount, this._kHeight, this._kWidth },
+                        null,
+                        null
+                    );
 
-                        Weaver.CommandQueue.Finish();
-                        Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
-                    }
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
+                }
 
-                    using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
-                    using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
-                    {
-                        this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
-                        this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
-                        this.BackwardgXKernel.SetMemoryArgument(2, gpugX);
-                        this.BackwardgXKernel.SetValueArgument(3, this.OutputCount);
-                        this.BackwardgXKernel.SetValueArgument(4, this.InputCount);
-                        this.BackwardgXKernel.SetValueArgument(5, gy.Shape[0]);
-                        this.BackwardgXKernel.SetValueArgument(6, gy.Shape[1]);
-                        this.BackwardgXKernel.SetValueArgument(7, gy.Shape[2]);
-                        this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
-                        this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
-                        this.BackwardgXKernel.SetValueArgument(10, x.Length);
-                        this.BackwardgXKernel.SetValueArgument(11, this._strideX);
-                        this.BackwardgXKernel.SetValueArgument(12, this._strideY);
-                        this.BackwardgXKernel.SetValueArgument(13, this._padX);
-                        this.BackwardgXKernel.SetValueArgument(14, this._padY);
-                        this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
-                        this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
+                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
+                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
+                {
+                    this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
+                    this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
+                    this.BackwardgXKernel.SetMemoryArgument(2, gpugX);
+                    this.BackwardgXKernel.SetValueArgument(3, this.OutputCount);
+                    this.BackwardgXKernel.SetValueArgument(4, this.InputCount);
+                    this.BackwardgXKernel.SetValueArgument(5, gy.Shape[0]);
+                    this.BackwardgXKernel.SetValueArgument(6, gy.Shape[1]);
+                    this.BackwardgXKernel.SetValueArgument(7, gy.Shape[2]);
+                    this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
+                    this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
+                    this.BackwardgXKernel.SetValueArgument(10, x.Length);
+                    this.BackwardgXKernel.SetValueArgument(11, this._strideX);
+                    this.BackwardgXKernel.SetValueArgument(12, this._strideY);
+                    this.BackwardgXKernel.SetValueArgument(13, this._padX);
+                    this.BackwardgXKernel.SetValueArgument(14, this._padY);
+                    this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
+                    this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
 
-                        Weaver.CommandQueue.Execute
-                        (
-                            this.BackwardgXKernel,
-                            null,
-                            new long[] { gy.BatchCount * x.Shape[0], x.Shape[1], x.Shape[2] },
-                            null,
-                            null
-                        );
+                    Weaver.CommandQueue.Execute
+                    (
+                        this.BackwardgXKernel,
+                        null,
+                        new long[] { gy.BatchCount * x.Shape[0], x.Shape[1], x.Shape[2] },
+                        null,
+                        null
+                    );
 
-                        Weaver.CommandQueue.Finish();
-                        Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
-                    }
+                    Weaver.CommandQueue.Finish();
+                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
                 }
             }
 

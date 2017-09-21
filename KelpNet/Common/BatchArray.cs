@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using Cloo;
 
 namespace KelpNet.Common
 {
@@ -13,6 +14,9 @@ namespace KelpNet.Common
         public int BatchCount;
         public int Length;
 
+        [NonSerialized]
+        public ComputeBuffer<Real> GpuData;
+
         public BatchArray(Array data)
         {
             NdArray ndArray = NdArray.FromArray(data);
@@ -20,6 +24,7 @@ namespace KelpNet.Common
             this.Length = ndArray.Data.Length;
             this.BatchCount = 1;
             this.Data = ndArray.Data;
+            this.GpuData = null;
         }
 
         public BatchArray(Real[] data, int[] shape, int batchCount)
@@ -28,6 +33,7 @@ namespace KelpNet.Common
             this.Length = NdArray.ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
+            this.GpuData = null;
         }
 
         public BatchArray(int[] shape, int batchCount)
@@ -36,6 +42,7 @@ namespace KelpNet.Common
             this.Length = NdArray.ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = new Real[this.Length * batchCount];
+            this.GpuData = null;
         }
 
         public BatchArray(NdArray ndArray)
@@ -44,6 +51,7 @@ namespace KelpNet.Common
             this.Shape = ndArray.Shape.ToArray();
             this.Length = ndArray.Data.Length;
             this.BatchCount = 1;
+            this.GpuData = null;
         }
 
         public BatchArray(NdArray[] ndArray)
@@ -63,6 +71,7 @@ namespace KelpNet.Common
             {
                 Array.Copy(ndArray[i].Data, 0, this.Data, this.Length * i, ndArray[i].Data.Length);
             }
+            this.GpuData = null;
         }
 
         public NdArray GetNdArray(int i)

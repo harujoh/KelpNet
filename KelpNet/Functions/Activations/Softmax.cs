@@ -9,9 +9,11 @@ namespace KelpNet.Functions.Activations
     {
         public Softmax(string name = "Softmax") : base(name)
         {
+            NeedPreviousForward = NeedPreviousForwardCpu;
+            NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray x)
+        protected BatchArray NeedPreviousForwardCpu(BatchArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -44,7 +46,7 @@ namespace KelpNet.Functions.Activations
             return BatchArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevOutput)
+        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevOutput)
         {
             Real[] gx = new Real[gy.Data.Length];
 

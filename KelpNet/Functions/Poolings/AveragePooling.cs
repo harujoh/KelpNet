@@ -23,6 +23,9 @@ namespace KelpNet.Functions.Poolings
             this._padX = pad;
             this._strideX = stride;
             this._strideY = stride;
+
+            NeedPreviousForward = NeedPreviousForwardCpu;
+            NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
         public AveragePooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = "AvgPooling") : base(name)
@@ -39,9 +42,12 @@ namespace KelpNet.Functions.Poolings
             this._padX = pad.Width;
             this._strideX = stride.Width;
             this._strideY = stride.Height;
+
+            NeedPreviousForward = NeedPreviousForwardCpu;
+            NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        protected override BatchArray NeedPreviousForward(BatchArray input)
+        protected BatchArray NeedPreviousForwardCpu(BatchArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
@@ -84,7 +90,7 @@ namespace KelpNet.Functions.Poolings
             return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackward(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
+        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
         {
             Real[] result = new Real[prevInput.Data.Length];
             Real m = this._kHeight * this._kWidth;

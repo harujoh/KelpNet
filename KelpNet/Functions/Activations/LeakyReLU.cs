@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -8,19 +9,13 @@ namespace KelpNet.Functions.Activations
     public class LeakyReLU : CompressibleActivation
     {
         const string FUNCTION_NAME = "LeakyReLU";
+        private const string PARAM_NAME = "/*slope*/";
 
         private readonly Real _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, bool isGpu = false) : base(name)
+        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name, gpuEnable, FUNCTION_NAME, new KeyValuePair<string, string>(PARAM_NAME, slope.ToString()))
         {
             this._slope = slope;
-
-            this.ActivateFunctionString = Weaver.GetKernelSource(FUNCTION_NAME).Replace("/*slope*/", this._slope.ToString());
-
-            if (isGpu)
-            {
-                SetUpGpu();
-            }
         }
 
         public override void ForwardActivate(ref Real x)
