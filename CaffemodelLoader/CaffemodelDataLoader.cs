@@ -142,7 +142,25 @@ namespace CaffemodelLoader
             double eps = param.Eps;
             int size = (int)blobs[0].Shape.Dims[0];
 
-            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, blobs[0].Datas, blobs[1].Datas);
+            float[] avgMean = blobs[0].Datas;
+            float[] avgVar = blobs[1].Datas;
+
+            if (blobs.Count >= 3)
+            {
+                float scalingFactor = blobs[2].Datas[0];
+
+                for (int i = 0; i < avgMean.Length; i++)
+                {
+                    avgMean[i] /= scalingFactor;
+                }
+
+                for (int i = 0; i < avgVar.Length; i++)
+                {
+                    avgVar[i] /= scalingFactor;
+                }
+            }
+
+            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, avgMean, avgVar);
 
             return batchNormalization;
         }
