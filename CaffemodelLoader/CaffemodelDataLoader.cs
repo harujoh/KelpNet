@@ -70,7 +70,7 @@ namespace CaffemodelLoader
                     return SetupPooling(layer.PoolingParam, layer.Name);
 
                 case "ReLU":
-                    return layer.ReluParam != null ? new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name) : new LeakyReLU(name: layer.Name);
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name) : (Function)new LeakyReLU(name: layer.Name);
 
                 case "InnerProduct":
                     return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name);
