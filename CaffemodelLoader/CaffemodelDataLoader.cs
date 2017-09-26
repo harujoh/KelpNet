@@ -30,9 +30,60 @@ namespace CaffemodelLoader
                         result.Add(func);
                     }
                 }
+
+                foreach (LayerParameter layer in netparam.Layer)
+                {
+                    Function func = CreateFunction(layer);
+
+                    if (func != null)
+                    {
+                        result.Add(func);
+                    }
+                }
             }
 
             return result;
+        }
+
+        static Function CreateFunction(LayerParameter layer)
+        {
+            Console.WriteLine(layer.Type);
+            switch (layer.Type)
+            {
+                case "Scale":
+                    return null;
+
+                case "Eltwise":
+                    return null;
+
+                case "BatchNorm":
+                    return null;
+
+                case "Convolution":
+                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name);
+
+                case "Dropout":
+                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name);
+
+                case "Pooling":
+                    return SetupPooling(layer.PoolingParam, layer.Name);
+
+                case "ReLU":
+                    return layer.ReluParam != null ? new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name) : new LeakyReLU(name: layer.Name);
+
+                case "InnerProduct":
+                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name);
+
+                case "Softmax":
+                    return new Softmax();
+
+                case "SoftmaxWithLoss":
+                    return null;
+            }
+
+            Console.WriteLine("Skip the layer \"{0}\", since CaffemodelLoader does not support {0} layer", layer.Type);
+
+            return null;
         }
 
         static Function CreateFunction(V1LayerParameter layer)
@@ -40,19 +91,19 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Convolution:
-                    return SetupConvolution(layer);
+                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name);
 
                 case V1LayerParameter.LayerType.Dropout:
                     return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name);
 
                 case V1LayerParameter.LayerType.Pooling:
-                    return SetupPooling(layer);
+                    return SetupPooling(layer.PoolingParam, layer.Name);
 
                 case V1LayerParameter.LayerType.Relu:
-                    return layer.ReluParam != null ? new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name) : new LeakyReLU(name:layer.Name);
+                    return layer.ReluParam != null ? new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name) : new LeakyReLU(name: layer.Name);
 
                 case V1LayerParameter.LayerType.InnerProduct:
-                    return SetupInnerProduct(layer);
+                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name);
 
                 case V1LayerParameter.LayerType.Softmax:
                     return new Softmax();
@@ -66,9 +117,8 @@ namespace CaffemodelLoader
             return null;
         }
 
-        static Function SetupPooling(V1LayerParameter layer)
+        static Function SetupPooling(PoolingParameter param, string name)
         {
-            PoolingParameter param = layer.PoolingParam;
             Size ksize = GetKernelSize(param);
             Size stride = GetKernelStride(param);
             Size pad = GetKernelPad(param);
@@ -76,19 +126,17 @@ namespace CaffemodelLoader
             switch (param.Pool)
             {
                 case PoolingParameter.PoolMethod.Max:
-                    return new MaxPooling(ksize, stride, pad, layer.Name);
+                    return new MaxPooling(ksize, stride, pad, name);
 
                 case PoolingParameter.PoolMethod.Ave:
-                    return new AveragePooling(ksize, stride, pad, layer.Name);
+                    return new AveragePooling(ksize, stride, pad, name);
             }
 
             return null;
         }
 
-        static Convolution2D SetupConvolution(V1LayerParameter layer)
+        static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name)
         {
-            List<BlobProto> blobs = layer.Blobs;
-            ConvolutionParameter param = layer.ConvolutionParam;
             Size ksize = GetKernelSize(param);
             Size stride = GetKernelStride(param);
             Size pad = GetKernelPad(param);
@@ -101,32 +149,29 @@ namespace CaffemodelLoader
             if (param.BiasTerm)
             {
                 float[] b = blobs[1].Datas;
-                return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b, layer.Name);
+                return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b, name);
             }
 
-            return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, name: layer.Name);
+            return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, name: name);
         }
 
-        static Linear SetupInnerProduct(V1LayerParameter layer)
+        static Linear SetupInnerProduct(InnerProductParameter param, List<BlobProto> blobs, string name)
         {
-            InnerProductParameter param = layer.InnerProductParam;
-
             if (param.Axis != 1)
             {
                 throw new Exception("Non-default axis in InnerProduct is not supported");
             }
 
-            List<BlobProto> blobs = layer.Blobs;
             int width = GetWidth(blobs[0]);
             int height = GetHeight(blobs[0]);
             float[] w = blobs[0].Datas;
 
             if (param.BiasTerm)
             {
-                return new Linear(width, height, !param.BiasTerm, w, blobs[1].Datas, layer.Name);
+                return new Linear(width, height, !param.BiasTerm, w, blobs[1].Datas, name);
             }
 
-            return new Linear(width, height, !param.BiasTerm, w, name: layer.Name);
+            return new Linear(width, height, !param.BiasTerm, w, name: name);
         }
 
         static int GetHeight(BlobProto blob)
