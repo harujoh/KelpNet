@@ -6,6 +6,7 @@ using KelpNet.Common.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
+using KelpNet.Functions.Normalization;
 using KelpNet.Functions.Poolings;
 using ProtoBuf;
 
@@ -57,7 +58,7 @@ namespace CaffemodelLoader
                     return null;
 
                 case "BatchNorm":
-                    return null;
+                    return SetupBatchnorm(layer.BatchNormParam, layer.Blobs, layer.Name);
 
                 case "Convolution":
                     return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name);
@@ -133,6 +134,17 @@ namespace CaffemodelLoader
             }
 
             return null;
+        }
+
+        static BatchNormalization SetupBatchnorm(BatchNormParameter param, List<BlobProto> blobs, string name)
+        {
+            double decay = param.MovingAverageFraction;
+            double eps = param.Eps;
+            int size = (int)blobs[0].Shape.Dims[0];
+
+            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, blobs[0].Datas, blobs[1].Datas);
+
+            return batchNormalization;
         }
 
         static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name)
