@@ -34,6 +34,6 @@ class NN(chainer.Chain):
         return y
 
 model = NN()
-serializers.save_npz("mymodel.npz", model)
+serializers.save_npz("ChainerModel.npz", model)
 ```
 
