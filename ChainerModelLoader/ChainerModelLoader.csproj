@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChainerModelDataLoader.cs" />
     <Compile Include="NpyFormat.cs" />
     <Compile Include="NpzDictionary.cs" />
     <Compile Include="NpzFormat.cs" />

@@ -21,7 +21,7 @@ namespace KelpNetTester.Tests
     {
         private const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/";
         private const string MODEL_FILE = "VGG_ILSVRC_16_layers.caffemodel";
-        private const string CLASS_LIST_PATH = "data/synset_words.txt";
+        private const string CLASS_LIST_PATH = "Data/synset_words.txt";
 
         public static void Run()
         {

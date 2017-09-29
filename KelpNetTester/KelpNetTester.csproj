@@ -63,6 +63,7 @@
     <Compile Include="Tests\Test13.cs" />
     <Compile Include="Tests\Test14.cs" />
     <Compile Include="Tests\Test15.cs" />
+    <Compile Include="Tests\Test16.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />
@@ -78,6 +79,10 @@
     <ProjectReference Include="..\CaffemodelLoader\CaffemodelLoader.csproj">
       <Project>{722b0015-e108-4952-9f86-7cbfbe84a9ab}</Project>
       <Name>CaffemodelLoader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ChainerModelLoader\ChainerModelLoader.csproj">
+      <Project>{6a966034-822e-4062-9d6b-23af3b10c89e}</Project>
+      <Name>ChainerModelLoader</Name>
     </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
@@ -100,7 +105,9 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Data\ChainerModel.npz" />
+    <None Include="Data\ChainerModel.npz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Tests\Test13WinForm.resx">

@@ -10,20 +10,21 @@ namespace KelpNet.Functions.Normalization
     {
         private bool IsTrain;
 
-        private NdArray Gamma;
-        private readonly NdArray gGamma;
+        public NdArray Gamma;
+        public NdArray gGamma;
 
-        private readonly NdArray Beta;
-        private readonly NdArray gBeta;
+        public NdArray Beta;
+        public NdArray gBeta;
+
+        public NdArray AvgMean;
+        public NdArray gMean;
+
+        public NdArray AvgVar;
+        public NdArray gVariance;
+
 
         private readonly Real Decay;
         private readonly Real Eps;
-
-        private readonly NdArray AvgMean;
-        private readonly NdArray gMean;
-
-        private readonly NdArray AvgVar;
-        private readonly NdArray gVariance;
 
         private Real[] Std;
         private Real[] Xhat;

@@ -60,6 +60,9 @@ namespace KelpNetTester
             //CaffeモデルのVGG16を読み込んで画像分類をさせるテスト
             //Test15.Run();
 
+            //CChaineモデルのTest5と同じ内容を読み込んで実行
+            //Test16.Run();
+
             //Linearの分割実行
             //TestX.Run();
 
