@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace TestDataManager
 {
@@ -32,12 +31,10 @@ namespace TestDataManager
                 }
 
                 //非同期ダウンロードを開始する
-                Task task = Task.Factory.StartNew(() => downloadClient.DownloadFile(new Uri(url), savedPath));
-                task.Wait();
+                downloadClient.DownloadFileTaskAsync(new Uri(url), savedPath).Wait();
             }
 
             return savedPath;
         }
-
     }
 }
