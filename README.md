@@ -78,9 +78,11 @@ Twitter: https://twitter.com/harujoh
 　・MomentumSGD
 　・RMSprop
 　・SGD
-- Others:
-　・DropOut
+- Normalize:
 　・BatchNormalization
+　・LRN
+- Noise:
+　・DropOut
  
  
  最後に、このライブラリが誰かの学習の助けになれば幸いです
