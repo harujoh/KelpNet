@@ -116,8 +116,6 @@ namespace KelpNet.Functions.Noise
 
         public BatchArray BackwardCpu(BatchArray gy)
         {
-            BackwardCountUp();
-
             Real[] result = gy.Data.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
@@ -135,8 +133,6 @@ namespace KelpNet.Functions.Noise
 
         public BatchArray BackwardGpu(BatchArray gy)
         {
-            BackwardCountUp();
-
             Real[] result = gy.Data.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);

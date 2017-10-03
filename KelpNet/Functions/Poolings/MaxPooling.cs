@@ -205,8 +205,6 @@ namespace KelpNet.Functions.Poolings
 
         public BatchArray BackwardCpu(BatchArray gy)
         {
-            BackwardCountUp();
-
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);
 

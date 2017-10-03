@@ -28,8 +28,6 @@ namespace KelpNet.Functions.Arrays
             int[] prevOutputData = this._prevInputShapes[this._prevInputShapes.Count - 1];
             this._prevInputShapes.RemoveAt(this._prevInputShapes.Count - 1);
 
-            BackwardCountUp();
-
             return gh;
         }
     }
