@@ -74,6 +74,18 @@ namespace KelpNet.Common
             this.GpuData = null;
         }
 
+        public NdArray[] GetNdArrays()
+        {
+            NdArray[] result = new NdArray[BatchCount];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = GetNdArray(i);
+            }
+
+            return result;
+        }
+
         public NdArray GetNdArray(int i)
         {
             Real[] data = new Real[this.Length];

@@ -9,26 +9,42 @@ namespace KelpNet.Functions.Arrays
         const string FUNCTION_NAME = "Concat";
         private int _axis;
 
-        private readonly List<int[]> _prevInputShapes = new List<int[]>();
+        private readonly List<int[][]> _prevInputShapes = new List<int[][]>();
 
         public Concat(int axis = 1, string name = FUNCTION_NAME, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
         {
             this._axis = axis;
         }
 
-        public BatchArray[] ForwardCpu(BatchArray[] x)
+        public BatchArray ForwardCpu(params BatchArray[] xs)
         {
-            _prevInputShapes.Add(x[0].Shape);
+            List<int[]> shapes = new List<int[]>();
+            shapes.Add(xs[0].Shape);
 
-            return x;
+            NdArray[] resultNdArrays = xs[0].GetNdArrays();
+
+            for (int i = 1; i < xs.Length; i++)
+            {
+                shapes.Add(xs[i].Shape);
+                var tmpNdArray = xs[i].GetNdArrays();
+
+                for (int j = 0; j < resultNdArrays.Length; j++)
+                {
+                    resultNdArrays[j] = NdArray.Concatenate(resultNdArrays[j], tmpNdArray[j], _axis);
+                }
+            }
+
+            _prevInputShapes.Add(shapes.ToArray());
+
+            return new BatchArray(resultNdArrays);
         }
 
-        public BatchArray[] BackwardCpu(BatchArray[] gh)
+        public BatchArray[] BackwardCpu(BatchArray gy)
         {
-            int[] prevOutputData = this._prevInputShapes[this._prevInputShapes.Count - 1];
+            int[][] prevInputShapes = this._prevInputShapes[this._prevInputShapes.Count - 1];
             this._prevInputShapes.RemoveAt(this._prevInputShapes.Count - 1);
 
-            return gh;
+            return new[] { gy };
         }
     }
 }
