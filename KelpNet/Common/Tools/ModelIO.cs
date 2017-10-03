@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using KelpNet.Common.Functions;
 
 namespace KelpNet.Common.Tools
 {

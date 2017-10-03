@@ -23,14 +23,14 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        private int _kWidth;
-        private int _kHeight;
-        private int _subSampleX;
-        private int _subSampleY;
-        private int _trimX;
-        private int _trimY;
-
         public readonly bool NoBias;
+
+        private readonly int _kWidth;
+        private readonly int _kHeight;
+        private readonly int _subSampleX;
+        private readonly int _subSampleY;
+        private readonly int _trimX;
+        private readonly int _trimY;
 
         public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {

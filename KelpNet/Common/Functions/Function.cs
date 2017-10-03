@@ -1,5 +1,6 @@
 ﻿using System;
 using KelpNet.Common.Optimizers;
+using KelpNet.Common.Tools;
 
 namespace KelpNet.Common.Functions
 {
@@ -28,7 +29,7 @@ namespace KelpNet.Common.Functions
             this.OutputCount = oututCount;
         }
 
-        public void SetOptimizer(params Optimizer[] optimizers)
+        public virtual void SetOptimizer(params Optimizer[] optimizers)
         {
             this.Optimizers = optimizers;
 
@@ -70,6 +71,12 @@ namespace KelpNet.Common.Functions
         public override string ToString()
         {
             return this.Name;
+        }
+
+        //コピーを作成するメソッド
+        public Function Clone()
+        {
+            return DeepCopyHelper.DeepCopy(this);
         }
     }
 }

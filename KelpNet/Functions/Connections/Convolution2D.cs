@@ -23,14 +23,14 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
+        public readonly bool NoBias;
+
         private readonly int _kWidth;
         private readonly int _kHeight;
         private readonly int _strideX;
         private readonly int _strideY;
         private readonly int _padX;
         private readonly int _padY;
-
-        public readonly bool NoBias;
 
         public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
@@ -305,7 +305,7 @@ namespace KelpNet.Functions.Connections
 
                             int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox;
 
-                            Real gyData = activatedgy[gyIndex]; //gyIndex = ch * ox * oy
+                            Real gyData = activatedgy[gyIndex];
 
                             for (int ich = 0; ich < x.Shape[0]; ich++)
                             {

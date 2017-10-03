@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using KelpNet.Common;
+using KelpNet.Common.Functions;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
 using KelpNet.Loss;
@@ -114,7 +115,7 @@ namespace KelpNetTester.Tests
 
         static double Evaluate(FunctionStack model, int[] dataset)
         {
-            FunctionStack predictModel = model.Clone();
+            Function predictModel = model.Clone();
             predictModel.ResetState();
 
             //List<Real> totalLoss = new List<Real>();

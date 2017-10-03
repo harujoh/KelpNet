@@ -1,26 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 using KelpNet.Common.Tools;
 
-namespace KelpNet.Common
+namespace KelpNet.Common.Functions
 {
     //層を積み上げるこのライブラリのメインとなるクラス
     //一回のForward、Backward、Updateで同時に実行される関数の集まり
     [Serializable]
-    public class FunctionStack
+    public class FunctionStack : Function
     {
+        const string FUNCTION_NAME = "FunctionStack";
+
         //すべての層がココにFunctionクラスとして保管される
         public Function[] Functions { get; private set; }
 
         //コンストラクタ
-        public FunctionStack(params Function[] functions)
+        public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)
         {
             this.Functions = functions;
+
+            Forward = ForwardCPU;
+            Backward = BackwardCPU;
         }
 
-        public FunctionStack(params FunctionStack[] functionStacks)
+        public FunctionStack(params FunctionStack[] functionStacks) : base(FUNCTION_NAME)
         {
             List<Function> functionList = new List<Function>();
 
@@ -56,7 +60,7 @@ namespace KelpNet.Common
         }
 
         //Forward
-        public BatchArray Forward(BatchArray input)
+        public BatchArray ForwardCPU(BatchArray input)
         {
             BatchArray result = this.Functions[0].Forward(input);
 
@@ -69,7 +73,7 @@ namespace KelpNet.Common
         }
 
         //Backward
-        public BatchArray Backward(BatchArray backwardResult)
+        public BatchArray BackwardCPU(BatchArray backwardResult)
         {
             for (int i = this.Functions.Length - 1; i >= 0; i--)
             {
@@ -80,7 +84,7 @@ namespace KelpNet.Common
         }
 
         //重みの更新処理
-        public void Update()
+        public override void Update()
         {
             foreach (var function in Functions)
             {
@@ -90,7 +94,7 @@ namespace KelpNet.Common
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理
-        public void ResetState()
+        public override void ResetState()
         {
             foreach (Function function in this.Functions)
             {
@@ -99,7 +103,7 @@ namespace KelpNet.Common
         }
 
         //予想を実行する
-        public BatchArray Predict(BatchArray forwardResult)
+        public override BatchArray Predict(BatchArray forwardResult)
         {
             foreach (Function function in this.Functions)
             {
@@ -109,13 +113,7 @@ namespace KelpNet.Common
             return forwardResult;
         }
 
-        //コピーを作成するメソッド
-        public FunctionStack Clone()
-        {
-            return DeepCopyHelper.DeepCopy(this);
-        }
-
-        public void SetOptimizer(params Optimizer[] optimizers)
+        public override void SetOptimizer(params Optimizer[] optimizers)
         {
             foreach (Function function in this.Functions)
             {
