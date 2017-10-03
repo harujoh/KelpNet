@@ -4,7 +4,7 @@ using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Arrays
 {
-    class Concat : Function
+    public class Concat : Function
     {
         const string FUNCTION_NAME = "Concat";
         private int _axis;

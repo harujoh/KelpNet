@@ -5,6 +5,7 @@ using System.IO;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Functions.Activations;
+using KelpNet.Functions.Arrays;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
 using KelpNet.Functions.Normalization;
@@ -53,13 +54,16 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case "LRN":
-                    return SetupLRN(layer.LrnParam);
+                    return SetupLRN(layer.LrnParam, layer.Name);
 
                 case "Scale":
                     return null;
 
+                case "Concat":
+                    return SetupConcat(layer.ConcatParam, layer.Name);
+
                 case "Eltwise":
-                    return null;
+                    return SetupEltwise(layer.EltwiseParam, layer.Name);
 
                 case "BatchNorm":
                     return SetupBatchnorm(layer.BatchNormParam, layer.Blobs, layer.Name);
@@ -95,11 +99,14 @@ namespace CaffemodelLoader
         {
             switch (layer.Type)
             {
+                case V1LayerParameter.LayerType.Concat:
+                    return SetupConcat(layer.ConcatParam, layer.Name);
+
                 case V1LayerParameter.LayerType.Lrn:
-                    return SetupLRN(layer.LrnParam);
+                    return SetupLRN(layer.LrnParam, layer.Name);
 
                 case V1LayerParameter.LayerType.Eltwise:
-                    return null;
+                    return SetupEltwise(layer.EltwiseParam, layer.Name);
 
                 case V1LayerParameter.LayerType.Convolution:
                     return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name);
@@ -214,9 +221,26 @@ namespace CaffemodelLoader
             return new Linear(width, height, !param.BiasTerm, w, name: name);
         }
 
-        static LRN SetupLRN(LRNParameter param)
+        static LRN SetupLRN(LRNParameter param, string name)
         {
-            return new LRN((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta);
+            return new LRN((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name);
+        }
+
+        static Eltwise SetupEltwise(EltwiseParameter param, string name)
+        {
+            return new Eltwise(param.Operation, param.Coeffs, name);
+        }
+
+        static Concat SetupConcat(ConcatParameter param, string name)
+        {
+            int axis = param.Axis;
+
+            if (axis == 1 && param.ConcatDim != 1)
+            {
+                axis = (int)param.ConcatDim;
+            }
+
+            return new Concat(axis, name);
         }
 
         static int GetHeight(BlobProto blob)
@@ -351,6 +375,132 @@ namespace CaffemodelLoader
             }
 
             return (int)brob.Shape.Dims[1];
+        }
+
+        public class Eltwise : Function
+        {
+            private const string FUNCTION_NAME = "Eltwise";
+
+            List<BatchArray[]> PrevInput = new List<BatchArray[]>();
+            List<int[]> PrevOutputIndex = new List<int[]>();
+
+            private EltwiseParameter.EltwiseOp _operation;
+            private float[] _coeffs;
+
+            public Eltwise(EltwiseParameter.EltwiseOp operation, float[] coeffs, string name = FUNCTION_NAME) : base(name)
+            {
+                this._operation = operation;
+                this._coeffs = coeffs;
+            }
+
+            public BatchArray ForwardCPU(params BatchArray[] xs)
+            {
+                PrevInput.Add(xs);
+
+                Real[] result = new Real[xs[0].Data.Length];
+                Array.Copy(xs[0].Data, result, result.Length);
+
+                switch (_operation)
+                {
+                    case EltwiseParameter.EltwiseOp.Prod:
+                        for (int i = 1; i < xs.Length; i++)
+                        {
+                            for (int j = 0; j < result.Length; j++)
+                            {
+                                result[j] *= xs[i].Data[j];
+                            }
+                        }
+                        break;
+
+                    case EltwiseParameter.EltwiseOp.Sum:
+                        for (int i = 1; i < xs.Length; i++)
+                        {
+                            for (int j = 0; j < result.Length; j++)
+                            {
+                                result[j] += xs[i].Data[j] * _coeffs[i];
+                            }
+                        }
+                        break;
+
+                    case EltwiseParameter.EltwiseOp.Max:
+                        int[] outputIndex = new int[result.Length];
+
+                        for (int i = 1; i < xs.Length; i++)
+                        {
+                            for (int j = 0; j < result.Length; j++)
+                            {
+                                if (result[j] < xs[i].Data[j])
+                                {
+                                    outputIndex[j] = i;
+                                    result[j] = xs[i].Data[j];
+                                }
+                            }
+                        }
+
+                        PrevOutputIndex.Add(outputIndex);
+                        break;
+                }
+
+                return BatchArray.Convert(result, xs[0].Shape, xs[0].BatchCount);
+            }
+
+            public BatchArray[] BackwardCPU(BatchArray gy)
+            {
+                var prevInput = PrevInput[PrevInput.Count - 1];
+                PrevInput.RemoveAt(PrevInput.Count - 1);
+
+                Real[][] result = new Real[prevInput.Length][];
+                for (int i = 0; i < result.Length; i++)
+                {
+                    result[i] = new Real[prevInput[i].Length];
+                }
+
+                switch (_operation)
+                {
+                    case EltwiseParameter.EltwiseOp.Prod:
+                        for (int i = 0; i < result.Length; i--)
+                        {
+                            Array.Copy(gy.Data, result[i], gy.Data.Length);
+                            for (int j = 0; j < prevInput.Length; j++)
+                            {
+                                if (i != j)
+                                {
+                                    for (int k = 0; k < result[i].Length; k++)
+                                    {
+                                        result[i][k] *= prevInput[j].Data[k];
+                                    }
+                                }
+                            }
+                        }
+                        break;
+
+                    case EltwiseParameter.EltwiseOp.Sum:
+                        for (int i = 0; i < result.Length; i++)
+                        {
+                            Array.Copy(gy.Data, result[i], result[i].Length);
+                        }
+                        break;
+
+                    case EltwiseParameter.EltwiseOp.Max:
+                        var prevOutputIndex = PrevOutputIndex[PrevOutputIndex.Count - 1];
+                        PrevOutputIndex.RemoveAt(PrevOutputIndex.Count - 1);
+
+                        for (int i = 0; i < prevOutputIndex.Length; i++)
+                        {
+                            result[prevOutputIndex[i]][i] = gy.Data[i];
+                        }
+                        break;
+                }
+
+                BatchArray[] resultArrays = new BatchArray[prevInput.Length];
+
+                for (int i = 0; i < prevInput.Length; i++)
+                {
+                    resultArrays[i] = BatchArray.Convert(result[i], prevInput[0].Shape, prevInput[0].BatchCount);
+                }
+
+                return resultArrays;
+            }
         }
     }
 }
