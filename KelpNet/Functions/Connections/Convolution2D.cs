@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Connections
         private const string PARAM_NAME = "/*ForwardActivate*/";
         private const string PARAM_VALUE = "ForwardActivate(gpuY + index);";
 
-        private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
+        private readonly List<Real[]> _prevOutput = new List<Real[]>();
 
         public NdArray W;
         public NdArray b;
@@ -30,6 +30,8 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
+        public readonly bool NoBias;
+
         public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             this._kWidth = kSize;
@@ -38,6 +40,7 @@ namespace KelpNet.Functions.Connections
             this._strideY = stride;
             this._padX = pad;
             this._padY = pad;
+            this.NoBias = noBias;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
@@ -58,6 +61,7 @@ namespace KelpNet.Functions.Connections
             this._strideY = stride.Height;
             this._padX = pad.Width;
             this._padY = pad.Height;
+            this.NoBias = noBias;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
@@ -78,6 +82,7 @@ namespace KelpNet.Functions.Connections
             this.W = linear.W;
             this.W.Shape = new[] { OutputCount, InputCount, this._kHeight, this._kWidth };
             this.b = linear.b;
+            this.NoBias = linear.NoBias;
         }
 
         void Initialize(Array initialW = null, Array initialb = null)
@@ -98,10 +103,11 @@ namespace KelpNet.Functions.Connections
 
             //noBias=trueでもbiasを用意して更新しない
             this.b = new NdArray(OutputCount);
-            this.gb = NdArray.ZerosLike(this.b);
 
-            if (this.Parameters.Length > 1)
+            if (!NoBias)
             {
+                this.gb = NdArray.ZerosLike(this.b);
+
                 if (initialb != null)
                 {
                     this.b.Data = Real.GetArray(initialb);
@@ -220,7 +226,7 @@ namespace KelpNet.Functions.Connections
 
             if (this.Activation != null)
             {
-                this._prevOutput.Add(output);
+                this._prevOutput.Add(output.Data);
             }
 
             return output;
@@ -228,35 +234,25 @@ namespace KelpNet.Functions.Connections
 
         Real[] GetActivatedgy(BatchArray gy)
         {
-            Real[] prevOutputData = new Real[gy.Data.Length];
-
-            if (this.Activation != null)
-            {
-                prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
-                this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
-            }
+            int gyIndex = 0;
 
             Real[] activatedgy = new Real[gy.BatchCount * gy.Length];
+            Real[] prevOutputData = this._prevOutput[this._prevOutput.Count - 1];
+            this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
 
             for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
             {
                 for (int och = 0; och < gy.Shape[0]; och++)
                 {
-                    for (int oy = 0; oy < gy.Shape[1]; oy++)
+                    for (int olocation = 0; olocation < gy.Shape[1] * gy.Shape[2]; olocation++)
                     {
-                        for (int ox = 0; ox < gy.Shape[2]; ox++)
-                        {
-                            int gyIndex = batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox;
-                            Real gyData = gy.Data[gyIndex];
+                        Real gyData = gy.Data[gyIndex];
 
-                            if (this.Activation != null)
-                            {
-                                this.Activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
-                            }
+                        this.Activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
 
-                            activatedgy[batchCounter * gy.Length + och * gy.Shape[1] * gy.Shape[2] + oy * gy.Shape[2] + ox] = gyData;
-                            this.gb.Data[och] += gyData;
-                        }
+                        activatedgy[gyIndex] = gyData;
+
+                        gyIndex++;
                     }
                 }
             }
@@ -264,10 +260,29 @@ namespace KelpNet.Functions.Connections
             return activatedgy;
         }
 
+        void CalcBiasGrad(Real[] gy, int[] gyShape, int batchCount)
+        {
+            int gyIndex = 0;
+
+            for (int batchCounter = 0; batchCounter < batchCount; batchCounter++)
+            {
+                for (int och = 0; och < gyShape[0]; och++)
+                {
+                    for (int olocation = 0; olocation < gyShape[1] * gyShape[2]; olocation++)
+                    {
+                        this.gb.Data[och] += gy[gyIndex];
+
+                        gyIndex++;
+                    }
+                }
+            }
+        }
+
         protected override BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray x)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = GetActivatedgy(gy);
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(gy) : gy.Data;
+            if (!NoBias) CalcBiasGrad(activatedgy, gy.Shape, gy.BatchCount);
 
             for (int batchCounter = 0; batchCounter < gy.BatchCount; batchCounter++)
             {
@@ -327,7 +342,8 @@ namespace KelpNet.Functions.Connections
         protected override BatchArray NeedPreviousBackwardGpu(BatchArray gy, BatchArray x)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = GetActivatedgy(gy);
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(gy) : gy.Data;
+            if (!NoBias) CalcBiasGrad(activatedgy, gy.Shape, gy.BatchCount);
 
             //gyは共通で使用
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))

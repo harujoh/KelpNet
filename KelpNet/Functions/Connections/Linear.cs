@@ -23,13 +23,13 @@ namespace KelpNet.Functions.Connections
         public NdArray gW;
         public NdArray gb;
 
-        private readonly bool noBias;
+        public readonly bool NoBias;
 
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputCount, outputCount, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
-            this.noBias = noBias;
             this.W = new NdArray(outputCount, inputCount);
             this.gW = NdArray.ZerosLike(this.W);
+            this.NoBias = noBias;
 
             this.Parameters = new FunctionParameter[noBias ? 1 : 2];
 
@@ -47,10 +47,11 @@ namespace KelpNet.Functions.Connections
 
             //noBias=trueでもbiasを用意して更新しない
             this.b = new NdArray(outputCount);
-            this.gb = NdArray.ZerosLike(this.b);
 
             if (!noBias)
             {
+                this.gb = NdArray.ZerosLike(this.b);
+
                 if (initialb != null)
                 {
                     this.b.Data = Real.GetArray(initialb);
@@ -60,16 +61,26 @@ namespace KelpNet.Functions.Connections
             }
         }
 
+        Real[] GetBiasedValue(int batchCount)
+        {
+            Real[] y = new Real[OutputCount * batchCount];
+
+            for (int i = 0; i < batchCount; i++)
+            {
+                Array.Copy(this.b.Data, 0, y, i * this.OutputCount, this.b.Data.Length);
+            }
+
+            return y;
+        }
+
         protected override BatchArray NeedPreviousForwardCpu(BatchArray x)
         {
-            Real[] y = new Real[OutputCount * x.BatchCount];
+            Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
             for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
                 for (int i = 0; i < this.OutputCount; i++)
                 {
-                    y[batchCount * this.OutputCount + i] += this.b.Data[i];
-
                     for (int j = 0; j < this.InputCount; j++)
                     {
                         y[batchCount * this.OutputCount + i] += x.Data[batchCount * this.InputCount + j] * this.W.Data[i * this.InputCount + j];
@@ -90,15 +101,7 @@ namespace KelpNet.Functions.Connections
 
         protected override BatchArray NeedPreviousForwardGpu(BatchArray x)
         {
-            Real[] y = new Real[OutputCount * x.BatchCount];
-
-            if (!this.noBias)
-            {
-                for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
-                {
-                    Array.Copy(this.b.Data, 0, y, batchCount * this.OutputCount, this.b.Data.Length);
-                }
-            }
+            Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
             using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
@@ -140,43 +143,41 @@ namespace KelpNet.Functions.Connections
 
         Real[] GetActivatedgy(BatchArray gy)
         {
-            if (this.Activation != null)
-            {
-                Real[] activatedgY = new Real[gy.Data.Length];
-                var prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
+            Real[] activatedgY = new Real[gy.Data.Length];
+            var prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
 
-                this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
-
-                for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
-                {
-                    for (int i = 0; i < this.OutputCount; i++)
-                    {
-                        Real gyData = gy.Data[i + batchCount * this.OutputCount];
-
-                        this.Activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
-                        activatedgY[i + batchCount * this.OutputCount] = gyData;
-                        this.gb.Data[i] += gyData;
-                    }
-                }
-
-                return activatedgY;
-            }
+            this._prevOutput.RemoveAt(this._prevOutput.Count - 1);
 
             for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
             {
                 for (int i = 0; i < this.OutputCount; i++)
                 {
-                    this.gb.Data[i] += gy.Data[i + batchCount * this.OutputCount];
+                    Real gyData = gy.Data[i + batchCount * this.OutputCount];
+
+                    this.Activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
+                    activatedgY[i + batchCount * this.OutputCount] = gyData;
                 }
             }
 
-            return gy.Data;
+            return activatedgY;
+        }
+
+        void CalcBiasGrad(Real[] gy, int batchCount)
+        {
+            for (int batchCounter = 0; batchCounter < batchCount; batchCounter++)
+            {
+                for (int i = 0; i < this.OutputCount; i++)
+                {
+                    this.gb.Data[i] += gy[batchCounter * this.OutputCount + i];
+                }
+            }
         }
 
         protected override BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput)
         {
             Real[] gxData = new Real[prevInput.Data.Length];
-            Real[] activatedgy = GetActivatedgy(gy);
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(gy) : gy.Data;
+            if (!NoBias) CalcBiasGrad(activatedgy, gy.BatchCount);
 
             for (int batchCount = 0; batchCount < gy.BatchCount; batchCount++)
             {
@@ -198,7 +199,8 @@ namespace KelpNet.Functions.Connections
         protected override BatchArray NeedPreviousBackwardGpu(BatchArray gy, BatchArray prevInput)
         {
             Real[] gxData = new Real[prevInput.Data.Length];
-            Real[] activatedgy = GetActivatedgy(gy);
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(gy) : gy.Data;
+            if (!NoBias) CalcBiasGrad(activatedgy, gy.BatchCount);
 
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))
             {
