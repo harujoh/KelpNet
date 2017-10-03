@@ -6,10 +6,12 @@ namespace KelpNet.Functions.Activations
 {
     public class Softplus : NeedPreviousOutputFunction
     {
+        const string FUNCTION_NAME = "Softplus";
+
         private readonly Real _beta;
         private readonly Real _betaInv;
 
-        public Softplus(double beta = 1, string name = "Softplus") : base(name)
+        public Softplus(double beta = 1, string name = FUNCTION_NAME) : base(name)
         {
             this._beta = beta;
             this._betaInv = 1 / this._beta;

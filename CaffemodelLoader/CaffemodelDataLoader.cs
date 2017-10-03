@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
@@ -51,6 +52,9 @@ namespace CaffemodelLoader
             Console.WriteLine(layer.Type);
             switch (layer.Type)
             {
+                case "LRN":
+                    return SetupLRN(layer.LrnParam);
+
                 case "Scale":
                     return null;
 
@@ -91,6 +95,12 @@ namespace CaffemodelLoader
         {
             switch (layer.Type)
             {
+                case V1LayerParameter.LayerType.Lrn:
+                    return SetupLRN(layer.LrnParam);
+
+                case V1LayerParameter.LayerType.Eltwise:
+                    return null;
+
                 case V1LayerParameter.LayerType.Convolution:
                     return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name);
 
@@ -202,6 +212,11 @@ namespace CaffemodelLoader
             }
 
             return new Linear(width, height, !param.BiasTerm, w, name: name);
+        }
+
+        static LRN SetupLRN(LRNParameter param)
+        {
+            return new LRN((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta);
         }
 
         static int GetHeight(BlobProto blob)
