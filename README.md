@@ -80,7 +80,7 @@ Twitter: https://twitter.com/harujoh
 　・SGD
 - Normalize:
 　・BatchNormalization
- ・LRN
+　・LRN
 - Noise:
 　・DropOut
  
