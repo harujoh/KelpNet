@@ -458,7 +458,7 @@ namespace CaffemodelLoader
                 switch (_operation)
                 {
                     case EltwiseParameter.EltwiseOp.Prod:
-                        for (int i = 0; i < result.Length; i--)
+                        for (int i = 0; i < result.Length; i++)
                         {
                             Array.Copy(gy.Data, result[i], gy.Data.Length);
                             for (int j = 0; j < prevInput.Length; j++)
