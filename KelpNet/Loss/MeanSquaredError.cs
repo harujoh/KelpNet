@@ -1,5 +1,4 @@
-﻿using System;
-using KelpNet.Common;
+﻿using KelpNet.Common;
 using KelpNet.Common.Loss;
 
 namespace KelpNet.Loss
@@ -8,8 +7,8 @@ namespace KelpNet.Loss
     {
         public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out Real loss)
         {
-            Real lossList = 0;
-            Real[] result = new Real[teachSignal.Data.Length];
+            Real sumLoss = 0;
+            Real[] result = new Real[input.Data.Length];
 
             for (int b = 0; b < input.BatchCount; b++)
             {
@@ -25,10 +24,10 @@ namespace KelpNet.Loss
                     result[i + b * teachSignal.Length] *= coeff;
                 }
 
-                lossList += loss / teachSignal.Length;
+                sumLoss += loss / teachSignal.Length;
             }
 
-            loss = lossList / input.BatchCount;
+            loss = sumLoss / input.BatchCount;
 
             return BatchArray.Convert(result, teachSignal.Shape, teachSignal.BatchCount);
         }
