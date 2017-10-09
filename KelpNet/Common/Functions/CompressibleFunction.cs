@@ -31,7 +31,7 @@ namespace KelpNet.Common.Functions
         protected abstract NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray x);
         protected abstract NdArray NeedPreviousBackwardGpu(NdArray gy, NdArray x);
 
-        protected CompressibleFunction(string name, int inputCount, int oututCount, bool gpuEnable, string functionName, CompressibleActivation activation = null, params KeyValuePair<string, string>[] activationParameters) : base(name, inputCount, oututCount)
+        protected CompressibleFunction(string name, bool gpuEnable, string functionName, CompressibleActivation activation = null, params KeyValuePair<string, string>[] activationParameters) : base(name)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";

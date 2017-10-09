@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Arrays
 
         private readonly List<int[][]> _prevInputShapes = new List<int[][]>();
 
-        public Concat(int axis = 1, string name = FUNCTION_NAME, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
+        public Concat(int axis = 1, string name = FUNCTION_NAME) : base(name)
         {
             this._axis = axis;
         }

@@ -13,7 +13,7 @@ namespace KelpNet.Common.Functions
         protected Func<NdArray, NdArray> NeedPreviousForward;
         protected Func<NdArray, NdArray, NdArray> NeedPreviousBackward;
 
-        protected NeedPreviousOutputFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
+        protected NeedPreviousOutputFunction(string name) : base(name)
         {
             Forward = ForwardCpu;
             Backward = BackwardCpu;

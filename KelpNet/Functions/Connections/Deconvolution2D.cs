@@ -29,7 +29,10 @@ namespace KelpNet.Functions.Connections
         private readonly int _trimX;
         private readonly int _trimY;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
+        public readonly int InputCount;
+        public readonly int OutputCount;
+
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -41,10 +44,13 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
 
+            this.OutputCount = outputChannels;
+            this.InputCount = inputChannels;
+
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
+        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             if (subSample == Size.Empty)
                 subSample = new Size(1, 1);
@@ -62,6 +68,9 @@ namespace KelpNet.Functions.Connections
             this._subSampleY = subSample.Height;
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
+
+            this.OutputCount = outputChannels;
+            this.InputCount = inputChannels;
 
             this.Initialize(initialW, initialb);
         }

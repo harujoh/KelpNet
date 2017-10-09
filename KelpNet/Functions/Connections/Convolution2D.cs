@@ -29,7 +29,10 @@ namespace KelpNet.Functions.Connections
         private readonly int _padX;
         private readonly int _padY;
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
+        public readonly int InputCount;
+        public readonly int OutputCount;
+
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -41,10 +44,13 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
 
+            this.OutputCount = outputChannels;
+            this.InputCount = inputChannels;
+
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, inputChannels, outputChannels, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
+        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, bool gpuEnable = false, CompressibleActivation activation = null) : base(name, gpuEnable, FUNCTION_NAME, activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -62,10 +68,13 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
 
+            this.OutputCount = outputChannels;
+            this.InputCount = inputChannels;
+
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(Linear linear) : base(linear.Name, linear.InputCount, linear.OutputCount, linear.GpuEnable, FUNCTION_NAME, linear.Activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
+        public Convolution2D(Linear linear) : base(linear.Name, linear.GpuEnable, FUNCTION_NAME, linear.Activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             this._kWidth = 1;
             this._kHeight = 1;

@@ -35,8 +35,14 @@ namespace KelpNet.Functions.Connections
 
         private bool initialized = false;
 
-        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM") : base(name, inSize, outSize)
+        public readonly int InputCount;
+        public readonly int OutputCount;
+
+        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM") : base(name)
         {
+            this.InputCount = inSize;
+            this.OutputCount = outSize;
+
             List<NdArray> functionParameters = new List<NdArray>();
 
             this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, gpuEnable: false, name: "upward0");

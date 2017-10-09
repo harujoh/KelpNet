@@ -15,18 +15,13 @@ namespace KelpNet.Common.Functions
         public NdArray[] Parameters = { };
         public Optimizer[] Optimizers;
 
-        public readonly int OutputCount;
-        public readonly int InputCount;
-
         public Func<NdArray, NdArray> Forward;
         public Func<NdArray, NdArray> Backward;
 
         //コンストラクタ
-        protected Function(string name, int inputCount = 0, int oututCount = 0)
+        protected Function(string name)
         {
             this.Name = name;
-            this.InputCount = inputCount;
-            this.OutputCount = oututCount;
         }
 
         public virtual void SetOptimizer(params Optimizer[] optimizers)

@@ -10,8 +10,14 @@ namespace KelpNet.Functions.Connections
     {
         public NdArray Weight;
 
-        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = "EmbedID") : base(name, inputCount, outputCount)
+        public readonly int InputCount;
+        public readonly int OutputCount;
+
+        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = "EmbedID") : base(name)
         {
+            this.InputCount = inputCount;
+            this.OutputCount = outputCount;
+
             this.Weight = new NdArray(inputCount, outputCount);
 
             if (initialW == null)
