@@ -18,8 +18,8 @@ namespace KelpNet.Common.Functions
         public readonly int OutputCount;
         public readonly int InputCount;
 
-        public Func<BatchArray, BatchArray> Forward;
-        public Func<BatchArray, BatchArray> Backward;
+        public Func<NdArray, NdArray> Forward;
+        public Func<NdArray, NdArray> Backward;
 
         //コンストラクタ
         protected Function(string name, int inputCount = 0, int oututCount = 0)
@@ -49,7 +49,7 @@ namespace KelpNet.Common.Functions
         }
 
         //評価関数
-        public virtual BatchArray Predict(BatchArray input)
+        public virtual NdArray Predict(NdArray input)
         {
             return this.Forward(input);
         }

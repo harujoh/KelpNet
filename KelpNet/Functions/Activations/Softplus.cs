@@ -20,7 +20,7 @@ namespace KelpNet.Functions.Activations
             NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        protected BatchArray NeedPreviousForwardCpu(BatchArray x)
+        protected NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -47,10 +47,10 @@ namespace KelpNet.Functions.Activations
 
             }
 
-            return BatchArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevOutput)
+        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevOutput)
         {
             Real[] gx = new Real[gy.Data.Length];
 
@@ -59,7 +59,7 @@ namespace KelpNet.Functions.Activations
                 gx[i] = (1 - 1 / (1 + Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
             }
 
-            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
+            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

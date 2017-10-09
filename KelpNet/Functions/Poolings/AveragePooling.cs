@@ -47,7 +47,7 @@ namespace KelpNet.Functions.Poolings
             NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        protected BatchArray NeedPreviousForwardCpu(BatchArray input)
+        protected NdArray NeedPreviousForwardCpu(NdArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
@@ -87,10 +87,10 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
+            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput)
+        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevInput)
         {
             Real[] result = new Real[prevInput.Data.Length];
             Real m = this._kHeight * this._kWidth;
@@ -130,7 +130,7 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return BatchArray.Convert(result, prevInput.Shape, gy.BatchCount);
+            return NdArray.Convert(result, prevInput.Shape, gy.BatchCount);
         }
     }
 }

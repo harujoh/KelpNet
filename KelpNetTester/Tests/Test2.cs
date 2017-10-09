@@ -63,7 +63,7 @@ namespace KelpNetTester.Tests
             Console.WriteLine("Test Start...");
             foreach (Real[] val in trainData)
             {
-                BatchArray result = nn.Predict(new BatchArray(val));
+                NdArray result = nn.Predict(new NdArray(val));
                 Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5 ? 1 : 0) + " " + result);
             }
         }

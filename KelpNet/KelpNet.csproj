@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Functions\CompressibleActivation.cs" />
-    <Compile Include="Common\BatchArray.cs" />
+    <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Functions\CompressibleFunction.cs" />
     <Compile Include="Common\Functions\IParallelizable.cs" />
     <Compile Include="Common\Real.cs" />
@@ -82,7 +82,6 @@
     <Compile Include="Functions\Poolings\AveragePooling.cs" />
     <Compile Include="Functions\Poolings\MaxPooling.cs" />
     <Compile Include="Common\Mother.cs" />
-    <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Optimizers\Optimizer.cs" />
     <Compile Include="Optimizers\AdaDelta.cs" />
     <Compile Include="Optimizers\AdaGrad.cs" />

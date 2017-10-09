@@ -73,7 +73,7 @@ namespace KelpNet.Common.Functions
             this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
         }
 
-        protected BatchArray NeedPreviousForwardCpu(BatchArray x)
+        protected NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = x.Data.ToArray();
 
@@ -82,10 +82,10 @@ namespace KelpNet.Common.Functions
                 this.ForwardActivate(ref y[i]);
             }
 
-            return BatchArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected BatchArray NeedPreviousForwardGpu(BatchArray x)
+        protected NdArray NeedPreviousForwardGpu(NdArray x)
         {
             Real[] y = x.Data.ToArray();
 
@@ -106,10 +106,10 @@ namespace KelpNet.Common.Functions
                 Weaver.CommandQueue.ReadFromBuffer(gpuY, ref y, true, null);
             }
 
-            return BatchArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevOutput)
+        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevOutput)
         {
             Real[] gx = gy.Data.ToArray();
 
@@ -118,10 +118,10 @@ namespace KelpNet.Common.Functions
                 this.BackwardActivate(ref gx[i], prevOutput.Data[i]);
             }
 
-            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
+            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
 
-        protected BatchArray NeedPreviousBackwardGpu(BatchArray gy, BatchArray prevOutput)
+        protected NdArray NeedPreviousBackwardGpu(NdArray gy, NdArray prevOutput)
         {
             Real[] gx = gy.Data.ToArray();
 
@@ -144,7 +144,7 @@ namespace KelpNet.Common.Functions
                 Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
             }
 
-            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
+            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

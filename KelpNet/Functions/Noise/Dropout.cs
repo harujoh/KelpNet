@@ -71,7 +71,7 @@ namespace KelpNet.Functions.Noise
             return mask;
         }
 
-        public BatchArray ForwardCpu(BatchArray x)
+        public NdArray ForwardCpu(NdArray x)
         {
             Real[] result = new Real[x.Data.Length];
             Real[] mask = MakeMask(x.Length);
@@ -81,10 +81,10 @@ namespace KelpNet.Functions.Noise
                 result[i] = x.Data[i] * mask[i % mask.Length];
             }
 
-            return BatchArray.Convert(result, x.Shape, x.BatchCount);
+            return NdArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        public BatchArray ForwardGpu(BatchArray x)
+        public NdArray ForwardGpu(NdArray x)
         {
             Real[] result = new Real[x.Data.Length];
             Real[] mask = MakeMask(x.Length);
@@ -111,10 +111,10 @@ namespace KelpNet.Functions.Noise
                 Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
             }
 
-            return BatchArray.Convert(result, x.Shape, x.BatchCount);
+            return NdArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        public BatchArray BackwardCpu(BatchArray gy)
+        public NdArray BackwardCpu(NdArray gy)
         {
             Real[] result = gy.Data.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
@@ -128,10 +128,10 @@ namespace KelpNet.Functions.Noise
                 }
             }
 
-            return BatchArray.Convert(result, gy.Shape, gy.BatchCount);
+            return NdArray.Convert(result, gy.Shape, gy.BatchCount);
         }
 
-        public BatchArray BackwardGpu(BatchArray gy)
+        public NdArray BackwardGpu(NdArray gy)
         {
             Real[] result = gy.Data.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
@@ -157,12 +157,12 @@ namespace KelpNet.Functions.Noise
                 Weaver.CommandQueue.ReadFromBuffer(gpugX, ref result, true, null);
             }
 
-            return BatchArray.Convert(result, gy.Shape, gy.BatchCount);
+            return NdArray.Convert(result, gy.Shape, gy.BatchCount);
         }
 
 
         //Predict時に何もしない
-        public override BatchArray Predict(BatchArray input)
+        public override NdArray Predict(NdArray input)
         {
             return input;
         }

@@ -26,7 +26,7 @@ namespace KelpNet.Functions.Normalization
             NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        public BatchArray NeedPreviousForwardCpu(BatchArray input)
+        public NdArray NeedPreviousForwardCpu(NdArray input)
         {
             int nHalf = n / 2;
             Real[] result = new Real[input.Data.Length];
@@ -76,10 +76,10 @@ namespace KelpNet.Functions.Normalization
                 result[i] *= this.scale[i];
             }
 
-            return BatchArray.Convert(result, input.Shape, input.BatchCount);
+            return NdArray.Convert(result, input.Shape, input.BatchCount);
         }
 
-        public BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
+        public NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevInput, NdArray prevOutput)
         {
             int nHalf = n / 2;
             Real[] gx = new Real[gy.Data.Length];
@@ -124,7 +124,7 @@ namespace KelpNet.Functions.Normalization
                 gx[i] = gy.Data[i] * this.scale[i] - 2 * this.alpha * this.beta * prevInput.Data[i] * sumPart[i];
             }
 
-            return BatchArray.Convert(gx, gy.Shape, gy.BatchCount);
+            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

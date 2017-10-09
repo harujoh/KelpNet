@@ -32,7 +32,7 @@ namespace KelpNet.Functions.Connections
             NeedPreviousBackward = NeedPreviousBackwardCpu;
         }
 
-        protected BatchArray NeedPreviousForwardCpu(BatchArray x)
+        protected NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] result = new Real[x.Data.Length * this.OutputCount];
 
@@ -47,10 +47,10 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return BatchArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount);
+            return NdArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount);
         }
 
-        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput)
+        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevInput)
         {
             for (int b = 0; b < gy.BatchCount; b++)
             {
@@ -63,7 +63,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return new BatchArray();
+            return new NdArray();
         }
     }
 }

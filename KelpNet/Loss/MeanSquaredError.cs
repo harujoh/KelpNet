@@ -5,7 +5,7 @@ namespace KelpNet.Loss
 {
     public class MeanSquaredError : ILossFunction
     {
-        public BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out Real loss)
+        public NdArray Evaluate(NdArray input, NdArray teachSignal, out Real loss)
         {
             Real sumLoss = 0;
             Real[] result = new Real[input.Data.Length];
@@ -29,7 +29,7 @@ namespace KelpNet.Loss
 
             loss = sumLoss / input.BatchCount;
 
-            return BatchArray.Convert(result, teachSignal.Shape, teachSignal.BatchCount);
+            return NdArray.Convert(result, teachSignal.Shape, teachSignal.BatchCount);
         }
     }
 }

@@ -66,10 +66,10 @@ namespace KelpNetTester.Tests
         {
             //全体での誤差を集計
             Real totalLoss = 0;
-            BatchArray x = new BatchArray(new[] { 1 }, MINI_BATCH_SIZE);
-            BatchArray t = new BatchArray(new[] { 1 }, MINI_BATCH_SIZE);
+            NdArray x = new NdArray(new[] { 1 }, MINI_BATCH_SIZE);
+            NdArray t = new NdArray(new[] { 1 }, MINI_BATCH_SIZE);
 
-            Stack<BatchArray> backNdArrays = new Stack<BatchArray>();
+            Stack<NdArray> backNdArrays = new Stack<NdArray>();
 
             for (int i = 0; i < LENGTH_OF_SEQUENCE - 1; i++)
             {
@@ -127,11 +127,11 @@ namespace KelpNetTester.Tests
         {
             model.ResetState();
 
-            BatchArray result = new BatchArray(new Real[1]);
+            NdArray result = new NdArray(new Real[1]);
 
             for (int i = 0; i < input_seq.Count; i++)
             {
-                result = model.Predict(new BatchArray(new[] { input_seq[i] }));
+                result = model.Predict(new NdArray(new[] { input_seq[i] }));
             }
 
             return result.Data[0];

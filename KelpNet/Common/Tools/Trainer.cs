@@ -10,23 +10,23 @@ namespace KelpNet.Common.Tools
     {
         public static Real Train(FunctionStack functionStack, Array input, Array teach, ILossFunction lossFunction, bool isUpdate = true)
         {
-            return Train(functionStack, new BatchArray(input), new BatchArray(teach), lossFunction, isUpdate);
+            return Train(functionStack, new NdArray(input), new NdArray(teach), lossFunction, isUpdate);
         }
 
         //バッチで学習処理を行う
         public static Real Train(FunctionStack functionStack, Array[] input, Array[] teach, ILossFunction lossFunction, bool isUpdate = true)
         {
-            return Train(functionStack, BatchArray.FromArrays(input), BatchArray.FromArrays(teach), lossFunction, isUpdate);
+            return Train(functionStack, NdArray.FromArrays(input), NdArray.FromArrays(teach), lossFunction, isUpdate);
         }
 
         //バッチで学習処理を行う
-        public static Real Train(FunctionStack functionStack, BatchArray input, BatchArray teach, ILossFunction lossFunction, bool isUpdate = true)
+        public static Real Train(FunctionStack functionStack, NdArray input, NdArray teach, ILossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
             Real sumLoss;
 
             //Forwardのバッチを実行
-            BatchArray lossResult = lossFunction.Evaluate(functionStack.Forward(input), teach, out sumLoss);
+            NdArray lossResult = lossFunction.Evaluate(functionStack.Forward(input), teach, out sumLoss);
 
             //Backwardのバッチを実行
             functionStack.Backward(lossResult);
@@ -43,20 +43,20 @@ namespace KelpNet.Common.Tools
         //精度測定
         public static double Accuracy(FunctionStack functionStack, Array x, Array y)
         {
-            return Accuracy(functionStack, new BatchArray(x), new BatchArray(y));
+            return Accuracy(functionStack, new NdArray(x), new NdArray(y));
         }
 
         //精度測定
         public static double Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
         {
-            return Accuracy(functionStack, BatchArray.FromArrays(x), BatchArray.FromArrays(y));
+            return Accuracy(functionStack, NdArray.FromArrays(x), NdArray.FromArrays(y));
         }
 
-        public static double Accuracy(FunctionStack functionStack, BatchArray x, BatchArray y)
+        public static double Accuracy(FunctionStack functionStack, NdArray x, NdArray y)
         {
             double matchCount = 0;
 
-            BatchArray forwardResult = functionStack.Predict(x);
+            NdArray forwardResult = functionStack.Predict(x);
 
             for (int b = 0; b < x.BatchCount; b++)
             {

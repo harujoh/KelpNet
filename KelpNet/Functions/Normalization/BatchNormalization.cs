@@ -80,7 +80,7 @@ namespace KelpNet.Functions.Normalization
             Backward = BackwardCpu;
         }
 
-        public BatchArray ForwardCpu(BatchArray x)
+        public NdArray ForwardCpu(NdArray x)
         {
             //計算用パラメータの取得
             if (this.IsTrain)
@@ -161,10 +161,10 @@ namespace KelpNet.Functions.Normalization
                 }
             }
 
-            return BatchArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount);
         }
 
-        public BatchArray BackwardCpu(BatchArray gy)
+        public NdArray BackwardCpu(NdArray gy)
         {
             BackwardCountUp();
 
@@ -215,12 +215,12 @@ namespace KelpNet.Functions.Normalization
                 }
             }
 
-            return BatchArray.Convert(gx, new[] { this.ChannelSize }, gy.BatchCount);
+            return NdArray.Convert(gx, new[] { this.ChannelSize }, gy.BatchCount);
         }
 
-        public override BatchArray Predict(BatchArray input)
+        public override NdArray Predict(NdArray input)
         {
-            BatchArray result;
+            NdArray result;
 
             if (this.IsTrain)
             {

@@ -26,10 +26,10 @@ namespace KelpNet.Common.Functions
 
         private KeyValuePair<string, string>[] _activationParameters;
 
-        protected abstract BatchArray NeedPreviousForwardCpu(BatchArray input);
-        protected abstract BatchArray NeedPreviousForwardGpu(BatchArray input);
-        protected abstract BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray x);
-        protected abstract BatchArray NeedPreviousBackwardGpu(BatchArray gy, BatchArray x);
+        protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
+        protected abstract NdArray NeedPreviousForwardGpu(NdArray input);
+        protected abstract NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray x);
+        protected abstract NdArray NeedPreviousBackwardGpu(NdArray gy, NdArray x);
 
         protected CompressibleFunction(string name, int inputCount, int oututCount, bool gpuEnable, string functionName, CompressibleActivation activation = null, params KeyValuePair<string, string>[] activationParameters) : base(name, inputCount, oututCount)
         {

@@ -381,7 +381,7 @@ namespace CaffemodelLoader
         {
             private const string FUNCTION_NAME = "Eltwise";
 
-            List<BatchArray[]> PrevInput = new List<BatchArray[]>();
+            List<NdArray[]> PrevInput = new List<NdArray[]>();
             List<int[]> PrevOutputIndex = new List<int[]>();
 
             private EltwiseParameter.EltwiseOp _operation;
@@ -393,7 +393,7 @@ namespace CaffemodelLoader
                 this._coeffs = coeffs;
             }
 
-            public BatchArray ForwardCPU(params BatchArray[] xs)
+            public NdArray ForwardCPU(params NdArray[] xs)
             {
                 PrevInput.Add(xs);
 
@@ -441,10 +441,10 @@ namespace CaffemodelLoader
                         break;
                 }
 
-                return BatchArray.Convert(result, xs[0].Shape, xs[0].BatchCount);
+                return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount);
             }
 
-            public BatchArray[] BackwardCPU(BatchArray gy)
+            public NdArray[] BackwardCPU(NdArray gy)
             {
                 var prevInput = PrevInput[PrevInput.Count - 1];
                 PrevInput.RemoveAt(PrevInput.Count - 1);
@@ -492,11 +492,11 @@ namespace CaffemodelLoader
                         break;
                 }
 
-                BatchArray[] resultArrays = new BatchArray[prevInput.Length];
+                NdArray[] resultArrays = new NdArray[prevInput.Length];
 
                 for (int i = 0; i < prevInput.Length; i++)
                 {
-                    resultArrays[i] = BatchArray.Convert(result[i], prevInput[0].Shape, prevInput[0].BatchCount);
+                    resultArrays[i] = NdArray.Convert(result[i], prevInput[0].Shape, prevInput[0].BatchCount);
                 }
 
                 return resultArrays;

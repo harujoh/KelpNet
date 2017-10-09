@@ -58,11 +58,11 @@ namespace KelpNetTester.Tests
                 g.Dispose();
 
                 Real[] bias = { -123.68, -116.779, -103.939 };  //補正値のチャンネル順は入力画像に従う
-                BatchArray imageArray = new BatchArray(NdArrayConverter.Image2NdArray(resultImage, false, true, bias));
+                NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true, bias);
 
                 Console.WriteLine("Start predict.");
                 Stopwatch sw = Stopwatch.StartNew();
-                BatchArray result = nn.Predict(imageArray);
+                NdArray result = nn.Predict(imageArray);
                 sw.Stop();
 
                 Console.WriteLine("Result Time : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");

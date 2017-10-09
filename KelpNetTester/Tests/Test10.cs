@@ -63,14 +63,14 @@ namespace KelpNetTester.Tests
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
             int epoch = 0;
 
-            Stack<BatchArray> backNdArrays = new Stack<BatchArray>();
+            Stack<NdArray> backNdArrays = new Stack<NdArray>();
 
             Console.WriteLine("Train Start.");
 
             for (int i = 0; i < jump * N_EPOCH; i++)
             {
-                BatchArray x = new BatchArray(new[] { 1 }, BATCH_SIZE);
-                BatchArray t = new BatchArray(new[] { 1 }, BATCH_SIZE);
+                NdArray x = new NdArray(new[] { 1 }, BATCH_SIZE);
+                NdArray t = new NdArray(new[] { 1 }, BATCH_SIZE);
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {
@@ -124,8 +124,8 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < dataset.Length - 1; i++)
             {
-                BatchArray x = new BatchArray(new[] { 1 }, BATCH_SIZE);
-                BatchArray t = new BatchArray(new[] { 1 }, BATCH_SIZE);
+                NdArray x = new NdArray(new[] { 1 }, BATCH_SIZE);
+                NdArray t = new NdArray(new[] { 1 }, BATCH_SIZE);
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {

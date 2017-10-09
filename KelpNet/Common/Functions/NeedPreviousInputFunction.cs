@@ -8,10 +8,10 @@ namespace KelpNet.Common.Functions
     public abstract class NeedPreviousInputFunction : Function
     {
         //後入れ先出しリスト
-        private readonly List<BatchArray> _prevInput = new List<BatchArray>();
+        private readonly List<NdArray> _prevInput = new List<NdArray>();
 
-        protected Func<BatchArray, BatchArray> NeedPreviousForward;
-        protected Func<BatchArray, BatchArray, BatchArray> NeedPreviousBackward;
+        protected Func<NdArray, NdArray> NeedPreviousForward;
+        protected Func<NdArray, NdArray, NdArray> NeedPreviousBackward;
 
         protected NeedPreviousInputFunction(string name, int inputCount = 0, int oututCount = 0) : base(name, inputCount, oututCount)
         {
@@ -19,24 +19,24 @@ namespace KelpNet.Common.Functions
             Backward = BackwardCpu;
         }
 
-        public BatchArray ForwardCpu(BatchArray x)
+        public NdArray ForwardCpu(NdArray x)
         {
             this._prevInput.Add(x);
 
             return this.NeedPreviousForward(x);
         }
 
-        public BatchArray BackwardCpu(BatchArray gy)
+        public NdArray BackwardCpu(NdArray gy)
         {
             BackwardCountUp();
 
-            BatchArray prevInput = this._prevInput[this._prevInput.Count - 1];
+            NdArray prevInput = this._prevInput[this._prevInput.Count - 1];
             this._prevInput.RemoveAt(this._prevInput.Count - 1);
 
             return this.NeedPreviousBackward(gy, prevInput);
         }
 
-        public override BatchArray Predict(BatchArray x)
+        public override NdArray Predict(NdArray x)
         {
             return this.NeedPreviousForward(x);
         }

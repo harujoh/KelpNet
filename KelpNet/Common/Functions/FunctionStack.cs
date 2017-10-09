@@ -60,9 +60,9 @@ namespace KelpNet.Common.Functions
         }
 
         //Forward
-        public BatchArray ForwardCPU(BatchArray input)
+        public NdArray ForwardCPU(NdArray input)
         {
-            BatchArray result = this.Functions[0].Forward(input);
+            NdArray result = this.Functions[0].Forward(input);
 
             for (int i = 1; i < this.Functions.Length; i++)
             {
@@ -73,7 +73,7 @@ namespace KelpNet.Common.Functions
         }
 
         //Backward
-        public BatchArray BackwardCPU(BatchArray backwardResult)
+        public NdArray BackwardCPU(NdArray backwardResult)
         {
             for (int i = this.Functions.Length - 1; i >= 0; i--)
             {
@@ -103,7 +103,7 @@ namespace KelpNet.Common.Functions
         }
 
         //予想を実行する
-        public override BatchArray Predict(BatchArray forwardResult)
+        public override NdArray Predict(NdArray forwardResult)
         {
             foreach (Function function in this.Functions)
             {

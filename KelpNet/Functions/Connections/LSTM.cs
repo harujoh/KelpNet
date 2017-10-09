@@ -27,10 +27,10 @@ namespace KelpNet.Functions.Connections
 
         private Real[] hParam;
 
-        BatchArray gxPrev0;
-        BatchArray gxPrev1;
-        BatchArray gxPrev2;
-        BatchArray gxPrev3;
+        NdArray gxPrev0;
+        NdArray gxPrev1;
+        NdArray gxPrev2;
+        NdArray gxPrev3;
         Real[] gcPrev;
 
         private bool initialized = false;
@@ -66,7 +66,7 @@ namespace KelpNet.Functions.Connections
             Backward = BackwardCpu;
         }
 
-        public BatchArray ForwardCpu(BatchArray x)
+        public NdArray ForwardCpu(NdArray x)
         {
             Real[][] upwards = new Real[4][];
             upwards[0] = this.upward0.Forward(x).Data;
@@ -87,7 +87,7 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                BatchArray prevInput = new BatchArray(this.hParam, new[] { OutputCount }, x.BatchCount);
+                NdArray prevInput = new NdArray(this.hParam, new[] { OutputCount }, x.BatchCount);
                 Real[] laterals0 = this.lateral0.Forward(prevInput).Data;
                 Real[] laterals1 = this.lateral1.Forward(prevInput).Data;
                 Real[] laterals2 = this.lateral2.Forward(prevInput).Data;
@@ -140,10 +140,10 @@ namespace KelpNet.Functions.Connections
             this.fParam.Add(lf);
             this.oParam.Add(lo);
 
-            return new BatchArray(this.hParam, new[] { OutputCount }, x.BatchCount);
+            return new NdArray(this.hParam, new[] { OutputCount }, x.BatchCount);
         }
 
-        public BatchArray BackwardCpu(BatchArray gh)
+        public NdArray BackwardCpu(NdArray gh)
         {
             BackwardCountUp();
 
@@ -152,10 +152,10 @@ namespace KelpNet.Functions.Connections
             if (!initialized)
             {
                 //値がなければ初期化
-                this.gxPrev0 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
-                this.gxPrev1 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
-                this.gxPrev2 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
-                this.gxPrev3 = new BatchArray(new[] { OutputCount }, gh.BatchCount);
+                this.gxPrev0 = new NdArray(new[] { OutputCount }, gh.BatchCount);
+                this.gxPrev1 = new NdArray(new[] { OutputCount }, gh.BatchCount);
+                this.gxPrev2 = new NdArray(new[] { OutputCount }, gh.BatchCount);
+                this.gxPrev3 = new NdArray(new[] { OutputCount }, gh.BatchCount);
                 initialized = true;
             }
             else
@@ -242,7 +242,7 @@ namespace KelpNet.Functions.Connections
                 gx[i] = gArray0[i] + gArray1[i] + gArray2[i] + gArray3[i];
             }
 
-            return BatchArray.Convert(gx, new[] { InputCount }, gh.BatchCount);
+            return NdArray.Convert(gx, new[] { InputCount }, gh.BatchCount);
         }
 
         public override void ResetState()

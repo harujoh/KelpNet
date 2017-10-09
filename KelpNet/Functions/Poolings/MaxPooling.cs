@@ -92,7 +92,7 @@ namespace KelpNet.Functions.Poolings
             ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
         }
 
-        public BatchArray ForwardCpu(BatchArray input)
+        public NdArray ForwardCpu(NdArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
@@ -146,7 +146,7 @@ namespace KelpNet.Functions.Poolings
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);
         }
 
-        public BatchArray ForwardGpu(BatchArray input)
+        public NdArray ForwardGpu(NdArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
@@ -188,7 +188,7 @@ namespace KelpNet.Functions.Poolings
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);
         }
 
-        BatchArray GetForwardResult(BatchArray input, int[] outputIndices, int outputWidth, int outputHeight)
+        NdArray GetForwardResult(NdArray input, int[] outputIndices, int outputWidth, int outputHeight)
         {
             Real[] result = new Real[outputIndices.Length];
 
@@ -199,11 +199,11 @@ namespace KelpNet.Functions.Poolings
 
             this._outputIndicesList.Add(outputIndices);
 
-            return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
+            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
 
-        public BatchArray BackwardCpu(BatchArray gy)
+        public NdArray BackwardCpu(NdArray gy)
         {
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);
@@ -215,7 +215,7 @@ namespace KelpNet.Functions.Poolings
                 result[outputIndices[i]] = gy.Data[i];
             }
 
-            return BatchArray.Convert(result, this._prevInputShape, this._prevInputBatchCount);
+            return NdArray.Convert(result, this._prevInputShape, this._prevInputBatchCount);
         }
     }
 }

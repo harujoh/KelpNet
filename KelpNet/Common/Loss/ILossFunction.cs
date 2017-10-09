@@ -2,6 +2,6 @@
 {
     public interface ILossFunction
     {
-        BatchArray Evaluate(BatchArray input, BatchArray teachSignal, out Real loss);
+        NdArray Evaluate(NdArray input, NdArray teachSignal, out Real loss);
     }
 }

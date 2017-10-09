@@ -76,19 +76,19 @@ namespace KelpNetTester.Tests
 
 
             Console.WriteLine("l0 for");
-            Console.WriteLine(l0.Forward(new BatchArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
+            Console.WriteLine(l0.Forward(new NdArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
             Console.WriteLine("\nl1 for");
-            Console.WriteLine(l1.Forward(new BatchArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
+            Console.WriteLine(l1.Forward(new NdArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
             Console.WriteLine("\nl2 for");
-            Console.WriteLine(l2.Forward(new BatchArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
+            Console.WriteLine(l2.Forward(new NdArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
             Console.WriteLine("\nl3 for");
-            Console.WriteLine(l3.Forward(new BatchArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
+            Console.WriteLine(l3.Forward(new NdArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
             Console.WriteLine("\nl4 for");
-            Console.WriteLine(l4.Forward(new BatchArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
+            Console.WriteLine(l4.Forward(new NdArray(new Real[] { 0.01618112, -0.08296648, -0.05545357, 0.00389254, -0.05727582 })));
             Console.WriteLine();
 
             Console.WriteLine("\nl0 back");
-            Console.WriteLine(l0.Backward(new BatchArray(new Real[,]
+            Console.WriteLine(l0.Backward(new NdArray(new Real[,]
             {
                 {-2.42022760e-02, 5.02482988e-04, 2.52015481e-04, 8.08797951e-04},
                 {-7.19293347e-03, 1.40045900e-04, 7.09874439e-05, 2.07651625e-04},
@@ -97,22 +97,22 @@ namespace KelpNetTester.Tests
                 {3.61101292e-02,- 7.12957408e-04,- 3.63163825e-04,- 1.12809543e-03}
             })));
 
-            BatchArray l1bak = l1.Backward(new BatchArray(new Real[]
+            NdArray l1bak = l1.Backward(new NdArray(new Real[]
             {
                 -2.42022760e-02,5.02482988e-04, 2.52015481e-04,8.08797951e-04,- 7.19293347e-03
             }));
 
-            BatchArray l2bak = l2.Backward(new BatchArray(new Real[]
+            NdArray l2bak = l2.Backward(new NdArray(new Real[]
             {
                 1.40045900e-04,7.09874439e-05, 2.07651625e-04,3.80124636e-02,- 8.87162634e-04
             }));
 
-            BatchArray l3bak = l3.Backward(new BatchArray(new Real[]
+            NdArray l3bak = l3.Backward(new NdArray(new Real[]
             {
                 -4.64874669e-04,- 1.40792923e-03,- 4.12280299e-02,- 3.36557830e-04,- 1.50323089e-04
             }));
 
-            BatchArray l4bak = l4.Backward(new BatchArray(new Real[]
+            NdArray l4bak = l4.Backward(new NdArray(new Real[]
             {
                 -4.70047118e-04, 3.61101292e-02,-7.12957408e-04, -3.63163825e-04, -1.12809543e-03
             }));

@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Connections
         private const string PARAM_NAME = "/*ForwardActivate*/";
         private const string PARAM_VALUE = "ForwardActivate(gpuY);";
 
-        private readonly List<BatchArray> _prevOutput = new List<BatchArray>();
+        private readonly List<NdArray> _prevOutput = new List<NdArray>();
 
         public NdArray W;
         public NdArray b;
@@ -73,7 +73,7 @@ namespace KelpNet.Functions.Connections
             return y;
         }
 
-        protected override BatchArray NeedPreviousForwardCpu(BatchArray x)
+        protected override NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
@@ -99,7 +99,7 @@ namespace KelpNet.Functions.Connections
             return GetForwardResult(y, x.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousForwardGpu(BatchArray x)
+        protected override NdArray NeedPreviousForwardGpu(NdArray x)
         {
             Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
@@ -129,9 +129,9 @@ namespace KelpNet.Functions.Connections
             return GetForwardResult(y, x.BatchCount);
         }
 
-        BatchArray GetForwardResult(Real[] y, int batchCount)
+        NdArray GetForwardResult(Real[] y, int batchCount)
         {
-            BatchArray result = BatchArray.Convert(y, new[] { OutputCount }, batchCount);
+            NdArray result = NdArray.Convert(y, new[] { OutputCount }, batchCount);
 
             if (this.Activation != null)
             {
@@ -141,7 +141,7 @@ namespace KelpNet.Functions.Connections
             return result;
         }
 
-        Real[] GetActivatedgy(BatchArray gy)
+        Real[] GetActivatedgy(NdArray gy)
         {
             Real[] activatedgY = new Real[gy.Data.Length];
             var prevOutputData = this._prevOutput[this._prevOutput.Count - 1].Data;
@@ -173,7 +173,7 @@ namespace KelpNet.Functions.Connections
             }
         }
 
-        protected override BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput)
+        protected override NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevInput)
         {
             Real[] gxData = new Real[prevInput.Data.Length];
             Real[] activatedgy = this.Activation != null ? GetActivatedgy(gy) : gy.Data;
@@ -193,10 +193,10 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return BatchArray.Convert(gxData, prevInput.Shape, prevInput.BatchCount);
+            return NdArray.Convert(gxData, prevInput.Shape, prevInput.BatchCount);
         }
 
-        protected override BatchArray NeedPreviousBackwardGpu(BatchArray gy, BatchArray prevInput)
+        protected override NdArray NeedPreviousBackwardGpu(NdArray gy, NdArray prevInput)
         {
             Real[] gxData = new Real[prevInput.Data.Length];
             Real[] activatedgy = this.Activation != null ? GetActivatedgy(gy) : gy.Data;
@@ -251,7 +251,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return BatchArray.Convert(gxData, prevInput.Shape, prevInput.BatchCount);
+            return NdArray.Convert(gxData, prevInput.Shape, prevInput.BatchCount);
         }
 
         public Convolution2D AsConvolution2D()
