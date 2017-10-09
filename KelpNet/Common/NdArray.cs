@@ -5,13 +5,18 @@ using System.Text;
 namespace KelpNet.Common
 {
     [Serializable]
-    public struct NdArray
+    public class NdArray
     {
         public Real[] Data;
+        public Real[] Grad;
+
         public int[] Shape;
 
         public int BatchCount;
         public int Length;
+
+        //Updateを行わずに実行されたBackwardの回数をカウントし、バッチ更新時に使用する
+        public int TrainCount;
 
         public NdArray(Array data)
         {
@@ -26,7 +31,9 @@ namespace KelpNet.Common
             this.Data = resultData;
             this.Shape = resultShape;
             this.Length = Data.Length;
+            this.Grad = new Real[this.Length];
             this.BatchCount = 1;
+            this.TrainCount = 0;
         }
 
         public NdArray(params int[] shape)
@@ -35,6 +42,8 @@ namespace KelpNet.Common
             this.Shape = shape.ToArray();
             this.Length = Data.Length;
             this.BatchCount = 1;
+            this.Grad = new Real[this.Length];
+            this.TrainCount = 0;
         }
 
         public NdArray(Real[] data, int[] shape, int batchCount = 1)
@@ -43,6 +52,8 @@ namespace KelpNet.Common
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
+            this.Grad = new Real[this.Length];
+            this.TrainCount = 0;
         }
 
         public NdArray(int[] shape, int batchCount)
@@ -51,6 +62,8 @@ namespace KelpNet.Common
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = new Real[this.Length * batchCount];
+            this.Grad = new Real[this.Length];
+            this.TrainCount = 0;
         }
 
         static int ShapeToArrayLength(params int[] shapes)
@@ -112,24 +125,52 @@ namespace KelpNet.Common
 
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            return new NdArray (baseArray.Shape.ToArray(), baseArray.BatchCount);
+            return new NdArray(baseArray.Shape.ToArray(), baseArray.BatchCount);
         }
 
-        public void Clear()
+        public void CountUp()
         {
-            this.Data = new Real[this.Data.Length];
+            TrainCount++;
         }
 
-        public void Fill(Real val)
+        //傾きの補正
+        public bool Reduce()
         {
-            for (int i = 0; i < this.Data.Length; i++)
+            if (this.TrainCount > 0)
             {
-                this.Data[i] = val;
+                for (int i = 0; i < this.Grad.Length; i++)
+                {
+                    this.Grad[i] /= this.TrainCount;
+                }
+
+                return true;
             }
+
+            return false;
         }
 
-        //Numpyっぽく値を文字列に変換して出力する
+        //傾きの初期化
+        public void ClearGrad()
+        {
+            this.Grad = new Real[this.Data.Length];
+
+            //カウンタをリセット
+            this.TrainCount = 0;
+        }
+
         public override string ToString()
+        {
+            return ToString(this.Data);
+        }
+
+        public string ToString(string format)
+        {
+            if (format == "Grad")
+                return ToString(this.Grad);
+            return ToString(this.Data);
+        }
+
+        public string ToString(Real[] datas)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -137,7 +178,7 @@ namespace KelpNet.Common
             int realMaxLength = 0;   //小数点以下の最大値
             bool isExponential = false; //指数表現にするか
 
-            foreach (Real data in this.Data)
+            foreach (Real data in datas)
             {
                 string[] divStr = data.ToString().Split('.');
                 intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
@@ -183,11 +224,11 @@ namespace KelpNet.Common
                     string[] divStr;
                     if (isExponential)
                     {
-                        divStr = string.Format("{0:0.00000000e+00}", this.Data[indexOffset + i]).Split('.');
+                        divStr = string.Format("{0:0.00000000e+00}", datas[indexOffset + i]).Split('.');
                     }
                     else
                     {
-                        divStr = this.Data[indexOffset + i].ToString().Split('.');
+                        divStr = datas[indexOffset + i].ToString().Split('.');
                     }
 
                     //最大文字数でインデントを揃える

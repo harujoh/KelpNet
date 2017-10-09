@@ -128,17 +128,17 @@ namespace KelpNetTester.Tests
 
             sgd.Update();
 
-            Console.WriteLine("\nl0 W");
-            Console.WriteLine(l0.W);
+            Console.WriteLine("\nl0 Weight");
+            Console.WriteLine(l0.Weight);
 
-            Console.WriteLine("\nl1 W");
-            Console.WriteLine(l1.W);
+            Console.WriteLine("\nl1 Weight");
+            Console.WriteLine(l1.Weight);
 
-            Console.WriteLine("\nl0 b");
-            Console.WriteLine(l0.b);
+            Console.WriteLine("\nl0 Bias");
+            Console.WriteLine(l0.Bias);
 
-            Console.WriteLine("\nl1 b");
-            Console.WriteLine(l1.b);
+            Console.WriteLine("\nl1 Bias");
+            Console.WriteLine(l1.Bias);
         }
     }
 }

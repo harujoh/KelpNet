@@ -1,6 +1,5 @@
 ﻿using System;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
 namespace KelpNet.Optimizers
@@ -17,9 +16,9 @@ namespace KelpNet.Optimizers
             this.Momentum = momentum;
         }
 
-        internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
+        internal override void AddFunctionParameters(NdArray[] functionParameters)
         {
-            foreach (FunctionParameter functionParameter in functionParameters)
+            foreach (NdArray functionParameter in functionParameters)
             {
                 this.OptimizerParameters.Add(new MomentumSGDParameter(functionParameter, this));
             }
@@ -32,20 +31,20 @@ namespace KelpNet.Optimizers
         private readonly MomentumSGD optimizer;
         private readonly Real[] v;
 
-        public MomentumSGDParameter(FunctionParameter functionParameter, MomentumSGD optimizer) : base(functionParameter)
+        public MomentumSGDParameter(NdArray functionParameter, MomentumSGD optimizer) : base(functionParameter)
         {
-            this.v = new Real[functionParameter.Length];
+            this.v = new Real[functionParameter.Data.Length];
             this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
                 this.v[i] *= this.optimizer.Momentum;
-                this.v[i] -= this.optimizer.LearningRate * this.FunctionParameter.Grad.Data[i];
+                this.v[i] -= this.optimizer.LearningRate * this.FunctionParameter.Grad[i];
 
-                this.FunctionParameter.Param.Data[i] += this.v[i];
+                this.FunctionParameter.Data[i] += this.v[i];
             }
         }
     }

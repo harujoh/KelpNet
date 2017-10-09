@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common.Functions;
 
 namespace KelpNet.Common.Optimizers
 {
@@ -11,7 +10,7 @@ namespace KelpNet.Common.Optimizers
         public long UpdateCount = 1;
         protected List<OptimizerParameter> OptimizerParameters = new List<OptimizerParameter>();
 
-        internal abstract void AddFunctionParameters(FunctionParameter[] functionParameters);
+        internal abstract void AddFunctionParameters(NdArray[] functionParameters);
 
         public void Update()
         {
@@ -41,9 +40,9 @@ namespace KelpNet.Common.Optimizers
     [Serializable]
     public abstract class OptimizerParameter
     {
-        public FunctionParameter FunctionParameter;
+        public NdArray FunctionParameter;
 
-        protected OptimizerParameter(FunctionParameter functionParameter)
+        protected OptimizerParameter(NdArray functionParameter)
         {
             this.FunctionParameter = functionParameter;
         }

@@ -87,19 +87,19 @@ namespace KelpNetTester.Tests
 
             //Updateを実行するとgradが消費されてしまうため値を先に出力
             Console.WriteLine("gw1");
-            Console.WriteLine(l2.gW);
+            Console.WriteLine(l2.Weight.ToString("Grad"));
 
             Console.WriteLine("gb1");
-            Console.WriteLine(l2.gb);
+            Console.WriteLine(l2.Bias.ToString("Grad"));
 
             //更新
             nn.Update();
 
             Console.WriteLine("w1");
-            Console.WriteLine(l2.W);
+            Console.WriteLine(l2.Weight);
 
             Console.WriteLine("b1");
-            Console.WriteLine(l2.b);
+            Console.WriteLine(l2.Bias);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using KelpNet.Common.Optimizers;
-using KelpNet.Common.Tools;
 
 namespace KelpNet.Common.Functions
 {

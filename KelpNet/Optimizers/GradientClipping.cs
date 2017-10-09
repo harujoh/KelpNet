@@ -16,9 +16,9 @@ namespace KelpNet.Optimizers
             this.Threshold = threshold;
         }
 
-        internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
+        internal override void AddFunctionParameters(NdArray[] functionParameters)
         {
-            foreach (FunctionParameter functionParameter in functionParameters)
+            foreach (NdArray functionParameter in functionParameters)
             {
                 this.OptimizerParameters.Add(new GradientClippingParameter(functionParameter, this));
             }
@@ -30,7 +30,7 @@ namespace KelpNet.Optimizers
     {
         private readonly GradientClipping optimizer;
 
-        public GradientClippingParameter(FunctionParameter functionParameter, GradientClipping optimizer) : base(functionParameter)
+        public GradientClippingParameter(NdArray functionParameter, GradientClipping optimizer) : base(functionParameter)
         {
             this.optimizer = optimizer;
         }
@@ -40,9 +40,9 @@ namespace KelpNet.Optimizers
             //_sum_sqnorm
             double s = 0;
 
-            for (int i = 0; i < this.FunctionParameter.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
-                s += this.FunctionParameter.Grad.Data[i] * this.FunctionParameter.Grad.Data[i];
+                s += this.FunctionParameter.Grad[i] * this.FunctionParameter.Grad[i];
             }
 
             double norm = Math.Sqrt(s);
@@ -50,9 +50,9 @@ namespace KelpNet.Optimizers
 
             if (rate < 1)
             {
-                for (int i = 0; i < this.FunctionParameter.Length; i++)
+                for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
                 {
-                    this.FunctionParameter.Grad.Data[i] *= rate;
+                    this.FunctionParameter.Grad[i] *= rate;
                 }
             }
         }

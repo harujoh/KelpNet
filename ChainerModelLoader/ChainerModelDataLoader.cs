@@ -22,22 +22,22 @@ namespace ChainerModelLoader
         {
             if (func is Linear)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Linear)func).W.Data, ((Linear)func).W.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Linear)func).b.Data, ((Linear)func).b.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Linear)func).Weight.Data, ((Linear)func).Weight.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Linear)func).Bias.Data, ((Linear)func).Bias.Data.Length);
             }
             else if (func is Convolution2D)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Convolution2D)func).W.Data, ((Convolution2D)func).W.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Convolution2D)func).b.Data, ((Convolution2D)func).b.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Convolution2D)func).Weight.Data, ((Convolution2D)func).Weight.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Convolution2D)func).Bias.Data, ((Convolution2D)func).Bias.Data.Length);
             }
             else if (func is Deconvolution2D)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Deconvolution2D)func).W.Data, ((Deconvolution2D)func).W.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Deconvolution2D)func).b.Data, ((Deconvolution2D)func).b.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Deconvolution2D)func).Weight.Data, ((Deconvolution2D)func).Weight.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Deconvolution2D)func).Bias.Data, ((Deconvolution2D)func).Bias.Data.Length);
             }
             else if (func is EmbedID)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((EmbedID)func).W.Data, ((EmbedID)func).W.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((EmbedID)func).Weight.Data, ((EmbedID)func).Weight.Data.Length);
             }
             else if (func is BatchNormalization)
             {

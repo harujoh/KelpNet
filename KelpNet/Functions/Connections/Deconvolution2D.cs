@@ -17,11 +17,8 @@ namespace KelpNet.Functions.Connections
 
         private readonly List<Real[]> _prevOutput = new List<Real[]>();
 
-        public NdArray W;
-        public NdArray b;
-
-        public NdArray gW;
-        public NdArray gb;
+        public NdArray Weight;
+        public NdArray Bias;
 
         public readonly bool NoBias;
 
@@ -42,7 +39,7 @@ namespace KelpNet.Functions.Connections
             this._subSampleY = subSample;
             this.NoBias = noBias;
 
-            this.Parameters = new FunctionParameter[noBias ? 1 : 2];
+            this.Parameters = new NdArray[noBias ? 1 : 2];
 
             this.Initialize(initialW, initialb);
         }
@@ -64,40 +61,37 @@ namespace KelpNet.Functions.Connections
             this._subSampleX = subSample.Width;
             this._subSampleY = subSample.Height;
 
-            this.Parameters = new FunctionParameter[noBias ? 1 : 2];
+            this.Parameters = new NdArray[noBias ? 1 : 2];
 
             this.Initialize(initialW, initialb);
         }
 
         void Initialize(Array initialW = null, Array initialb = null)
         {
-            this.W = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
-            this.gW = NdArray.ZerosLike(this.W);
+            this.Weight = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
 
             if (initialW == null)
             {
-                Initializer.InitWeight(this.W);
+                Initializer.InitWeight(this.Weight);
             }
             else
             {
-                this.W.Data = Real.GetArray(initialW);
+                this.Weight.Data = Real.GetArray(initialW);
             }
 
-            this.Parameters[0] = new FunctionParameter(this.W, this.gW, this.Name + " W");
+            this.Parameters[0] = this.Weight;
 
-            //noBias=trueでもbiasを用意して更新しない
-            this.b = new NdArray(OutputCount);
 
             if (!NoBias)
             {
-                this.gb = NdArray.ZerosLike(this.b);
+                this.Bias = new NdArray(OutputCount);
 
                 if (initialb != null)
                 {
-                    this.b.Data = Real.GetArray(initialb);
+                    this.Bias.Data = Real.GetArray(initialb);
                 }
 
-                this.Parameters[1] = new FunctionParameter(this.b, this.gb, this.Name + " b");
+                this.Parameters[1] = this.Bias;
             }
         }
 
@@ -110,7 +104,7 @@ namespace KelpNet.Functions.Connections
 
             int outSizeOffset = outputWidth * outputHeight;
             int inputSizeOffset = input.Shape[1] * input.Shape[2];
-            int kSizeOffset = this.W.Shape[2] * this.W.Shape[3];
+            int kSizeOffset = this.Weight.Shape[2] * this.Weight.Shape[3];
 
             for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
             {
@@ -119,34 +113,88 @@ namespace KelpNet.Functions.Connections
                     for (int oy = this._trimY; oy < outputHeight + this._trimY; oy++)
                     {
                         int iyLimit = oy / this._subSampleY + 1 < input.Shape[1] ? oy / this._subSampleY + 1 : input.Shape[1];
-                        int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSampleY + 1;
+                        int iyStart = oy - this.Weight.Shape[2] < 0 ? 0 : (oy - this.Weight.Shape[2]) / this._subSampleY + 1;
 
                         for (int ox = this._trimX; ox < outputWidth + this._trimX; ox++)
                         {
                             int ixLimit = ox / this._subSampleX + 1 < input.Shape[2] ? ox / this._subSampleX + 1 : input.Shape[2];
-                            int ixStart = ox - this.W.Shape[3] < 0 ? 0 : (ox - this.W.Shape[3]) / this._subSampleX + 1;
+                            int ixStart = ox - this.Weight.Shape[3] < 0 ? 0 : (ox - this.Weight.Shape[3]) / this._subSampleX + 1;
 
                             int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._trimY) * outputWidth + ox - this._trimX;
 
                             for (int ich = 0; ich < input.Shape[0]; ich++)
                             {
                                 int inputIndexOffset = batchCount * input.Length + ich * inputSizeOffset;
-                                int kernelIndexOffset = och * this.W.Shape[1] * kSizeOffset + ich * kSizeOffset;
+                                int kernelIndexOffset = och * this.Weight.Shape[1] * kSizeOffset + ich * kSizeOffset;
 
                                 for (int iy = iyStart; iy < iyLimit; iy++)
                                 {
                                     for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
                                         int inputIndex = inputIndexOffset + iy * input.Shape[2] + ix;
-                                        int kernelIndex = kernelIndexOffset + (oy - iy * this._subSampleY) * this.W.Shape[3] + (ox - ix * this._subSampleX);
+                                        int kernelIndex = kernelIndexOffset + (oy - iy * this._subSampleY) * this.Weight.Shape[3] + (ox - ix * this._subSampleX);
 
-                                        result[outputIndex] += input.Data[inputIndex] * this.W.Data[kernelIndex];
+                                        result[outputIndex] += input.Data[inputIndex] * this.Weight.Data[kernelIndex];
                                     }
                                 }
                             }
 
-                            result[outputIndex] += this.b.Data[och];
-                            if (this.Activation != null) this.Activation.ForwardActivate(ref result[outputIndex]);
+                        }
+                    }
+                }
+            }
+
+            if (this.Activation != null && !NoBias)
+            {
+                for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
+                {
+                    for (int och = 0; och < this.OutputCount; och++)
+                    {
+                        for (int oy = this._trimY; oy < outputHeight + this._trimY; oy++)
+                        {
+                            for (int ox = this._trimX; ox < outputWidth + this._trimX; ox++)
+                            {
+                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._trimY) * outputWidth + ox - this._trimX;
+
+                                result[outputIndex] += this.Bias.Data[och];
+                                this.Activation.ForwardActivate(ref result[outputIndex]);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (!NoBias)
+            {
+                for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
+                {
+                    for (int och = 0; och < this.OutputCount; och++)
+                    {
+                        for (int oy = this._trimY; oy < outputHeight + this._trimY; oy++)
+                        {
+                            for (int ox = this._trimX; ox < outputWidth + this._trimX; ox++)
+                            {
+                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._trimY) * outputWidth + ox - this._trimX;
+
+                                result[outputIndex] += this.Bias.Data[och];
+                            }
+                        }
+                    }
+                }
+            }
+            else if (this.Activation != null)
+            {
+                for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
+                {
+                    for (int och = 0; och < this.OutputCount; och++)
+                    {
+                        for (int oy = this._trimY; oy < outputHeight + this._trimY; oy++)
+                        {
+                            for (int ox = this._trimX; ox < outputWidth + this._trimX; ox++)
+                            {
+                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._trimY) * outputWidth + ox - this._trimX;
+
+                                this.Activation.ForwardActivate(ref result[outputIndex]);
+                            }
                         }
                     }
                 }
@@ -163,8 +211,8 @@ namespace KelpNet.Functions.Connections
             Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
-            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
-            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.b.Data))
+            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.Weight.Data))
+            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.Bias.Data))
             using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
             {
                 ForwardKernel.SetMemoryArgument(0, gpuX);
@@ -252,7 +300,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int olocation = 0; olocation < gyShape[1] * gyShape[2]; olocation++)
                     {
-                        this.gb.Data[och] += gy[gyIndex];
+                        this.Bias.Grad[och] += gy[gyIndex];
 
                         gyIndex++;
                     }
@@ -271,25 +319,25 @@ namespace KelpNet.Functions.Connections
             {
                 for (int och = 0; och < OutputCount; och++)
                 {
-                    int outChOffset = och * this.gW.Shape[1] * this.gW.Shape[2] * this.gW.Shape[3];
+                    int outChOffset = och * this.Weight.Shape[1] * this.Weight.Shape[2] * this.Weight.Shape[3];
                     int inputOffset = och * gy.Shape[1] * gy.Shape[2];
 
                     for (int oy = this._trimY; oy < gy.Shape[1] + this._trimY; oy++)
                     {
                         int iyLimit = oy / this._subSampleY + 1 < x.Shape[1] ? oy / this._subSampleY + 1 : x.Shape[1];
-                        int iyStart = oy - this.W.Shape[2] < 0 ? 0 : (oy - this.W.Shape[2]) / this._subSampleY + 1;
+                        int iyStart = oy - this.Weight.Shape[2] < 0 ? 0 : (oy - this.Weight.Shape[2]) / this._subSampleY + 1;
 
                         for (int ox = this._trimX; ox < gy.Shape[2] + this._trimX; ox++)
                         {
                             int ixLimit = ox / this._subSampleX + 1 < x.Shape[2] ? ox / this._subSampleX + 1 : x.Shape[2];
-                            int ixStart = ox - this.W.Shape[3] < 0 ? 0 : (ox - this.W.Shape[3]) / this._subSampleX + 1;
+                            int ixStart = ox - this.Weight.Shape[3] < 0 ? 0 : (ox - this.Weight.Shape[3]) / this._subSampleX + 1;
 
                             int gyIndex = batchCount * gy.Length + inputOffset + (oy - this._trimY) * gy.Shape[2] + ox - this._trimX;
                             Real gyData = activatedgy[gyIndex];
 
                             for (int ich = 0; ich < InputCount; ich++)
                             {
-                                int inChOffset = outChOffset + ich * this.gW.Shape[2] * this.gW.Shape[3];
+                                int inChOffset = outChOffset + ich * this.Weight.Shape[2] * this.Weight.Shape[3];
                                 int pinputOffset = batchCount * x.Length + ich * x.Shape[1] * x.Shape[2];
 
                                 for (int iy = iyStart; iy < iyLimit; iy++)
@@ -297,10 +345,10 @@ namespace KelpNet.Functions.Connections
                                     for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
                                         int pInIndex = pinputOffset + iy * x.Shape[2] + ix;
-                                        int gwIndex = inChOffset + (oy - iy * this._subSampleY) * this.gW.Shape[3] + (ox - ix * this._subSampleX);
+                                        int gwIndex = inChOffset + (oy - iy * this._subSampleY) * this.Weight.Shape[3] + (ox - ix * this._subSampleX);
 
-                                        this.gW.Data[gwIndex] += x.Data[pInIndex] * gyData;
-                                        gx[pInIndex] += this.W.Data[gwIndex] * gyData;
+                                        this.Weight.Data[gwIndex] += x.Data[pInIndex] * gyData;
+                                        gx[pInIndex] += this.Weight.Data[gwIndex] * gyData;
                                     }
                                 }
                             }
@@ -321,7 +369,7 @@ namespace KelpNet.Functions.Connections
             //gyは共通で使用
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))
             {
-                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.gW.Data))
+                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, this.Weight.Grad))
                 using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
                 {
                     this.BackwardgWKernel.SetMemoryArgument(0, gpugY);
@@ -352,11 +400,11 @@ namespace KelpNet.Functions.Connections
                     );
 
                     Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.gW.Data, true, null);
+                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.Weight.Grad, true, null);
                 }
 
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
-                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.W.Data))
+                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.Weight.Data))
                 {
                     this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
                     this.BackwardgXKernel.SetMemoryArgument(1, gpuW);

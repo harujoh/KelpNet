@@ -8,25 +8,23 @@ namespace KelpNet.Functions.Connections
     [Serializable]
     public class EmbedID : NeedPreviousInputFunction
     {
-        public NdArray W;
-        public NdArray gW;
+        public NdArray Weight;
 
         public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = "EmbedID") : base(name, inputCount, outputCount)
         {
-            this.W = new NdArray(inputCount, outputCount);
-            this.gW = NdArray.ZerosLike(this.W);
+            this.Weight = new NdArray(inputCount, outputCount);
 
             if (initialW == null)
             {
-                Initializer.InitWeight(this.W);
+                Initializer.InitWeight(this.Weight);
             }
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                this.W.Data = Real.GetArray(initialW);
+                this.Weight.Data = Real.GetArray(initialW);
             }
 
-            this.Parameters = new[] { new FunctionParameter(this.W, this.gW, this.Name + " W") };
+            this.Parameters = new[] { this.Weight };
 
             NeedPreviousForward = NeedPreviousForwardCpu;
             NeedPreviousBackward = NeedPreviousBackwardCpu;
@@ -42,7 +40,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int j = 0; j < this.OutputCount; j++)
                     {
-                        result[i * this.OutputCount + j + b * x.Length * this.OutputCount] = this.W.Data[(int)x.Data[i + b * x.Length] * this.OutputCount + j];
+                        result[i * this.OutputCount + j + b * x.Length * this.OutputCount] = this.Weight.Data[(int)x.Data[i + b * x.Length] * this.OutputCount + j];
                     }
                 }
             }
@@ -58,7 +56,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int j = 0; j < this.OutputCount; j++)
                     {
-                        this.gW.Data[(int)prevInput.Data[i + b * prevInput.Length] * this.OutputCount + j] += gy.Data[i + j + b * gy.Length];
+                        this.Weight.Grad[(int)prevInput.Data[i + b * prevInput.Length] * this.OutputCount + j] += gy.Data[i + j + b * gy.Length];
                     }
                 }
             }

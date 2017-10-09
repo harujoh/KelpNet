@@ -1,6 +1,5 @@
 ﻿using System;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
 namespace KelpNet.Optimizers
@@ -17,9 +16,9 @@ namespace KelpNet.Optimizers
             this.Epsilon = epsilon;
         }
 
-        internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
+        internal override void AddFunctionParameters(NdArray[] functionParameters)
         {
-            foreach (FunctionParameter functionParameter in functionParameters)
+            foreach (NdArray functionParameter in functionParameters)
             {
                 this.OptimizerParameters.Add(new AdaDeltaParameter(functionParameter, this));
             }
@@ -33,18 +32,18 @@ namespace KelpNet.Optimizers
         private readonly Real[] msdx;
         private readonly AdaDelta optimizer;
 
-        public AdaDeltaParameter(FunctionParameter functionParameter, AdaDelta optimizer) : base(functionParameter)
+        public AdaDeltaParameter(NdArray functionParameter, AdaDelta optimizer) : base(functionParameter)
         {
-            this.msg = new Real[functionParameter.Length];
-            this.msdx = new Real[functionParameter.Length];
+            this.msg = new Real[functionParameter.Data.Length];
+            this.msdx = new Real[functionParameter.Data.Length];
             this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
-                Real grad = this.FunctionParameter.Grad.Data[i];
+                Real grad = this.FunctionParameter.Grad[i];
                 this.msg[i] *= this.optimizer.Rho;
                 this.msg[i] += (1 - this.optimizer.Rho) * grad * grad;
 
@@ -53,7 +52,7 @@ namespace KelpNet.Optimizers
                 this.msdx[i] *= this.optimizer.Rho;
                 this.msdx[i] += (1 - this.optimizer.Rho) * dx * dx;
 
-                this.FunctionParameter.Param.Data[i] -= dx;
+                this.FunctionParameter.Data[i] -= dx;
             }
         }
     }

@@ -49,9 +49,6 @@ namespace KelpNetTester.Tests
                 new Linear(1024, 10, name: "l4 Linear", gpuEnable: true)
             );
 
-            //Activation層を圧縮する
-            nn.Compress();
-
             //optimizerを宣言
             nn.SetOptimizer(new Adam());
 

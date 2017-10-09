@@ -12,7 +12,7 @@ namespace KelpNet.Common.Functions
 
         public bool GpuEnable{get; protected set;}
 
-        public FunctionParameter[] Parameters = { };
+        public NdArray[] Parameters = { };
         public Optimizer[] Optimizers;
 
         public readonly int OutputCount;
@@ -42,7 +42,7 @@ namespace KelpNet.Common.Functions
         //パラメータを更新する時に呼ぶ関数
         protected void BackwardCountUp()
         {
-            foreach (FunctionParameter parameter in this.Parameters)
+            foreach (NdArray parameter in this.Parameters)
             {
                 parameter.CountUp();
             }

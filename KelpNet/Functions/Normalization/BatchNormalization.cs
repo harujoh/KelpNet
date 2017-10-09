@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -11,16 +12,12 @@ namespace KelpNet.Functions.Normalization
         private bool IsTrain;
 
         public NdArray Gamma;
-        public NdArray gGamma;
 
         public NdArray Beta;
-        public NdArray gBeta;
 
         public NdArray AvgMean;
-        public NdArray gMean;
 
         public NdArray AvgVar;
-        public NdArray gVariance;
 
 
         private readonly Real Decay;
@@ -42,17 +39,14 @@ namespace KelpNet.Functions.Normalization
             this.IsTrain = isTrain;
 
             this.Gamma = new NdArray(channelSize);
-            this.Gamma.Fill(1);
+            this.Gamma.Data = Enumerable.Repeat((Real)1,channelSize).ToArray();
             this.Beta = new NdArray(channelSize);
 
-            this.gGamma = NdArray.ZerosLike(this.Gamma);
-            this.gBeta = NdArray.ZerosLike(this.Beta);
-
-            this.Parameters = new FunctionParameter[this.IsTrain ? 2 : 4];
+            this.Parameters = new NdArray[this.IsTrain ? 2 : 4];
 
             //学習対象のParameterを登録
-            this.Parameters[0] = new FunctionParameter(this.Gamma, this.gGamma, this.Name + " Gamma");
-            this.Parameters[1] = new FunctionParameter(this.Beta, this.gBeta, this.Name + " Beta");
+            this.Parameters[0] = this.Gamma;
+            this.Parameters[1] = this.Beta;
 
             this.AvgMean = new NdArray(channelSize);
             this.AvgVar = new NdArray(channelSize);
@@ -69,11 +63,8 @@ namespace KelpNet.Functions.Normalization
 
             if (!this.IsTrain)
             {
-                this.gMean = new NdArray(channelSize);
-                this.gVariance = new NdArray(channelSize);
-
-                this.Parameters[2] = new FunctionParameter(this.AvgMean, this.gMean, this.Name + " Mean");
-                this.Parameters[3] = new FunctionParameter(this.AvgVar, this.gVariance, this.Name + " Variance");
+                this.Parameters[2] = this.AvgMean;
+                this.Parameters[3] = this.AvgVar;
             }
 
             Forward = ForwardCpu;
@@ -170,15 +161,15 @@ namespace KelpNet.Functions.Normalization
 
             Real[] gx = new Real[gy.BatchCount * this.ChannelSize];
 
-            this.gBeta.Clear();
-            this.gGamma.Clear();
+            this.Beta.ClearGrad();
+            this.Gamma.ClearGrad();
 
             for (int i = 0; i < this.ChannelSize; i++)
             {
                 for (int j = 0; j < gy.BatchCount; j++)
                 {
-                    this.gBeta.Data[i] += gy.Data[i + j * gy.Length];
-                    this.gGamma.Data[i] += gy.Data[i + j * gy.Length] * this.Xhat[j * this.ChannelSize + i];
+                    this.Beta.Grad[i] += gy.Data[i + j * gy.Length];
+                    this.Gamma.Grad[i] += gy.Data[i + j * gy.Length] * this.Xhat[j * this.ChannelSize + i];
                 }
             }
 
@@ -193,7 +184,7 @@ namespace KelpNet.Functions.Normalization
 
                     for (int j = 0; j < gy.BatchCount; j++)
                     {
-                        Real val = (this.Xhat[j * this.ChannelSize + i] * this.gGamma.Data[i] + this.gBeta.Data[i]) / m;
+                        Real val = (this.Xhat[j * this.ChannelSize + i] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / m;
 
                         gx[i + j * this.ChannelSize] = gs * (gy.Data[i + j * gy.Length] - val);
                     }
@@ -205,8 +196,8 @@ namespace KelpNet.Functions.Normalization
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
-                    this.gMean.Data[i] = -gs * this.gBeta.Data[i];
-                    this.gVariance.Data[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.gGamma.Data[i];
+                    this.AvgMean.Grad[i] = -gs * this.Beta.Grad[i];
+                    this.AvgVar.Grad[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.Gamma.Grad[i];
 
                     for (int j = 0; j < gy.BatchCount; j++)
                     {

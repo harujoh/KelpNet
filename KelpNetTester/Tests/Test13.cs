@@ -16,7 +16,7 @@ namespace KelpNetTester.Tests
             //目標とするフィルタを作成（実践であればココは不明な値となる）
             Deconvolution2D decon_core = new Deconvolution2D(1, 1, 15, 1, 7, gpuEnable: true)
             {
-                W = { Data = MakeOneCore() }
+                Weight = { Data = MakeOneCore() }
             };
 
             Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7, gpuEnable: true);

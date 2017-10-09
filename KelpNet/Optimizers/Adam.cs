@@ -1,6 +1,5 @@
 ﻿using System;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
 namespace KelpNet.Optimizers
@@ -21,9 +20,9 @@ namespace KelpNet.Optimizers
             this.Epsilon = epsilon;
         }
 
-        internal override void AddFunctionParameters(FunctionParameter[] functionParameters)
+        internal override void AddFunctionParameters(NdArray[] functionParameters)
         {
-            foreach (FunctionParameter functionParameter in functionParameters)
+            foreach (NdArray functionParameter in functionParameters)
             {
                 this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
             }
@@ -38,10 +37,10 @@ namespace KelpNet.Optimizers
         private readonly Real[] m;
         private readonly Real[] v;
 
-        public AdamParameter(FunctionParameter parameter, Adam optimizer) : base(parameter)
+        public AdamParameter(NdArray parameter, Adam optimizer) : base(parameter)
         {
-            this.m = new Real[parameter.Length];
-            this.v = new Real[parameter.Length];
+            this.m = new Real[parameter.Data.Length];
+            this.v = new Real[parameter.Data.Length];
 
             this._optimizer = optimizer;
         }
@@ -62,14 +61,14 @@ namespace KelpNet.Optimizers
 
             Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
-            for (int i = 0; i < this.FunctionParameter.Length; i++)
+            for (int i = 0; i < FunctionParameter.Data.Length; i++)
             {
-                Real grad = this.FunctionParameter.Grad.Data[i];
+                Real grad = this.FunctionParameter.Grad[i];
 
                 this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Param.Data[i] -= learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
             }
         }
     }
