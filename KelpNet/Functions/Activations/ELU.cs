@@ -5,7 +5,7 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class ELU : NeedPreviousDataFunction
+    public class ELU : NeedPreviousInputFunction
     {
         const string FUNCTION_NAME = "ELU";
 
@@ -38,13 +38,13 @@ namespace KelpNet.Functions.Activations
             return BatchArray.Convert(result, x.Shape, x.BatchCount);
         }
 
-        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
+        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput)
         {
             Real[] result = new Real[gy.Data.Length];
 
             for (int i = 0; i < gy.Data.Length; i++)
             {
-                if (prevOutput.Data[i] >= 0)
+                if (prevInput.Data[i] >= 0)
                 {
                     result[i] = gy.Data[i];
                 }

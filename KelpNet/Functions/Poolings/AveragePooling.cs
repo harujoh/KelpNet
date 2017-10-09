@@ -6,7 +6,7 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Poolings
 {
     [Serializable]
-    public class AveragePooling : NeedPreviousDataFunction
+    public class AveragePooling : NeedPreviousInputFunction
     {
         private int _kHeight;
         private int _kWidth;
@@ -90,7 +90,7 @@ namespace KelpNet.Functions.Poolings
             return BatchArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
         }
 
-        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput, BatchArray prevOutput)
+        protected BatchArray NeedPreviousBackwardCpu(BatchArray gy, BatchArray prevInput)
         {
             Real[] result = new Real[prevInput.Data.Length];
             Real m = this._kHeight * this._kWidth;
@@ -103,12 +103,12 @@ namespace KelpNet.Functions.Poolings
                 {
                     int resultIndexOffset = b * prevInput.Length + i * prevInput.Shape[1] * prevInput.Shape[2];
 
-                    for (int y = 0; y < prevOutput.Shape[1]; y++)
+                    for (int y = 0; y < gy.Shape[1]; y++)
                     {
                         int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
                         int dyLimit = this._kHeight + dyOffset < prevInput.Shape[1] ? this._kHeight + dyOffset : prevInput.Shape[1];
 
-                        for (int x = 0; x < prevOutput.Shape[2]; x++)
+                        for (int x = 0; x < gy.Shape[2]; x++)
                         {
                             int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
                             int dxLimit = this._kWidth + dxOffset < prevInput.Shape[2] ? this._kWidth + dxOffset : prevInput.Shape[2];
