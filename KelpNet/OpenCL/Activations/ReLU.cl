@@ -1,15 +1,9 @@
-﻿void ForwardActivate(__global Real* gpuY)
+﻿Real ForwardActivate(Real gpuY)
 {
-	if (*gpuY < 0.0)
-	{
-		*gpuY = 0.0;
-	}
+	return gpuY < 0.0 ? 0.0 : gpuY;
 }
 
-void BackwardActivate(Real gpuY, Real* gpugX)
+Real BackwardActivate(Real gpuY, Real gpugX)
 {
-	if (gpuY <= 0.0)
-	{
-		*gpugX = 0.0;
-	}
+	return gpuY <= 0.0 ? 0.0 : gpugX;
 }

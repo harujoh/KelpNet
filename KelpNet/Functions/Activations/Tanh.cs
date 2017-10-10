@@ -1,5 +1,4 @@
 ﻿using System;
-using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -14,14 +13,14 @@ namespace KelpNet.Functions.Activations
         {
         }
 
-        public override void ForwardActivate(ref Real x)
+        public override Real ForwardActivate(Real x)
         {
-            x = Math.Tanh(x);
+            return Math.Tanh(x);
         }
 
-        public override void BackwardActivate(ref Real gy, Real y)
+        public override Real BackwardActivate(Real gy, Real y)
         {
-            gy *= 1 - y * y;
+            return gy * (1 - y * y);
         }
     }
 }

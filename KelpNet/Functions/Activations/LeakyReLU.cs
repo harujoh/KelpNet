@@ -18,20 +18,14 @@ namespace KelpNet.Functions.Activations
             this._slope = slope;
         }
 
-        public override void ForwardActivate(ref Real x)
+        public override Real ForwardActivate(Real x)
         {
-            if (x < 0)
-            {
-                x *= this._slope;
-            }
+            return x < 0 ? (Real)(x * this._slope) : x;
         }
 
-        public override void BackwardActivate(ref Real gy, Real y)
+        public override Real BackwardActivate(Real gy, Real y)
         {
-            if (y <= 0)
-            {
-                gy = y * this._slope;
-            }
+            return y <= 0 ? (Real)(y * this._slope) : gy;
         }
     }
 }

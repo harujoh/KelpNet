@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cloo;
 
 namespace KelpNet.Common.Functions
@@ -20,8 +19,8 @@ namespace KelpNet.Common.Functions
         public string ActivateFunctionString;
 
         //.Netで使用するActivateの仮想関数
-        public abstract void ForwardActivate(ref Real x);
-        public abstract void BackwardActivate(ref Real gy, Real y);
+        public abstract Real ForwardActivate(Real x);
+        public abstract Real BackwardActivate(Real gy, Real y);
 
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
@@ -75,11 +74,11 @@ namespace KelpNet.Common.Functions
 
         protected NdArray NeedPreviousForwardCpu(NdArray x)
         {
-            Real[] y = x.Data.ToArray();
+            Real[] y = new Real[x.Data.Length];
 
             for (int i = 0; i < y.Length; i++)
             {
-                this.ForwardActivate(ref y[i]);
+                y[i] = this.ForwardActivate(x.Data[i]);
             }
 
             return NdArray.Convert(y, x.Shape, x.BatchCount);
@@ -87,11 +86,13 @@ namespace KelpNet.Common.Functions
 
         protected NdArray NeedPreviousForwardGpu(NdArray x)
         {
-            Real[] y = x.Data.ToArray();
+            Real[] y = new Real[x.Data.Length];
 
-            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
+            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
+            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, y.Length))
             {
-                this.ForwardKernel.SetMemoryArgument(0, gpuY);
+                this.ForwardKernel.SetMemoryArgument(0, gpuX);
+                this.ForwardKernel.SetMemoryArgument(1, gpuY);
 
                 Weaver.CommandQueue.Execute
                     (
@@ -111,11 +112,11 @@ namespace KelpNet.Common.Functions
 
         protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevOutput)
         {
-            Real[] gx = gy.Data.ToArray();
+            Real[] gx = new Real[gy.Data.Length];
 
             for (int i = 0; i < gx.Length; i++)
             {
-                this.BackwardActivate(ref gx[i], prevOutput.Data[i]);
+                gx[i] = this.BackwardActivate(gy.Data[i], prevOutput.Data[i]);
             }
 
             return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
@@ -123,13 +124,15 @@ namespace KelpNet.Common.Functions
 
         protected NdArray NeedPreviousBackwardGpu(NdArray gy, NdArray prevOutput)
         {
-            Real[] gx = gy.Data.ToArray();
+            Real[] gx = new Real[gy.Data.Length];
 
+            using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
             using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
-            using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, gx))
+            using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
             {
-                this.BackwardKernel.SetMemoryArgument(0, gpuY);
-                this.BackwardKernel.SetMemoryArgument(1, gpugX);
+                this.BackwardKernel.SetMemoryArgument(0, gpugY);
+                this.BackwardKernel.SetMemoryArgument(1, gpuY);
+                this.BackwardKernel.SetMemoryArgument(2, gpugX);
 
                 Weaver.CommandQueue.Execute
                     (

@@ -48,8 +48,12 @@
 	}
 
 	int index = batchCounter * OutputCount * outputHeight * outputWidth + och * outputHeight * outputWidth + get_global_id(1) * outputWidth + get_global_id(2);
-	gpuY[index] = localResult + gpub[och];
+
+	localResult += gpub[och];
+
 	/*ForwardActivate*/
+
+	gpuY[index] = localResult;
 }
 
 __kernel void Convolution2DgWBackward(

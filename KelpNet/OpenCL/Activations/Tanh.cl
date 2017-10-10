@@ -1,9 +1,9 @@
-﻿void ForwardActivate(__global Real* gpuY)
+﻿Real ForwardActivate(Real gpuY)
 {
-	*gpuY = tanh(*gpuY);
+	return tanh(gpuY);
 }
 
-void BackwardActivate(Real gpuY, Real* gpugX)
+Real BackwardActivate(Real gpuY, Real gpugX)
 {
-	*gpugX *= 1 - gpuY * gpuY;
+	return gpugX * (1 - gpuY * gpuY);
 }

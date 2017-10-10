@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Connections
     {
         const string FUNCTION_NAME = "Deconvolution2D";
         private const string PARAM_NAME = "/*ForwardActivate*/";
-        private const string PARAM_VALUE = "ForwardActivate(gpuY + outputIndex);";
+        private const string PARAM_VALUE = "result = ForwardActivate(result);";
 
         private readonly List<Real[]> _prevOutput = new List<Real[]>();
 
@@ -166,7 +166,7 @@ namespace KelpNet.Functions.Connections
                                 int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._trimY) * outputWidth + ox - this._trimX;
 
                                 result[outputIndex] += this.Bias.Data[och];
-                                this.Activation.ForwardActivate(ref result[outputIndex]);
+                                result[outputIndex] = this.Activation.ForwardActivate(result[outputIndex]);
                             }
                         }
                     }
@@ -202,7 +202,7 @@ namespace KelpNet.Functions.Connections
                             {
                                 int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._trimY) * outputWidth + ox - this._trimX;
 
-                                this.Activation.ForwardActivate(ref result[outputIndex]);
+                                result[outputIndex] = this.Activation.ForwardActivate(result[outputIndex]);
                             }
                         }
                     }
@@ -285,12 +285,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int olocation = 0; olocation < gy.Shape[1] * gy.Shape[2]; olocation++)
                     {
-                        Real gyData = gy.Data[gyIndex];
-
-                        this.Activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
-
-                        activatedgy[gyIndex] = gyData;
-
+                        activatedgy[gyIndex] = this.Activation.BackwardActivate(gy.Data[gyIndex], prevOutputData[gyIndex]);
                         gyIndex++;
                     }
                 }
@@ -356,7 +351,7 @@ namespace KelpNet.Functions.Connections
                                         int pInIndex = pinputOffset + iy * x.Shape[2] + ix;
                                         int gwIndex = inChOffset + (oy - iy * this._subSampleY) * this.Weight.Shape[3] + (ox - ix * this._subSampleX);
 
-                                        this.Weight.Data[gwIndex] += x.Data[pInIndex] * gyData;
+                                        this.Weight.Grad[gwIndex] += x.Data[pInIndex] * gyData;
                                         gx[pInIndex] += this.Weight.Data[gwIndex] * gyData;
                                     }
                                 }

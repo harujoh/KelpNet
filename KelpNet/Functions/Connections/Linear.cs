@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Connections
         const string FUNCTION_NAME = "Linear";
 
         private const string PARAM_NAME = "/*ForwardActivate*/";
-        private const string PARAM_VALUE = "ForwardActivate(gpuY);";
+        private const string PARAM_VALUE = "gpuYSum = ForwardActivate(gpuYSum);";
 
         private readonly List<NdArray> _prevOutput = new List<NdArray>();
 
@@ -90,7 +90,7 @@ namespace KelpNet.Functions.Connections
             {
                 for (int i = 0; i < y.Length; i++)
                 {
-                    this.Activation.ForwardActivate(ref y[i]);
+                    y[i] = this.Activation.ForwardActivate(y[i]);
                 }
             }
 
@@ -150,10 +150,8 @@ namespace KelpNet.Functions.Connections
             {
                 for (int i = 0; i < this.OutputCount; i++)
                 {
-                    Real gyData = gy.Data[i + batchCount * this.OutputCount];
-
-                    this.Activation.BackwardActivate(ref gyData, prevOutputData[i + batchCount * this.OutputCount]);
-                    activatedgY[i + batchCount * this.OutputCount] = gyData;
+                    int index = batchCount * this.OutputCount + i;
+                    activatedgY[index] = this.Activation.BackwardActivate(gy.Data[index], prevOutputData[index]);
                 }
             }
 

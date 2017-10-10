@@ -14,20 +14,14 @@ namespace KelpNet.Functions.Activations
         {
         }
 
-        public override void ForwardActivate(ref Real x)
+        public override Real ForwardActivate(Real x)
         {
-            if (x < 0)
-            {
-                x = 0;
-            }
+            return x < 0 ? 0 : x;
         }
 
-        public override void BackwardActivate(ref Real gy, Real y)
+        public override Real BackwardActivate(Real gy, Real y)
         {
-            if (y <= 0)
-            {
-                gy = 0;
-            }
+            return y <= 0 ? 0 : gy;
         }
     }
 }

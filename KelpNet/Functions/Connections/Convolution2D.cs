@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Connections
     {
         const string FUNCTION_NAME = "Convolution2D";
         private const string PARAM_NAME = "/*ForwardActivate*/";
-        private const string PARAM_VALUE = "ForwardActivate(gpuY + index);";
+        private const string PARAM_VALUE = "localResult = ForwardActivate(localResult);";
 
         private readonly List<Real[]> _prevOutput = new List<Real[]>();
 
@@ -182,7 +182,7 @@ namespace KelpNet.Functions.Connections
                         for (int location = 0; location < outputHeight * outputWidth; location++)
                         {
                             result[resultIndex] += this.Bias.Data[och];
-                            this.Activation.ForwardActivate(ref result[resultIndex]);
+                            result[resultIndex] = this.Activation.ForwardActivate(result[resultIndex]);
 
                             resultIndex++;
                         }
@@ -215,7 +215,7 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int location = 0; location < outputHeight * outputWidth; location++)
                         {
-                            this.Activation.ForwardActivate(ref result[resultIndex]);
+                            result[resultIndex] = this.Activation.ForwardActivate(result[resultIndex]);
                             resultIndex++;
                         }
                     }
@@ -297,12 +297,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int olocation = 0; olocation < gy.Shape[1] * gy.Shape[2]; olocation++)
                     {
-                        Real gyData = gy.Data[gyIndex];
-
-                        this.Activation.BackwardActivate(ref gyData, prevOutputData[gyIndex]);
-
-                        activatedgy[gyIndex] = gyData;
-
+                        activatedgy[gyIndex] = this.Activation.BackwardActivate(gy.Data[gyIndex], prevOutputData[gyIndex]);
                         gyIndex++;
                     }
                 }

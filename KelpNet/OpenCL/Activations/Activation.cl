@@ -1,17 +1,18 @@
-﻿__kernel void /*kernelNameBase*/Forward(__global Real *gpuY)
+﻿__kernel void /*kernelNameBase*/Forward(
+    const __global read_only Real *gpuX,
+	__global write_only Real *gpuY)
 {
 	int i = get_global_id(0);
 
-    ForwardActivate(gpuY + i);
+    gpuY[i] = ForwardActivate(gpuX[i]);
 }
 
-__kernel void /*kernelNameBase*/Backward(__global read_only Real *gpuY,
-           __global Real *gpugX)
+__kernel void /*kernelNameBase*/Backward(
+    const __global read_only Real *gpugY,
+    const __global read_only Real *gpuY,
+    __global write_only Real *gpugX)
 {
 	int i = get_global_id(0);
-
-    Real gpugY = gpugX[i];
-    BackwardActivate(gpuY[i], &gpugY);
     
-    gpugX[i] = gpugY;
+    gpugX[i] = BackwardActivate(gpuY[i], gpugY[i]);
 }
