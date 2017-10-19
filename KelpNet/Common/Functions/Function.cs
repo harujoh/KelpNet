@@ -20,23 +20,7 @@ namespace KelpNet.Common.Functions
         public List<NdArray[]> PrevInputs = new List<NdArray[]>();
 
         public abstract NdArray Forward(params NdArray[] xs);
-        public abstract void Backward(NdArray y, params NdArray[] xs);
-
-        internal void Backward(NdArray y)
-        {
-            if (y.UseCount == 0 && y.ParentFunc != null)
-            {
-                List<NdArray[]> prevInputs = y.ParentFunc.PrevInputs;
-                NdArray[] xs = prevInputs[prevInputs.Count - 1];
-
-                y.ParentFunc.Backward(y, xs);
-
-                for (int i = 0; i < xs.Length; i++)
-                {
-                    Backward(xs[i]);
-                }
-            }
-        }
+        public abstract void Backward(NdArray y);
 
         //コンストラクタ
         protected Function(string name)

@@ -394,6 +394,13 @@ namespace CaffemodelLoader
 
             public override NdArray Forward(params NdArray[] xs)
             {
+                PrevInputs.Add(xs);
+
+                foreach (NdArray x in xs)
+                {
+                    x.UseCount++;
+                }
+
                 Real[] result = new Real[xs[0].Data.Length];
                 Array.Copy(xs[0].Data, result, result.Length);
 
@@ -441,8 +448,16 @@ namespace CaffemodelLoader
                 return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount);
             }
 
-            public override void Backward(NdArray y, params NdArray[] xs)
+            public override void Backward(NdArray y)
             {
+                NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
+                PrevInputs.RemoveAt(PrevInputs.Count - 1);
+
+                foreach (NdArray x in xs)
+                {
+                    x.UseCount--;
+                }
+
                 Real[][] result = new Real[xs.Length][];
                 for (int i = 0; i < result.Length; i++)
                 {

@@ -156,7 +156,23 @@ namespace KelpNet.Common
                     Grad[i] = 1;
                 }
 
-                this.ParentFunc.Backward(this);
+                Backward(this);
+            }
+        }
+
+        private void Backward(NdArray y)
+        {
+            if (y.UseCount == 0 && y.ParentFunc != null)
+            {
+                y.ParentFunc.Backward(y);
+
+                List<NdArray[]> prevInputs = y.ParentFunc.PrevInputs;
+                NdArray[] xs = prevInputs[prevInputs.Count - 1];
+
+                for (int i = 0; i < xs.Length; i++)
+                {
+                    Backward(xs[i]);
+                }
             }
         }
 

@@ -20,7 +20,6 @@ namespace KelpNetTester.Benchmarker
             NdArray inputArrayCpu = new NdArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
             NdArray inputArrayGpu = new NdArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
 
-
             //Linear
             Linear linear = new Linear(INPUT_SIZE, OUTPUT_SIZE);
             Console.WriteLine("◆" + linear.Name);
@@ -277,20 +276,16 @@ namespace KelpNetTester.Benchmarker
                 Console.WriteLine("Backward[Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
             }
 
-
-            //DropOutは出力のサイズが入力と同じでなければならない
-            gradArrayCpu = new NdArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
-
             //Dropout
             Dropout dropout = new Dropout();
             Console.WriteLine("\n◆" + dropout.Name);
 
             sw.Restart();
-            dropout.Forward(inputArrayCpu);
+            gradArrayCpu = dropout.Forward(inputArrayCpu);
             sw.Stop();
             Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            inputArrayCpu.Grad = inputArrayCpu.Data;
+            gradArrayCpu.Grad = gradArrayCpu.Data;
 
             sw.Restart();
             gradArrayCpu.Backward();
@@ -299,10 +294,8 @@ namespace KelpNetTester.Benchmarker
 
             if (dropout.SetGpuEnable(true))
             {
-                NdArray gradArrayGpu = new NdArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
-
                 sw.Restart();
-                dropout.Forward(inputArrayGpu);
+                NdArray gradArrayGpu = dropout.Forward(inputArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 

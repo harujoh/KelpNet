@@ -39,7 +39,7 @@ namespace KelpNet.Functions.Arrays
             return new NdArray(resultNdArrays, this);
         }
 
-        public override void Backward(NdArray gy, params NdArray[] xs)
+        public override void Backward(NdArray gy)
         {
             int[][] prevInputShapes = this._prevInputShapes[this._prevInputShapes.Count - 1];
             this._prevInputShapes.RemoveAt(this._prevInputShapes.Count - 1);

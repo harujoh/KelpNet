@@ -68,9 +68,20 @@ namespace KelpNet.Common.Functions
             return result;
         }
 
-        public override void Backward(NdArray y, params NdArray[] xs)
+        public override void Backward(NdArray y)
         {
-            Backward(y);
+            if (y.UseCount == 0 && y.ParentFunc != null)
+            {
+                y.ParentFunc.Backward(y);
+
+                List<NdArray[]> prevInputs = y.ParentFunc.PrevInputs;
+                NdArray[] xs = prevInputs[prevInputs.Count - 1];
+
+                for (int i = 0; i < xs.Length; i++)
+                {
+                    Backward(xs[i]);
+                }
+            }
         }
 
         //重みの更新処理

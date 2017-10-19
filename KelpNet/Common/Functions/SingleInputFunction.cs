@@ -20,9 +20,11 @@ namespace KelpNet.Common.Functions
             return SingleInputForward(xs[0]);
         }
 
-        public override void Backward(NdArray y, params NdArray[] xs)
+        public override void Backward(NdArray y)
         {
+            NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);
+
 #if DEBUG
             if (xs == null || xs.Length != 1) throw new Exception("引数が正しくありません");
 #endif

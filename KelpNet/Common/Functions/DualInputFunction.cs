@@ -22,8 +22,9 @@ namespace KelpNet.Common.Functions
             return DualInputForward(xs[0], xs[1]);
         }
 
-        public override void Backward(NdArray y, params NdArray[] xs)
+        public override void Backward(NdArray y)
         {
+            NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);
 
 #if DEBUG

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -166,10 +165,10 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                this.lateral0.Backward(this.gxPrev0, gh);
-                this.lateral1.Backward(this.gxPrev1, gh);
-                this.lateral2.Backward(this.gxPrev2, gh);
-                this.lateral3.Backward(this.gxPrev3, gh);
+                this.lateral0.Backward(this.gxPrev0);
+                this.lateral1.Backward(this.gxPrev1);
+                this.lateral2.Backward(this.gxPrev2);
+                this.lateral3.Backward(this.gxPrev3);
             }
 
             Real[] lcParam = this.cParam[this.cParam.Count - 1];
@@ -228,10 +227,10 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            this.upward0.Backward(this.gxPrev0, x);
-            this.upward1.Backward(this.gxPrev1, x);
-            this.upward2.Backward(this.gxPrev2, x);
-            this.upward3.Backward(this.gxPrev3, x);
+            this.upward0.Backward(this.gxPrev0);
+            this.upward1.Backward(this.gxPrev1);
+            this.upward2.Backward(this.gxPrev2);
+            this.upward3.Backward(this.gxPrev3);
         }
 
         public override void ResetState()
