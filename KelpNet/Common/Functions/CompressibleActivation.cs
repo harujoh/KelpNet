@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Cloo;
 
 namespace KelpNet.Common.Functions
 {
     [Serializable]
-    public abstract class CompressibleActivation : NeedPreviousOutputFunction, IParallelizable
+    public abstract class CompressibleActivation : SingleInputFunction, IParallelizable
     {
         const string FUNCTION_NAME = "Activation";
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardKernel;
 
         //GPU向けのActivate関数の文字列
@@ -51,13 +54,13 @@ namespace KelpNet.Common.Functions
             if (this.GpuEnable)
             {
                 CreateKernel();
-                NeedPreviousForward = NeedPreviousForwardGpu;
-                NeedPreviousBackward = NeedPreviousBackwardGpu;
+                SingleInputForward = NeedPreviousForwardGpu;
+                SingleOutputBackward = NeedPreviousBackwardGpu;
             }
             else
             {
-                NeedPreviousForward = NeedPreviousForwardCpu;
-                NeedPreviousBackward = NeedPreviousBackwardCpu;
+                SingleInputForward = NeedPreviousForwardCpu;
+                SingleOutputBackward = NeedPreviousBackwardCpu;
             }
 
             return GpuEnable;
@@ -81,7 +84,7 @@ namespace KelpNet.Common.Functions
                 y[i] = this.ForwardActivate(x.Data[i]);
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
         protected NdArray NeedPreviousForwardGpu(NdArray x)
@@ -107,27 +110,23 @@ namespace KelpNet.Common.Functions
                 Weaver.CommandQueue.ReadFromBuffer(gpuY, ref y, true, null);
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevOutput)
+        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] gx = new Real[gy.Data.Length];
-
-            for (int i = 0; i < gx.Length; i++)
+            for (int i = 0; i < x.Grad.Length; i++)
             {
-                gx[i] = this.BackwardActivate(gy.Data[i], prevOutput.Data[i]);
+                x.Grad[i] += this.BackwardActivate(y.Grad[i], y.Data[i]);
             }
-
-            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
 
-        protected NdArray NeedPreviousBackwardGpu(NdArray gy, NdArray prevOutput)
+        protected void NeedPreviousBackwardGpu(NdArray y, NdArray x)
         {
-            Real[] gx = new Real[gy.Data.Length];
+            Real[] gx = new Real[y.Grad.Length];
 
-            using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, gy.Data))
-            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, prevOutput.Data))
+            using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, y.Grad))
+            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, y.Data))
             using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
             {
                 this.BackwardKernel.SetMemoryArgument(0, gpugY);
@@ -138,7 +137,7 @@ namespace KelpNet.Common.Functions
                     (
                         this.BackwardKernel,
                         null,
-                        new long[] { gy.Data.Length },
+                        new long[] { y.Grad.Length },
                         null,
                         null
                     );
@@ -147,7 +146,10 @@ namespace KelpNet.Common.Functions
                 Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
             }
 
-            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
+            for (int i = 0; i < x.Grad.Length; i++)
+            {
+                x.Grad[i] += gx[i];
+            }
         }
     }
 }

@@ -163,16 +163,18 @@ namespace KelpNetTester.Tests
                     NdArray cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
                     //第二層を更新
-                    NdArray layer2BackwardResult = Layer2.Backward(cDNI2Result);
-                    Layer2.Update();
+                    Layer2.Backward(cDNI2Result);
 
 
                     //第一層用のcDNIの学習を実行
                     Real cDNI1loss = 0;
-                    NdArray DNI1lossResult = new MeanSquaredError().Evaluate(cDNI1Result, layer2BackwardResult, out cDNI1loss);
+                    NdArray DNI1lossResult = new MeanSquaredError().Evaluate(cDNI1Result, new NdArray(layer1ResultDataSet.Result.Grad), out cDNI1loss);
+
+                    Layer2.Update();
 
                     cDNI1.Backward(DNI1lossResult);
                     cDNI1.Update();
+
                     cDNI1totalLoss+=cDNI1loss;
                     cDNI1totalLossCount++;
 
@@ -184,16 +186,18 @@ namespace KelpNetTester.Tests
                     NdArray cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
 
                     //第三層を更新
-                    NdArray layer3BackwardResult = Layer3.Backward(cDNI3Result);
-                    Layer3.Update();
+                    Layer3.Backward(cDNI3Result);                    
 
 
                     //第二層用のcDNIの学習を実行
                     Real cDNI2loss = 0;
-                    NdArray DNI2lossResult = new MeanSquaredError().Evaluate(cDNI2Result, layer3BackwardResult, out cDNI2loss);
+                    NdArray DNI2lossResult = new MeanSquaredError().Evaluate(cDNI2Result, new NdArray(layer2ResultDataSet.Result.Grad), out cDNI2loss);
+
+                    Layer3.Update();
 
                     cDNI2.Backward(DNI2lossResult);
                     cDNI2.Update();
+
                     cDNI2totalLoss=cDNI2loss;
                     cDNI2totalLossCount++;
 
@@ -205,17 +209,19 @@ namespace KelpNetTester.Tests
                     NdArray lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, layer3ResultDataSet.Label, out sumLoss);
 
                     //第四層を更新
-                    NdArray layer4BackwardResult = Layer4.Backward(lossResult);
-                    Layer4.Update();
+                    Layer4.Backward(lossResult);
                     totalLoss=sumLoss;
                     totalLossCount++;
 
                     //第三層用のcDNIの学習を実行
                     Real cDNI3loss = 0;
-                    NdArray DNI3lossResult = new MeanSquaredError().Evaluate(cDNI3Result, layer4BackwardResult, out cDNI3loss);
+                    NdArray DNI3lossResult = new MeanSquaredError().Evaluate(cDNI3Result, new NdArray(layer3ResultDataSet.Result.Grad), out cDNI3loss);
+
+                    Layer4.Update();
 
                     cDNI3.Backward(DNI3lossResult);
                     cDNI3.Update();
+
                     cDNI3totalLoss=cDNI3loss;
                     cDNI3totalLossCount++;
 

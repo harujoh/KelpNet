@@ -29,7 +29,8 @@ namespace KelpNet.Loss
 
             loss = sumLoss / input.BatchCount;
 
-            return NdArray.Convert(result, teachSignal.Shape, teachSignal.BatchCount);
+            input.Grad = result;
+            return input;
         }
     }
 }

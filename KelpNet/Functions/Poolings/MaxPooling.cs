@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
@@ -9,7 +9,7 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Poolings
 {
     [Serializable]
-    public class MaxPooling : Function, IParallelizable
+    public class MaxPooling : SingleInputFunction, IParallelizable
     {
         const string FUNCTION_NAME = "MaxPooling";
 
@@ -21,11 +21,9 @@ namespace KelpNet.Functions.Poolings
         private int _strideY;
 
         private readonly List<int[]> _outputIndicesList = new List<int[]>();
-        private int[] _prevInputShape;
-        private int _prevInputDataLength;
-        private int _prevInputBatchCount;
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
         public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name)
@@ -39,7 +37,7 @@ namespace KelpNet.Functions.Poolings
 
             this.SetGpuEnable(gpuEnable);
 
-            Backward = BackwardCpu;
+            SingleOutputBackward = BackwardCpu;
         }
 
         public bool SetGpuEnable(bool enable)
@@ -49,11 +47,11 @@ namespace KelpNet.Functions.Poolings
             if (GpuEnable)
             {
                 CreateKernel();
-                Forward = ForwardGpu;
+                SingleInputForward = ForwardGpu;
             }
             else
             {
-                Forward = ForwardCpu;
+                SingleInputForward = ForwardCpu;
             }
 
             return GpuEnable;
@@ -77,14 +75,14 @@ namespace KelpNet.Functions.Poolings
             if (this.SetGpuEnable(gpuEnable))
             {
                 CreateKernel();
-                Forward = ForwardGpu;
+                SingleInputForward = ForwardGpu;
             }
             else
             {
-                Forward = ForwardCpu;
+                SingleInputForward = ForwardCpu;
             }
 
-            Backward = BackwardCpu;
+            SingleOutputBackward = BackwardCpu;
         }
 
         public void CreateKernel()
@@ -97,9 +95,6 @@ namespace KelpNet.Functions.Poolings
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
-            this._prevInputShape = input.Shape.ToArray();
-            this._prevInputDataLength = input.Data.Length;
-            this._prevInputBatchCount = input.BatchCount;
 
             for (int b = 0; b < input.BatchCount; b++)
             {
@@ -151,9 +146,6 @@ namespace KelpNet.Functions.Poolings
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
-            this._prevInputShape = input.Shape.ToArray();
-            this._prevInputDataLength = input.Data.Length;
-            this._prevInputBatchCount = input.BatchCount;
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
             using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, outputIndices.Length))
@@ -199,23 +191,18 @@ namespace KelpNet.Functions.Poolings
 
             this._outputIndicesList.Add(outputIndices);
 
-            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
+            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-
-        public NdArray BackwardCpu(NdArray gy)
+        public void BackwardCpu(NdArray y, NdArray x)
         {
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);
 
-            Real[] result = new Real[this._prevInputDataLength];
-
-            for (int i = 0; i < gy.Data.Length; i++)
+            for (int i = 0; i < y.Grad.Length; i++)
             {
-                result[outputIndices[i]] = gy.Data[i];
+                x.Grad[outputIndices[i]] += y.Grad[i];
             }
-
-            return NdArray.Convert(result, this._prevInputShape, this._prevInputBatchCount);
         }
     }
 }

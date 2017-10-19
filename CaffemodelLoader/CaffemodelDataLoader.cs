@@ -381,7 +381,6 @@ namespace CaffemodelLoader
         {
             private const string FUNCTION_NAME = "Eltwise";
 
-            List<NdArray[]> PrevInput = new List<NdArray[]>();
             List<int[]> PrevOutputIndex = new List<int[]>();
 
             private EltwiseParameter.EltwiseOp _operation;
@@ -393,10 +392,8 @@ namespace CaffemodelLoader
                 this._coeffs = coeffs;
             }
 
-            public NdArray ForwardCPU(params NdArray[] xs)
+            public override NdArray Forward(params NdArray[] xs)
             {
-                PrevInput.Add(xs);
-
                 Real[] result = new Real[xs[0].Data.Length];
                 Array.Copy(xs[0].Data, result, result.Length);
 
@@ -444,15 +441,12 @@ namespace CaffemodelLoader
                 return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount);
             }
 
-            public NdArray[] BackwardCPU(NdArray gy)
+            public override void Backward(NdArray y, params NdArray[] xs)
             {
-                var prevInput = PrevInput[PrevInput.Count - 1];
-                PrevInput.RemoveAt(PrevInput.Count - 1);
-
-                Real[][] result = new Real[prevInput.Length][];
+                Real[][] result = new Real[xs.Length][];
                 for (int i = 0; i < result.Length; i++)
                 {
-                    result[i] = new Real[prevInput[i].Length];
+                    result[i] = new Real[xs[i].Length];
                 }
 
                 switch (_operation)
@@ -460,14 +454,14 @@ namespace CaffemodelLoader
                     case EltwiseParameter.EltwiseOp.Prod:
                         for (int i = 0; i < result.Length; i++)
                         {
-                            Array.Copy(gy.Data, result[i], gy.Data.Length);
-                            for (int j = 0; j < prevInput.Length; j++)
+                            Array.Copy(y.Grad, result[i], y.Grad.Length);
+                            for (int j = 0; j < xs.Length; j++)
                             {
                                 if (i != j)
                                 {
                                     for (int k = 0; k < result[i].Length; k++)
                                     {
-                                        result[i][k] *= prevInput[j].Data[k];
+                                        result[i][k] *= xs[j].Data[k];
                                     }
                                 }
                             }
@@ -477,7 +471,7 @@ namespace CaffemodelLoader
                     case EltwiseParameter.EltwiseOp.Sum:
                         for (int i = 0; i < result.Length; i++)
                         {
-                            Array.Copy(gy.Data, result[i], result[i].Length);
+                            Array.Copy(y.Grad, result[i], result[i].Length);
                         }
                         break;
 
@@ -487,19 +481,18 @@ namespace CaffemodelLoader
 
                         for (int i = 0; i < prevOutputIndex.Length; i++)
                         {
-                            result[prevOutputIndex[i]][i] = gy.Data[i];
+                            result[prevOutputIndex[i]][i] = y.Grad[i];
                         }
                         break;
                 }
 
-                NdArray[] resultArrays = new NdArray[prevInput.Length];
-
-                for (int i = 0; i < prevInput.Length; i++)
+                for (int i = 0; i < xs.Length; i++)
                 {
-                    resultArrays[i] = NdArray.Convert(result[i], prevInput[0].Shape, prevInput[0].BatchCount);
+                    for (int j = 0; j < xs[i].Grad.Length; j++)
+                    {
+                        xs[i].Grad[j] += result[i][j];
+                    }
                 }
-
-                return resultArrays;
             }
         }
     }

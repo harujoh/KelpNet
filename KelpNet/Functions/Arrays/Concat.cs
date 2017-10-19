@@ -16,7 +16,7 @@ namespace KelpNet.Functions.Arrays
             this._axis = axis;
         }
 
-        public NdArray ForwardCpu(params NdArray[] xs)
+        public override NdArray Forward(params NdArray[] xs)
         {
             List<int[]> shapes = new List<int[]>();
             shapes.Add(xs[0].Shape);
@@ -36,15 +36,15 @@ namespace KelpNet.Functions.Arrays
 
             _prevInputShapes.Add(shapes.ToArray());
 
-            return new NdArray(resultNdArrays);
+            return new NdArray(resultNdArrays, this);
         }
 
-        public NdArray[] BackwardCpu(NdArray gy)
+        public override void Backward(NdArray gy, params NdArray[] xs)
         {
             int[][] prevInputShapes = this._prevInputShapes[this._prevInputShapes.Count - 1];
             this._prevInputShapes.RemoveAt(this._prevInputShapes.Count - 1);
 
-            return new[] { gy };
+            //return new[] { gy };
         }
     }
 }

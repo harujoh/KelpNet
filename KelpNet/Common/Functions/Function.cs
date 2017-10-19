@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using KelpNet.Common.Optimizers;
 using KelpNet.Common.Tools;
 
@@ -10,13 +11,32 @@ namespace KelpNet.Common.Functions
     {
         public string Name;
 
-        public bool GpuEnable{get; protected set;}
+        public bool GpuEnable { get; protected set; }
 
         public NdArray[] Parameters = { };
-        public Optimizer[] Optimizers;
+        public Optimizer[] Optimizers = { };
 
-        public Func<NdArray, NdArray> Forward;
-        public Func<NdArray, NdArray> Backward;
+        [NonSerialized]
+        public List<NdArray[]> PrevInputs = new List<NdArray[]>();
+
+        public abstract NdArray Forward(params NdArray[] xs);
+        public abstract void Backward(NdArray y, params NdArray[] xs);
+
+        internal void Backward(NdArray y)
+        {
+            if (y.UseCount == 0 && y.ParentFunc != null)
+            {
+                List<NdArray[]> prevInputs = y.ParentFunc.PrevInputs;
+                NdArray[] xs = prevInputs[prevInputs.Count - 1];
+
+                y.ParentFunc.Backward(y, xs);
+
+                for (int i = 0; i < xs.Length; i++)
+                {
+                    Backward(xs[i]);
+                }
+            }
+        }
 
         //コンストラクタ
         protected Function(string name)
@@ -44,7 +64,7 @@ namespace KelpNet.Common.Functions
         }
 
         //評価関数
-        public virtual NdArray Predict(NdArray input)
+        public virtual NdArray Predict(params NdArray[] input)
         {
             return this.Forward(input);
         }

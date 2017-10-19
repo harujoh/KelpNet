@@ -7,7 +7,7 @@ namespace KelpNet.Functions.Normalization
 {
     //Chainerより移植　finetuningは未実装
     [Serializable]
-    public class BatchNormalization : Function
+    public class BatchNormalization : SingleInputFunction
     {
         private bool IsTrain;
 
@@ -39,8 +39,11 @@ namespace KelpNet.Functions.Normalization
             this.IsTrain = isTrain;
 
             this.Gamma = new NdArray(channelSize);
-            this.Gamma.Data = Enumerable.Repeat((Real)1,channelSize).ToArray();
+            this.Gamma.Data = Enumerable.Repeat((Real)1, channelSize).ToArray();
+            this.Gamma.Name = this.Name + " Gamma";
+
             this.Beta = new NdArray(channelSize);
+            this.Beta.Name = this.Name + " Beta";
 
             this.Parameters = new NdArray[this.IsTrain ? 2 : 4];
 
@@ -49,7 +52,9 @@ namespace KelpNet.Functions.Normalization
             this.Parameters[1] = this.Beta;
 
             this.AvgMean = new NdArray(channelSize);
+            this.AvgMean.Name = this.Name + " Mean";
             this.AvgVar = new NdArray(channelSize);
+            this.AvgVar.Name = this.Name + " Variance";
 
             if (initialAvgMean != null)
             {
@@ -67,8 +72,8 @@ namespace KelpNet.Functions.Normalization
                 this.Parameters[3] = this.AvgVar;
             }
 
-            Forward = ForwardCpu;
-            Backward = BackwardCpu;
+            SingleInputForward = ForwardCpu;
+            SingleOutputBackward = BackwardCpu;
         }
 
         public NdArray ForwardCpu(NdArray x)
@@ -152,41 +157,37 @@ namespace KelpNet.Functions.Normalization
                 }
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        public NdArray BackwardCpu(NdArray gy)
+        public void BackwardCpu(NdArray y, NdArray x)
         {
-            BackwardCountUp();
-
-            Real[] gx = new Real[gy.BatchCount * this.ChannelSize];
-
             this.Beta.ClearGrad();
             this.Gamma.ClearGrad();
 
             for (int i = 0; i < this.ChannelSize; i++)
             {
-                for (int j = 0; j < gy.BatchCount; j++)
+                for (int j = 0; j < y.BatchCount; j++)
                 {
-                    this.Beta.Grad[i] += gy.Data[i + j * gy.Length];
-                    this.Gamma.Grad[i] += gy.Data[i + j * gy.Length] * this.Xhat[j * this.ChannelSize + i];
+                    this.Beta.Grad[i] += y.Grad[i + j * y.Length];
+                    this.Gamma.Grad[i] += y.Grad[i + j * y.Length] * this.Xhat[j * this.ChannelSize + i];
                 }
             }
 
             if (this.IsTrain)
             {
                 // 学習あり
-                int m = gy.BatchCount;
+                int m = y.BatchCount;
 
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
 
-                    for (int j = 0; j < gy.BatchCount; j++)
+                    for (int j = 0; j < y.BatchCount; j++)
                     {
                         Real val = (this.Xhat[j * this.ChannelSize + i] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / m;
 
-                        gx[i + j * this.ChannelSize] = gs * (gy.Data[i + j * gy.Length] - val);
+                        x.Grad[i + j * this.ChannelSize] += gs * (y.Grad[i + j * y.Length] - val);
                     }
                 }
             }
@@ -199,14 +200,12 @@ namespace KelpNet.Functions.Normalization
                     this.AvgMean.Grad[i] = -gs * this.Beta.Grad[i];
                     this.AvgVar.Grad[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.Gamma.Grad[i];
 
-                    for (int j = 0; j < gy.BatchCount; j++)
+                    for (int j = 0; j < y.BatchCount; j++)
                     {
-                        gx[i + j * this.ChannelSize] = gs * gy.Data[i + j * gy.Length];
+                        x.Grad[i + j * this.ChannelSize] += gs * y.Grad[i + j * y.Length];
                     }
                 }
             }
-
-            return NdArray.Convert(gx, new[] { this.ChannelSize }, gy.BatchCount);
         }
 
         public override NdArray Predict(NdArray input)

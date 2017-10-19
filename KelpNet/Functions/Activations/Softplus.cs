@@ -4,7 +4,7 @@ using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Activations
 {
-    public class Softplus : NeedPreviousOutputFunction
+    public class Softplus : SingleInputFunction
     {
         const string FUNCTION_NAME = "Softplus";
 
@@ -16,8 +16,8 @@ namespace KelpNet.Functions.Activations
             this._beta = beta;
             this._betaInv = 1 / this._beta;
 
-            NeedPreviousForward = NeedPreviousForwardCpu;
-            NeedPreviousBackward = NeedPreviousBackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         protected NdArray NeedPreviousForwardCpu(NdArray x)
@@ -47,19 +47,16 @@ namespace KelpNet.Functions.Activations
 
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevOutput)
+        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] gx = new Real[gy.Data.Length];
-
-            for (int i = 0; i < gx.Length; i++)
+            for (int i = 0; i < x.Grad.Length; i++)
             {
-                gx[i] = (1 - 1 / (1 + Math.Exp(this._beta * prevOutput.Data[i]))) * gy.Data[i];
+                x.Grad[i] += (1 - 1 / (1 + Math.Exp(this._beta * y.Data[i]))) * y.Grad[i];
             }
 
-            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
         }
     }
 }

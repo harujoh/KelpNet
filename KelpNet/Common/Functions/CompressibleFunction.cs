@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Cloo;
 
 namespace KelpNet.Common.Functions
 {
     [Serializable]
-    public abstract class CompressibleFunction : NeedPreviousInputFunction, IParallelizable
+    public abstract class CompressibleFunction : SingleInputFunction, IParallelizable
     {
         public CompressibleActivation Activation { get; protected set; }
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgWKernel;
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgXKernel;
 
         public string ForwardKernelName { get; }
@@ -28,8 +32,8 @@ namespace KelpNet.Common.Functions
 
         protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
         protected abstract NdArray NeedPreviousForwardGpu(NdArray input);
-        protected abstract NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray x);
-        protected abstract NdArray NeedPreviousBackwardGpu(NdArray gy, NdArray x);
+        protected abstract void NeedPreviousBackwardCpu(NdArray y, NdArray x);
+        protected abstract void NeedPreviousBackwardGpu(NdArray y, NdArray x);
 
         protected CompressibleFunction(string name, bool gpuEnable, string functionName, CompressibleActivation activation = null, params KeyValuePair<string, string>[] activationParameters) : base(name)
         {
@@ -54,13 +58,13 @@ namespace KelpNet.Common.Functions
             if (GpuEnable)
             {
                 CreateKernel();
-                NeedPreviousForward = NeedPreviousForwardGpu;
-                NeedPreviousBackward = NeedPreviousBackwardGpu;
+                SingleInputForward = NeedPreviousForwardGpu;
+                SingleOutputBackward = NeedPreviousBackwardGpu;
             }
             else
             {
-                NeedPreviousForward = NeedPreviousForwardCpu;
-                NeedPreviousBackward = NeedPreviousBackwardCpu;
+                SingleInputForward = NeedPreviousForwardCpu;
+                SingleOutputBackward = NeedPreviousBackwardCpu;
             }
 
             return GpuEnable;

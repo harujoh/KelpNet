@@ -59,8 +59,8 @@ namespace KelpNet.Loss
             }
 
             loss = localloss / input.BatchCount;
-
-            return NdArray.Convert(gx, input.Shape, input.BatchCount);
+            input.Grad = gx;
+            return input;
         }
     }
 }

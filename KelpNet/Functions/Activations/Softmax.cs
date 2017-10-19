@@ -5,12 +5,12 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class Softmax : NeedPreviousOutputFunction
+    public class Softmax : SingleInputFunction
     {
         public Softmax(string name = "Softmax") : base(name)
         {
-            NeedPreviousForward = NeedPreviousForwardCpu;
-            NeedPreviousBackward = NeedPreviousBackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         protected NdArray NeedPreviousForwardCpu(NdArray x)
@@ -43,30 +43,33 @@ namespace KelpNet.Functions.Activations
                 }
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount);
+            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevOutput)
+        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] gx = new Real[gy.Data.Length];
+            Real[] gx = new Real[y.Grad.Length];
 
-            for (int b = 0; b < gy.BatchCount; b++)
+            for (int b = 0; b < y.BatchCount; b++)
             {
                 Real sumdx = 0;
 
-                for (int i = 0; i < gy.Length; i++)
+                for (int i = 0; i < y.Length; i++)
                 {
-                    gx[i + b * gy.Length] = prevOutput.Data[i + b * prevOutput.Length] * gy.Data[i + b * gy.Length];
-                    sumdx += gx[i + b * gy.Length];
+                    gx[i + b * y.Length] = y.Data[i + b * y.Length] * y.Data[i + b * y.Length];
+                    sumdx += gx[i + b * y.Length];
                 }
 
-                for (int i = 0; i < gy.Length; i++)
+                for (int i = 0; i < y.Length; i++)
                 {
-                    gx[i + b * gy.Length] -= prevOutput.Data[i + b * prevOutput.Length] * sumdx;
+                    gx[i + b * y.Length] -= y.Data[i + b * y.Length] * sumdx;
                 }
             }
 
-            return NdArray.Convert(gx, gy.Shape, gy.BatchCount);
+            for (int i = 0; i < x.Grad.Length; i++)
+            {
+                x.Grad[i] += gx[i];
+            }
         }
     }
 }

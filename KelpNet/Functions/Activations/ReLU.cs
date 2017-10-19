@@ -1,5 +1,4 @@
 ﻿using System;
-using Cloo;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 

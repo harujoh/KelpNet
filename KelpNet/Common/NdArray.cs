@@ -1,12 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using KelpNet.Common.Functions;
+using KelpNet.Common.Tools;
+using KelpNet.Functions.BasicMath;
 
 namespace KelpNet.Common
 {
     [Serializable]
+    [DebuggerDisplay("{Name + ToString(\"Size\")}", Type = "{\"NdArray\" + ToString(\"Size\")}")]
     public class NdArray
     {
+        [NonSerialized]
+        public Function ParentFunc;
+
         public Real[] Data;
         public Real[] Grad;
 
@@ -15,14 +24,19 @@ namespace KelpNet.Common
         public int BatchCount;
         public int Length;
 
+        public int UseCount = 0;
+
+        public string Name = "NdArray";
+
         //Updateを行わずに実行されたBackwardの回数をカウントし、バッチ更新時に使用する
         public int TrainCount;
 
-        public NdArray(Array data)
+        public NdArray(Array data, Function parentFunc = null)
         {
             Real[] resultData = Real.GetArray(data);
 
             int[] resultShape = new int[data.Rank];
+
             for (int i = 0; i < data.Rank; i++)
             {
                 resultShape[i] = data.GetLength(i);
@@ -34,6 +48,7 @@ namespace KelpNet.Common
             this.Grad = new Real[this.Length];
             this.BatchCount = 1;
             this.TrainCount = 0;
+            this.ParentFunc = parentFunc;
         }
 
         public NdArray(params int[] shape)
@@ -46,59 +61,29 @@ namespace KelpNet.Common
             this.TrainCount = 0;
         }
 
-        public NdArray(Real[] data, int[] shape, int batchCount = 1)
+        public NdArray(Real[] data, int[] shape, int batchCount = 1, Function parentFunc = null)
         {
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
-            this.Grad = new Real[this.Length];
+            this.Grad = new Real[this.Length * batchCount];
             this.TrainCount = 0;
+            this.ParentFunc = parentFunc;
         }
 
-        public NdArray(int[] shape, int batchCount)
+        public NdArray(int[] shape, int batchCount, Function parentFunc = null)
         {
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = new Real[this.Length * batchCount];
-            this.Grad = new Real[this.Length];
+            this.Grad = new Real[this.Length * batchCount];
             this.TrainCount = 0;
+            this.ParentFunc = parentFunc;
         }
 
-        static int ShapeToArrayLength(params int[] shapes)
-        {
-            int result = 1;
-
-            foreach (int shape in shapes)
-            {
-                result *= shape;
-            }
-
-            return result;
-        }
-
-        public NdArray[] DivideArrays()
-        {
-            NdArray[] result = new NdArray[BatchCount];
-
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = GetSingleArray(i);
-            }
-
-            return result;
-        }
-
-        public NdArray GetSingleArray(int i)
-        {
-            Real[] data = new Real[this.Length];
-            Array.Copy(this.Data, i * this.Length, data, 0, this.Length);
-
-            return new NdArray(data, this.Shape);
-        }
-
-        public static NdArray FromArrays(Array[] arrays)
+        public static NdArray FromArrays(Array[] arrays, Function parentFunc = null)
         {
             int[] resultShape = new int[arrays[0].Rank];
 
@@ -115,17 +100,64 @@ namespace KelpNet.Common
                 Array.Copy(Real.GetArray(arrays[i]), 0, result, length * i, length);
             }
 
-            return new NdArray(result, resultShape, arrays.Length);
+            return new NdArray(result, resultShape, arrays.Length, parentFunc);
         }
 
-        public static NdArray Convert(Real[] data, int[] shape, int batchCount)
+        public static NdArray Convert(Real[] data, int[] shape, int batchCount, Function parentFunc = null)
         {
-            return new NdArray(shape, batchCount) { Data = data };
+            return new NdArray(shape, batchCount, parentFunc) { Data = data };
         }
 
         public static NdArray ZerosLike(NdArray baseArray)
         {
             return new NdArray(baseArray.Shape.ToArray(), baseArray.BatchCount);
+        }
+
+        //バッチでまとまっているアレイをバラバラにして排出する
+        public NdArray[] DivideArrays()
+        {
+            NdArray[] result = new NdArray[BatchCount];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = GetSingleArray(i);
+            }
+
+            return result;
+        }
+
+        //バッチ番号に対応するアレイを排出する
+        public NdArray GetSingleArray(int i)
+        {
+            Real[] data = new Real[this.Length];
+            Array.Copy(this.Data, i * this.Length, data, 0, this.Length);
+
+            return new NdArray(data, this.Shape);
+        }
+
+        static int ShapeToArrayLength(params int[] shapes)
+        {
+            int result = 1;
+
+            foreach (int shape in shapes)
+            {
+                result *= shape;
+            }
+
+            return result;
+        }
+
+        public void Backward()
+        {
+            if (ParentFunc != null)
+            {
+                for (int i = 0; i < Grad.Length; i++)
+                {
+                    Grad[i] = 1;
+                }
+
+                this.ParentFunc.Backward(this);
+            }
         }
 
         public void CountUp()
@@ -165,9 +197,26 @@ namespace KelpNet.Common
 
         public string ToString(string format)
         {
-            if (format == "Grad")
-                return ToString(this.Grad);
-            return ToString(this.Data);
+            switch (format)
+            {
+                case "Data":
+                    return ToString(this.Data);
+
+                case "Grad":
+                    return ToString(this.Grad);
+
+                case "Shape":
+                    return "[" + string.Join(",", Shape) + "]";
+
+                case "Size":
+                    return "[" + string.Join(",", Shape) + "]" + (BatchCount > 1 ? "x" + BatchCount + "batch" : string.Empty);
+
+                case "Name":
+                    return Name;
+
+                default:
+                    return Name;
+            }
         }
 
         public string ToString(Real[] datas)
@@ -180,17 +229,22 @@ namespace KelpNet.Common
 
             foreach (Real data in datas)
             {
-                string[] divStr = data.ToString().Split('.');
+                string[] divStr = ((double)data).ToString().Split('.');
                 intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
-                if (divStr.Length > 1 && !isExponential)
+
+                if (divStr.Length > 1)
                 {
-                    isExponential = divStr[1].Contains("E");
+                    isExponential |= divStr[1].Contains("E");
                 }
 
                 if (realMaxLength != 8 && divStr.Length == 2)
                 {
                     realMaxLength = Math.Max(realMaxLength, divStr[1].Length);
-                    if (realMaxLength > 8) realMaxLength = 8;
+
+                    if (realMaxLength > 8)
+                    {
+                        realMaxLength = 8;
+                    }
                 }
             }
 
@@ -199,6 +253,7 @@ namespace KelpNet.Common
 
             //一個目は手動取得
             commonDivisorList[0] = this.Shape[this.Shape.Length - 1];
+
             for (int i = 1; i < this.Shape.Length; i++)
             {
                 commonDivisorList[i] = commonDivisorList[i - 1] * this.Shape[this.Shape.Length - i - 1];
@@ -224,11 +279,11 @@ namespace KelpNet.Common
                     string[] divStr;
                     if (isExponential)
                     {
-                        divStr = string.Format("{0:0.00000000e+00}", datas[indexOffset + i]).Split('.');
+                        divStr = string.Format("{0:0.00000000e+00}", (double)datas[indexOffset + i]).Split('.');
                     }
                     else
                     {
-                        divStr = datas[indexOffset + i].ToString().Split('.');
+                        divStr = ((double)datas[indexOffset + i]).ToString().Split('.');
                     }
 
                     //最大文字数でインデントを揃える
@@ -318,6 +373,31 @@ namespace KelpNet.Common
             }
 
             return sb.ToString();
+        }
+
+        public static NdArray operator +(NdArray a, NdArray b)
+        {
+            return new Add().Forward(a, b);
+        }
+
+        //コピーを作成するメソッド
+        public NdArray Clone()
+        {
+            return DeepCopyHelper.DeepCopy(this);
+
+            ////ParentFuncの参照を活かしたままデータ類をコピーする
+            //return new NdArray
+            //{
+            //    ParentFunc = ParentFunc,
+            //    Data = Data.ToArray(),
+            //    Grad = Grad.ToArray(),
+            //    Shape = Shape.ToArray(),
+            //    Name = Name,
+            //    Length = Length,
+            //    BatchCount = BatchCount,
+            //    UseCount = UseCount,
+            //    TrainCount = TrainCount
+            //};
         }
     }
 }

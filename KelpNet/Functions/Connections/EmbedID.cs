@@ -6,7 +6,7 @@ using KelpNet.Common.Tools;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class EmbedID : NeedPreviousInputFunction
+    public class EmbedID : SingleInputFunction
     {
         public NdArray Weight;
 
@@ -19,6 +19,7 @@ namespace KelpNet.Functions.Connections
             this.OutputCount = outputCount;
 
             this.Weight = new NdArray(inputCount, outputCount);
+            this.Weight.Name = this.Name + " Weight";
 
             if (initialW == null)
             {
@@ -32,8 +33,8 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = new[] { this.Weight };
 
-            NeedPreviousForward = NeedPreviousForwardCpu;
-            NeedPreviousBackward = NeedPreviousBackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         protected NdArray NeedPreviousForwardCpu(NdArray x)
@@ -51,23 +52,21 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            return NdArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount);
+            return NdArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount, this);
         }
 
-        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevInput)
+        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            for (int b = 0; b < gy.BatchCount; b++)
+            for (int b = 0; b < y.BatchCount; b++)
             {
-                for (int i = 0; i < prevInput.Length; i++)
+                for (int i = 0; i < x.Length; i++)
                 {
                     for (int j = 0; j < this.OutputCount; j++)
                     {
-                        this.Weight.Grad[(int)prevInput.Data[i + b * prevInput.Length] * this.OutputCount + j] += gy.Data[i + j + b * gy.Length];
+                        this.Weight.Grad[(int)x.Data[i + b * x.Length] * this.OutputCount + j] += y.Grad[i + j + b * y.Length];
                     }
                 }
             }
-
-            return new NdArray();
         }
     }
 }

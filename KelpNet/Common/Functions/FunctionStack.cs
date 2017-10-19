@@ -18,9 +18,6 @@ namespace KelpNet.Common.Functions
         public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)
         {
             this.Functions = functions;
-
-            Forward = ForwardCPU;
-            Backward = BackwardCPU;
         }
 
         public FunctionStack(params FunctionStack[] functionStacks) : base(FUNCTION_NAME)
@@ -59,9 +56,9 @@ namespace KelpNet.Common.Functions
         }
 
         //Forward
-        public NdArray ForwardCPU(NdArray input)
+        public override NdArray Forward(params NdArray[] xs)
         {
-            NdArray result = this.Functions[0].Forward(input);
+            NdArray result = this.Functions[0].Forward(xs);
 
             for (int i = 1; i < this.Functions.Length; i++)
             {
@@ -71,15 +68,9 @@ namespace KelpNet.Common.Functions
             return result;
         }
 
-        //Backward
-        public NdArray BackwardCPU(NdArray backwardResult)
+        public override void Backward(NdArray y, params NdArray[] xs)
         {
-            for (int i = this.Functions.Length - 1; i >= 0; i--)
-            {
-                backwardResult = this.Functions[i].Backward(backwardResult);
-            }
-
-            return backwardResult;
+            Backward(y);
         }
 
         //重みの更新処理
@@ -102,14 +93,16 @@ namespace KelpNet.Common.Functions
         }
 
         //予想を実行する
-        public override NdArray Predict(NdArray forwardResult)
+        public override NdArray Predict(params NdArray[] xs)
         {
-            foreach (Function function in this.Functions)
+            NdArray y = this.Functions[0].Predict(xs);
+
+            for (int i = 1; i < this.Functions.Length; i++)
             {
-                forwardResult = function.Predict(forwardResult);
+                y = this.Functions[i].Predict(y);
             }
 
-            return forwardResult;
+            return y;
         }
 
         public override void SetOptimizer(params Optimizer[] optimizers)

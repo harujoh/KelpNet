@@ -5,7 +5,7 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Activations
 {
     [Serializable]
-    public class ELU : NeedPreviousInputFunction
+    public class ELU : SingleInputFunction
     {
         const string FUNCTION_NAME = "ELU";
 
@@ -15,8 +15,8 @@ namespace KelpNet.Functions.Activations
         {
             this._alpha = alpha;
 
-            NeedPreviousForward = NeedPreviousForwardCpu;
-            NeedPreviousBackward = NeedPreviousBackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         protected NdArray NeedPreviousForwardCpu(NdArray x)
@@ -35,26 +35,22 @@ namespace KelpNet.Functions.Activations
                 }
             }
 
-            return NdArray.Convert(result, x.Shape, x.BatchCount);
+            return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevInput)
+        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] result = new Real[gy.Data.Length];
-
-            for (int i = 0; i < gy.Data.Length; i++)
+            for (int i = 0; i < y.Grad.Length; i++)
             {
-                if (prevInput.Data[i] >= 0)
+                if (x.Data[i] >= 0)
                 {
-                    result[i] = gy.Data[i];
+                    x.Grad[i] += y.Grad[i];
                 }
                 else
                 {
-                    result[i] = gy.Data[i] * this._alpha * Math.Exp(prevInput.Data[i]);
+                    x.Grad[i] += y.Grad[i] * this._alpha * Math.Exp(x.Data[i]);
                 }
             }
-
-            return NdArray.Convert(result, gy.Shape, gy.BatchCount);
         }
     }
 }

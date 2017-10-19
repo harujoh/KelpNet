@@ -7,8 +7,10 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Connections
 {
     [Serializable]
-    public class LSTM : Function
+    public class LSTM : SingleInputFunction
     {
+        const string FUNCTION_NAME = "LSTM";
+
         public Linear upward0;
         public Linear upward1;
         public Linear upward2;
@@ -38,17 +40,17 @@ namespace KelpNet.Functions.Connections
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = "LSTM") : base(name)
+        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name)
         {
             this.InputCount = inSize;
             this.OutputCount = outSize;
 
             List<NdArray> functionParameters = new List<NdArray>();
 
-            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, gpuEnable: false, name: "upward0");
-            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, gpuEnable: false, name: "upward1");
-            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, gpuEnable: false, name: "upward2");
-            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, gpuEnable: false, name: "upward3");
+            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0", gpuEnable: gpuEnable);
+            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1", gpuEnable: gpuEnable);
+            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2", gpuEnable: gpuEnable);
+            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3", gpuEnable: gpuEnable);
 
             functionParameters.AddRange(this.upward0.Parameters);
             functionParameters.AddRange(this.upward1.Parameters);
@@ -56,10 +58,10 @@ namespace KelpNet.Functions.Connections
             functionParameters.AddRange(this.upward3.Parameters);
 
             //lateralはBiasは無し
-            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, gpuEnable: false, name: "lateral0");
-            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, gpuEnable: false, name: "lateral1");
-            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, gpuEnable: false, name: "lateral2");
-            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, gpuEnable: false, name: "lateral3");
+            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0", gpuEnable: gpuEnable);
+            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1", gpuEnable: gpuEnable);
+            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2", gpuEnable: gpuEnable);
+            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3", gpuEnable: gpuEnable);
 
             functionParameters.AddRange(this.lateral0.Parameters);
             functionParameters.AddRange(this.lateral1.Parameters);
@@ -68,8 +70,8 @@ namespace KelpNet.Functions.Connections
 
             this.Parameters = functionParameters.ToArray();
 
-            Forward = ForwardCpu;
-            Backward = BackwardCpu;
+            SingleInputForward = ForwardCpu;
+            SingleOutputBackward = BackwardCpu;
         }
 
         public NdArray ForwardCpu(NdArray x)
@@ -80,6 +82,8 @@ namespace KelpNet.Functions.Connections
             upwards[2] = this.upward2.Forward(x).Data;
             upwards[3] = this.upward3.Forward(x).Data;
 
+            int outputDataSize = x.BatchCount * this.OutputCount;
+
             if (this.hParam == null)
             {
                 //値がなければ初期化
@@ -88,8 +92,8 @@ namespace KelpNet.Functions.Connections
                 this.fParam = new List<Real[]>();
                 this.oParam = new List<Real[]>();
                 this.cParam = new List<Real[]>();
-                this.hParam = new Real[x.BatchCount * this.OutputCount];
-                this.gcPrev = new Real[x.BatchCount * this.InputCount];
+                this.hParam = new Real[outputDataSize];
+                this.gcPrev = new Real[outputDataSize];
             }
             else
             {
@@ -99,7 +103,7 @@ namespace KelpNet.Functions.Connections
                 Real[] laterals2 = this.lateral2.Forward(prevInput).Data;
                 Real[] laterals3 = this.lateral3.Forward(prevInput).Data;
 
-                for (int i = 0; i < OutputCount * x.BatchCount; i++)
+                for (int i = 0; i < outputDataSize; i++)
                 {
                     upwards[0][i] += laterals0[i];
                     upwards[1][i] += laterals1[i];
@@ -108,33 +112,33 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-
             if (this.cParam.Count == 0)
             {
-                this.cParam.Add(new Real[this.OutputCount * x.BatchCount]);
+                this.cParam.Add(new Real[outputDataSize]);
             }
 
-            Real[] la = new Real[this.OutputCount * x.BatchCount];
-            Real[] li = new Real[this.OutputCount * x.BatchCount];
-            Real[] lf = new Real[this.OutputCount * x.BatchCount];
-            Real[] lo = new Real[this.OutputCount * x.BatchCount];
+            Real[] la = new Real[outputDataSize];
+            Real[] li = new Real[outputDataSize];
+            Real[] lf = new Real[outputDataSize];
+            Real[] lo = new Real[outputDataSize];
             Real[] cPrev = this.cParam[this.cParam.Count - 1];
             Real[] cResult = new Real[cPrev.Length];
 
-            for (int i = 0; i < x.BatchCount; i++)
+            for (int b = 0; b < x.BatchCount; b++)
             {
                 //再配置
                 for (int j = 0; j < this.OutputCount; j++)
                 {
                     int index = j * 4;
-                    int batchIndex = j + i * OutputCount;
+                    int batchIndex = b * OutputCount + j;
 
-                    la[batchIndex] = Math.Tanh(upwards[index / this.OutputCount][index % this.OutputCount + i * OutputCount]);
-                    li[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + i * OutputCount]);
-                    lf[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + i * OutputCount]);
-                    lo[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + i * OutputCount]);
+                    la[batchIndex] = Math.Tanh(upwards[index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
+                    li[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
+                    lf[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
+                    lo[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
 
                     cResult[batchIndex] = la[batchIndex] * li[batchIndex] + lf[batchIndex] * cPrev[batchIndex];
+
                     this.hParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
                 }
             }
@@ -146,15 +150,11 @@ namespace KelpNet.Functions.Connections
             this.fParam.Add(lf);
             this.oParam.Add(lo);
 
-            return new NdArray(this.hParam, new[] { OutputCount }, x.BatchCount);
+            return new NdArray(this.hParam, new[] { OutputCount }, x.BatchCount, this);
         }
 
-        public NdArray BackwardCpu(NdArray gh)
+        public void BackwardCpu(NdArray gh, NdArray x)
         {
-            BackwardCountUp();
-
-            Real[] lgh = gh.Data.ToArray();
-
             if (!initialized)
             {
                 //値がなければ初期化
@@ -166,18 +166,10 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                Real[] ghPre0 = this.lateral0.Backward(this.gxPrev0).Data;
-                Real[] ghPre1 = this.lateral1.Backward(this.gxPrev1).Data;
-                Real[] ghPre2 = this.lateral2.Backward(this.gxPrev2).Data;
-                Real[] ghPre3 = this.lateral3.Backward(this.gxPrev3).Data;
-
-                for (int i = 0; i < gh.BatchCount * OutputCount; i++)
-                {
-                    lgh[i] += ghPre0[i];
-                    lgh[i] += ghPre1[i];
-                    lgh[i] += ghPre2[i];
-                    lgh[i] += ghPre3[i];
-                }
+                this.lateral0.Backward(this.gxPrev0, gh);
+                this.lateral1.Backward(this.gxPrev1, gh);
+                this.lateral2.Backward(this.gxPrev2, gh);
+                this.lateral3.Backward(this.gxPrev3, gh);
             }
 
             Real[] lcParam = this.cParam[this.cParam.Count - 1];
@@ -208,11 +200,11 @@ namespace KelpNet.Functions.Connections
 
                     double co = Math.Tanh(lcParam[prevOutputIndex]);
 
-                    this.gcPrev[prevInputIndex] += lgh[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
+                    this.gcPrev[prevInputIndex] += gh.Grad[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
                     gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
                     gParam[j + InputCount * 1] = this.gcPrev[prevInputIndex] * laParam[prevOutputIndex] * GradSigmoid(liParam[prevOutputIndex]);
                     gParam[j + InputCount * 2] = this.gcPrev[prevInputIndex] * cPrev[prevOutputIndex] * GradSigmoid(lfParam[prevOutputIndex]);
-                    gParam[j + InputCount * 3] = lgh[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
+                    gParam[j + InputCount * 3] = gh.Grad[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
 
                     this.gcPrev[prevInputIndex] *= lfParam[prevOutputIndex];
                 }
@@ -229,26 +221,17 @@ namespace KelpNet.Functions.Connections
 
                 for (int j = 0; j < OutputCount; j++)
                 {
-                    this.gxPrev0.Data[i * this.OutputCount + j] = resultParam[j + 0 * this.OutputCount];
-                    this.gxPrev1.Data[i * this.OutputCount + j] = resultParam[j + 1 * this.OutputCount];
-                    this.gxPrev2.Data[i * this.OutputCount + j] = resultParam[j + 2 * this.OutputCount];
-                    this.gxPrev3.Data[i * this.OutputCount + j] = resultParam[j + 3 * this.OutputCount];
+                    this.gxPrev0.Grad[i * this.OutputCount + j] = resultParam[0 * this.OutputCount + j];
+                    this.gxPrev1.Grad[i * this.OutputCount + j] = resultParam[1 * this.OutputCount + j];
+                    this.gxPrev2.Grad[i * this.OutputCount + j] = resultParam[2 * this.OutputCount + j];
+                    this.gxPrev3.Grad[i * this.OutputCount + j] = resultParam[3 * this.OutputCount + j];
                 }
             }
 
-            Real[] gArray0 = this.upward0.Backward(this.gxPrev0).Data;
-            Real[] gArray1 = this.upward1.Backward(this.gxPrev1).Data;
-            Real[] gArray2 = this.upward2.Backward(this.gxPrev2).Data;
-            Real[] gArray3 = this.upward3.Backward(this.gxPrev3).Data;
-
-            Real[] gx = new Real[gh.BatchCount * this.InputCount];
-
-            for (int i = 0; i < gx.Length; i++)
-            {
-                gx[i] = gArray0[i] + gArray1[i] + gArray2[i] + gArray3[i];
-            }
-
-            return NdArray.Convert(gx, new[] { InputCount }, gh.BatchCount);
+            this.upward0.Backward(this.gxPrev0, x);
+            this.upward1.Backward(this.gxPrev1, x);
+            this.upward2.Backward(this.gxPrev2, x);
+            this.upward3.Backward(this.gxPrev3, x);
         }
 
         public override void ResetState()

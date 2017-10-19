@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Functions.Activations;
@@ -68,15 +69,15 @@ namespace KelpNetTester.Tests
                         for (int i = 0; i < s.Count; i++)
                         {
                             int tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
+
                             //l1 Linear
-                            NdArray xK = model.Functions[0].Forward(new NdArray(new Real[] { s[i] }));
+                            NdArray l1 = model.Functions[0].Forward(new NdArray(new Real[] { s[i] }));
 
                             //l2 Linear
-                            NdArray l2 = model.Functions[1].Forward(h);
-                            for (int j = 0; j < xK.Data.Length; j++)
-                            {
-                                xK.Data[j] += l2.Data[j];
-                            }
+                            NdArray l2 = model.Functions[1].Forward(h.Clone());//参照を上書きしないようにコピーを行う
+
+                            //Add
+                            NdArray xK = l1 + l2;
 
                             //l2 Tanh
                             h = model.Functions[2].Forward(xK);
@@ -93,10 +94,7 @@ namespace KelpNetTester.Tests
 
                         for (int i = 0; i < s.Count; i++)
                         {
-                            NdArray g = model.Functions[3].Backward(tmp.Pop());
-                            g = model.Functions[2].Backward(g);
-                            g = model.Functions[1].Backward(g);
-                            model.Functions[0].Backward(g);
+                            model.Backward(tmp.Pop());
                         }
 
                         model.Update();

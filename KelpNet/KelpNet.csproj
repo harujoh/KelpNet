@@ -45,9 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Functions\CompressibleActivation.cs" />
-    <Compile Include="Common\Functions\NeedPreviousDataFunction.cs" />
-    <Compile Include="Common\Functions\NeedPreviousInputFunction.cs" />
-    <Compile Include="Common\Functions\NeedPreviousOutputFunction.cs" />
+    <Compile Include="Common\Functions\DualInputFunction.cs" />
+    <Compile Include="Common\Functions\SingleInputFunction.cs" />
     <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Functions\CompressibleFunction.cs" />
     <Compile Include="Common\Functions\IParallelizable.cs" />
@@ -72,6 +71,7 @@
     <Compile Include="Functions\Connections\EmbedID.cs" />
     <Compile Include="Functions\Connections\Linear.cs" />
     <Compile Include="Functions\Connections\LSTM.cs" />
+    <Compile Include="Functions\BasicMath\Add.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="Common\Loss\ILossFunction.cs" />

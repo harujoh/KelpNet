@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Cloo;
 using KelpNet.Common;
@@ -8,7 +9,7 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Noise
 {
     [Serializable]
-    public class Dropout : Function, IParallelizable
+    public class Dropout : SingleInputFunction, IParallelizable
     {
         const string FUNCTION_NAME = "Dropout";
 
@@ -16,9 +17,11 @@ namespace KelpNet.Functions.Noise
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
         [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardKernel;
 
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name)
@@ -35,13 +38,13 @@ namespace KelpNet.Functions.Noise
             if (GpuEnable)
             {
                 CreateKernel();
-                Forward = ForwardGpu;
-                Backward = BackwardGpu;
+                SingleInputForward = ForwardGpu;
+                SingleOutputBackward = BackwardGpu;
             }
             else
             {
-                Forward = ForwardCpu;
-                Backward = BackwardCpu;
+                SingleInputForward = ForwardCpu;
+                SingleOutputBackward = BackwardCpu;
             }
 
             return GpuEnable;
@@ -81,7 +84,7 @@ namespace KelpNet.Functions.Noise
                 result[i] = x.Data[i] * mask[i % mask.Length];
             }
 
-            return NdArray.Convert(result, x.Shape, x.BatchCount);
+            return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
         public NdArray ForwardGpu(NdArray x)
@@ -111,29 +114,32 @@ namespace KelpNet.Functions.Noise
                 Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
             }
 
-            return NdArray.Convert(result, x.Shape, x.BatchCount);
+            return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        public NdArray BackwardCpu(NdArray gy)
+        public void BackwardCpu(NdArray y, NdArray x)
         {
-            Real[] result = gy.Data.ToArray();
+            Real[] result = y.Grad.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
-            for (int b = 0; b < gy.BatchCount; b++)
+            for (int b = 0; b < y.BatchCount; b++)
             {
                 for (int i = 0; i < mask.Length; i++)
                 {
-                    result[b * gy.Length + i] *= mask[i];
+                    result[b * y.Length + i] *= mask[i];
                 }
             }
 
-            return NdArray.Convert(result, gy.Shape, gy.BatchCount);
+            for (int i = 0; i < x.Grad.Length; i++)
+            {
+                x.Grad[i] += result[i];
+            }
         }
 
-        public NdArray BackwardGpu(NdArray gy)
+        public void BackwardGpu(NdArray y, NdArray x)
         {
-            Real[] result = gy.Data.ToArray();
+            Real[] result = y.Grad.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
@@ -142,13 +148,13 @@ namespace KelpNet.Functions.Noise
             {
                 BackwardKernel.SetMemoryArgument(0, gpuMask);
                 BackwardKernel.SetMemoryArgument(1, gpugX);
-                BackwardKernel.SetValueArgument(2, gy.Length);
+                BackwardKernel.SetValueArgument(2, y.Length);
 
                 Weaver.CommandQueue.Execute
                 (
                     BackwardKernel,
                     null,
-                    new long[] { mask.Length, gy.BatchCount },
+                    new long[] { mask.Length, y.BatchCount },
                     null,
                     null
                 );
@@ -157,7 +163,10 @@ namespace KelpNet.Functions.Noise
                 Weaver.CommandQueue.ReadFromBuffer(gpugX, ref result, true, null);
             }
 
-            return NdArray.Convert(result, gy.Shape, gy.BatchCount);
+            for (int i = 0; i < x.Grad.Length; i++)
+            {
+                x.Grad[i] += result[i];
+            }
         }
 
 

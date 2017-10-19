@@ -6,7 +6,7 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Poolings
 {
     [Serializable]
-    public class AveragePooling : NeedPreviousInputFunction
+    public class AveragePooling : SingleInputFunction
     {
         private int _kHeight;
         private int _kWidth;
@@ -24,8 +24,8 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride;
             this._strideY = stride;
 
-            NeedPreviousForward = NeedPreviousForwardCpu;
-            NeedPreviousBackward = NeedPreviousBackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         public AveragePooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = "AvgPooling") : base(name)
@@ -43,8 +43,8 @@ namespace KelpNet.Functions.Poolings
             this._strideX = stride.Width;
             this._strideY = stride.Height;
 
-            NeedPreviousForward = NeedPreviousForwardCpu;
-            NeedPreviousBackward = NeedPreviousBackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         protected NdArray NeedPreviousForwardCpu(NdArray input)
@@ -87,40 +87,39 @@ namespace KelpNet.Functions.Poolings
                 }
             }
 
-            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount);
+            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        protected NdArray NeedPreviousBackwardCpu(NdArray gy, NdArray prevInput)
+        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] result = new Real[prevInput.Data.Length];
             Real m = this._kHeight * this._kWidth;
 
-            for (int b = 0; b < gy.BatchCount; b++)
+            for (int b = 0; b < y.BatchCount; b++)
             {
-                int gyIndex = b * gy.Length;
+                int gyIndex = b * y.Length;
 
-                for (int i = 0; i < prevInput.Shape[0]; i++)
+                for (int i = 0; i < x.Shape[0]; i++)
                 {
-                    int resultIndexOffset = b * prevInput.Length + i * prevInput.Shape[1] * prevInput.Shape[2];
+                    int resultIndexOffset = b * x.Length + i * x.Shape[1] * x.Shape[2];
 
-                    for (int y = 0; y < gy.Shape[1]; y++)
+                    for (int posY = 0; posY < y.Shape[1]; posY++)
                     {
-                        int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
-                        int dyLimit = this._kHeight + dyOffset < prevInput.Shape[1] ? this._kHeight + dyOffset : prevInput.Shape[1];
+                        int dyOffset = posY * this._strideY - this._padY < 0 ? 0 : posY * this._strideY - this._padY;
+                        int dyLimit = this._kHeight + dyOffset < x.Shape[1] ? this._kHeight + dyOffset : x.Shape[1];
 
-                        for (int x = 0; x < gy.Shape[2]; x++)
+                        for (int posX = 0; posX < y.Shape[2]; posX++)
                         {
-                            int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
-                            int dxLimit = this._kWidth + dxOffset < prevInput.Shape[2] ? this._kWidth + dxOffset : prevInput.Shape[2];
+                            int dxOffset = posX * this._strideX - this._padX < 0 ? 0 : posX * this._strideX - this._padX;
+                            int dxLimit = this._kWidth + dxOffset < x.Shape[2] ? this._kWidth + dxOffset : x.Shape[2];
 
-                            Real gyData = gy.Data[gyIndex] / m;
+                            Real gyData = y.Grad[gyIndex] / m;
 
                             for (int dy = dyOffset; dy < dyLimit; dy++)
                             {
                                 for (int dx = dxOffset; dx < dxLimit; dx++)
                                 {
-                                    int resultIndex = resultIndexOffset + dy * prevInput.Shape[2] + dx;
-                                    result[resultIndex] = gyData;
+                                    int resultIndex = resultIndexOffset + dy * x.Shape[2] + dx;
+                                    x.Grad[resultIndex] += gyData;
                                 }
                             }
 
@@ -129,8 +128,6 @@ namespace KelpNet.Functions.Poolings
                     }
                 }
             }
-
-            return NdArray.Convert(result, prevInput.Shape, gy.BatchCount);
         }
     }
 }
