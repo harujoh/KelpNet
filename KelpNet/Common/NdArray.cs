@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using KelpNet.Common.Functions;
-using KelpNet.Common.Tools;
 using KelpNet.Functions.BasicMath;
 
 namespace KelpNet.Common
@@ -13,22 +12,32 @@ namespace KelpNet.Common
     [DebuggerDisplay("{Name + ToString(\"Size\")}", Type = "{\"NdArray\" + ToString(\"Size\")}")]
     public class NdArray
     {
+        public string Name = "NdArray";
+
+        public Real[] Data;
+
+        [NonSerialized]
+        public Real[] Grad;
+
+        //このNdArrayの各次元のサイズ
+        public int[] Shape { private set; get; }
+
+        //Shapeから算出されるLengthで、DataのLengthとは異なる
+        public int Length { private set; get; }
+
+        //関数によって使用された回数をカウントしBackward動作のタイミングを図る
+        [NonSerialized]
+        public int UseCount = 0;
+
+        //自身が関数から生成された場合、その関数をここに保存する
         [NonSerialized]
         public Function ParentFunc;
 
-        public Real[] Data;
-        public Real[] Grad;
-
-        public int[] Shape;
-
+        //各関数内でまとめて実行されるバッチの数を示し、Loss関数内の割引で使用される
         public int BatchCount;
-        public int Length;
 
-        public int UseCount = 0;
-
-        public string Name = "NdArray";
-
-        //Updateを行わずに実行されたBackwardの回数をカウントし、バッチ更新時に使用する
+        //Updateを行わずに実行されたBackwardの回数をカウントし、Optimizer実行時に使用する
+        [NonSerialized]
         public int TrainCount;
 
         public NdArray(Array data, Function parentFunc = null)
@@ -113,6 +122,14 @@ namespace KelpNet.Common
             return new NdArray(baseArray.Shape.ToArray(), baseArray.BatchCount);
         }
 
+        public void Reshape(params int[] shape)
+        {
+#if DEBUG
+            if (Length != ShapeToArrayLength(shape)) throw new Exception("指定されたShapeのサイズが現在のData.Lengthと等しくありません");
+#endif
+            Shape = shape.ToArray();
+        }
+
         //バッチでまとまっているアレイをバラバラにして排出する
         public NdArray[] DivideArrays()
         {
@@ -160,18 +177,21 @@ namespace KelpNet.Common
             }
         }
 
-        private void Backward(NdArray y)
+        internal static void Backward(NdArray y)
         {
-            if (y.UseCount == 0 && y.ParentFunc != null)
+            if (y.ParentFunc != null)
             {
-                y.ParentFunc.Backward(y);
-
                 List<NdArray[]> prevInputs = y.ParentFunc.PrevInputs;
                 NdArray[] xs = prevInputs[prevInputs.Count - 1];
 
+                y.ParentFunc.Backward(y);
+
                 for (int i = 0; i < xs.Length; i++)
                 {
-                    Backward(xs[i]);
+                    if (xs[i].UseCount == 0)
+                    {
+                        NdArray.Backward(xs[i]);
+                    }
                 }
             }
         }
@@ -225,7 +245,8 @@ namespace KelpNet.Common
                     return "[" + string.Join(",", Shape) + "]";
 
                 case "Size":
-                    return "[" + string.Join(",", Shape) + "]" + (BatchCount > 1 ? "x" + BatchCount + "batch" : string.Empty);
+                    return "[" + string.Join(",", Shape) + "]" +
+                           (BatchCount > 1 ? "x" + BatchCount + "batch" : string.Empty);
 
                 case "Name":
                     return Name;
@@ -239,8 +260,8 @@ namespace KelpNet.Common
         {
             StringBuilder sb = new StringBuilder();
 
-            int intMaxLength = 0;   //整数部の最大値
-            int realMaxLength = 0;   //小数点以下の最大値
+            int intMaxLength = 0; //整数部の最大値
+            int realMaxLength = 0; //小数点以下の最大値
             bool isExponential = false; //指数表現にするか
 
             foreach (Real data in datas)
@@ -396,24 +417,31 @@ namespace KelpNet.Common
             return new Add().Forward(a, b);
         }
 
+        public static implicit operator NdArray(Real a)
+        {
+            return new NdArray(new[] { a });
+        }
+
+        public static implicit operator NdArray(int a)
+        {
+            return new NdArray(new[] { (Real)a });
+        }
+
         //コピーを作成するメソッド
         public NdArray Clone()
         {
-            return DeepCopyHelper.DeepCopy(this);
-
-            ////ParentFuncの参照を活かしたままデータ類をコピーする
-            //return new NdArray
-            //{
-            //    ParentFunc = ParentFunc,
-            //    Data = Data.ToArray(),
-            //    Grad = Grad.ToArray(),
-            //    Shape = Shape.ToArray(),
-            //    Name = Name,
-            //    Length = Length,
-            //    BatchCount = BatchCount,
-            //    UseCount = UseCount,
-            //    TrainCount = TrainCount
-            //};
+            return new NdArray
+            {
+                ParentFunc = ParentFunc,
+                Data = Data.ToArray(),
+                Grad = Grad.ToArray(),
+                Shape = Shape.ToArray(),
+                Name = Name,
+                Length = Length,
+                BatchCount = BatchCount,
+                UseCount = UseCount,
+                TrainCount = TrainCount
+            };
         }
     }
 }

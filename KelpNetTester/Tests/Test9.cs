@@ -55,9 +55,10 @@ namespace KelpNetTester.Tests
             SoftmaxCrossEntropy softmaxCrossEntropy = new SoftmaxCrossEntropy();
             for (int epoch = 0; epoch < TRAINING_EPOCHS; epoch++)
             {
-                NdArray h = new NdArray(new Real[N_UNITS]);
                 for (int pos = 0; pos < trainData.Length; pos++)
                 {
+                    NdArray h = new NdArray(new Real[N_UNITS]);
+
                     int id = trainData[pos];
                     s.Add(id);
 
@@ -70,11 +71,11 @@ namespace KelpNetTester.Tests
                         {
                             int tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
 
-                            //l1 Linear
-                            NdArray l1 = model.Functions[0].Forward(new NdArray(new Real[] { s[i] }));
+                            //l1 EmbedID
+                            NdArray l1 = model.Functions[0].Forward(s[i]);
 
                             //l2 Linear
-                            NdArray l2 = model.Functions[1].Forward(h.Clone());//参照を上書きしないようにコピーを行う
+                            NdArray l2 = model.Functions[1].Forward(h);
 
                             //Add
                             NdArray xK = l1 + l2;
@@ -86,7 +87,7 @@ namespace KelpNetTester.Tests
                             NdArray h2 = model.Functions[3].Forward(h);
 
                             Real loss;
-                            tmp.Push(softmaxCrossEntropy.Evaluate(h2, new NdArray(new Real[] { tx }), out loss));
+                            tmp.Push(softmaxCrossEntropy.Evaluate(h2, tx, out loss));
                             accumloss += loss;
                         }
 
@@ -158,7 +159,7 @@ namespace KelpNetTester.Tests
             for (int i = 1; i < s.Count; i++)
             {
                 //l1 Linear
-                NdArray xK = model.Functions[0].Forward(new NdArray(new Real[] { s[i] }));
+                NdArray xK = model.Functions[0].Forward(s[i]);
 
                 //l2 Linear
                 NdArray l2 = model.Functions[1].Forward(h);

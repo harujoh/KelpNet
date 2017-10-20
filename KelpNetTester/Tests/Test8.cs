@@ -127,11 +127,11 @@ namespace KelpNetTester.Tests
         {
             model.ResetState();
 
-            NdArray result = new NdArray(new Real[1]);
+            NdArray result = 0;
 
             for (int i = 0; i < input_seq.Count; i++)
             {
-                result = model.Predict(new NdArray(new[] { input_seq[i] }));
+                result = model.Predict(input_seq[i]);
             }
 
             return result.Data[0];

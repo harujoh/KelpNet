@@ -84,7 +84,7 @@ namespace KelpNet.Functions.Connections
             this.Parameters = linear.Parameters;
 
             this.Weight = linear.Weight;
-            this.Weight.Shape = new[] { OutputCount, InputCount, this._kHeight, this._kWidth };
+            this.Weight.Reshape(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.Bias = linear.Bias;
             this.NoBias = linear.NoBias;
         }

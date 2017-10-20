@@ -26,15 +26,13 @@ namespace KelpNet.Functions.Connections
         private List<Real[]> oParam;
         private List<Real[]> cParam;
 
-        private Real[] hParam;
+        private NdArray hParam;
 
         NdArray gxPrev0;
         NdArray gxPrev1;
         NdArray gxPrev2;
         NdArray gxPrev3;
         Real[] gcPrev;
-
-        private bool initialized = false;
 
         public readonly int InputCount;
         public readonly int OutputCount;
@@ -91,16 +89,14 @@ namespace KelpNet.Functions.Connections
                 this.fParam = new List<Real[]>();
                 this.oParam = new List<Real[]>();
                 this.cParam = new List<Real[]>();
-                this.hParam = new Real[outputDataSize];
-                this.gcPrev = new Real[outputDataSize];
             }
             else
             {
-                NdArray prevInput = new NdArray(this.hParam, new[] { OutputCount }, x.BatchCount);
-                Real[] laterals0 = this.lateral0.Forward(prevInput).Data;
-                Real[] laterals1 = this.lateral1.Forward(prevInput).Data;
-                Real[] laterals2 = this.lateral2.Forward(prevInput).Data;
-                Real[] laterals3 = this.lateral3.Forward(prevInput).Data;
+                Real[] laterals0 = this.lateral0.Forward(hParam).Data;
+                Real[] laterals1 = this.lateral1.Forward(hParam).Data;
+                Real[] laterals2 = this.lateral2.Forward(hParam).Data;
+                Real[] laterals3 = this.lateral3.Forward(hParam).Data;
+                hParam.UseCount -= 4; //回数を補正 RFI
 
                 for (int i = 0; i < outputDataSize; i++)
                 {
@@ -122,6 +118,7 @@ namespace KelpNet.Functions.Connections
             Real[] lo = new Real[outputDataSize];
             Real[] cPrev = this.cParam[this.cParam.Count - 1];
             Real[] cResult = new Real[cPrev.Length];
+            Real[] lhParam = new Real[outputDataSize];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
@@ -138,7 +135,7 @@ namespace KelpNet.Functions.Connections
 
                     cResult[batchIndex] = la[batchIndex] * li[batchIndex] + lf[batchIndex] * cPrev[batchIndex];
 
-                    this.hParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
+                    lhParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
                 }
             }
 
@@ -149,19 +146,20 @@ namespace KelpNet.Functions.Connections
             this.fParam.Add(lf);
             this.oParam.Add(lo);
 
-            return new NdArray(this.hParam, new[] { OutputCount }, x.BatchCount, this);
+            this.hParam = new NdArray(lhParam, new[] { OutputCount }, x.BatchCount, this);
+            return this.hParam;
         }
 
-        public void BackwardCpu(NdArray gh, NdArray x)
+        public void BackwardCpu(NdArray y, NdArray x)
         {
-            if (!initialized)
+            if (gcPrev == null)
             {
                 //値がなければ初期化
-                this.gxPrev0 = new NdArray(new[] { OutputCount }, gh.BatchCount);
-                this.gxPrev1 = new NdArray(new[] { OutputCount }, gh.BatchCount);
-                this.gxPrev2 = new NdArray(new[] { OutputCount }, gh.BatchCount);
-                this.gxPrev3 = new NdArray(new[] { OutputCount }, gh.BatchCount);
-                initialized = true;
+                this.gxPrev0 = new NdArray(new[] { OutputCount }, y.BatchCount);
+                this.gxPrev1 = new NdArray(new[] { OutputCount }, y.BatchCount);
+                this.gxPrev2 = new NdArray(new[] { OutputCount }, y.BatchCount);
+                this.gxPrev3 = new NdArray(new[] { OutputCount }, y.BatchCount);
+                this.gcPrev = new Real[x.BatchCount * this.OutputCount];
             }
             else
             {
@@ -188,7 +186,7 @@ namespace KelpNet.Functions.Connections
 
             Real[] cPrev = this.cParam[this.cParam.Count - 1];
 
-            for (int i = 0; i < gh.BatchCount; i++)
+            for (int i = 0; i < y.BatchCount; i++)
             {
                 Real[] gParam = new Real[this.InputCount * 4];
 
@@ -199,11 +197,11 @@ namespace KelpNet.Functions.Connections
 
                     double co = Math.Tanh(lcParam[prevOutputIndex]);
 
-                    this.gcPrev[prevInputIndex] += gh.Grad[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
+                    this.gcPrev[prevInputIndex] += y.Grad[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
                     gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
                     gParam[j + InputCount * 1] = this.gcPrev[prevInputIndex] * laParam[prevOutputIndex] * GradSigmoid(liParam[prevOutputIndex]);
                     gParam[j + InputCount * 2] = this.gcPrev[prevInputIndex] * cPrev[prevOutputIndex] * GradSigmoid(lfParam[prevOutputIndex]);
-                    gParam[j + InputCount * 3] = gh.Grad[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
+                    gParam[j + InputCount * 3] = y.Grad[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
 
                     this.gcPrev[prevInputIndex] *= lfParam[prevOutputIndex];
                 }
@@ -235,7 +233,7 @@ namespace KelpNet.Functions.Connections
 
         public override void ResetState()
         {
-            initialized = false;
+            this.gcPrev = null;
             this.hParam = null;
         }
 
