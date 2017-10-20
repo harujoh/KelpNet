@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using KelpNet.Common.Functions;
-using KelpNet.Functions.BasicMath;
+using KelpNet.Functions.Mathmetrics.BasicMath;
 
 namespace KelpNet.Common
 {

@@ -1,13 +1,13 @@
 ﻿using KelpNet.Common;
 using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions.BasicMath
+namespace KelpNet.Functions.Mathmetrics.BasicMath
 {
-    public class Div : DualInputFunction
+    public class Sub : DualInputFunction
     {
-        private const string FUNCTION_NAME = "Div";
+        private const string FUNCTION_NAME = "Sub";
 
-        public Div(string name = FUNCTION_NAME) : base(name)
+        public Sub(string name = FUNCTION_NAME) : base(name)
         {
             DualInputForward = ForwardCpu;
             DualOutputBackward = BackwardCpu;
@@ -19,7 +19,7 @@ namespace KelpNet.Functions.BasicMath
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[i] / b.Data[i];
+                resultData[i] = a.Data[i] - b.Data[i];
             }
 
             return new NdArray(resultData, this);
@@ -29,19 +29,18 @@ namespace KelpNet.Functions.BasicMath
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                Real gx = y.Grad[i] / b.Data[i];
-                a.Grad[i] += gx;
-                b.Grad[i] += -gx * a.Data[i] / b.Data[i];
+                a.Grad[i] += y.Grad[i];
+                b.Grad[i] -= y.Grad[i];
             }
         }
     }
 
     //右辺が定数
-    public class DivConst : DualInputFunction
+    public class SubConst : DualInputFunction
     {
-        private const string FUNCTION_NAME = "DivConst";
+        private const string FUNCTION_NAME = "SubConst";
 
-        public DivConst(string name = FUNCTION_NAME) : base(name)
+        public SubConst(string name = FUNCTION_NAME) : base(name)
         {
             DualInputForward = ForwardCpu;
             DualOutputBackward = BackwardCpu;
@@ -53,7 +52,7 @@ namespace KelpNet.Functions.BasicMath
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[i] / b.Data[0];
+                resultData[i] = a.Data[i] - b.Data[0];
             }
 
             return new NdArray(resultData, this);
@@ -63,17 +62,17 @@ namespace KelpNet.Functions.BasicMath
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                a.Grad[i] += y.Grad[i] / b.Data[0];
+                a.Grad[i] += y.Grad[i];
             }
         }
     }
 
     //左辺が定数
-    public class ConstDiv : DualInputFunction
+    public class ConstSub : DualInputFunction
     {
-        private const string FUNCTION_NAME = "ConstDiv";
+        private const string FUNCTION_NAME = "ConstSub";
 
-        public ConstDiv(string name = FUNCTION_NAME) : base(name)
+        public ConstSub(string name = FUNCTION_NAME) : base(name)
         {
             DualInputForward = ForwardCpu;
             DualOutputBackward = BackwardCpu;
@@ -85,7 +84,7 @@ namespace KelpNet.Functions.BasicMath
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[0] / b.Data[i];
+                resultData[i] = a.Data[0] - b.Data[i];
             }
 
             return new NdArray(resultData, this);
@@ -95,8 +94,7 @@ namespace KelpNet.Functions.BasicMath
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                Real gx = y.Grad[i] / b.Data[i];
-                b.Grad[i] += -gx * a.Data[0] / b.Data[i];
+                b.Grad[i] -= y.Grad[i];
             }
         }
     }

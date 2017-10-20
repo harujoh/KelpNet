@@ -1,13 +1,13 @@
 ﻿using KelpNet.Common;
 using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions.BasicMath
+namespace KelpNet.Functions.Mathmetrics.BasicMath
 {
-    public class Add : DualInputFunction
+    public class Mul : DualInputFunction
     {
-        private const string FUNCTION_NAME = "Add";
+        private const string FUNCTION_NAME = "Mul";
 
-        public Add(string name = FUNCTION_NAME) : base(name)
+        public Mul(string name = FUNCTION_NAME) : base(name)
         {
             DualInputForward = ForwardCpu;
             DualOutputBackward = BackwardCpu;
@@ -19,7 +19,7 @@ namespace KelpNet.Functions.BasicMath
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[i] + b.Data[i];
+                resultData[i] = a.Data[i] * b.Data[i];
             }
 
             return new NdArray(resultData, this);
@@ -29,17 +29,17 @@ namespace KelpNet.Functions.BasicMath
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                a.Grad[i] += y.Grad[i]; // * 1.0f
-                b.Grad[i] += y.Grad[i]; // * 1.0f
+                a.Grad[i] += b.Data[i] * y.Grad[i];
+                b.Grad[i] += a.Data[i] * y.Grad[i];
             }
         }
     }
 
-    public class AddConst : DualInputFunction
+    public class MulConst : DualInputFunction
     {
-        private const string FUNCTION_NAME = "AddConst";
+        private const string FUNCTION_NAME = "MulConst";
 
-        public AddConst(string name = FUNCTION_NAME) : base(name)
+        public MulConst(string name = FUNCTION_NAME) : base(name)
         {
             DualInputForward = ForwardCpu;
             DualOutputBackward = BackwardCpu;
@@ -51,7 +51,7 @@ namespace KelpNet.Functions.BasicMath
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[i] + b.Data[0];
+                resultData[i] = a.Data[i] * b.Data[0];
             }
 
             return new NdArray(resultData, this);
@@ -61,7 +61,7 @@ namespace KelpNet.Functions.BasicMath
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                a.Grad[i] += y.Grad[i]; // * 1.0f
+                a.Grad[i] += b.Data[0] * y.Grad[i];
             }
         }
     }
