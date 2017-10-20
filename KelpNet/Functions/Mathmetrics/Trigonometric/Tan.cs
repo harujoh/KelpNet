@@ -30,7 +30,7 @@ namespace KelpNet.Functions.Mathmetrics.Trigonometric
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                Real gx = Math.Cos(x.Data[i]);
+                Real gx = (Real)Math.Cos(x.Data[i]);
                 x.Grad[i] += 1 / (gx * gx) * y.Grad[i];
             }
         }
