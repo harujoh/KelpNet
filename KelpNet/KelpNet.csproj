@@ -64,6 +64,7 @@
     <Compile Include="Functions\Activations\Sigmoid.cs" />
     <Compile Include="Functions\Activations\Softmax.cs" />
     <Compile Include="Functions\Activations\Softplus.cs" />
+    <Compile Include="Functions\Activations\Swish.cs" />
     <Compile Include="Functions\Activations\Tanh.cs" />
     <Compile Include="Functions\Arrays\Concat.cs" />
     <Compile Include="Functions\Mathmetrics\BasicMath\Div.cs" />
