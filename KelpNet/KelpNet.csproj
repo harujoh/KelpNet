@@ -79,8 +79,11 @@
     <Compile Include="Functions\Mathmetrics\Trigonometric\ArcSin.cs" />
     <Compile Include="Functions\Mathmetrics\Trigonometric\ArcTan.cs" />
     <Compile Include="Functions\Mathmetrics\Trigonometric\Cos.cs" />
+    <Compile Include="Functions\Mathmetrics\Trigonometric\Cosh.cs" />
     <Compile Include="Functions\Mathmetrics\Trigonometric\Sin.cs" />
+    <Compile Include="Functions\Mathmetrics\Trigonometric\Sinh.cs" />
     <Compile Include="Functions\Mathmetrics\Trigonometric\Tan.cs" />
+    <Compile Include="Functions\Mathmetrics\Trigonometric\Tanh.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="Common\Loss\ILossFunction.cs" />
