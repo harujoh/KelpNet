@@ -412,20 +412,81 @@ namespace KelpNet.Common
             return sb.ToString();
         }
 
+
         public static NdArray operator +(NdArray a, NdArray b)
         {
             return new Add().Forward(a, b);
         }
+
+        public static NdArray operator +(NdArray a, Real b)
+        {
+            return new AddConst().Forward(a, b);
+        }
+
+        public static NdArray operator +(Real a, NdArray b)
+        {
+            return new AddConst().Forward(b, a);
+        }
+
+
+        public static NdArray operator *(NdArray a, NdArray b)
+        {
+            return new Mul().Forward(a, b);
+        }
+
+        public static NdArray operator *(NdArray a, Real b)
+        {
+            return new MulConst().Forward(a, b);
+        }
+
+        public static NdArray operator *(Real a, NdArray b)
+        {
+            return new MulConst().Forward(b, a);
+        }
+
+
+        public static NdArray operator -(NdArray a, NdArray b)
+        {
+            return new Sub().Forward(a, b);
+        }
+
+        public static NdArray operator -(NdArray a, Real b)
+        {
+            return new SubConst().Forward(a, b);
+        }
+
+        public static NdArray operator -(Real a, NdArray b)
+        {
+            return new ConstSub().Forward(a, b);
+        }
+
+
+        public static NdArray operator /(NdArray a, NdArray b)
+        {
+            return new Div().Forward(a, b);
+        }
+
+        public static NdArray operator /(NdArray a, Real b)
+        {
+            return new DivConst().Forward(a, b);
+        }
+
+        public static NdArray operator /(Real a, NdArray b)
+        {
+            return new ConstDiv().Forward(a, b);
+        }
+
 
         public static implicit operator NdArray(Real a)
         {
             return new NdArray(new[] { a });
         }
 
-        public static implicit operator NdArray(int a)
+        public static implicit operator NdArray(long a)
         {
             return new NdArray(new[] { (Real)a });
         }
+
 
         //コピーを作成するメソッド
         public NdArray Clone()

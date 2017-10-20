@@ -66,6 +66,9 @@
     <Compile Include="Functions\Activations\Softplus.cs" />
     <Compile Include="Functions\Activations\Tanh.cs" />
     <Compile Include="Functions\Arrays\Concat.cs" />
+    <Compile Include="Functions\BasicMath\Div.cs" />
+    <Compile Include="Functions\BasicMath\Mul.cs" />
+    <Compile Include="Functions\BasicMath\Sub.cs" />
     <Compile Include="Functions\Connections\Convolution2D.cs" />
     <Compile Include="Functions\Connections\Deconvolution2D.cs" />
     <Compile Include="Functions\Connections\EmbedID.cs" />
