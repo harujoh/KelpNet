@@ -47,6 +47,7 @@
     <Compile Include="Common\Functions\CompressibleActivation.cs" />
     <Compile Include="Common\Functions\DualInputFunction.cs" />
     <Compile Include="Common\Functions\MultiInputFunction.cs" />
+    <Compile Include="Common\Functions\MultiOutputFunction.cs" />
     <Compile Include="Common\Functions\SingleInputFunction.cs" />
     <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Functions\CompressibleFunction.cs" />

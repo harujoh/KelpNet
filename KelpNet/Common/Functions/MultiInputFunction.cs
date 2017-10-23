@@ -29,9 +29,6 @@ namespace KelpNet.Common.Functions
             NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);
 
-#if DEBUG
-            if (xs == null || xs.Length != 2) throw new Exception("引数が正しくありません");
-#endif
             BackwardCountUp();
 
             foreach (NdArray x in xs)
