@@ -69,7 +69,7 @@ namespace KelpNetTester.Tests
             NdArray x = new NdArray(new[] { 1 }, MINI_BATCH_SIZE);
             NdArray t = new NdArray(new[] { 1 }, MINI_BATCH_SIZE);
 
-            Stack<NdArray> backNdArrays = new Stack<NdArray>();
+            Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
 
             for (int i = 0; i < LENGTH_OF_SEQUENCE - 1; i++)
             {
@@ -79,9 +79,9 @@ namespace KelpNetTester.Tests
                     t.Data[j] = sequences[j].Data[i + 1];
                 }
 
-                Real sumLoss;
-                backNdArrays.Push(new MeanSquaredError().Evaluate(model.Forward(x), t, out sumLoss));
-                totalLoss += sumLoss;
+                NdArray[] result = model.Forward(x);
+                totalLoss += new MeanSquaredError().Evaluate(result, t);
+                backNdArrays.Push(result);
             }
 
             for (int i = 0; backNdArrays.Count > 0; i++)
@@ -131,7 +131,7 @@ namespace KelpNetTester.Tests
 
             for (int i = 0; i < input_seq.Count; i++)
             {
-                result = model.Predict(input_seq[i]);
+                result = model.Predict(input_seq[i])[0];
             }
 
             return result.Data[0];

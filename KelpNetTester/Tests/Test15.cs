@@ -50,25 +50,30 @@ namespace KelpNetTester.Tests
 
                 Console.WriteLine("Model Loading done.");
 
-                //ネットワークへ入力する前に解像度を 224px x 224px x 3ch にしておく
-                Bitmap baseImage = new Bitmap(ofd.FileName);
-                Bitmap resultImage = new Bitmap(224, 224, PixelFormat.Format24bppRgb);
-                Graphics g = Graphics.FromImage(resultImage);
-                g.DrawImage(baseImage, 0, 0, 224, 224);
-                g.Dispose();
+                do
+                {
+                    //ネットワークへ入力する前に解像度を 224px x 224px x 3ch にしておく
+                    Bitmap baseImage = new Bitmap(ofd.FileName);
+                    Bitmap resultImage = new Bitmap(224, 224, PixelFormat.Format24bppRgb);
+                    Graphics g = Graphics.FromImage(resultImage);
+                    g.DrawImage(baseImage, 0, 0, 224, 224);
+                    g.Dispose();
 
-                Real[] bias = { -123.68, -116.779, -103.939 };  //補正値のチャンネル順は入力画像に従う
-                NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true, bias);
+                    Real[] bias = {-123.68, -116.779, -103.939}; //補正値のチャンネル順は入力画像に従う
+                    NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true, bias);
 
-                Console.WriteLine("Start predict.");
-                Stopwatch sw = Stopwatch.StartNew();
-                NdArray result = nn.Predict(imageArray);
-                sw.Stop();
+                    Console.WriteLine("Start predict.");
+                    Stopwatch sw = Stopwatch.StartNew();
+                    NdArray result = nn.Predict(imageArray)[0];
+                    sw.Stop();
 
-                Console.WriteLine("Result Time : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
+                    Console.WriteLine("Result Time : " +
+                                      (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") +
+                                      "μｓ");
 
-                int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
-                Console.WriteLine("[" + result.Data[maxIndex] + "] : " + classList[maxIndex]);
+                    int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
+                    Console.WriteLine("[" + result.Data[maxIndex] + "] : " + classList[maxIndex]);
+                } while (ofd.ShowDialog() == DialogResult.OK);
             }
         }
     }

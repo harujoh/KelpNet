@@ -32,15 +32,14 @@ namespace KelpNetTester.Tests
                 NdArray img_p = getRandomImage();
 
                 //目標とするフィルタで学習用の画像を出力
-                NdArray img_core = decon_core.Forward(img_p);
+                NdArray[] img_core = decon_core.Forward(img_p);
 
                 //未学習のフィルタで画像を出力
-                NdArray img_y = model.Forward(img_p);
+                NdArray[] img_y = model.Forward(img_p);
 
-                Real loss;
-                NdArray gy = meanSquaredError.Evaluate(img_y, img_core, out loss);
+                Real loss = meanSquaredError.Evaluate(img_y, img_core);
 
-                model.Backward(gy);
+                model.Backward(img_y);
                 model.Update();
 
                 Console.WriteLine("epoch" + i + " : " + loss);

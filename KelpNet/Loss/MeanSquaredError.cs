@@ -1,36 +1,48 @@
-﻿using KelpNet.Common;
+﻿using System;
+using KelpNet.Common;
 using KelpNet.Common.Loss;
 
 namespace KelpNet.Loss
 {
-    public class MeanSquaredError : ILossFunction
+    public class MeanSquaredError : LossFunction
     {
-        public NdArray Evaluate(NdArray input, NdArray teachSignal, out Real loss)
+        public override Real Evaluate(NdArray[] input, NdArray[] teachSignal)
         {
-            Real sumLoss = 0;
-            Real[] result = new Real[input.Data.Length];
+            Real resultLoss = 0;
 
-            for (int b = 0; b < input.BatchCount; b++)
+#if DEBUG
+            if (input.Length != teachSignal.Length) throw new Exception("入力と教師信号のサイズが異なります");
+#endif
+
+            for (int k = 0; k < input.Length; k++)
             {
-                loss = 0;
+                Real sumLoss = 0;
+                Real[] result = new Real[input[k].Data.Length];
 
-                Real coeff = 2.0 / teachSignal.Length;
-
-                for (int i = 0; i < input.Length; i++)
+                for (int b = 0; b < input[k].BatchCount; b++)
                 {
-                    result[i + b * teachSignal.Length] = input.Data[i + b * input.Length] - teachSignal.Data[i + b * teachSignal.Length];
-                    loss += result[i + b * teachSignal.Length] * result[i + b * teachSignal.Length];
+                    Real localloss = 0;
+                    Real coeff = 2.0 / teachSignal[k].Length;
 
-                    result[i + b * teachSignal.Length] *= coeff;
+                    for (int i = 0; i < input[k].Length; i++)
+                    {
+                        result[i + b * teachSignal[k].Length] = input[k].Data[i + b * input[k].Length] - teachSignal[k].Data[i + b * teachSignal[k].Length];
+                        localloss += result[i + b * teachSignal[k].Length] * result[i + b * teachSignal[k].Length];
+
+                        result[i + b * teachSignal[k].Length] *= coeff;
+                    }
+
+                    sumLoss += localloss / teachSignal[k].Length;
                 }
 
-                sumLoss += loss / teachSignal.Length;
+                resultLoss += sumLoss / input[k].BatchCount;
+
+                input[k].Grad = result;
             }
 
-            loss = sumLoss / input.BatchCount;
+            resultLoss /= input.Length;
 
-            input.Grad = result;
-            return input;
+            return resultLoss;
         }
     }
 }

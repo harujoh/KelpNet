@@ -377,7 +377,7 @@ namespace CaffemodelLoader
             return (int)brob.Shape.Dims[1];
         }
 
-        public class Eltwise : Function
+        public class Eltwise : MultiInputFunction
         {
             private const string FUNCTION_NAME = "Eltwise";
 
@@ -390,17 +390,13 @@ namespace CaffemodelLoader
             {
                 this._operation = operation;
                 this._coeffs = coeffs;
+
+                MultiInputForward = ForwardCpu;
+                MultiOutputBackward = BackwardCpu;
             }
 
-            public override NdArray Forward(params NdArray[] xs)
+            public NdArray ForwardCpu(params NdArray[] xs)
             {
-                PrevInputs.Add(xs);
-
-                foreach (NdArray x in xs)
-                {
-                    x.UseCount++;
-                }
-
                 Real[] result = new Real[xs[0].Data.Length];
 
                 switch (_operation)
@@ -446,19 +442,11 @@ namespace CaffemodelLoader
                         break;
                 }
 
-                return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount);
+                return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount, this);
             }
 
-            public override void Backward(NdArray y)
+            public void BackwardCpu(NdArray y, NdArray[] xs)
             {
-                NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
-                PrevInputs.RemoveAt(PrevInputs.Count - 1);
-
-                foreach (NdArray x in xs)
-                {
-                    x.UseCount--;
-                }
-
                 Real[][] result = new Real[xs.Length][];
                 for (int i = 0; i < result.Length; i++)
                 {

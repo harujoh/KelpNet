@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Common\Functions\CompressibleActivation.cs" />
     <Compile Include="Common\Functions\DualInputFunction.cs" />
+    <Compile Include="Common\Functions\MultiInputFunction.cs" />
     <Compile Include="Common\Functions\SingleInputFunction.cs" />
     <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Functions\CompressibleFunction.cs" />
@@ -87,7 +88,7 @@
     <Compile Include="Functions\Mathmetrics\Trigonometric\Tanh.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
-    <Compile Include="Common\Loss\ILossFunction.cs" />
+    <Compile Include="Common\Loss\LossFunction.cs" />
     <Compile Include="Functions\Normalization\LRN.cs" />
     <Compile Include="Loss\MeanSquaredError.cs" />
     <Compile Include="Loss\SoftmaxCrossEntropy.cs" />

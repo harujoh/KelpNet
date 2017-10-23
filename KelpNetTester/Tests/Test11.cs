@@ -109,15 +109,6 @@ namespace KelpNetTester.Tests
             {
                 Console.WriteLine("epoch " + (epoch + 1));
 
-                //全体での誤差を集計
-                //List<Real> totalLoss = new List<Real>();
-
-                //List<Real> DNI1totalLoss = new List<Real>();
-
-                //List<Real> DNI2totalLoss = new List<Real>();
-
-                //List<Real> DNI3totalLoss = new List<Real>();
-
                 Real totalLoss = 0;
                 Real DNI1totalLoss = 0;
                 Real DNI2totalLoss = 0;
@@ -135,76 +126,72 @@ namespace KelpNetTester.Tests
                     MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    NdArray layer1ForwardResult = Layer1.Forward(datasetX.Data);
+                    NdArray[] layer1ForwardResult = Layer1.Forward(datasetX.Data);
 
                     //第一層の傾きを取得
-                    NdArray DNI1Result = DNI1.Forward(layer1ForwardResult);
+                    NdArray[] DNI1Result = DNI1.Forward(layer1ForwardResult);
 
                     //第一層を更新
                     Layer1.Backward(DNI1Result);
                     Layer1.Update();
 
                     //第二層を実行
-                    NdArray layer2ForwardResult = Layer2.Forward(layer1ForwardResult);
+                    NdArray[] layer2ForwardResult = Layer2.Forward(layer1ForwardResult);
 
                     //第二層の傾きを取得
-                    NdArray DNI2Result = DNI2.Forward(layer2ForwardResult);
+                    NdArray[] DNI2Result = DNI2.Forward(layer2ForwardResult);
 
                     //第二層を更新
                     Layer2.Backward(DNI2Result);
 
                     //第一層用のDNIの学習を実行
-                    Real DNI1loss;
-                    NdArray DNI1lossResult = new MeanSquaredError().Evaluate(DNI1Result, new NdArray(layer1ForwardResult.Grad), out DNI1loss);
+                    Real DNI1loss = new MeanSquaredError().Evaluate(DNI1Result, layer1ForwardResult[0].Grad);
 
                     Layer2.Update();
 
-                    DNI1.Backward(DNI1lossResult);
+                    DNI1.Backward(DNI1Result);
                     DNI1.Update();
 
                     DNI1totalLoss += DNI1loss;
                     DNI1totalLossCount++;
 
                     //第二層を実行
-                    NdArray layer3ForwardResult = Layer3.Forward(layer2ForwardResult);
+                    NdArray[] layer3ForwardResult = Layer3.Forward(layer2ForwardResult);
 
                     //第三層の傾きを取得
-                    NdArray DNI3Result = DNI3.Forward(layer3ForwardResult);
+                    NdArray[] DNI3Result = DNI3.Forward(layer3ForwardResult);
 
                     //第三層を更新
                     Layer3.Backward(DNI3Result);
 
                     //第二層用のDNIの学習を実行
-                    Real DNI2loss;
-                    NdArray DNI2lossResult = new MeanSquaredError().Evaluate(DNI2Result, new NdArray(layer2ForwardResult.Grad), out DNI2loss);
+                    Real DNI2loss = new MeanSquaredError().Evaluate(DNI2Result, layer2ForwardResult[0].Grad);
 
                     Layer3.Update();
 
-                    DNI2.Backward(DNI2lossResult);
+                    DNI2.Backward(DNI2Result);
                     DNI2.Update();
 
                     DNI2totalLoss += DNI2loss;
                     DNI2totalLossCount++;
 
                     //第四層を実行
-                    NdArray layer4ForwardResult = Layer4.Forward(layer3ForwardResult);
+                    NdArray[] layer4ForwardResult = Layer4.Forward(layer3ForwardResult);
 
                     //第四層の傾きを取得
-                    Real sumLoss;
-                    NdArray lossResult = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, datasetX.Label, out sumLoss);
+                    Real sumLoss = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, datasetX.Label);
 
                     //第四層を更新
-                    Layer4.Backward(lossResult);
+                    Layer4.Backward(layer4ForwardResult);
                     totalLoss = sumLoss;
                     totalLossCount++;
 
                     //第三層用のDNIの学習を実行
-                    Real DNI3loss;
-                    NdArray DNI3lossResult = new MeanSquaredError().Evaluate(DNI3Result, new NdArray(layer3ForwardResult.Grad), out DNI3loss);
+                    Real DNI3loss = new MeanSquaredError().Evaluate(DNI3Result, layer3ForwardResult[0].Grad);
 
                     Layer4.Update();
 
-                    DNI3.Backward(DNI3lossResult);
+                    DNI3.Backward(DNI3Result);
                     DNI3.Update();
 
                     DNI3totalLoss = DNI3loss;

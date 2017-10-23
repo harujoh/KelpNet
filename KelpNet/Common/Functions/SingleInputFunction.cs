@@ -12,15 +12,15 @@ namespace KelpNet.Common.Functions
         {
         }
 
-        public override NdArray Forward(params NdArray[] xs)
+        public override NdArray[] Forward(params NdArray[] xs)
         {
             PrevInputs.Add(xs);
             xs[0].UseCount++;
 
-            return SingleInputForward(xs[0]);
+            return new[] { SingleInputForward(xs[0]) };
         }
 
-        public override void Backward(NdArray y)
+        public override void Backward(params NdArray[] y)
         {
             NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);
@@ -31,12 +31,12 @@ namespace KelpNet.Common.Functions
             BackwardCountUp();
 
             xs[0].UseCount--;
-            SingleOutputBackward(y, xs[0]);
+            SingleOutputBackward(y[0], xs[0]);
         }
 
-        public override NdArray Predict(params NdArray[] xs)
+        public override NdArray[] Predict(params NdArray[] xs)
         {
-            return Predict(xs[0]);
+            return new[] { Predict(xs[0]) };
         }
 
         //Predict専用メソッドを持つ関数のためのオーバーライド用

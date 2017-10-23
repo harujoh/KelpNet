@@ -81,29 +81,29 @@ namespace KelpNetTester.Tests
             NdArray testInputValuesB = new NdArray(testValue);
 
             Console.WriteLine("l0 for");
-            var l0Result = l0.Forward(testInputValuesA);
+            NdArray[] l0Result = l0.Forward(testInputValuesA);
             Console.WriteLine(l0Result);
 
             Console.WriteLine("\nl1 for");
-            var l1Result = l1.Forward(testInputValuesB);
+            NdArray[] l1Result = l1.Forward(testInputValuesB);
             Console.WriteLine(l1Result);
 
             Console.WriteLine("\nl2 for");
-            var l2Result = l2.Forward(testInputValuesB);
+            NdArray[] l2Result = l2.Forward(testInputValuesB);
             Console.WriteLine(l2Result);
 
             Console.WriteLine("\nl3 for");
-            var l3Result = l3.Forward(testInputValuesB);
+            NdArray[] l3Result = l3.Forward(testInputValuesB);
             Console.WriteLine(l3Result);
 
             Console.WriteLine("\nl4 for");
-            var l4Result = l4.Forward(testInputValuesB);
+            NdArray[] l4Result = l4.Forward(testInputValuesB);
             Console.WriteLine(l4Result);
 
             Console.WriteLine();
 
             //適当なGrad値をでっち上げる
-            l0Result.Grad = new Real[]
+            l0Result[0].Grad = new Real[]
                                     {
                                         -2.42022760e-02, 5.02482988e-04, 2.52015481e-04, 8.08797951e-04, -7.19293347e-03,
                                         1.40045900e-04, 7.09874439e-05, 2.07651625e-04, 3.80124636e-02, -8.87162634e-04,
@@ -111,12 +111,10 @@ namespace KelpNetTester.Tests
                                         -4.70047118e-04, 3.61101292e-02, -7.12957408e-04, -3.63163825e-04, -1.12809543e-03
                                     };
 
-
-
-            l1Result.Grad = new Real[] {-2.42022760e-02,5.02482988e-04, 2.52015481e-04,8.08797951e-04,- 7.19293347e-03};
-            l2Result.Grad = new Real[] {1.40045900e-04, 7.09874439e-05, 2.07651625e-04, 3.80124636e-02, -8.87162634e-04};
-            l3Result.Grad = new Real[] {-4.64874669e-04, -1.40792923e-03, -4.12280299e-02, -3.36557830e-04, -1.50323089e-04};
-            l4Result.Grad = new Real[] {-4.70047118e-04, 3.61101292e-02, -7.12957408e-04, -3.63163825e-04, -1.12809543e-03};
+            l1Result[0].Grad = new Real[] {-2.42022760e-02,5.02482988e-04, 2.52015481e-04,8.08797951e-04,- 7.19293347e-03};
+            l2Result[0].Grad = new Real[] {1.40045900e-04, 7.09874439e-05, 2.07651625e-04, 3.80124636e-02, -8.87162634e-04};
+            l3Result[0].Grad = new Real[] {-4.64874669e-04, -1.40792923e-03, -4.12280299e-02, -3.36557830e-04, -1.50323089e-04};
+            l4Result[0].Grad = new Real[] {-4.70047118e-04, 3.61101292e-02, -7.12957408e-04, -3.63163825e-04, -1.12809543e-03};
             
 
             //Backwardを実行

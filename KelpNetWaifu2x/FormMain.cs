@@ -64,11 +64,12 @@ namespace KelpNetWaifu2x
                     }
 
                     //padを行い入力と出力画像のサイズを合わせる
-                    functionList.Add(new Convolution2D((int)data["nInputPlane"], (int)data["nOutputPlane"], (int)data["kW"], pad: (int)data["kW"] / 2, initialW: weightData, initialb: (Real[])data["bias"],name: "Convolution2D l" + layerCounter++));
+                    functionList.Add(new Convolution2D((int)data["nInputPlane"], (int)data["nOutputPlane"], (int)data["kW"], pad: (int)data["kW"] / 2, initialW: weightData, initialb: (Real[])data["bias"],name: "Convolution2D l" + layerCounter++, gpuEnable: true));
                     functionList.Add(new LeakyReLU(0.1, name: "LeakyReLU l" + layerCounter++));
                 }
 
                 nn = new FunctionStack(functionList.ToArray());
+                nn.Compress();
 
                 MessageBox.Show("読み込み完了");
             }
@@ -113,8 +114,8 @@ namespace KelpNetWaifu2x
                     g.Dispose();
 
                     NdArray image = NdArrayConverter.Image2NdArray(resultImage);
-                    NdArray resultArray = this.nn.Predict(image);
-                    resultImage = NdArrayConverter.NdArray2Image(resultArray.GetSingleArray(0));
+                    NdArray[] resultArray = this.nn.Predict(image);
+                    resultImage = NdArrayConverter.NdArray2Image(resultArray[0].GetSingleArray(0));
                     resultImage.Save(sfd.FileName);
                     this.pictureBox1.Image = new Bitmap(resultImage);
                 }

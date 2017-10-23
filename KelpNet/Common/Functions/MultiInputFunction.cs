@@ -3,23 +3,25 @@
 namespace KelpNet.Common.Functions
 {
     [Serializable]
-    public abstract class DualInputFunction : Function
+    public abstract class MultiInputFunction : Function
     {
-        protected Func<NdArray, NdArray, NdArray> DualInputForward;
-        protected Action<NdArray, NdArray, NdArray> DualOutputBackward;
-
-        protected DualInputFunction(string name) : base(name)
+        protected MultiInputFunction(string name) : base(name)
         {
         }
+
+        protected Func<NdArray[], NdArray> MultiInputForward;
+        protected Action<NdArray, NdArray[]> MultiOutputBackward;
 
         public override NdArray[] Forward(params NdArray[] xs)
         {
             PrevInputs.Add(xs);
 
-            xs[0].UseCount++;
-            xs[1].UseCount++;
+            foreach (NdArray x in xs)
+            {
+                x.UseCount++;
+            }
 
-            return new[] { DualInputForward(xs[0], xs[1]) };
+            return new []{MultiInputForward(xs)};
         }
 
         public override void Backward(params NdArray[] y)
@@ -32,15 +34,17 @@ namespace KelpNet.Common.Functions
 #endif
             BackwardCountUp();
 
-            xs[0].UseCount--;
-            xs[1].UseCount--;
+            foreach (NdArray x in xs)
+            {
+                x.UseCount--;
+            }
 
-            DualOutputBackward(y[0], xs[0], xs[1]);
+            MultiOutputBackward(y[0], xs);
         }
 
         public override NdArray[] Predict(params NdArray[] xs)
         {
-            return new[] { DualInputForward(xs[0], xs[1]) };
+            return new []{MultiInputForward(xs)};
         }
     }
 }

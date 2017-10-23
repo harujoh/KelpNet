@@ -19,8 +19,8 @@ namespace KelpNet.Common.Functions
         [NonSerialized]
         public List<NdArray[]> PrevInputs = new List<NdArray[]>();
 
-        public abstract NdArray Forward(params NdArray[] xs);
-        public abstract void Backward(NdArray y);
+        public abstract NdArray[] Forward(params NdArray[] xs);
+        public abstract void Backward(params NdArray[] y);
 
         //コンストラクタ
         protected Function(string name)
@@ -48,7 +48,7 @@ namespace KelpNet.Common.Functions
         }
 
         //評価関数
-        public virtual NdArray Predict(params NdArray[] input)
+        public virtual NdArray[] Predict(params NdArray[] input)
         {
             return this.Forward(input);
         }

@@ -72,22 +72,22 @@ namespace KelpNetTester.Tests
                             int tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
 
                             //l1 EmbedID
-                            NdArray l1 = model.Functions[0].Forward(s[i]);
+                            NdArray l1 = model.Functions[0].Forward(s[i])[0];
 
                             //l2 Linear
-                            NdArray l2 = model.Functions[1].Forward(h);
+                            NdArray l2 = model.Functions[1].Forward(h)[0];
 
                             //Add
                             NdArray xK = l1 + l2;
 
                             //l2 Tanh
-                            h = model.Functions[2].Forward(xK);
+                            h = model.Functions[2].Forward(xK)[0];
 
                             //l3 Linear
-                            NdArray h2 = model.Functions[3].Forward(h);
+                            NdArray h2 = model.Functions[3].Forward(h)[0];
 
-                            Real loss;
-                            tmp.Push(softmaxCrossEntropy.Evaluate(h2, tx, out loss));
+                            Real loss = softmaxCrossEntropy.Evaluate(h2, tx);
+                            tmp.Push(h2);
                             accumloss += loss;
                         }
 
@@ -159,20 +159,20 @@ namespace KelpNetTester.Tests
             for (int i = 1; i < s.Count; i++)
             {
                 //l1 Linear
-                NdArray xK = model.Functions[0].Forward(s[i]);
+                NdArray xK = model.Functions[0].Forward(s[i])[0];
 
                 //l2 Linear
-                NdArray l2 = model.Functions[1].Forward(h);
+                NdArray l2 = model.Functions[1].Forward(h)[0];
                 for (int j = 0; j < xK.Data.Length; j++)
                 {
                     xK.Data[j] += l2.Data[j];
                 }
 
                 //l2 Tanh
-                h = model.Functions[2].Forward(xK);
+                h = model.Functions[2].Forward(xK)[0];
 
                 //l3 Softmax(l3 Linear)
-                NdArray yv = model.Functions[4].Forward(model.Functions[3].Forward(h));
+                NdArray yv = model.Functions[4].Forward(model.Functions[3].Forward(h))[0];
                 Real pi = yv.Data[s[i - 1]];
                 sum -= Math.Log(pi, 2);
             }

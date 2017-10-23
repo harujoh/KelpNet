@@ -63,7 +63,7 @@ namespace KelpNetTester.Tests
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
             int epoch = 0;
 
-            Stack<NdArray> backNdArrays = new Stack<NdArray>();
+            Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
 
             Console.WriteLine("Train Start.");
 
@@ -78,8 +78,9 @@ namespace KelpNetTester.Tests
                     t.Data[j] = trainData[(int)((jump * j + i + 1) % wholeLen)];
                 }
 
-                Real sumLoss;
-                backNdArrays.Push(new SoftmaxCrossEntropy().Evaluate(model.Forward(x), t, out sumLoss));
+                NdArray[] result = model.Forward(x);
+                Real sumLoss = new SoftmaxCrossEntropy().Evaluate(result, t);
+                backNdArrays.Push(result);
                 Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
 
                 //Run truncated BPTT
@@ -118,7 +119,6 @@ namespace KelpNetTester.Tests
             Function predictModel = model.Clone();
             predictModel.ResetState();
 
-            //List<Real> totalLoss = new List<Real>();
             Real totalLoss = 0;
             long totalLossCount = 0;
 
@@ -133,8 +133,7 @@ namespace KelpNetTester.Tests
                     t.Data[j] = dataset[j + i + 1];
                 }
 
-                Real sumLoss;
-                new SoftmaxCrossEntropy().Evaluate(predictModel.Forward(x), t, out sumLoss);
+                Real sumLoss = new SoftmaxCrossEntropy().Evaluate(predictModel.Forward(x), t);
                 totalLoss += sumLoss;
                 totalLossCount++;
             }

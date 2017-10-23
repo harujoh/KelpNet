@@ -79,18 +79,17 @@ namespace KelpNetTester.Tests
                 NdArray img_p = getRandomImage();
 
                 //目標とするフィルタで学習用の画像を出力
-                NdArray img_core = this.decon_core.Forward(img_p);
+                NdArray[] img_core = this.decon_core.Forward(img_p);
 
                 //未学習のフィルタで画像を出力
-                NdArray img_y = this.model.Forward(img_p);
+                NdArray[] img_y = this.model.Forward(img_p);
 
                 //img_yを暗黙的にNdArrayとして使用
-                this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y.GetSingleArray(0));
+                this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y[0].GetSingleArray(0));
 
-                Real loss;
-                NdArray gy = this.meanSquaredError.Evaluate(img_y, img_core, out loss);
+                Real loss = this.meanSquaredError.Evaluate(img_y, img_core);
 
-                this.model.Backward(gy);
+                this.model.Backward(img_y);
                 this.model.Update();
 
                 this.Text = "[epoch" + this.counter + "] Loss : " + string.Format("{0:F4}", loss);

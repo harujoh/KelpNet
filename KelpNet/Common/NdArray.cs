@@ -415,67 +415,76 @@ namespace KelpNet.Common
 
         public static NdArray operator +(NdArray a, NdArray b)
         {
-            return new Add().Forward(a, b);
+            return new Add().Forward(a, b)[0];
         }
 
         public static NdArray operator +(NdArray a, Real b)
         {
-            return new AddConst().Forward(a, b);
+            return new AddConst().Forward(a, b)[0];
         }
 
         public static NdArray operator +(Real a, NdArray b)
         {
-            return new AddConst().Forward(b, a);
+            return new AddConst().Forward(b, a)[0];
         }
 
 
         public static NdArray operator *(NdArray a, NdArray b)
         {
-            return new Mul().Forward(a, b);
+            return new Mul().Forward(a, b)[0];
         }
 
         public static NdArray operator *(NdArray a, Real b)
         {
-            return new MulConst().Forward(a, b);
+            return new MulConst().Forward(a, b)[0];
         }
 
         public static NdArray operator *(Real a, NdArray b)
         {
-            return new MulConst().Forward(b, a);
+            return new MulConst().Forward(b, a)[0];
         }
 
 
         public static NdArray operator -(NdArray a, NdArray b)
         {
-            return new Sub().Forward(a, b);
+            return new Sub().Forward(a, b)[0];
         }
 
         public static NdArray operator -(NdArray a, Real b)
         {
-            return new SubConst().Forward(a, b);
+            return new SubConst().Forward(a, b)[0];
         }
 
         public static NdArray operator -(Real a, NdArray b)
         {
-            return new ConstSub().Forward(a, b);
+            return new ConstSub().Forward(a, b)[0];
         }
 
 
         public static NdArray operator /(NdArray a, NdArray b)
         {
-            return new Div().Forward(a, b);
+            return new Div().Forward(a, b)[0];
         }
 
         public static NdArray operator /(NdArray a, Real b)
         {
-            return new DivConst().Forward(a, b);
+            return new DivConst().Forward(a, b)[0];
         }
 
         public static NdArray operator /(Real a, NdArray b)
         {
-            return new ConstDiv().Forward(a, b);
+            return new ConstDiv().Forward(a, b)[0];
         }
 
+        public static implicit operator NdArray(Real[] a)
+        {
+            return new NdArray(a);
+        }
+
+        public static implicit operator NdArray(int[] a)
+        {
+            return new NdArray(a);
+        }
 
         public static implicit operator NdArray(Real a)
         {
@@ -502,6 +511,42 @@ namespace KelpNet.Common
                 UseCount = UseCount,
                 TrainCount = TrainCount
             };
+        }
+
+        public static NdArray[] Split(NdArray array, int[] indices, int axis = 0)
+        {
+            int[] shapeOffets = new int[indices.Length + 1];
+            int[] resultAxisShapes = new int[indices.Length + 1];
+
+            for (int i = 0; i < indices.Length; i++)
+            {
+                shapeOffets[i + 1] = indices[i];
+                resultAxisShapes[i] = indices[i] - shapeOffets[i];
+            }
+            resultAxisShapes[indices.Length] = array.Length - indices[indices.Length - 1];
+
+            NdArray[] resultArrays = new NdArray[indices.Length + 1];
+            for (int i = 0; i < resultArrays.Length; i++)
+            {
+                int[] resultShape = array.Shape.ToArray();
+                resultShape[axis] = resultAxisShapes[i];
+                resultArrays[i] = new NdArray(resultShape, array.BatchCount);
+            }
+
+            for (int batchCount = 0; batchCount < array.BatchCount; batchCount++)
+            {
+                for (int i = 0; i < resultArrays.Length; i++)
+                {
+                    for (int j = 0; j < resultArrays[i].Data.Length; j++)
+                    {
+                        int[] resultIndex = resultArrays[i].GetDimensionsIndex(i);
+                        resultIndex[axis] += shapeOffets[i];
+                        resultArrays[i].Data[i] = array.Data[array.GetLocalIndex(resultIndex, batchCount)];
+                    }
+                }
+            }
+
+            return resultArrays;
         }
 
         public static NdArray Concatenate(NdArray a, NdArray b, int axis)

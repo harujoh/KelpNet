@@ -8,28 +8,21 @@ namespace KelpNet.Common.Tools
     //主にArray->NdArrayの型変換を担う
     public class Trainer
     {
-        public static Real Train(FunctionStack functionStack, Array input, Array teach, ILossFunction lossFunction, bool isUpdate = true)
-        {
-            return Train(functionStack, new NdArray(input), new NdArray(teach), lossFunction, isUpdate);
-        }
-
         //バッチで学習処理を行う
-        public static Real Train(FunctionStack functionStack, Array[] input, Array[] teach, ILossFunction lossFunction, bool isUpdate = true)
+        public static Real Train(FunctionStack functionStack, Array[] input, Array[] teach, LossFunction lossFunction, bool isUpdate = true)
         {
             return Train(functionStack, NdArray.FromArrays(input), NdArray.FromArrays(teach), lossFunction, isUpdate);
         }
 
         //バッチで学習処理を行う
-        public static Real Train(FunctionStack functionStack, NdArray input, NdArray teach, ILossFunction lossFunction, bool isUpdate = true)
+        public static Real Train(FunctionStack functionStack, NdArray input, NdArray teach, LossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
-            Real sumLoss;
-
-            //Forwardのバッチを実行
-            NdArray lossResult = lossFunction.Evaluate(functionStack.Forward(input), teach, out sumLoss);
+            NdArray[] result = functionStack.Forward(input);
+            Real sumLoss = lossFunction.Evaluate(result, teach);
 
             //Backwardのバッチを実行
-            functionStack.Backward(lossResult);
+            functionStack.Backward(result);
 
             //更新
             if (isUpdate)
@@ -38,12 +31,6 @@ namespace KelpNet.Common.Tools
             }
 
             return sumLoss;
-        }
-
-        //精度測定
-        public static double Accuracy(FunctionStack functionStack, Array x, Array y)
-        {
-            return Accuracy(functionStack, new NdArray(x), new NdArray(y));
         }
 
         //精度測定
@@ -56,7 +43,7 @@ namespace KelpNet.Common.Tools
         {
             double matchCount = 0;
 
-            NdArray forwardResult = functionStack.Predict(x);
+            NdArray forwardResult = functionStack.Predict(x)[0];
 
             for (int b = 0; b < x.BatchCount; b++)
             {

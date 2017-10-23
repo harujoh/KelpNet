@@ -208,9 +208,9 @@ namespace KelpNet.Functions.Normalization
             }
         }
 
-        public override NdArray Predict(NdArray input)
+        public override NdArray[] Predict(params NdArray[] input)
         {
-            NdArray result;
+            NdArray[] result;
 
             if (this.IsTrain)
             {

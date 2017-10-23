@@ -56,9 +56,9 @@ namespace KelpNet.Common.Functions
         }
 
         //Forward
-        public override NdArray Forward(params NdArray[] xs)
+        public override NdArray[] Forward(params NdArray[] xs)
         {
-            NdArray result = this.Functions[0].Forward(xs);
+            NdArray[] result = this.Functions[0].Forward(xs);
 
             for (int i = 1; i < this.Functions.Length; i++)
             {
@@ -69,9 +69,9 @@ namespace KelpNet.Common.Functions
         }
 
         //Backward
-        public override void Backward(NdArray y)
+        public override void Backward(params NdArray[] y)
         {
-            NdArray.Backward(y);
+            NdArray.Backward(y[0]);
         }
 
         //重みの更新処理
@@ -94,9 +94,9 @@ namespace KelpNet.Common.Functions
         }
 
         //予想を実行する
-        public override NdArray Predict(params NdArray[] xs)
+        public override NdArray[] Predict(params NdArray[] xs)
         {
-            NdArray y = this.Functions[0].Predict(xs);
+            NdArray[] y = this.Functions[0].Predict(xs);
 
             for (int i = 1; i < this.Functions.Length; i++)
             {

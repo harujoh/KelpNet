@@ -74,10 +74,10 @@ namespace KelpNet.Functions.Connections
         public NdArray ForwardCpu(NdArray x)
         {
             Real[][] upwards = new Real[4][];
-            upwards[0] = this.upward0.Forward(x).Data;
-            upwards[1] = this.upward1.Forward(x).Data;
-            upwards[2] = this.upward2.Forward(x).Data;
-            upwards[3] = this.upward3.Forward(x).Data;
+            upwards[0] = this.upward0.Forward(x)[0].Data;
+            upwards[1] = this.upward1.Forward(x)[0].Data;
+            upwards[2] = this.upward2.Forward(x)[0].Data;
+            upwards[3] = this.upward3.Forward(x)[0].Data;
 
             int outputDataSize = x.BatchCount * this.OutputCount;
 
@@ -92,10 +92,10 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                Real[] laterals0 = this.lateral0.Forward(hParam).Data;
-                Real[] laterals1 = this.lateral1.Forward(hParam).Data;
-                Real[] laterals2 = this.lateral2.Forward(hParam).Data;
-                Real[] laterals3 = this.lateral3.Forward(hParam).Data;
+                Real[] laterals0 = this.lateral0.Forward(hParam)[0].Data;
+                Real[] laterals1 = this.lateral1.Forward(hParam)[0].Data;
+                Real[] laterals2 = this.lateral2.Forward(hParam)[0].Data;
+                Real[] laterals3 = this.lateral3.Forward(hParam)[0].Data;
                 hParam.UseCount -= 4; //回数を補正 RFI
 
                 for (int i = 0; i < outputDataSize; i++)
