@@ -58,6 +58,7 @@ Twitter: https://twitter.com/harujoh
 　・Tanh
 　・Softmax
 　・Softplus
+　・Swish
 - Connections:
 　・Convolution2D
 　・Deconvolution2D
