@@ -53,6 +53,9 @@ namespace CaffemodelLoader
             Console.WriteLine(layer.Type);
             switch (layer.Type)
             {
+                case "Slice":
+                    return SetupSlice(layer.SliceParam, layer.Name);
+
                 case "LRN":
                     return SetupLRN(layer.LrnParam, layer.Name);
 
@@ -99,6 +102,9 @@ namespace CaffemodelLoader
         {
             switch (layer.Type)
             {
+                case V1LayerParameter.LayerType.Slice:
+                    return SetupSlice(layer.SliceParam, layer.Name);
+
                 case V1LayerParameter.LayerType.Concat:
                     return SetupConcat(layer.ConcatParam, layer.Name);
 
@@ -133,6 +139,18 @@ namespace CaffemodelLoader
             Console.WriteLine("Skip the layer \"{0}\", since CaffemodelLoader does not support {0} layer", layer.Type);
 
             return null;
+        }
+
+        static Function SetupSlice(SliceParameter param, string name)
+        {
+            int[] slicePoints = new int[param.SlicePoints.Length];
+
+            for (int i = 0; i < slicePoints.Length; i++)
+            {
+                slicePoints[i] = (int)param.SlicePoints[i];
+            }
+
+            return new SplitAxis(slicePoints, param.Axis, name);
         }
 
         static Function SetupPooling(PoolingParameter param, string name)

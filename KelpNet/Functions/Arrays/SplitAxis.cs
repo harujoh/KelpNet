@@ -6,7 +6,7 @@ using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Arrays
 {
-    class SplitAxis : MultiOutputFunction
+    public class SplitAxis : MultiOutputFunction
     {
         const string FUNCTION_NAME = "SplitAxis";
         private int _axis;
