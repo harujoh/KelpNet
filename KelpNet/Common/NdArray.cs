@@ -523,9 +523,11 @@ namespace KelpNet.Common
                 shapeOffets[i + 1] = indices[i];
                 resultAxisShapes[i] = indices[i] - shapeOffets[i];
             }
+
             resultAxisShapes[indices.Length] = array.Length - indices[indices.Length - 1];
 
             NdArray[] resultArrays = new NdArray[indices.Length + 1];
+
             for (int i = 0; i < resultArrays.Length; i++)
             {
                 int[] resultShape = array.Shape.ToArray();
@@ -539,9 +541,12 @@ namespace KelpNet.Common
                 {
                     for (int j = 0; j < resultArrays[i].Data.Length; j++)
                     {
-                        int[] resultIndex = resultArrays[i].GetDimensionsIndex(i);
+                        int[] resultIndex = resultArrays[i].GetDimensionsIndex(j);
                         resultIndex[axis] += shapeOffets[i];
-                        resultArrays[i].Data[i] = array.Data[array.GetLocalIndex(resultIndex, batchCount)];
+                        int localIndex = array.GetLocalIndex(resultIndex, batchCount);
+
+                        resultArrays[i].Data[j] = array.Data[localIndex];
+                        resultArrays[i].Grad[j] = array.Grad[localIndex];
                     }
                 }
             }

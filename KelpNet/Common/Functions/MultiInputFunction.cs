@@ -5,12 +5,12 @@ namespace KelpNet.Common.Functions
     [Serializable]
     public abstract class MultiInputFunction : Function
     {
+        protected Func<NdArray[], NdArray> MultiInputForward;
+        protected Action<NdArray, NdArray[]> MultiOutputBackward;
+
         protected MultiInputFunction(string name) : base(name)
         {
         }
-
-        protected Func<NdArray[], NdArray> MultiInputForward;
-        protected Action<NdArray, NdArray[]> MultiOutputBackward;
 
         public override NdArray[] Forward(params NdArray[] xs)
         {
