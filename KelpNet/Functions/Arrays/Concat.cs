@@ -30,7 +30,7 @@ namespace KelpNet.Functions.Arrays
 
                 for (int j = 0; j < resultNdArrays.Length; j++)
                 {
-                    //resultNdArrays[j] = NdArray.Concatenate(resultNdArrays[j], tmpNdArray[j], _axis);
+                    resultNdArrays[j] = NdArray.Concatenate(resultNdArrays[j], tmpNdArray[j], _axis);
                 }
             }
 
@@ -39,7 +39,7 @@ namespace KelpNet.Functions.Arrays
             return new NdArray(resultNdArrays, this);
         }
 
-        public override void Backward(NdArray gy)
+        public override void Backward(NdArray y)
         {
             int[][] prevInputShapes = this._prevInputShapes[this._prevInputShapes.Count - 1];
             this._prevInputShapes.RemoveAt(this._prevInputShapes.Count - 1);

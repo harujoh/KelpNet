@@ -402,11 +402,11 @@ namespace CaffemodelLoader
                 }
 
                 Real[] result = new Real[xs[0].Data.Length];
-                Array.Copy(xs[0].Data, result, result.Length);
 
                 switch (_operation)
                 {
                     case EltwiseParameter.EltwiseOp.Prod:
+                        Array.Copy(xs[0].Data, result, result.Length);
                         for (int i = 1; i < xs.Length; i++)
                         {
                             for (int j = 0; j < result.Length; j++)
@@ -417,7 +417,7 @@ namespace CaffemodelLoader
                         break;
 
                     case EltwiseParameter.EltwiseOp.Sum:
-                        for (int i = 1; i < xs.Length; i++)
+                        for (int i = 0; i < xs.Length; i++)
                         {
                             for (int j = 0; j < result.Length; j++)
                             {
@@ -427,6 +427,7 @@ namespace CaffemodelLoader
                         break;
 
                     case EltwiseParameter.EltwiseOp.Max:
+                        Array.Copy(xs[0].Data, result, result.Length);
                         int[] outputIndex = new int[result.Length];
 
                         for (int i = 1; i < xs.Length; i++)

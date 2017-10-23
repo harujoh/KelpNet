@@ -487,7 +487,6 @@ namespace KelpNet.Common
             return new NdArray(new[] { (Real)a });
         }
 
-
         //コピーを作成するメソッド
         public NdArray Clone()
         {
@@ -503,6 +502,87 @@ namespace KelpNet.Common
                 UseCount = UseCount,
                 TrainCount = TrainCount
             };
+        }
+
+        public static NdArray Concatenate(NdArray a, NdArray b, int axis)
+        {
+            int[] shapeList = a.Shape.ToArray();
+            shapeList[axis] += b.Shape[axis];
+
+#if DEBUG
+            for (int i = 0; i < a.Shape.Length; i++)
+            {
+                if (a.Shape[i] != b.Shape[i])
+                {
+                    throw new Exception("配列の大きさがマッチしていません");
+                }
+            }
+#endif
+
+            NdArray result = new NdArray(shapeList.ToArray(), a.BatchCount);
+
+            for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
+            {
+                int aInputBatchoffset = batchCount * a.Length;
+                int bInputBatchoffset = batchCount * b.Length;
+
+                for (int i = 0; i < a.Length; i++)
+                {
+                    int resultindex = result.GetLocalIndex(a.GetDimensionsIndex(i), batchCount);
+
+                    result.Data[resultindex] = a.Data[i + aInputBatchoffset];
+                    result.Grad[resultindex] = a.Grad[i + aInputBatchoffset];
+                }
+
+                for (int i = 0; i < b.Length; i++)
+                {
+                    int[] tmpIndex = b.GetDimensionsIndex(i);
+                    tmpIndex[axis] += a.Shape[axis];
+
+                    int resultIndex = result.GetLocalIndex(tmpIndex, batchCount);
+
+                    result.Data[resultIndex] = b.Data[i + bInputBatchoffset];
+                    result.Grad[resultIndex] = b.Grad[i + bInputBatchoffset];
+                }
+            }
+
+            return result;
+        }
+
+        private int[] GetDimensionsIndex(int index)
+        {
+            //バッチ分を補正
+            int batchCount = index % Length;
+            index -= Length * batchCount;
+
+            int[] dimensionsIndex = new int[this.Shape.Length];
+
+            for (int i = this.Shape.Length - 1; i >= 0; i--)
+            {
+                dimensionsIndex[i] = index % this.Shape[i];
+                index = index / this.Shape[i];
+            }
+
+            return dimensionsIndex;
+        }
+
+        private int GetLocalIndex(int[] indices, int batchIndex)
+        {
+            int index = batchIndex * Length;
+
+            for (int i = 0; i < indices.Length; i++)
+            {
+                int rankOffset = 1;
+
+                for (int j = i + 1; j < this.Shape.Length; j++)
+                {
+                    rankOffset *= this.Shape[j];
+                }
+
+                index += indices[i] * rankOffset;
+            }
+
+            return index;
         }
     }
 }
