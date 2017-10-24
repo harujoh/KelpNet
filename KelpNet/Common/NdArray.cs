@@ -514,18 +514,23 @@ namespace KelpNet.Common
             };
         }
 
-        public static NdArray[] Split(NdArray array, int[] indices, int axis = 0)
+        public static NdArray[] Split(NdArray array, int indices, int axis = 1)
         {
-            int[] shapeOffets = new int[indices.Length + 1];
-            int[] resultAxisShapes = new int[indices.Length + 1];
+            return Split(array, new[] {indices}, axis);
+        }
+
+        public static NdArray[] Split(NdArray array, int[] indices, int axis = 1)
+        {
+            int[] shapeOffets = new int[indices.Length + 1];        //入力されたindicesの先頭0を追加した配列
+            int[] resultAxisShapes = new int[indices.Length + 1];   //分割後の指定軸のShape
 
             for (int i = 0; i < indices.Length; i++)
             {
                 shapeOffets[i + 1] = indices[i];
                 resultAxisShapes[i] = indices[i] - shapeOffets[i];
             }
+            resultAxisShapes[indices.Length] = array.Shape[axis] - indices[indices.Length - 1];
 
-            resultAxisShapes[indices.Length] = array.Length - indices[indices.Length - 1];
 
             NdArray[] resultArrays = new NdArray[indices.Length + 1];
 

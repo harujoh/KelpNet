@@ -33,6 +33,41 @@ namespace KelpNetTester.Tests
 
             Console.WriteLine();
             Console.WriteLine(arrH);
+
+
+            NdArray arr = Enumerable.Range(0, 12).Select(n => (Real)n).ToArray();
+            arr.Reshape(3, 4);
+
+            Console.WriteLine();
+            Console.WriteLine(arr);
+
+            NdArray[] result1 = NdArray.Split(arr, 2, 1);
+
+            Console.WriteLine();
+            Console.WriteLine(result1[0]);
+
+            Console.WriteLine();
+            Console.WriteLine(result1[1]);
+
+            NdArray[] result2 = NdArray.Split(arr, new[] { 1, 3 }, 1);
+
+            Console.WriteLine();
+            Console.WriteLine(result2[0]);
+
+            Console.WriteLine();
+            Console.WriteLine(result2[1]);
+
+            Console.WriteLine();
+            Console.WriteLine(result2[2]);
+
+            NdArray[] result3 = NdArray.Split(arr, 1, 0);
+
+            Console.WriteLine();
+            Console.WriteLine(result3[0]);
+
+            Console.WriteLine();
+            Console.WriteLine(result3[1]);
+
         }
     }
 }
