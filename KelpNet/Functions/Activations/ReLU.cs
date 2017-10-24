@@ -13,12 +13,12 @@ namespace KelpNet.Functions.Activations
         {
         }
 
-        public override Real ForwardActivate(Real x)
+        internal override Real ForwardActivate(Real x)
         {
             return x < 0 ? 0 : x;
         }
 
-        public override Real BackwardActivate(Real gy, Real y)
+        internal override Real BackwardActivate(Real gy, Real y)
         {
             return y <= 0 ? 0 : gy;
         }

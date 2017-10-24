@@ -76,7 +76,7 @@ namespace KelpNet.Functions.Normalization
             SingleOutputBackward = BackwardCpu;
         }
 
-        public NdArray ForwardCpu(NdArray x)
+        private NdArray ForwardCpu(NdArray x)
         {
             //計算用パラメータの取得
             if (this.IsTrain)
@@ -160,7 +160,7 @@ namespace KelpNet.Functions.Normalization
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        public void BackwardCpu(NdArray y, NdArray x)
+        private void BackwardCpu(NdArray y, NdArray x)
         {
             this.Beta.ClearGrad();
             this.Gamma.ClearGrad();

@@ -22,8 +22,8 @@ namespace KelpNet.Common.Functions
         public string ActivateFunctionString;
 
         //.Netで使用するActivateの仮想関数
-        public abstract Real ForwardActivate(Real x);
-        public abstract Real BackwardActivate(Real gy, Real y);
+        internal abstract Real ForwardActivate(Real x);
+        internal abstract Real BackwardActivate(Real gy, Real y);
 
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
@@ -75,7 +75,7 @@ namespace KelpNet.Common.Functions
             this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray x)
+        private NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -87,7 +87,7 @@ namespace KelpNet.Common.Functions
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected NdArray NeedPreviousForwardGpu(NdArray x)
+        private NdArray NeedPreviousForwardGpu(NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -113,7 +113,7 @@ namespace KelpNet.Common.Functions
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             for (int i = 0; i < x.Grad.Length; i++)
             {
@@ -121,7 +121,7 @@ namespace KelpNet.Common.Functions
             }
         }
 
-        protected void NeedPreviousBackwardGpu(NdArray y, NdArray x)
+        private void NeedPreviousBackwardGpu(NdArray y, NdArray x)
         {
             Real[] gx = new Real[y.Grad.Length];
 

@@ -90,7 +90,7 @@ namespace KelpNet.Functions.Poolings
             ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
         }
 
-        public NdArray ForwardCpu(NdArray input)
+        private NdArray ForwardCpu(NdArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
@@ -141,7 +141,7 @@ namespace KelpNet.Functions.Poolings
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);
         }
 
-        public NdArray ForwardGpu(NdArray input)
+        private NdArray ForwardGpu(NdArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
@@ -194,7 +194,7 @@ namespace KelpNet.Functions.Poolings
             return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        public void BackwardCpu(NdArray y, NdArray x)
+        private void BackwardCpu(NdArray y, NdArray x)
         {
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 
@@ -21,7 +19,7 @@ namespace KelpNet.Functions.Arrays
             SingleOutputBackward = BackwardCpu;
         }
 
-        public NdArray[] ForwardCpu(NdArray x)
+        private NdArray[] ForwardCpu(NdArray x)
         {
             NdArray[] resultArays = NdArray.Split(x, _indices, _axis);
 
@@ -33,7 +31,7 @@ namespace KelpNet.Functions.Arrays
             return resultArays;
         }
 
-        public void BackwardCpu(NdArray[] ys, NdArray x)
+        private void BackwardCpu(NdArray[] ys, NdArray x)
         {
             NdArray resultNdArray = ys[0].Clone();
 

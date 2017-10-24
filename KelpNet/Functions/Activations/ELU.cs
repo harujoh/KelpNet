@@ -19,7 +19,7 @@ namespace KelpNet.Functions.Activations
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray x)
+        private NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] result = new Real[x.Data.Length];
 
@@ -38,7 +38,7 @@ namespace KelpNet.Functions.Activations
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {

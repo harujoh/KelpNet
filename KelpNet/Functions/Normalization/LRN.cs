@@ -26,7 +26,7 @@ namespace KelpNet.Functions.Normalization
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        public NdArray NeedPreviousForwardCpu(NdArray input)
+        private NdArray NeedPreviousForwardCpu(NdArray input)
         {
             int nHalf = n / 2;
             Real[] result = new Real[input.Data.Length];
@@ -79,7 +79,7 @@ namespace KelpNet.Functions.Normalization
             return NdArray.Convert(result, input.Shape, input.BatchCount, this);
         }
 
-        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             int nHalf = n / 2;
             Real[] summand = new Real[y.Grad.Length];

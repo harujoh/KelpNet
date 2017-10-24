@@ -19,7 +19,7 @@ namespace KelpNet.Functions.Arrays
             MultiOutputBackward = BackwardCpu;
         }
 
-        public NdArray ForwardCpu(params NdArray[] xs)
+        private NdArray ForwardCpu(params NdArray[] xs)
         {
             int[] sections = new int[xs.Length - 1];
             int sizeOffset = xs[0].Shape[_axis];
@@ -41,7 +41,7 @@ namespace KelpNet.Functions.Arrays
             return resultNdArray;
         }
 
-        public void BackwardCpu(NdArray y, NdArray[] xs)
+        private void BackwardCpu(NdArray y, NdArray[] xs)
         {
             int[] prevInputShapes = this._prevInputSections[this._prevInputSections.Count - 1];
             this._prevInputSections.RemoveAt(this._prevInputSections.Count - 1);
