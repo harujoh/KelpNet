@@ -16,6 +16,8 @@ namespace CaffemodelLoader
 {
     public class CaffemodelDataLoader
     {
+        static readonly Dictionary<string,string> SplitMap = new Dictionary<string, string>();
+
         //分岐ありモデル
         public static FunctionDictionary LoadNetWork(string path)
         {
@@ -31,6 +33,14 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
+                        for (int i = 0; i < layer.Bottoms.Count; i++)
+                        {
+                            if (SplitMap.ContainsKey(layer.Bottoms[i]))
+                            {
+                                layer.Bottoms[i] = SplitMap[layer.Bottoms[i]];
+                            }
+                        }
+
                         result.Add(layer.Tops[0], func, layer.Bottoms.ToArray());
                     }
                 }
@@ -41,10 +51,20 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
+                        for (int i = 0; i < layer.Bottoms.Count; i++)
+                        {
+                            if (SplitMap.ContainsKey(layer.Bottoms[i]))
+                            {
+                                layer.Bottoms[i] = SplitMap[layer.Bottoms[i]];
+                            }
+                        }
+
                         result.Add(layer.Tops[0], func, layer.Bottoms.ToArray());
                     }
                 }
             }
+
+            SplitMap.Clear();
 
             return result;
         }
@@ -79,14 +99,22 @@ namespace CaffemodelLoader
                 }
             }
 
+            SplitMap.Clear();
+
             return result;
         }
 
         static Function CreateFunction(LayerParameter layer)
         {
-            Console.WriteLine(layer.Type);
             switch (layer.Type)
             {
+                case "Split":
+                    foreach (string layerTop in layer.Tops)
+                    {
+                        SplitMap.Add(layerTop,layer.Bottoms[0]);
+                    }
+                    return null;
+
                 case "Slice":
                     return SetupSlice(layer.SliceParam, layer.Name);
 
@@ -133,6 +161,13 @@ namespace CaffemodelLoader
         {
             switch (layer.Type)
             {
+                case V1LayerParameter.LayerType.Split:
+                    foreach (string layerTop in layer.Tops)
+                    {
+                        SplitMap.Add(layerTop, layer.Bottoms[0]);
+                    }
+                    return null;
+
                 case V1LayerParameter.LayerType.Slice:
                     return SetupSlice(layer.SliceParam, layer.Name);
 
