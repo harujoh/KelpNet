@@ -19,7 +19,7 @@ namespace KelpNetTester.Tests
     //CaffeモデルのVGG16を読み込んで画像分類をさせるテスト
     class Test15
     {
-        private const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/";
+        private const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/VGG_ILSVRC_16_layers.caffemodel";
         private const string MODEL_FILE = "VGG_ILSVRC_16_layers.caffemodel";
         private const string CLASS_LIST_PATH = "Data/synset_words.txt";
 
@@ -30,7 +30,7 @@ namespace KelpNetTester.Tests
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 Console.WriteLine("Model Loading.");
-                string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL + MODEL_FILE, MODEL_FILE);
+                string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL, MODEL_FILE);
                 List<Function> vgg16Net = CaffemodelDataLoader.ModelLoad(modelFilePath);
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 

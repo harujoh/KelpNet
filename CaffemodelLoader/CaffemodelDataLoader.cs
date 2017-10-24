@@ -16,6 +16,7 @@ namespace CaffemodelLoader
 {
     public class CaffemodelDataLoader
     {
+        //分岐ありモデル
         public static FunctionDictionary LoadNetWork(string path)
         {
             FunctionDictionary result = new FunctionDictionary();
@@ -48,6 +49,7 @@ namespace CaffemodelLoader
             return result;
         }
 
+        //分岐なしモデル
         public static List<Function> ModelLoad(string path)
         {
             List<Function> result = new List<Function>();
@@ -275,7 +277,14 @@ namespace CaffemodelLoader
 
         static Eltwise SetupEltwise(EltwiseParameter param, string name)
         {
-            return new Eltwise(param.Operation, param.Coeffs, name);
+            if (param != null)
+            {
+                return new Eltwise(param.Operation, param.Coeffs, name);
+            }
+            else
+            {
+                return new Eltwise(EltwiseParameter.EltwiseOp.Sum, null, name);
+            }
         }
 
         static Concat SetupConcat(ConcatParameter param, string name)
@@ -460,11 +469,24 @@ namespace CaffemodelLoader
                         break;
 
                     case EltwiseParameter.EltwiseOp.Sum:
-                        for (int i = 0; i < xs.Length; i++)
+                        if (this._coeffs != null)
                         {
-                            for (int j = 0; j < result.Length; j++)
+                            for (int i = 0; i < xs.Length; i++)
                             {
-                                result[j] += xs[i].Data[j] * _coeffs[i];
+                                for (int j = 0; j < result.Length; j++)
+                                {
+                                    result[j] += xs[i].Data[j] * _coeffs[i];
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < xs.Length; i++)
+                            {
+                                for (int j = 0; j < result.Length; j++)
+                                {
+                                    result[j] += xs[i].Data[j];
+                                }
                             }
                         }
                         break;

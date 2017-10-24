@@ -63,13 +63,14 @@ namespace KelpNetTester
             //ChainerモデルのTest5と同じ内容を読み込んで実行
             //Test16.Run();
 
-            Test17.Run();
+            //CaffeモデルのRESNET-152を読み込んで画像分類をさせるテスト
+            //Test17.Run();
 
             //Linearの分割実行
             //TestX.Run();
 
             //ベンチマーク
-            //SingleBenchmark.Run();
+            SingleBenchmark.Run();
 
             Console.WriteLine("Test Done...");
             Console.Read();

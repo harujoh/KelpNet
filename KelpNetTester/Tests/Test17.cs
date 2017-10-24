@@ -1,34 +1,81 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Windows.Forms;
+using CaffemodelLoader;
 using KelpNet.Common;
-using KelpNet.Functions.Arrays;
-using KelpNet.Functions.Mathmetrics.Trigonometric;
+using KelpNet.Common.Functions;
+using KelpNet.Common.Tools;
+using KelpNet.Functions.Connections;
+using KelpNet.Functions.Poolings;
+using TestDataManager;
 
 namespace KelpNetTester.Tests
 {
+    //ResNetを読み込んで実行する
     class Test17
     {
+        private const string DOWNLOAD_URL = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117897&authkey=%21AAFW2%2DFVoxeVRck";
+        private const string MODEL_FILE = "ResNet-152-model.caffemodel";
+        private const string CLASS_LIST_PATH = "Data/synset_words.txt";
+
         public static void Run()
         {
-            NdArray x1 = 2;
-            NdArray x2 = 3;
-            NdArray x3 = 5;
+            OpenFileDialog ofd = new OpenFileDialog { Filter = "画像ファイル(*.jpg;*.png;*.gif;*.bmp)|*.jpg;*.png;*.gif;*.bmp|すべてのファイル(*.*)|*.*" };
 
-            NdArray a = new Sin().Forward(x1)[0];
-            NdArray b = a + x2;
-            NdArray r = a * x3;
-            NdArray f = b - r;
-            f.Backward();
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                Console.WriteLine("Model Loading.");
+                string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL, MODEL_FILE);
+                FunctionDictionary nn = CaffemodelDataLoader.LoadNetWork(modelFilePath);
+                string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
-            Console.WriteLine("x1.test : 1.664587378501892");
-            Console.WriteLine("x1.grad : " + (double)x1.Grad[0]);
-            Console.WriteLine("");
-            Console.WriteLine("x2.test : 1.0");
-            Console.WriteLine("x2.grad : " + (double)x2.Grad[0]);
-            Console.WriteLine("");
-            Console.WriteLine("x3.test : -0.9092974066734314");
-            Console.WriteLine("x3.grad : " + (double)x3.Grad[0]);
+                //GPUを初期化
+                foreach (KeyValuePair<string, FunctionSet> resNetFunctionBlock in nn.FunctionBlocks)
+                {
+                    foreach (Function function in resNetFunctionBlock.Value.Functions)
+                    {
+                        if (function is Convolution2D || function is Linear || function is MaxPooling)
+                        {
+                            ((IParallelizable)function).SetGpuEnable(true);
+                        }
+                    }
 
+                    //ブロック単位で層の圧縮を実行
+                    resNetFunctionBlock.Value.Compress();
+                }
+
+                Console.WriteLine("Model Loading done.");
+
+                do
+                {
+                    //ネットワークへ入力する前に解像度を 224px x 224px x 3ch にしておく
+                    Bitmap baseImage = new Bitmap(ofd.FileName);
+                    Bitmap resultImage = new Bitmap(224, 224, PixelFormat.Format24bppRgb);
+                    Graphics g = Graphics.FromImage(resultImage);
+                    g.DrawImage(baseImage, 0, 0, 224, 224);
+                    g.Dispose();
+
+                    Real[] bias = { -123.68, -116.779, -103.939 }; //補正値のチャンネル順は入力画像に従う
+                    NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true, bias);
+
+                    Console.WriteLine("Start predict.");
+                    Stopwatch sw = Stopwatch.StartNew();
+                    NdArray result = nn.Predict(imageArray)[0];
+                    sw.Stop();
+
+                    Console.WriteLine("Result Time : " +
+                                      (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") +
+                                      "μｓ");
+
+                    int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
+                    Console.WriteLine("[" + result.Data[maxIndex] + "] : " + classList[maxIndex]);
+                } while (ofd.ShowDialog() == DialogResult.OK);
+            }
         }
     }
 }
