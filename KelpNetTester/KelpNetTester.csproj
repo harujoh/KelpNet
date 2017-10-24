@@ -64,6 +64,7 @@
     <Compile Include="Tests\Test14.cs" />
     <Compile Include="Tests\Test15.cs" />
     <Compile Include="Tests\Test16.cs" />
+    <Compile Include="Tests\Test17.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />

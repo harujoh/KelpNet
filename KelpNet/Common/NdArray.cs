@@ -92,6 +92,7 @@ namespace KelpNet.Common
             this.ParentFunc = parentFunc;
         }
 
+        //アレイ配列をバッチとして登録する
         public static NdArray FromArrays(Array[] arrays, Function parentFunc = null)
         {
             int[] resultShape = new int[arrays[0].Rank];
@@ -481,7 +482,7 @@ namespace KelpNet.Common
             return new NdArray(a);
         }
 
-        public static implicit operator NdArray(int[] a)
+        public static implicit operator NdArray(long[] a)
         {
             return new NdArray(a);
         }
@@ -567,6 +568,11 @@ namespace KelpNet.Common
                     throw new Exception("配列の大きさがマッチしていません");
                 }
             }
+
+            if (a.BatchCount != b.BatchCount)
+            {
+                throw new Exception("バッチの大きさがマッチしていません");
+            }
 #endif
 
             NdArray result = new NdArray(shapeList.ToArray(), a.BatchCount);
@@ -602,7 +608,7 @@ namespace KelpNet.Common
         private int[] GetDimensionsIndex(int index)
         {
             //バッチ分を補正
-            int batchCount = index % Length;
+            int batchCount = index / Length;
             index -= Length * batchCount;
 
             int[] dimensionsIndex = new int[this.Shape.Length];
