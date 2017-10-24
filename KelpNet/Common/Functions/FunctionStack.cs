@@ -20,21 +20,6 @@ namespace KelpNet.Common.Functions
             this.Functions = functions;
         }
 
-        public FunctionStack(params FunctionStack[] functionStacks) : base(FUNCTION_NAME)
-        {
-            List<Function> functionList = new List<Function>();
-
-            foreach (FunctionStack functionStack in functionStacks)
-            {
-                foreach (Function function in functionStack.Functions)
-                {
-                    functionList.Add(function);
-                }
-            }
-
-            this.Functions = functionList.ToArray();
-        }
-
         public void Compress()
         {
             List<Function> functionList = new List<Function>(Functions);
