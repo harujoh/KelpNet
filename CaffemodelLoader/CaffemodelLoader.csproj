@@ -48,6 +48,8 @@
   <ItemGroup>
     <Compile Include="CaffeProto.cs" />
     <Compile Include="CaffemodelDataLoader.cs" />
+    <Compile Include="FunctionDictionary.cs" />
+    <Compile Include="FunctionSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

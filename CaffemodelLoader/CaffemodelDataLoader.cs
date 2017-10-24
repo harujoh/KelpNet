@@ -16,6 +16,38 @@ namespace CaffemodelLoader
 {
     public class CaffemodelDataLoader
     {
+        public static FunctionDictionary LoadNetWork(string path)
+        {
+            FunctionDictionary result = new FunctionDictionary();
+
+            using (FileStream stream = new FileStream(path, FileMode.Open))
+            {
+                NetParameter netparam = Serializer.Deserialize<NetParameter>(stream);
+
+                foreach (V1LayerParameter layer in netparam.Layers)
+                {
+                    Function func = CreateFunction(layer);
+
+                    if (func != null)
+                    {
+                        result.Add(layer.Tops[0], func, layer.Bottoms.ToArray());
+                    }
+                }
+
+                foreach (LayerParameter layer in netparam.Layer)
+                {
+                    Function func = CreateFunction(layer);
+
+                    if (func != null)
+                    {
+                        result.Add(layer.Tops[0], func, layer.Bottoms.ToArray());
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public static List<Function> ModelLoad(string path)
         {
             List<Function> result = new List<Function>();
@@ -58,9 +90,6 @@ namespace CaffemodelLoader
 
                 case "LRN":
                     return SetupLRN(layer.LrnParam, layer.Name);
-
-                case "Scale":
-                    return null;
 
                 case "Concat":
                     return SetupConcat(layer.ConcatParam, layer.Name);

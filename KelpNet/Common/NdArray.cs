@@ -178,7 +178,7 @@ namespace KelpNet.Common
             }
         }
 
-        internal static void Backward(NdArray y)
+        public static void Backward(NdArray y)
         {
             if (y.ParentFunc != null)
             {

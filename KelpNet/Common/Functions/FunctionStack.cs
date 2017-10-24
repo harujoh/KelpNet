@@ -15,9 +15,22 @@ namespace KelpNet.Common.Functions
         public Function[] Functions { get; private set; }
 
         //コンストラクタ
+        public FunctionStack(Function[] functions, string name = FUNCTION_NAME) : base(name)
+        {
+            this.Functions = functions;
+        }
+
         public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)
         {
             this.Functions = functions;
+        }
+
+        //頻繁に使用することを想定していないため効率の悪い実装になっている
+        public void Add(Function function)
+        {
+            List<Function> functionList = new List<Function>(Functions);
+            functionList.Add(function);
+            this.Functions = functionList.ToArray();
         }
 
         public void Compress()
@@ -64,7 +77,6 @@ namespace KelpNet.Common.Functions
         {
             foreach (var function in Functions)
             {
-                //更新実行前に訓練カウントを使って各Functionの傾きを補正
                 function.Update();
             }
         }
