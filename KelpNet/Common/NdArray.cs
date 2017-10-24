@@ -373,6 +373,8 @@ namespace KelpNet.Common
                             }
                             closer = 0;
 
+                            if (BatchCount > 1) sb.Append(" ");
+
                             //括弧前のインデント
                             foreach (int commonDivisor in commonDivisorList)
                             {
@@ -516,7 +518,7 @@ namespace KelpNet.Common
 
         public static NdArray[] Split(NdArray array, int indices, int axis = 1)
         {
-            return Split(array, new[] {indices}, axis);
+            return Split(array, new[] { indices }, axis);
         }
 
         public static NdArray[] Split(NdArray array, int[] indices, int axis = 1)
@@ -531,7 +533,6 @@ namespace KelpNet.Common
             }
             resultAxisShapes[indices.Length] = array.Shape[axis] - indices[indices.Length - 1];
 
-
             NdArray[] resultArrays = new NdArray[indices.Length + 1];
 
             for (int i = 0; i < resultArrays.Length; i++)
@@ -545,14 +546,14 @@ namespace KelpNet.Common
             {
                 for (int i = 0; i < resultArrays.Length; i++)
                 {
-                    for (int j = 0; j < resultArrays[i].Data.Length; j++)
+                    for (int j = 0; j < resultArrays[i].Length; j++)
                     {
                         int[] resultIndex = resultArrays[i].GetDimensionsIndex(j);
                         resultIndex[axis] += shapeOffets[i];
                         int localIndex = array.GetLocalIndex(resultIndex, batchCount);
 
-                        resultArrays[i].Data[j] = array.Data[localIndex];
-                        resultArrays[i].Grad[j] = array.Grad[localIndex];
+                        resultArrays[i].Data[batchCount * resultArrays[i].Length + j] = array.Data[localIndex];
+                        resultArrays[i].Grad[batchCount * resultArrays[i].Length + j] = array.Grad[localIndex];
                     }
                 }
             }

@@ -9,13 +9,12 @@ namespace KelpNetTester.Tests
         public static void Run()
         {
             Real[] arr11 = Enumerable.Range(0, 6).Select(n => (Real)n).ToArray();
-            Real[] arr12 = Enumerable.Range(10, 6).Select(n => (Real)n).ToArray();
+            Real[] arr12 = Enumerable.Range(100, 6).Select(n => (Real)n).ToArray();
             NdArray arr1 = NdArray.FromArrays(new Array[] { arr11, arr12 });
             arr1.Reshape(2, 3);
 
-
             Real[] arr21 = Enumerable.Range(6, 6).Select(n => (Real)n).ToArray();
-            Real[] arr22 = Enumerable.Range(16, 6).Select(n => (Real)n).ToArray();
+            Real[] arr22 = Enumerable.Range(100, 6).Select(n => (Real)n).ToArray();
             NdArray arr2 = NdArray.FromArrays(new Array[] { arr21, arr22 });
             arr2.Reshape(2, 3);
 
@@ -34,8 +33,10 @@ namespace KelpNetTester.Tests
             Console.WriteLine();
             Console.WriteLine(arrH);
 
+            Real[] arr31 = Enumerable.Range(0, 12).Select(n => (Real)n).ToArray();
+            Real[] arr32 = Enumerable.Range(100, 12).Select(n => (Real)n).ToArray();
 
-            NdArray arr = Enumerable.Range(0, 12).Select(n => (Real)n).ToArray();
+            NdArray arr = NdArray.FromArrays(new Array[] { arr31, arr32 });
             arr.Reshape(3, 4);
 
             Console.WriteLine();
