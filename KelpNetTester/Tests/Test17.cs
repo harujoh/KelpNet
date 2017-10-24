@@ -70,13 +70,58 @@ namespace KelpNetTester.Tests
             //Console.WriteLine();
             //Console.WriteLine(result3[1]);
 
-            Real[] arr11 = Enumerable.Range(0, 6).Select(n => (Real)n).ToArray();
-            Real[] arr12 = Enumerable.Range(100, 6).Select(n => (Real)n).ToArray();
-            NdArray arr1 = NdArray.FromArrays(new Array[] { arr11, arr12 });
-            arr1.Reshape(2, 3);
-            
-            Concat concat = new Concat(0);
-            concat.Forward();
+            //Real[] arr11 = Enumerable.Range(0, 6).Select(n => (Real)n).ToArray();
+            //Real[] arr12 = Enumerable.Range(100, 6).Select(n => (Real)n).ToArray();
+            //NdArray arr1 = NdArray.FromArrays(new Array[] { arr11, arr12 });
+            //arr1.Reshape(2, 3);
+
+            //Real[] arr21 = Enumerable.Range(6, 6).Select(n => (Real)n).ToArray();
+            //Real[] arr22 = Enumerable.Range(100, 6).Select(n => (Real)n).ToArray();
+            //NdArray arr2 = NdArray.FromArrays(new Array[] { arr21, arr22 });
+            //arr2.Reshape(2, 3);
+
+            //Concat concat = new Concat(1);
+            //NdArray arrV = concat.Forward(arr1, arr2)[0];
+
+            //Console.WriteLine(arrV);
+
+            //arrV.Grad = arrV.Data;
+            //concat.Backward(arrV);
+
+            //Console.WriteLine();
+            //Console.WriteLine(arr1.ToString("Data"));
+
+            //Console.WriteLine();
+            //Console.WriteLine(arr1.ToString("Grad"));
+
+            //Console.WriteLine();
+            //Console.WriteLine(arr2.ToString("Data"));
+
+            //Console.WriteLine();
+            //Console.WriteLine(arr2.ToString("Grad"));
+
+            Real[] arr31 = Enumerable.Range(0, 12).Select(n => (Real)n).ToArray();
+            Real[] arr32 = Enumerable.Range(100, 12).Select(n => (Real)n).ToArray();
+
+            NdArray arr = NdArray.FromArrays(new Array[] { arr31, arr32 });
+            arr.Reshape(3, 4);
+
+            SplitAxis split = new SplitAxis(new[] { 1, 3 }, 1);
+
+            NdArray[] result1 = split.Forward(arr);
+
+            result1[0].Grad = result1[0].Data;
+            result1[1].Grad = result1[1].Data;
+            result1[2].Grad = result1[2].Data;
+
+            split.Backward(result1);
+
+            Console.WriteLine();
+            Console.WriteLine(arr.ToString("Data"));
+
+            Console.WriteLine();
+            Console.WriteLine(arr.ToString("Grad"));
+
         }
     }
 }

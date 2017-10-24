@@ -10,6 +10,15 @@ namespace KelpNet.Functions.Arrays
         private int _axis;
         private int[] _indices;
 
+        public SplitAxis(int indices, int axis, string name = FUNCTION_NAME) : base(name)
+        {
+            this._indices = new[] { indices };
+            this._axis = axis;
+
+            SingleInputForward = ForwardCpu;
+            SingleOutputBackward = BackwardCpu;
+        }
+
         public SplitAxis(int[] indices, int axis, string name = FUNCTION_NAME) : base(name)
         {
             this._indices = indices.ToArray();

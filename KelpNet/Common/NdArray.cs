@@ -484,11 +484,6 @@ namespace KelpNet.Common
             return new NdArray(a);
         }
 
-        public static implicit operator NdArray(long[] a)
-        {
-            return new NdArray(a);
-        }
-
         public static implicit operator NdArray(Real a)
         {
             return new NdArray(new[] { a });
@@ -569,7 +564,7 @@ namespace KelpNet.Common
 #if DEBUG
             for (int i = 0; i < a.Shape.Length; i++)
             {
-                if (a.Shape[i] != b.Shape[i])
+                if (i != axis && a.Shape[i] != b.Shape[i])
                 {
                     throw new Exception("配列の大きさがマッチしていません");
                 }
