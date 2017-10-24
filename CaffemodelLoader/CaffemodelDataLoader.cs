@@ -463,7 +463,7 @@ namespace CaffemodelLoader
                 return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount, this);
             }
 
-            public void BackwardCpu(NdArray y, NdArray[] xs)
+            public void BackwardCpu(NdArray y, params NdArray[] xs)
             {
                 Real[][] result = new Real[xs.Length][];
                 for (int i = 0; i < result.Length; i++)
