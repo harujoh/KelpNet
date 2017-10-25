@@ -16,9 +16,9 @@ namespace CaffemodelLoader
 {
     public class CaffemodelDataLoader
     {
-        static readonly Dictionary<string,string> SplitMap = new Dictionary<string, string>();
+        static readonly Dictionary<string, string> SplitMap = new Dictionary<string, string>();
 
-        //分岐ありモデル
+        //分岐ありモデル用関数
         public static FunctionDictionary LoadNetWork(string path)
         {
             FunctionDictionary result = new FunctionDictionary();
@@ -69,7 +69,7 @@ namespace CaffemodelLoader
             return result;
         }
 
-        //分岐なしモデル
+        //分岐なしモデル用関数
         public static List<Function> ModelLoad(string path)
         {
             List<Function> result = new List<Function>();
@@ -108,10 +108,13 @@ namespace CaffemodelLoader
         {
             switch (layer.Type)
             {
+                case "Scale":
+                    return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name);
+
                 case "Split":
                     foreach (string layerTop in layer.Tops)
                     {
-                        SplitMap.Add(layerTop,layer.Bottoms[0]);
+                        SplitMap.Add(layerTop, layer.Bottoms[0]);
                     }
                     return null;
 
@@ -207,6 +210,49 @@ namespace CaffemodelLoader
             return null;
         }
 
+        static Function SetupScale(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name)
+        {
+            int axis = param.Axis;
+            bool biasTerm = param.BiasTerm;
+
+            if (bottoms.Count == 1)
+            {
+                int[] wShape = new int[blobs[0].Shape.Dims.Length];
+                for (int i = 0; i < wShape.Length; i++)
+                {
+                    wShape[i] = (int)blobs[0].Shape.Dims[i];
+                }
+
+                var func = new Scale(axis, wShape, biasTerm);
+                //func.W.Data = blobs[0].Datas;
+
+                if (biasTerm)
+                {
+                    //func.b.Data = blobs[1].Datas;
+                }
+
+                return func;
+            }
+            else
+            {
+                int[] shape = new int[blobs[0].Shape.Dims.Length];
+
+                for (int i = 0; i < shape.Length; i++)
+                {
+                    shape[i] = (int)blobs[0].Shape.Dims[i];
+                }
+
+                var func = new Scale(axis, biasTerm: biasTerm, biasShape: shape);
+
+                if (biasTerm)
+                {
+                    //func.b.Data = blobs[0].Datas;
+                }
+
+                return func;
+            }
+        }
+
         static Function SetupSlice(SliceParameter param, string name)
         {
             int[] slicePoints = new int[param.SlicePoints.Length];
@@ -261,7 +307,7 @@ namespace CaffemodelLoader
                 }
             }
 
-            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, avgMean, avgVar);
+            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, avgMean, avgVar, name: name);
 
             return batchNormalization;
         }

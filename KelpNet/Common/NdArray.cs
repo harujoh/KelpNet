@@ -125,9 +125,46 @@ namespace KelpNet.Common
 
         public void Reshape(params int[] shape)
         {
+            int val = 0;
+            int dimension = Length;
+
+            //-1指定を算出
+            if (shape.Contains(-1))
+            {
+                int minusIndex = -1;
+
+                for (int i = 0; i < shape.Length; i++)
+                {
+                    if (shape[i] != -1)
+                    {
+                        val += Length % shape[i];
+
+                        if (val == 0)
+                        {
+                            dimension /= shape[i];
+                        }
+                        else
+                        {
+                            throw new Exception("要素の指定が間違っています");
+                        }
+                    }
+                    else
+                    {
+                        if (minusIndex != -1)
+                        {
+                            throw new Exception("-1が二つ以上指定されています");
+                        }
+
+                        minusIndex = i;
+                    }
+                }
+
+                shape[minusIndex] = dimension;
+            }
 #if DEBUG
-            if (Length != ShapeToArrayLength(shape)) throw new Exception("指定されたShapeのサイズが現在のData.Lengthと等しくありません");
+            else if (Length != ShapeToArrayLength(shape)) throw new Exception("指定されたShapeのサイズが現在のData.Lengthと等しくありません");
 #endif
+
             Shape = shape.ToArray();
         }
 
@@ -511,6 +548,80 @@ namespace KelpNet.Common
             };
         }
 
+        public static NdArray Sum(NdArray a, bool keepDims = false, params int[] axis)
+        {
+#if DEBUG
+            if (axis.Length != axis.Distinct().ToArray().Length)
+            {
+                throw new Exception("指定された要素が重複しています");
+            }
+
+            if (axis.Length != 0 && a.Shape.Length < axis.Max())
+            {
+                throw new Exception("指定された要素が範囲を超えています");
+            }
+#endif
+            if (axis.Length == 0)
+            {
+                axis = Enumerable.Range(0, a.Shape.Length).ToArray();
+            }
+
+            Array.Sort(axis);
+
+            NdArray result = Sum(a, axis[0]);
+
+            for (int i = 1; i < axis.Length; i++)
+            {
+                result = Sum(result, axis[i] - i);
+            }
+
+            if (keepDims)
+            {
+                List<int> resultKeepDimShape = new List<int>();
+                int count = a.Shape.Length - result.Shape.Length;
+
+                for (int i = 0; i < count; i++)
+                {
+                    resultKeepDimShape.Add(1);
+                }
+
+                resultKeepDimShape.AddRange(result.Shape);
+                result.Shape = resultKeepDimShape.ToArray();
+            }
+
+            return result;
+        }
+
+        private static NdArray Sum(NdArray a, int axis)
+        {
+            int[] resultShape = new int[a.Shape.Length - 1];
+
+            for (int i = 0, j = 0; i < a.Shape.Length; i++)
+            {
+                if (i != axis)
+                {
+                    resultShape[j++] = a.Shape[i];
+                }
+            }
+
+            NdArray result = new NdArray(resultShape, a.BatchCount);
+
+            for (int i = 0; i < a.Length; i++)
+            {
+                List<int> index = new List<int>(a.GetDimensionsIndex(i));
+                index.RemoveAt(axis);
+                int localIndex = result.GetLocalIndex(index.ToArray(), 0);
+
+                for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
+                {
+                    result.Data[batchCount * result.Length + localIndex] += a.Data[batchCount * a.Length + i];
+                    result.Grad[batchCount * result.Length + localIndex] += a.Grad[batchCount * a.Length + i];
+                }
+            }
+
+            return result;
+        }
+
         public static NdArray[] Split(NdArray array, int indices, int axis = 1)
         {
             return Split(array, new[] { indices }, axis);
@@ -606,7 +717,7 @@ namespace KelpNet.Common
             return result;
         }
 
-        private int[] GetDimensionsIndex(int index)
+        internal int[] GetDimensionsIndex(int index)
         {
             //バッチ分を補正
             int batchCount = index / Length;
@@ -623,7 +734,7 @@ namespace KelpNet.Common
             return dimensionsIndex;
         }
 
-        private int GetLocalIndex(int[] indices, int batchIndex)
+        internal int GetLocalIndex(int[] indices, int batchIndex)
         {
             int index = batchIndex * Length;
 
