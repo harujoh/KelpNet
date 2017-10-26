@@ -50,10 +50,11 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
         protected NdArray ForwardCpu(NdArray a, NdArray b)
         {
             Real[] resultData = new Real[a.Data.Length];
+            Real val = b.Data[0];
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[i] / b.Data[0];
+                resultData[i] = a.Data[i] / val;
             }
 
             return new NdArray(resultData, a.Shape, a.BatchCount, this);
@@ -61,9 +62,11 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
 
         protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
         {
+            Real val = b.Data[0];
+
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                a.Grad[i] += y.Grad[i] / b.Data[0];
+                a.Grad[i] += y.Grad[i] / val;
             }
         }
     }
@@ -82,10 +85,11 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
         protected NdArray ForwardCpu(NdArray a, NdArray b)
         {
             Real[] resultData = new Real[a.Data.Length];
+            Real val = a.Data[0];
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[0] / b.Data[i];
+                resultData[i] = val / b.Data[i];
             }
 
             return new NdArray(resultData, b.Shape, b.BatchCount, this);
@@ -93,10 +97,12 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
 
         protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
         {
+            Real val = a.Data[0];
+
             for (int i = 0; i < y.Grad.Length; i++)
             {
                 Real gx = y.Grad[i] / b.Data[i];
-                b.Grad[i] += -gx * a.Data[0] / b.Data[i];
+                b.Grad[i] += -gx * val / b.Data[i];
             }
         }
     }

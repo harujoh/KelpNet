@@ -48,10 +48,11 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
         protected NdArray ForwardCpu(NdArray a, NdArray b)
         {
             Real[] resultData = new Real[a.Data.Length];
+            Real val = b.Data[0];
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = a.Data[i] + b.Data[0];
+                resultData[i] = a.Data[i] + val;
             }
 
             return new NdArray(resultData, a.Shape, a.BatchCount, this);
