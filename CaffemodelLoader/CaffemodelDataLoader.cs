@@ -7,6 +7,7 @@ using KelpNet.Common.Functions;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Arrays;
 using KelpNet.Functions.Connections;
+using KelpNet.Functions.Mathmetrics;
 using KelpNet.Functions.Noise;
 using KelpNet.Functions.Normalization;
 using KelpNet.Functions.Poolings;
@@ -217,24 +218,19 @@ namespace CaffemodelLoader
 
             if (bottoms.Count == 1)
             {
+                //Scaleを作成
                 int[] wShape = new int[blobs[0].Shape.Dims.Length];
+
                 for (int i = 0; i < wShape.Length; i++)
                 {
                     wShape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                var func = new Scale(axis, wShape, biasTerm);
-                //func.W.Data = blobs[0].Datas;
-
-                if (biasTerm)
-                {
-                    //func.b.Data = blobs[1].Datas;
-                }
-
-                return func;
+                return new MultiplyScale(axis, wShape, biasTerm, initialW: blobs[0].Datas, initialb: blobs[1].Datas);
             }
             else
             {
+                //Biasを作成
                 int[] shape = new int[blobs[0].Shape.Dims.Length];
 
                 for (int i = 0; i < shape.Length; i++)
@@ -242,14 +238,7 @@ namespace CaffemodelLoader
                     shape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                var func = new Scale(axis, biasTerm: biasTerm, biasShape: shape);
-
-                if (biasTerm)
-                {
-                    //func.b.Data = blobs[0].Datas;
-                }
-
-                return func;
+                return new AddBias(axis, shape, blobs[0].Datas);
             }
         }
 

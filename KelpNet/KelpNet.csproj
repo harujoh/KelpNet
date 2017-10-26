@@ -72,7 +72,8 @@
     <Compile Include="Functions\Arrays\Concat.cs" />
     <Compile Include="Functions\Arrays\Reshape.cs" />
     <Compile Include="Functions\Arrays\SplitAxis.cs" />
-    <Compile Include="Functions\Connections\Scale.cs" />
+    <Compile Include="Functions\Mathmetrics\AddBias.cs" />
+    <Compile Include="Functions\Mathmetrics\MultiplyScale.cs" />
     <Compile Include="Functions\Mathmetrics\BasicMath\Div.cs" />
     <Compile Include="Functions\Mathmetrics\BasicMath\Mul.cs" />
     <Compile Include="Functions\Mathmetrics\BasicMath\Sub.cs" />
