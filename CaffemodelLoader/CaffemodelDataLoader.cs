@@ -213,7 +213,8 @@ namespace CaffemodelLoader
 
         static Function SetupScale(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name)
         {
-            int axis = param.Axis;
+            //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
+            int axis = param.Axis - 1;
             bool biasTerm = param.BiasTerm;
 
             if (bottoms.Count == 1)
@@ -251,7 +252,8 @@ namespace CaffemodelLoader
                 slicePoints[i] = (int)param.SlicePoints[i];
             }
 
-            return new SplitAxis(slicePoints, param.Axis, name);
+            //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
+            return new SplitAxis(slicePoints, param.Axis - 1, name);
         }
 
         static Function SetupPooling(PoolingParameter param, string name)
@@ -366,7 +368,8 @@ namespace CaffemodelLoader
                 axis = (int)param.ConcatDim;
             }
 
-            return new Concat(axis, name);
+            //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
+            return new Concat(axis - 1, name);
         }
 
         static int GetHeight(BlobProto blob)

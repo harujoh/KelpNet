@@ -22,7 +22,7 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
                 resultData[i] = a.Data[i] / b.Data[i];
             }
 
-            return new NdArray(resultData, this);
+            return new NdArray(resultData, a.Shape, a.BatchCount, this);
         }
 
         protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
@@ -56,7 +56,7 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
                 resultData[i] = a.Data[i] / b.Data[0];
             }
 
-            return new NdArray(resultData, this);
+            return new NdArray(resultData, a.Shape, a.BatchCount, this);
         }
 
         protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
@@ -88,7 +88,7 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
                 resultData[i] = a.Data[0] / b.Data[i];
             }
 
-            return new NdArray(resultData, this);
+            return new NdArray(resultData, b.Shape, b.BatchCount, this);
         }
 
         protected void BackwardCpu(NdArray y, NdArray a, NdArray b)

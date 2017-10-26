@@ -6,70 +6,55 @@ using KelpNet.Common.Functions;
 
 namespace KelpNet.Functions.Arrays
 {
+    [Serializable]
     public class Broadcast : SingleInputFunction
     {
         const string FUNCTION_NAME = "Broadcast";
-        private int[] Shape;
+        private readonly int[] Shape;
 
         public Broadcast(int[] shape, string name = FUNCTION_NAME) : base(name)
         {
-            Shape = shape.ToArray();
+            this.Shape = shape.ToArray();
 
             SingleInputForward = ForwardCpu;
+            SingleOutputBackward = BackwardCpu;
         }
 
         NdArray ForwardCpu(NdArray val)
         {
-            int resultNdim = this.Shape.Length;
-            int[] maxShape = this.Shape.ToArray();
+            int[] resultShape = val.Shape.Length > this.Shape.Length ? val.Shape.ToArray() : this.Shape.ToArray();
 
             //次元数を揃えつつ最大の次元を探査して設定
-            if (val.Shape.Length < resultNdim)
-            {
-                int offset = 0;
+            int offset = 0;
 
-                for (int i = 0; i < resultNdim; i++)
+            for (int i = 0; i < resultShape.Length; i++)
+            {
+                if (resultShape.Length - i - 1 < val.Shape.Length)
                 {
-                    if (resultNdim - i - 1 < val.Shape.Length)
+                    if (resultShape[i] < val.Shape[i - offset])
                     {
-                        if (maxShape[i] < val.Shape[i - offset])
-                        {
-                            maxShape[i] = val.Shape[i - offset];
-                        }
-                    }
-                    else
-                    {
-                        offset++;
+                        resultShape[i] = val.Shape[i - offset];
                     }
                 }
-            }
-            else
-            {
-                resultNdim = val.Shape.Length;
-                maxShape = val.Shape.ToArray();
-
-                for (int i = 0; i < resultNdim; i++)
+                else
                 {
-                    if (maxShape[i] < val.Shape[i])
-                    {
-                        maxShape[i] = val.Shape[i];
-                    }
+                    offset++;
                 }
             }
 
 #if DEBUG
-            for (int j = 0; j < val.Shape.Length; j++)
+            for (int i = 0; i < val.Shape.Length; i++)
             {
-                int dimOffset = resultNdim - val.Shape.Length;
+                int dimOffset = resultShape.Length - val.Shape.Length;
 
-                if (val.Shape[j] != 1 && val.Shape[j] != maxShape[j + dimOffset])
+                if (val.Shape[i] != 1 && val.Shape[i] != resultShape[i + dimOffset])
                 {
                     throw new Exception("変換不可能な組み合わせです");
                 }
             }
 #endif
 
-            NdArray result = new NdArray(maxShape);
+            NdArray result = new NdArray(resultShape, val.BatchCount, this);
 
             for (int batchCount = 0; batchCount < result.BatchCount; batchCount++)
             {
@@ -82,13 +67,13 @@ namespace KelpNet.Functions.Arrays
                         //全て0が入った添字配列を用意
                         int[] tmpIndex = Enumerable.Repeat(0, val.Shape.Length).ToArray();
 
-                        int offset = result.Shape.Length - val.Shape.Length;
+                        int indexOffset = result.Shape.Length - val.Shape.Length;
 
                         for (int k = 0; k < tmpIndex.Length; k++)
                         {
                             if (val.Shape[k] > 1)
                             {
-                                tmpIndex[k] = baseIndex[k + offset];
+                                tmpIndex[k] = baseIndex[k + indexOffset];
                             }
                         }
 

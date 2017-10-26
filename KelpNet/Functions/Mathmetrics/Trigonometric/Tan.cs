@@ -23,7 +23,7 @@ namespace KelpNet.Functions.Mathmetrics.Trigonometric
                 resultData[i] = (Real)Math.Tan(x.Data[i]);
             }
 
-            return new NdArray(resultData, this);
+            return new NdArray(resultData, x.Shape, x.BatchCount, this);
         }
 
         protected void BackwardCpu(NdArray y, NdArray x)
