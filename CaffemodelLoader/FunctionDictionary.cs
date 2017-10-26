@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
@@ -87,13 +86,7 @@ namespace CaffemodelLoader
         //予想を実行する
         public override NdArray[] Predict(params NdArray[] xs)
         {
-            Stopwatch sw = Stopwatch.StartNew();
-
             NdArray[] result = FunctionBlocks[FunctionBlockNames[0]].Predict(xs);
-
-            sw.Stop();
-            Console.WriteLine(FunctionBlocks[FunctionBlockNames[0]].Name + " => Result Time : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
-            sw.Restart();
 
             for (int i = 1; i < FunctionBlockNames.Count; i++)
             {
@@ -106,10 +99,6 @@ namespace CaffemodelLoader
                 }
 
                 result = FunctionBlocks[FunctionBlockNames[i]].Predict(inputData.ToArray());
-
-                sw.Stop();
-                Console.WriteLine(FunctionBlocks[FunctionBlockNames[i]].Name + " => Result Time : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
-                sw.Restart();
             }
 
             return result;
