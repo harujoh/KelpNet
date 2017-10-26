@@ -226,7 +226,7 @@ namespace CaffemodelLoader
                     wShape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                return new MultiplyScale(axis, wShape, biasTerm, initialW: blobs[0].Datas, initialb: blobs[1].Datas);
+                return new MultiplyScale(axis, wShape, biasTerm, blobs[0].Datas, blobs[1].Datas, name);
             }
             else
             {
@@ -238,7 +238,7 @@ namespace CaffemodelLoader
                     shape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                return new AddBias(axis, shape, blobs[0].Datas);
+                return new AddBias(axis, shape, blobs[0].Datas, name);
             }
         }
 

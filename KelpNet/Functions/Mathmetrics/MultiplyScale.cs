@@ -17,7 +17,7 @@ namespace KelpNet.Functions.Mathmetrics
         private NdArray Bias;
         private bool BiasTerm = false;
 
-        public MultiplyScale(int axis = 1, int[] wShape = null, bool biasTerm = false, int[] biasShape = null, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME) : base(name)
+        public MultiplyScale(int axis = 1, int[] wShape = null, bool biasTerm = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME) : base(name)
         {
             this.Axis = axis;
             this.BiasTerm = biasTerm;
