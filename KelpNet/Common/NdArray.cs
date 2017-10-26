@@ -720,15 +720,15 @@ namespace KelpNet.Common
         internal int[] GetDimensionsIndex(int index)
         {
             //バッチ分を補正
-            int batchCount = index / Length;
-            index -= Length * batchCount;
+            int batchCount = index / this.Length;
+            index -= this.Length * batchCount;
 
             int[] dimensionsIndex = new int[this.Shape.Length];
 
             for (int i = this.Shape.Length - 1; i >= 0; i--)
             {
                 dimensionsIndex[i] = index % this.Shape[i];
-                index = index / this.Shape[i];
+                index /= this.Shape[i];
             }
 
             return dimensionsIndex;

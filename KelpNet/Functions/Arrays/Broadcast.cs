@@ -37,7 +37,7 @@ namespace KelpNet.Functions.Arrays
                         resultShape[i] = this.Shape[i - offset];
                     }
 #if DEBUG
-                    else if (resultShape[i] != this.Shape[i - offset])
+                    else if (this.Shape[i - offset] != 1 && resultShape[i] != this.Shape[i - offset])
                     {
                         throw new Exception("変換不可能な組み合わせです");
                     }
@@ -57,7 +57,7 @@ namespace KelpNet.Functions.Arrays
                         resultShape[i] = val.Shape[i - offset];
                     }
 #if DEBUG
-                    else if (resultShape[i] != val.Shape[i - offset])
+                    else if (val.Shape[i - offset] != 1 && resultShape[i] != val.Shape[i - offset])
                     {
                         throw new Exception("変換不可能な組み合わせです");
                     }
