@@ -74,18 +74,21 @@ namespace KelpNet.Functions.Arrays
                 {
                     int[] baseIndex = result.GetDimensionsIndex(i);
 
-                    //全て0が入った添字配列を用意
-                    int[] tmpIndex = new int[val.Shape.Length];
+                    int tmpIndexLastIndex = val.Shape.Length - 1;
+                    int valIndex = batchCount * val.Length;
+                    int rankoffset = 1;
 
-                    for (int k = 0; k < tmpIndex.Length; k++)
+                    for (int j = 0; j < val.Shape.Length; j++)
                     {
-                        if (val.Shape[k] > 1)
+                        if (val.Shape[tmpIndexLastIndex] > 1)
                         {
-                            tmpIndex[k] = baseIndex[k + indexOffset];
+                            valIndex += baseIndex[tmpIndexLastIndex + indexOffset] * rankoffset;
                         }
+
+                        rankoffset *= val.Shape[tmpIndexLastIndex--];
                     }
 
-                    result.Data[batchCount * result.Length + i] = val.Data[val.GetLocalIndex(tmpIndex, batchCount)];
+                    result.Data[batchCount * result.Length + i] = val.Data[valIndex];
                 }
             }
 
