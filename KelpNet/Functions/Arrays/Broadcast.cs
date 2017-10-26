@@ -65,7 +65,7 @@ namespace KelpNet.Functions.Arrays
                     for (int j = 0; j < val.Length; j++)
                     {
                         //全て0が入った添字配列を用意
-                        int[] tmpIndex = Enumerable.Repeat(0, val.Shape.Length).ToArray();
+                        int[] tmpIndex = new int[val.Shape.Length];
 
                         int indexOffset = result.Shape.Length - val.Shape.Length;
 
