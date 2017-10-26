@@ -6,9 +6,10 @@ using KelpNet.Functions.Arrays;
 
 namespace KelpNet.Functions.Mathmetrics
 {
+    [Serializable]
     public class AddBias : SingleInputFunction
     {
-        const string FUNCTION_NAME = "Scale";
+        const string FUNCTION_NAME = "AddBias";
 
         private int Axis;
         private NdArray Bias;

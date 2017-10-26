@@ -7,9 +7,10 @@ using KelpNet.Functions.Arrays;
 
 namespace KelpNet.Functions.Mathmetrics
 {
+    [Serializable]
     public class MultiplyScale : SingleInputFunction
     {
-        const string FUNCTION_NAME = "Scale";
+        const string FUNCTION_NAME = "MultiplyScale";
 
         private int Axis;
         private NdArray Weight;
