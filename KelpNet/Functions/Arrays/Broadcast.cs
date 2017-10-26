@@ -22,39 +22,51 @@ namespace KelpNet.Functions.Arrays
 
         NdArray ForwardCpu(NdArray val)
         {
-            int[] resultShape = val.Shape.Length > this.Shape.Length ? val.Shape.ToArray() : this.Shape.ToArray();
+            int[] resultShape;
 
-            //次元数を揃えつつ最大の次元を探査して設定
-            int offset = 0;
-
-            for (int i = 0; i < resultShape.Length; i++)
+            if (val.Shape.Length > this.Shape.Length)
             {
-                if (resultShape.Length - i - 1 < val.Shape.Length)
+                //入力の方が大きい
+                resultShape = val.Shape.ToArray();
+                int offset = val.Shape.Length - this.Shape.Length;
+
+                for (int i = offset; i < resultShape.Length; i++)
                 {
-                    if (resultShape[i] < val.Shape[i - offset])
+                    if (resultShape[i] == 1)
+                    {
+                        resultShape[i] = this.Shape[i - offset];
+                    }
+#if DEBUG
+                    else if (resultShape[i] != this.Shape[i - offset])
+                    {
+                        throw new Exception("変換不可能な組み合わせです");
+                    }
+#endif
+                }
+            }
+            else
+            {
+                //指定の方が大きい
+                resultShape = this.Shape.ToArray();
+                int offset = this.Shape.Length - val.Shape.Length;
+
+                for (int i = offset; i < resultShape.Length; i++)
+                {
+                    if (resultShape[i] == 1)
                     {
                         resultShape[i] = val.Shape[i - offset];
                     }
-                }
-                else
-                {
-                    offset++;
-                }
-            }
-
 #if DEBUG
-            for (int i = 0; i < val.Shape.Length; i++)
-            {
-                int dimOffset = resultShape.Length - val.Shape.Length;
-
-                if (val.Shape[i] != 1 && val.Shape[i] != resultShape[i + dimOffset])
-                {
-                    throw new Exception("変換不可能な組み合わせです");
+                    else if (resultShape[i] != val.Shape[i - offset])
+                    {
+                        throw new Exception("変換不可能な組み合わせです");
+                    }
+#endif
                 }
             }
-#endif
 
             NdArray result = new NdArray(resultShape, val.BatchCount, this);
+            int indexOffset = result.Shape.Length - val.Shape.Length;
 
             for (int batchCount = 0; batchCount < result.BatchCount; batchCount++)
             {
@@ -62,23 +74,18 @@ namespace KelpNet.Functions.Arrays
                 {
                     int[] baseIndex = result.GetDimensionsIndex(i);
 
-                    for (int j = 0; j < val.Length; j++)
+                    //全て0が入った添字配列を用意
+                    int[] tmpIndex = new int[val.Shape.Length];
+
+                    for (int k = 0; k < tmpIndex.Length; k++)
                     {
-                        //全て0が入った添字配列を用意
-                        int[] tmpIndex = new int[val.Shape.Length];
-
-                        int indexOffset = result.Shape.Length - val.Shape.Length;
-
-                        for (int k = 0; k < tmpIndex.Length; k++)
+                        if (val.Shape[k] > 1)
                         {
-                            if (val.Shape[k] > 1)
-                            {
-                                tmpIndex[k] = baseIndex[k + indexOffset];
-                            }
+                            tmpIndex[k] = baseIndex[k + indexOffset];
                         }
-
-                        result.Data[batchCount * result.Length + i] += val.Data[val.GetLocalIndex(tmpIndex, batchCount)];
                     }
+
+                    result.Data[batchCount * result.Length + i] = val.Data[val.GetLocalIndex(tmpIndex, batchCount)];
                 }
             }
 
