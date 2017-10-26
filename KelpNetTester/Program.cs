@@ -12,8 +12,8 @@ namespace KelpNetTester
         static void Main(string[] args)
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
-            //Weaver.Initialize(ComputeDeviceTypes.Gpu);
-            Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
 
             //MLPによるXORの学習
             //Test1.Run();
@@ -64,13 +64,13 @@ namespace KelpNetTester
             //Test16.Run();
 
             //CaffeモデルのRESNET-152を読み込んで画像分類をさせるテスト
-            Test17.Run();
+            //Test17.Run();
 
             //Linearの分割実行
             //TestX.Run();
 
             //ベンチマーク
-            //SingleBenchmark.Run();
+            SingleBenchmark.Run();
 
             Console.WriteLine("Test Done...");
             Console.Read();
