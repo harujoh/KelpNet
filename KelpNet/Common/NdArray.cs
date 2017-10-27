@@ -123,6 +123,20 @@ namespace KelpNet.Common
             return new NdArray(baseArray.Shape.ToArray(), baseArray.BatchCount);
         }
 
+        public Real this[int batchcount, params int[] indices]
+        {
+            get
+            {
+                return this.Data[this.GetLocalIndex(batchcount, indices)];
+            }
+
+            set
+            {
+                this.Data[this.GetLocalIndex(batchcount, indices)] = value;
+            }
+        }
+
+
         public void Reshape(params int[] shape)
         {
             int val = 0;
@@ -610,7 +624,7 @@ namespace KelpNet.Common
             {
                 List<int> index = new List<int>(a.GetDimensionsIndex(i));
                 index.RemoveAt(axis);
-                int localIndex = result.GetLocalIndex(index.ToArray(), 0);
+                int localIndex = result.GetLocalIndex(0, index.ToArray());
 
                 for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
                 {
@@ -656,7 +670,7 @@ namespace KelpNet.Common
                     {
                         int[] resultIndex = resultArrays[i].GetDimensionsIndex(j);
                         resultIndex[axis] += shapeOffets[i];
-                        int localIndex = array.GetLocalIndex(resultIndex, batchCount);
+                        int localIndex = array.GetLocalIndex(batchCount, resultIndex);
 
                         resultArrays[i].Data[batchCount * resultArrays[i].Length + j] = array.Data[localIndex];
                         resultArrays[i].Grad[batchCount * resultArrays[i].Length + j] = array.Grad[localIndex];
@@ -696,7 +710,7 @@ namespace KelpNet.Common
 
                 for (int i = 0; i < a.Length; i++)
                 {
-                    int resultindex = result.GetLocalIndex(a.GetDimensionsIndex(i), batchCount);
+                    int resultindex = result.GetLocalIndex(batchCount, a.GetDimensionsIndex(i));
 
                     result.Data[resultindex] = a.Data[i + aInputBatchoffset];
                     result.Grad[resultindex] = a.Grad[i + aInputBatchoffset];
@@ -707,7 +721,7 @@ namespace KelpNet.Common
                     int[] tmpIndex = b.GetDimensionsIndex(i);
                     tmpIndex[axis] += a.Shape[axis];
 
-                    int resultIndex = result.GetLocalIndex(tmpIndex, batchCount);
+                    int resultIndex = result.GetLocalIndex(batchCount, tmpIndex);
 
                     result.Data[resultIndex] = b.Data[i + bInputBatchoffset];
                     result.Grad[resultIndex] = b.Grad[i + bInputBatchoffset];
@@ -734,7 +748,7 @@ namespace KelpNet.Common
             return dimensionsIndex;
         }
 
-        internal int GetLocalIndex(int[] indices, int batchIndex)
+        internal int GetLocalIndex(int batchIndex, params int[] indices)
         {
             int indicesLastIndex = indices.Length - 1;
             int index = batchIndex * this.Length + indices[indicesLastIndex];

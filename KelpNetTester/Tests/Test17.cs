@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -81,10 +82,10 @@ namespace KelpNetTester.Tests
                     Bitmap baseImage = new Bitmap(ofd.FileName);
                     Bitmap resultImage = new Bitmap(224, 224, PixelFormat.Format24bppRgb);
                     Graphics g = Graphics.FromImage(resultImage);
+                    g.InterpolationMode = InterpolationMode.Bilinear;
                     g.DrawImage(baseImage, 0, 0, 224, 224);
                     g.Dispose();
 
-                    //Real[] bias = { -123.68, -116.779, -103.939 }; //補正値のチャンネル順は入力画像に従う
                     NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true);
                     imageArray -= mean;
                     imageArray.ParentFunc = null;
