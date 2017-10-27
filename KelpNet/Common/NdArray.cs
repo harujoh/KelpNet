@@ -123,13 +123,13 @@ namespace KelpNet.Common
             return new NdArray(baseArray.Shape.ToArray(), baseArray.BatchCount);
         }
 
+        //インデクサはあまり早くないので頻繁にアクセスする場合は使用をオススメしません。デバッグ用途向けと割り切ってください。
         public Real this[int batchcount, params int[] indices]
         {
             get
             {
                 return this.Data[this.GetLocalIndex(batchcount, indices)];
             }
-
             set
             {
                 this.Data[this.GetLocalIndex(batchcount, indices)] = value;
@@ -368,11 +368,11 @@ namespace KelpNet.Common
                     string[] divStr;
                     if (isExponential)
                     {
-                        divStr = string.Format("{0:0.00000000e+00}", (double)datas[indexOffset + i]).Split('.');
+                        divStr = string.Format("{0:0.00000000e+00}", (Real)datas[indexOffset + i]).Split('.');
                     }
                     else
                     {
-                        divStr = ((double)datas[indexOffset + i]).ToString().Split('.');
+                        divStr = ((Real)datas[indexOffset + i]).ToString().Split('.');
                     }
 
                     //最大文字数でインデントを揃える

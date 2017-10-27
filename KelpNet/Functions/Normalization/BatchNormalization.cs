@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Normalization
     [Serializable]
     public class BatchNormalization : SingleInputFunction
     {
-        private bool IsTrain;
+        public  bool IsTrain;
 
         public NdArray Gamma;
 

@@ -2,6 +2,7 @@
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Functions.Connections;
+using KelpNet.Functions.Mathmetrics;
 using KelpNet.Functions.Normalization;
 
 namespace ChainerModelLoader
@@ -22,29 +23,67 @@ namespace ChainerModelLoader
         {
             if (func is Linear)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Linear)func).Weight.Data, ((Linear)func).Weight.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Linear)func).Bias.Data, ((Linear)func).Bias.Data.Length);
+                Linear linear = (Linear)func;
+
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), linear.Weight.Data, linear.Weight.Data.Length);
+
+                if (!linear.NoBias)
+                {
+                    Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), linear.Bias.Data, linear.Bias.Data.Length);
+                }
             }
             else if (func is Convolution2D)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Convolution2D)func).Weight.Data, ((Convolution2D)func).Weight.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Convolution2D)func).Bias.Data, ((Convolution2D)func).Bias.Data.Length);
+                Convolution2D conv2D = (Convolution2D)func;
+
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), conv2D.Weight.Data, conv2D.Weight.Data.Length);
+
+                if (!conv2D.NoBias)
+                {
+                    Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), conv2D.Bias.Data, conv2D.Bias.Data.Length);
+                }
             }
             else if (func is Deconvolution2D)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((Deconvolution2D)func).Weight.Data, ((Deconvolution2D)func).Weight.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), ((Deconvolution2D)func).Bias.Data, ((Deconvolution2D)func).Bias.Data.Length);
+                Deconvolution2D deconv2D = (Deconvolution2D)func;
+
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), deconv2D.Weight.Data, deconv2D.Weight.Data.Length);
+
+                if (!deconv2D.NoBias)
+                {
+                    Array.Copy(Real.GetArray(modelData[func.Name + "/b.npy"]), deconv2D.Bias.Data, deconv2D.Bias.Data.Length);
+                }
             }
             else if (func is EmbedID)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), ((EmbedID)func).Weight.Data, ((EmbedID)func).Weight.Data.Length);
+                EmbedID embed = (EmbedID)func;
+
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), embed.Weight.Data, embed.Weight.Data.Length);
             }
             else if (func is BatchNormalization)
             {
-                Array.Copy(Real.GetArray(modelData[func.Name + "/beta.npy"]), ((BatchNormalization)func).Beta.Data, ((BatchNormalization)func).Beta.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/gamma.npy"]), ((BatchNormalization)func).Gamma.Data, ((BatchNormalization)func).Gamma.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/avg_mean.npy"]), ((BatchNormalization)func).AvgMean.Data, ((BatchNormalization)func).AvgMean.Data.Length);
-                Array.Copy(Real.GetArray(modelData[func.Name + "/avg_var.npy"]), ((BatchNormalization)func).AvgVar.Data, ((BatchNormalization)func).AvgVar.Data.Length);
+                BatchNormalization bn = (BatchNormalization)func;
+
+                Array.Copy(Real.GetArray(modelData[func.Name + "/beta.npy"]), bn.Beta.Data, bn.Beta.Data.Length);
+                Array.Copy(Real.GetArray(modelData[func.Name + "/gamma.npy"]), bn.Gamma.Data, bn.Gamma.Data.Length);
+
+                if (bn.IsTrain)
+                {
+                    if (modelData.ContainsKey(func.Name + "/avg_mean.npy")) Array.Copy(Real.GetArray(modelData[func.Name + "/avg_mean.npy"]), bn.AvgMean.Data, bn.AvgMean.Data.Length);
+                    if (modelData.ContainsKey(func.Name + "/avg_var.npy")) Array.Copy(Real.GetArray(modelData[func.Name + "/avg_var.npy"]), bn.AvgVar.Data, bn.AvgVar.Data.Length);
+                }
+            }
+            else if (func is MultiplyScale)
+            {
+                MultiplyScale scale = (MultiplyScale)func;
+
+                Array.Copy(Real.GetArray(modelData[func.Name + "/W.npy"]), scale.Weight.Data, scale.Weight.Data.Length);
+
+                if (scale.BiasTerm)
+                {
+                    Array.Copy(Real.GetArray(modelData[func.Name + "/bias/b.npy"]), scale.Bias.Data, scale.Bias.Data.Length);
+                }
+
             }
         }
     }

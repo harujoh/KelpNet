@@ -13,9 +13,9 @@ namespace KelpNet.Functions.Mathmetrics
         const string FUNCTION_NAME = "MultiplyScale";
 
         private int Axis;
-        private NdArray Weight;
-        private NdArray Bias;
-        private bool BiasTerm = false;
+        public NdArray Weight;
+        public NdArray Bias;
+        public bool BiasTerm = false;
 
         public MultiplyScale(int axis = 1, int[] wShape = null, bool biasTerm = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME) : base(name)
         {

@@ -60,7 +60,7 @@ namespace KelpNetTester.Tests
             nn.SetOptimizer(new SGD());
 
             //入力データ
-            NdArray x = new NdArray(new [,,]{{
+            NdArray x = new NdArray(new Real[,,]{{
                 { 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.9, 0.2, 0.0, 0.0, 0.0, 0.0},
                 { 0.0, 0.0, 0.0, 0.0, 0.2, 0.8, 0.9, 0.1, 0.0, 0.0, 0.0, 0.0},
                 { 0.0, 0.0, 0.0, 0.1, 0.8, 0.5, 0.8, 0.1, 0.0, 0.0, 0.0, 0.0},
@@ -76,7 +76,7 @@ namespace KelpNetTester.Tests
             }});
 
             //教師信号
-            NdArray t = new NdArray(new []{ 0.0, 1.0 });
+            Real[] t = { 0.0, 1.0 };
 
             //訓練を実施
             Trainer.Train(nn, x, t, new MeanSquaredError(), false);

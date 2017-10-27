@@ -64,7 +64,7 @@ namespace KelpNetTester
             //Test16.Run();
 
             //CaffeモデルのRESNETを読み込んで画像分類をさせるテスト
-            Test17.Run(Test17.ResnetModel.ResNet50);  //任意のResnetモデルを選択してください
+            //Test17.Run(Test17.ResnetModel.ResNet50);  //任意のResnetモデルを選択してください
 
             //Linearの分割実行
             //TestX.Run();
