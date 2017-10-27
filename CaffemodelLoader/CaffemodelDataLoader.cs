@@ -19,6 +19,39 @@ namespace CaffemodelLoader
     {
         static readonly Dictionary<string, string> SplitMap = new Dictionary<string, string>();
 
+        //binaryprotoを読み込む
+        public static NdArray ReadBinary(string path)
+        {
+            using (FileStream stream = new FileStream(path, FileMode.Open))
+            {
+                BlobProto bp = Serializer.Deserialize<BlobProto>(stream);
+
+                NdArray result = new NdArray(new[] { bp.Channels, bp.Height, bp.Width }, bp.Num);
+
+                if (bp.Datas != null)
+                {
+                    result.Data = Real.GetArray(bp.Datas);
+                }
+
+                if (bp.DoubleDatas != null)
+                {
+                    result.Data = Real.GetArray(bp.DoubleDatas);
+                }
+
+                if (bp.Diffs != null)
+                {
+                    result.Grad = Real.GetArray(bp.Diffs);
+                }
+
+                if (bp.DoubleDiffs != null)
+                {
+                    result.Grad = Real.GetArray(bp.DoubleDiffs);
+                }
+
+                return result;
+            }
+        }
+
         //分岐ありモデル用関数
         public static FunctionDictionary LoadNetWork(string path)
         {

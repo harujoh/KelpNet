@@ -84,14 +84,14 @@ namespace KelpNet.Functions.Mathmetrics
                 shapeList.Add(1);
             }
 
-            int[] y1Shape = shapeList.ToArray();
+            int[] preShape = shapeList.ToArray();
 
-            NdArray y1 = new Reshape(y1Shape).Forward(this.Weight)[0];
+            NdArray y1 = new Reshape(preShape).Forward(this.Weight)[0];
             NdArray y2 = new Broadcast(inputShape).Forward(y1)[0];
 
             if (BiasTerm)
             {
-                NdArray b1 = new Reshape(y1Shape).Forward(this.Bias)[0];
+                NdArray b1 = new Reshape(preShape).Forward(this.Bias)[0];
                 NdArray b2 = new Broadcast(inputShape).Forward(b1)[0];
 
                 return x * y2 + b2;
