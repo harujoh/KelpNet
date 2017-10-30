@@ -72,7 +72,7 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(Linear linear) : base(linear.Name, linear.GpuEnable, FUNCTION_NAME, linear.Activation, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
+        public Convolution2D(Linear linear) : base(linear.Name, linear.GpuEnable, FUNCTION_NAME, linear.Activator, new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE))
         {
             this._kWidth = 1;
             this._kHeight = 1;
@@ -171,7 +171,7 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            if (this.Activation != null && !NoBias)
+            if (this.Activator != null && !NoBias)
             {
                 for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
                 {
@@ -182,7 +182,7 @@ namespace KelpNet.Functions.Connections
                         for (int location = 0; location < outputHeight * outputWidth; location++)
                         {
                             result[resultIndex] += this.Bias.Data[och];
-                            result[resultIndex] = this.Activation.ForwardActivate(result[resultIndex]);
+                            result[resultIndex] = this.Activator.ForwardActivate(result[resultIndex]);
 
                             resultIndex++;
                         }
@@ -205,7 +205,7 @@ namespace KelpNet.Functions.Connections
                     }
                 }
             }
-            else if (this.Activation != null)
+            else if (this.Activator != null)
             {
                 for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
                 {
@@ -215,7 +215,7 @@ namespace KelpNet.Functions.Connections
                     {
                         for (int location = 0; location < outputHeight * outputWidth; location++)
                         {
-                            result[resultIndex] = this.Activation.ForwardActivate(result[resultIndex]);
+                            result[resultIndex] = this.Activator.ForwardActivate(result[resultIndex]);
                             resultIndex++;
                         }
                     }
@@ -283,7 +283,7 @@ namespace KelpNet.Functions.Connections
                 {
                     for (int olocation = 0; olocation < y.Shape[1] * y.Shape[2]; olocation++)
                     {
-                        activatedgy[gyIndex] = this.Activation.BackwardActivate(y.Grad[gyIndex], y.Data[gyIndex]);
+                        activatedgy[gyIndex] = this.Activator.BackwardActivate(y.Grad[gyIndex], y.Data[gyIndex]);
                         gyIndex++;
                     }
                 }
@@ -312,7 +312,7 @@ namespace KelpNet.Functions.Connections
 
         protected override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
@@ -371,7 +371,7 @@ namespace KelpNet.Functions.Connections
         protected override void NeedPreviousBackwardGpu(NdArray y, NdArray x)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             //gyは共通で使用

@@ -87,11 +87,11 @@ namespace KelpNet.Functions.Connections
                 }
             }
 
-            if (this.Activation != null)
+            if (this.Activator != null)
             {
                 for (int i = 0; i < y.Length; i++)
                 {
-                    y[i] = this.Activation.ForwardActivate(y[i]);
+                    y[i] = this.Activator.ForwardActivate(y[i]);
                 }
             }
 
@@ -137,7 +137,7 @@ namespace KelpNet.Functions.Connections
                 for (int i = 0; i < this.OutputCount; i++)
                 {
                     int index = batchCount * this.OutputCount + i;
-                    activatedgY[index] = this.Activation.BackwardActivate(y.Grad[index], y.Data[index]);
+                    activatedgY[index] = this.Activator.BackwardActivate(y.Grad[index], y.Data[index]);
                 }
             }
 
@@ -157,7 +157,7 @@ namespace KelpNet.Functions.Connections
 
         protected override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
@@ -178,7 +178,7 @@ namespace KelpNet.Functions.Connections
         protected override void NeedPreviousBackwardGpu(NdArray y, NdArray x)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))

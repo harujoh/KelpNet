@@ -8,7 +8,7 @@ namespace KelpNet.Common.Functions
     [Serializable]
     public abstract class CompressibleFunction : SingleInputFunction, IParallelizable
     {
-        public CompressibleActivation Activation { get; protected set; }
+        public CompressibleActivation Activator { get; protected set; }
 
         [NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -73,9 +73,9 @@ namespace KelpNet.Common.Functions
         //後からActivationを追加する用
         public void SetActivation(CompressibleActivation activation)
         {
-            this.Activation = activation;
+            this.Activator = activation;
 
-            if (this.Activation != null)
+            if (this.Activator != null)
             {
                 foreach (var activationParameterer in _activationParameters)
                 {
@@ -94,9 +94,9 @@ namespace KelpNet.Common.Functions
         {
             string kernelSource = KernelString;
 
-            if (this.Activation != null)
+            if (this.Activator != null)
             {
-                kernelSource = this.Activation.ActivateFunctionString + KernelString;
+                kernelSource = this.Activator.ActivateFunctionString + KernelString;
             }
 
             ComputeProgram program = Weaver.CreateProgram(kernelSource);
