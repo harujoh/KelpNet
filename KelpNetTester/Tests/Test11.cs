@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -131,8 +132,12 @@ namespace KelpNetTester.Tests
                     //第一層の傾きを取得
                     NdArray[] DNI1Result = DNI1.Forward(layer1ForwardResult);
 
+                    //第一層の傾きを適用
+                    layer1ForwardResult[0].Grad = DNI1Result[0].Data.ToArray();
+
                     //第一層を更新
-                    Layer1.Backward(DNI1Result);
+                    Layer1.Backward(layer1ForwardResult);
+                    layer1ForwardResult[0].ParentFunc = null; //Backwardを実行したので計算グラフを切っておく
                     Layer1.Update();
 
                     //第二層を実行
@@ -141,11 +146,15 @@ namespace KelpNetTester.Tests
                     //第二層の傾きを取得
                     NdArray[] DNI2Result = DNI2.Forward(layer2ForwardResult);
 
+                    //第二層の傾きを適用
+                    layer2ForwardResult[0].Grad = DNI2Result[0].Data.ToArray();
+
                     //第二層を更新
-                    Layer2.Backward(DNI2Result);
+                    Layer2.Backward(layer2ForwardResult);
+                    layer2ForwardResult[0].ParentFunc = null;
 
                     //第一層用のDNIの学習を実行
-                    Real DNI1loss = new MeanSquaredError().Evaluate(DNI1Result, layer1ForwardResult[0].Grad);
+                    Real DNI1loss = new MeanSquaredError().Evaluate(DNI1Result, new NdArray(layer1ForwardResult[0].Grad, DNI1Result[0].Shape, DNI1Result[0].BatchCount));
 
                     Layer2.Update();
 
@@ -155,17 +164,21 @@ namespace KelpNetTester.Tests
                     DNI1totalLoss += DNI1loss;
                     DNI1totalLossCount++;
 
-                    //第二層を実行
+                    //第三層を実行
                     NdArray[] layer3ForwardResult = Layer3.Forward(layer2ForwardResult);
 
                     //第三層の傾きを取得
                     NdArray[] DNI3Result = DNI3.Forward(layer3ForwardResult);
 
+                    //第三層の傾きを適用
+                    layer3ForwardResult[0].Grad = DNI3Result[0].Data.ToArray();
+
                     //第三層を更新
-                    Layer3.Backward(DNI3Result);
+                    Layer3.Backward(layer3ForwardResult);
+                    layer3ForwardResult[0].ParentFunc = null;
 
                     //第二層用のDNIの学習を実行
-                    Real DNI2loss = new MeanSquaredError().Evaluate(DNI2Result, layer2ForwardResult[0].Grad);
+                    Real DNI2loss = new MeanSquaredError().Evaluate(DNI2Result, new NdArray(layer2ForwardResult[0].Grad, DNI2Result[0].Shape, DNI2Result[0].BatchCount));
 
                     Layer3.Update();
 
@@ -183,18 +196,20 @@ namespace KelpNetTester.Tests
 
                     //第四層を更新
                     Layer4.Backward(layer4ForwardResult);
-                    totalLoss = sumLoss;
+                    layer4ForwardResult[0].ParentFunc = null;
+
+                    totalLoss += sumLoss;
                     totalLossCount++;
 
                     //第三層用のDNIの学習を実行
-                    Real DNI3loss = new MeanSquaredError().Evaluate(DNI3Result, layer3ForwardResult[0].Grad);
+                    Real DNI3loss = new MeanSquaredError().Evaluate(DNI3Result, new NdArray(layer3ForwardResult[0].Grad, DNI3Result[0].Shape, DNI3Result[0].BatchCount));
 
                     Layer4.Update();
 
                     DNI3.Backward(DNI3Result);
                     DNI3.Update();
 
-                    DNI3totalLoss = DNI3loss;
+                    DNI3totalLoss += DNI3loss;
                     DNI3totalLossCount++;
 
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);

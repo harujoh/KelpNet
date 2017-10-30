@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -150,10 +151,13 @@ namespace KelpNetTester.Tests
                     //第一層の傾きを取得
                     NdArray[] cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
 
-                    //第一層を更新
-                    Layer1.Backward(cDNI1Result);
-                    Layer1.Update();
+                    //第一層の傾きを適用
+                    layer1ForwardResult[0].Grad = cDNI1Result[0].Data.ToArray();
 
+                    //第一層を更新
+                    Layer1.Backward(layer1ForwardResult);
+                    layer1ForwardResult[0].ParentFunc = null;
+                    Layer1.Update();
 
                     //第二層を実行
                     NdArray[] layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
@@ -162,19 +166,23 @@ namespace KelpNetTester.Tests
                     //第二層の傾きを取得
                     NdArray[] cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
+                    //第二層の傾きを適用
+                    layer2ForwardResult[0].Grad = cDNI2Result[0].Data.ToArray();
+
                     //第二層を更新
-                    Layer2.Backward(cDNI2Result);
+                    Layer2.Backward(layer2ForwardResult);
+                    layer2ForwardResult[0].ParentFunc = null;
 
 
                     //第一層用のcDNIの学習を実行
-                    Real cDNI1loss = new MeanSquaredError().Evaluate(cDNI1Result, layer1ResultDataSet.Result[0].Grad);
+                    Real cDNI1loss = new MeanSquaredError().Evaluate(cDNI1Result, new NdArray(layer1ResultDataSet.Result[0].Grad, cDNI1Result[0].Shape, cDNI1Result[0].BatchCount));
 
                     Layer2.Update();
 
                     cDNI1.Backward(cDNI1Result);
                     cDNI1.Update();
 
-                    cDNI1totalLoss+=cDNI1loss;
+                    cDNI1totalLoss += cDNI1loss;
                     cDNI1totalLossCount++;
 
                     //第三層を実行
@@ -184,19 +192,22 @@ namespace KelpNetTester.Tests
                     //第三層の傾きを取得
                     NdArray[] cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
 
-                    //第三層を更新
-                    Layer3.Backward(cDNI3Result);                    
+                    //第三層の傾きを適用
+                    layer3ForwardResult[0].Grad = cDNI3Result[0].Data.ToArray();
 
+                    //第三層を更新
+                    Layer3.Backward(layer3ForwardResult);
+                    layer3ForwardResult[0].ParentFunc = null;
 
                     //第二層用のcDNIの学習を実行
-                    Real cDNI2loss = new MeanSquaredError().Evaluate(cDNI2Result, layer2ResultDataSet.Result[0].Grad);
+                    Real cDNI2loss = new MeanSquaredError().Evaluate(cDNI2Result, new NdArray(layer2ResultDataSet.Result[0].Grad, cDNI2Result[0].Shape, cDNI2Result[0].BatchCount));
 
                     Layer3.Update();
 
                     cDNI2.Backward(cDNI2Result);
                     cDNI2.Update();
 
-                    cDNI2totalLoss=cDNI2loss;
+                    cDNI2totalLoss += cDNI2loss;
                     cDNI2totalLossCount++;
 
                     //第四層を実行
@@ -207,28 +218,30 @@ namespace KelpNetTester.Tests
 
                     //第四層を更新
                     Layer4.Backward(layer4ForwardResult);
-                    totalLoss=sumLoss;
+                    layer4ForwardResult[0].ParentFunc = null;
+
+                    totalLoss += sumLoss;
                     totalLossCount++;
 
                     //第三層用のcDNIの学習を実行
-                    Real cDNI3loss = new MeanSquaredError().Evaluate(cDNI3Result, layer3ResultDataSet.Result[0].Grad);
+                    Real cDNI3loss = new MeanSquaredError().Evaluate(cDNI3Result, new NdArray(layer3ResultDataSet.Result[0].Grad, cDNI3Result[0].Shape, cDNI3Result[0].BatchCount));
 
                     Layer4.Update();
 
                     cDNI3.Backward(cDNI3Result);
                     cDNI3.Update();
 
-                    cDNI3totalLoss=cDNI3loss;
+                    cDNI3totalLoss += cDNI3loss;
                     cDNI3totalLossCount++;
 
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
                     //結果出力
-                    Console.WriteLine("total loss " + totalLoss/totalLossCount);
+                    Console.WriteLine("total loss " + totalLoss / totalLossCount);
                     Console.WriteLine("local loss " + sumLoss);
 
-                    Console.WriteLine("\ncDNI1 total loss " + cDNI1totalLoss/cDNI1totalLossCount);
-                    Console.WriteLine("cDNI2 total loss " + cDNI2totalLoss/cDNI2totalLossCount);
-                    Console.WriteLine("cDNI3 total loss " + cDNI3totalLoss/cDNI3totalLossCount);
+                    Console.WriteLine("\ncDNI1 total loss " + cDNI1totalLoss / cDNI1totalLossCount);
+                    Console.WriteLine("cDNI2 total loss " + cDNI2totalLoss / cDNI2totalLossCount);
+                    Console.WriteLine("cDNI3 total loss " + cDNI3totalLoss / cDNI3totalLossCount);
 
                     Console.WriteLine("\ncDNI1 local loss " + cDNI1loss);
                     Console.WriteLine("cDNI2 local loss " + cDNI2loss);

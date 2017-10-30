@@ -130,13 +130,20 @@ namespace KelpNet.Functions.Normalization
             this.Xhat = new Real[x.Data.Length];
 
             Real[] y = new Real[x.Data.Length];
+
+            int dataSize = 1;
+            for (int i = 1; i < x.Shape.Length; i++)
+            {
+                dataSize *= x.Shape[i];
+            }
+
             for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    for (int location = 0; location < x.Shape[1] * x.Shape[2]; location++)
+                    for (int location = 0; location < dataSize; location++)
                     {
-                        int index = batchCount * this.ChannelSize * x.Shape[1] * x.Shape[2] + i * x.Shape[1] * x.Shape[2] + location;
+                        int index = batchCount * this.ChannelSize * dataSize + i * dataSize + location;
                         this.Xhat[index] = (x.Data[index] - this.Mean[i]) / this.Std[i];
                         y[index] = this.Gamma.Data[i] * this.Xhat[index] + this.Beta.Data[i];
                     }

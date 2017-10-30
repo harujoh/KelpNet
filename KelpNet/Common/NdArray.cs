@@ -225,7 +225,7 @@ namespace KelpNet.Common
                     Grad[i] = 1;
                 }
 
-                Backward(this);
+                NdArray.Backward(this);
             }
         }
 
