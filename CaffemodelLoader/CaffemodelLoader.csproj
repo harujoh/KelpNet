@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="CaffeProto.cs" />
     <Compile Include="CaffemodelDataLoader.cs" />
+    <Compile Include="Eltwise.cs" />
     <Compile Include="FunctionDictionary.cs" />
     <Compile Include="FunctionRecord.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
