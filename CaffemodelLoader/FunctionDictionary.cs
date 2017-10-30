@@ -12,7 +12,10 @@ namespace CaffemodelLoader
         const string FUNCTION_NAME = "FunctionDictionary";
 
         //出力名称のKey付きのファンクションブロック
-        public Dictionary<string, FunctionSet> FunctionBlocks = new Dictionary<string, FunctionSet>();
+        public Dictionary<string, FunctionRecord> FunctionBlocks = new Dictionary<string, FunctionRecord>();
+
+        //出力データの辞書
+        public Dictionary<string, NdArray> OutPuts = new Dictionary<string, NdArray>();
 
         //辞書の実行順リスト
         public List<string> FunctionBlockNames = new List<string>();
@@ -22,19 +25,21 @@ namespace CaffemodelLoader
         {
         }
 
-        public void Add(string functionBlockName, Function function, string[] inputNames)
+        //関数の追加
+        public void Add(string functionBlockName, Function function, string[] inputNames, string[] outputNames)
         {
-            if (FunctionBlocks.ContainsKey(functionBlockName))
+            //既にブロックがあればそこへ追加
+            if (FunctionBlocks.ContainsKey(outputNames[0]))
             {
-                //追加
-                FunctionBlocks[functionBlockName].Add(function);
+                //既にブロックがあればそこへ追加
+                FunctionBlocks[outputNames[0]].Add(function);
             }
             else
             {
-                //新規
+                //ブロックを新規に作る
                 FunctionBlockNames.Add(functionBlockName);
-                FunctionSet functionSet = new FunctionSet(function, inputNames, functionBlockName);
-                FunctionBlocks.Add(functionBlockName, functionSet);
+                FunctionRecord functionRecord = new FunctionRecord(function, inputNames, outputNames, functionBlockName);
+                FunctionBlocks.Add(functionBlockName, functionRecord);
             }
         }
 
@@ -43,18 +48,34 @@ namespace CaffemodelLoader
         {
             NdArray[] result = FunctionBlocks[FunctionBlockNames[0]].Forward(xs);
 
+            //出力したデータを辞書に登録
+            for (int j = 0; j < result.Length; j++)
+            {
+                OutPuts.Add(FunctionBlocks[FunctionBlockNames[0]].OutputNames[j], result[j]);
+            }
+
             for (int i = 1; i < FunctionBlockNames.Count; i++)
             {
                 string[] inputBlockNames = FunctionBlocks[FunctionBlockNames[i]].InputNames;
                 List<NdArray> inputData = new List<NdArray>();
 
+                //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
                 {
-                    inputData.AddRange(FunctionBlocks[inputBlockNames[j]].Result);
+                    inputData.Add(OutPuts[inputBlockNames[j]]);
                 }
 
+                //関数を実施
                 result = FunctionBlocks[FunctionBlockNames[i]].Forward(inputData.ToArray());
+
+                //出力したデータを辞書に登録
+                for (int j = 0; j < result.Length; j++)
+                {
+                    OutPuts.Add(FunctionBlocks[FunctionBlockNames[i]].OutputNames[j],result[j]);
+                }
             }
+
+            OutPuts.Clear();
 
             return result;
         }
@@ -87,19 +108,34 @@ namespace CaffemodelLoader
         public override NdArray[] Predict(params NdArray[] xs)
         {
             NdArray[] result = FunctionBlocks[FunctionBlockNames[0]].Predict(xs);
+            //出力したデータを辞書に登録
+            for (int j = 0; j < result.Length; j++)
+            {
+                OutPuts.Add(FunctionBlocks[FunctionBlockNames[0]].OutputNames[j], result[j]);
+            }
 
             for (int i = 1; i < FunctionBlockNames.Count; i++)
             {
                 string[] inputBlockNames = FunctionBlocks[FunctionBlockNames[i]].InputNames;
                 List<NdArray> inputData = new List<NdArray>();
 
+                //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
                 {
-                    inputData.AddRange(FunctionBlocks[inputBlockNames[j]].Result);
+                    inputData.Add(OutPuts[inputBlockNames[j]]);
                 }
 
+                //関数を実施
                 result = FunctionBlocks[FunctionBlockNames[i]].Predict(inputData.ToArray());
+
+                //出力したデータを辞書に登録
+                for (int j = 0; j < result.Length; j++)
+                {
+                    OutPuts.Add(FunctionBlocks[FunctionBlockNames[i]].OutputNames[j], result[j]);
+                }
             }
+
+            OutPuts.Clear();
 
             return result;
         }

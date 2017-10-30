@@ -17,8 +17,6 @@ namespace CaffemodelLoader
 {
     public class CaffemodelDataLoader
     {
-        static readonly Dictionary<string, string> SplitMap = new Dictionary<string, string>();
-
         //binaryprotoを読み込む
         public static NdArray ReadBinary(string path)
         {
@@ -55,27 +53,20 @@ namespace CaffemodelLoader
         //分岐ありモデル用関数
         public static FunctionDictionary LoadNetWork(string path)
         {
-            FunctionDictionary result = new FunctionDictionary();
+            FunctionDictionary functionDictionary = new FunctionDictionary();
 
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
                 NetParameter netparam = Serializer.Deserialize<NetParameter>(stream);
-
+                
                 foreach (V1LayerParameter layer in netparam.Layers)
                 {
                     Function func = CreateFunction(layer);
 
                     if (func != null)
                     {
-                        for (int i = 0; i < layer.Bottoms.Count; i++)
-                        {
-                            if (SplitMap.ContainsKey(layer.Bottoms[i]))
-                            {
-                                layer.Bottoms[i] = SplitMap[layer.Bottoms[i]];
-                            }
-                        }
-
-                        result.Add(layer.Tops[0], func, layer.Bottoms.ToArray());
+                        //tops[0] = ブロックネーム
+                        functionDictionary.Add(layer.Name, func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
                     }
                 }
 
@@ -85,22 +76,12 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
-                        for (int i = 0; i < layer.Bottoms.Count; i++)
-                        {
-                            if (SplitMap.ContainsKey(layer.Bottoms[i]))
-                            {
-                                layer.Bottoms[i] = SplitMap[layer.Bottoms[i]];
-                            }
-                        }
-
-                        result.Add(layer.Tops[0], func, layer.Bottoms.ToArray());
+                        functionDictionary.Add(layer.Name, func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
                     }
                 }
             }
 
-            SplitMap.Clear();
-
-            return result;
+            return functionDictionary;
         }
 
         //分岐なしモデル用関数
@@ -133,8 +114,6 @@ namespace CaffemodelLoader
                 }
             }
 
-            SplitMap.Clear();
-
             return result;
         }
 
@@ -146,11 +125,7 @@ namespace CaffemodelLoader
                     return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name);
 
                 case "Split":
-                    foreach (string layerTop in layer.Tops)
-                    {
-                        SplitMap.Add(layerTop, layer.Bottoms[0]);
-                    }
-                    return null;
+                    return new Splitter(layer.Name);
 
                 case "Slice":
                     return SetupSlice(layer.SliceParam, layer.Name);
@@ -199,11 +174,7 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Split:
-                    foreach (string layerTop in layer.Tops)
-                    {
-                        SplitMap.Add(layerTop, layer.Bottoms[0]);
-                    }
-                    return null;
+                    return new Splitter(layer.Name);
 
                 case V1LayerParameter.LayerType.Slice:
                     return SetupSlice(layer.SliceParam, layer.Name);
