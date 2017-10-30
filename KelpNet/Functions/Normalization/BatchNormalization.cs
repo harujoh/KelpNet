@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Normalization
     [Serializable]
     public class BatchNormalization : SingleInputFunction
     {
-        public  bool IsTrain;
+        public bool IsTrain;
 
         public NdArray Gamma;
 
@@ -127,15 +127,19 @@ namespace KelpNet.Functions.Normalization
             }
 
             //結果を計算
-            this.Xhat = new Real[x.BatchCount * this.ChannelSize];
+            this.Xhat = new Real[x.Data.Length];
 
             Real[] y = new Real[x.Data.Length];
-            for (int i = 0; i < x.BatchCount; i++)
+            for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
-                for (int j = 0; j < this.ChannelSize; j++)
+                for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    this.Xhat[i * this.ChannelSize + j] = (x.Data[j + i * x.Length] - this.Mean[j]) / this.Std[j];
-                    y[j + i * x.Length] = this.Gamma.Data[j] * this.Xhat[i * this.ChannelSize + j] + this.Beta.Data[j];
+                    for (int location = 0; location < x.Shape[1] * x.Shape[2]; location++)
+                    {
+                        int index = batchCount * this.ChannelSize * x.Shape[1] * x.Shape[2] + i * x.Shape[1] * x.Shape[2] + location;
+                        this.Xhat[index] = (x.Data[index] - this.Mean[i]) / this.Std[i];
+                        y[index] = this.Gamma.Data[i] * this.Xhat[index] + this.Beta.Data[i];
+                    }
                 }
             }
 
