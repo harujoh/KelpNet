@@ -48,11 +48,8 @@
   <ItemGroup>
     <Compile Include="CaffeProto.cs" />
     <Compile Include="CaffemodelDataLoader.cs" />
-    <Compile Include="Functions\Eltwise.cs" />
-    <Compile Include="Functions\FunctionDictionary.cs" />
-    <Compile Include="Functions\FunctionRecord.cs" />
+    <Compile Include="Eltwise.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Functions\Splitter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

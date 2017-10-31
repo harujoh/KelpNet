@@ -45,10 +45,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Functions\CompressibleActivation.cs" />
-    <Compile Include="Common\Functions\DualInputFunction.cs" />
-    <Compile Include="Common\Functions\MultiInputFunction.cs" />
-    <Compile Include="Common\Functions\MultiOutputFunction.cs" />
-    <Compile Include="Common\Functions\SingleInputFunction.cs" />
+    <Compile Include="Common\Functions\Splitter.cs" />
+    <Compile Include="Common\Functions\Type\DualInputFunction.cs" />
+    <Compile Include="Common\Functions\Container\FunctionDictionary.cs" />
+    <Compile Include="Common\Functions\Container\FunctionRecord.cs" />
+    <Compile Include="Common\Functions\Type\MultiInputFunction.cs" />
+    <Compile Include="Common\Functions\Type\MultiOutputFunction.cs" />
+    <Compile Include="Common\Functions\Type\SingleInputFunction.cs" />
     <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Functions\CompressibleFunction.cs" />
     <Compile Include="Common\Functions\IParallelizable.cs" />
@@ -58,7 +61,7 @@
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Common\Tools\NdArrayConverter.cs" />
     <Compile Include="Common\Weaver.cs" />
-    <Compile Include="Common\Functions\FunctionStack.cs" />
+    <Compile Include="Common\Functions\Container\FunctionStack.cs" />
     <Compile Include="Common\Functions\Function.cs" />
     <Compile Include="Functions\Activations\ELU.cs" />
     <Compile Include="Functions\Activations\LeakyReLU.cs" />

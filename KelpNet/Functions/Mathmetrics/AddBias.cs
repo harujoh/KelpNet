@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
+using KelpNet.Common.Functions.Type;
 using KelpNet.Functions.Arrays;
 
 namespace KelpNet.Functions.Mathmetrics

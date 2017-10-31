@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Cloo;
+using KelpNet.Common.Functions.Type;
 
 namespace KelpNet.Common.Functions
 {

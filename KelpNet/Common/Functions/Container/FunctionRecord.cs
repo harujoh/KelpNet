@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using KelpNet.Common.Functions;
 
-namespace CaffemodelLoader
+namespace KelpNet.Common.Functions.Container
 {
     [Serializable]
     public class FunctionRecord : FunctionStack

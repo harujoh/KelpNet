@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
 using KelpNet.Common.Optimizers;
 
-namespace CaffemodelLoader
+namespace KelpNet.Common.Functions.Container
 {
     [Serializable]
+    //関数をFunctionRecordという単位で追加していく
     public class FunctionDictionary : Function
     {
         const string FUNCTION_NAME = "FunctionDictionary";
 
-        //出力名称のKey付きのファンクションブロック
+        //出力名称のKey付きのファンクションブロック<Key:functionBlockName>
         public Dictionary<string, FunctionRecord> FunctionBlocks = new Dictionary<string, FunctionRecord>();
 
-        //出力データの辞書
+        //実行時に登録する出力データの辞書<Key:OutputName>
         public Dictionary<string, NdArray> OutPuts = new Dictionary<string, NdArray>();
 
         //辞書の実行順リスト
@@ -28,11 +27,11 @@ namespace CaffemodelLoader
         //関数の追加
         public void Add(string functionBlockName, Function function, string[] inputNames, string[] outputNames)
         {
-            //既にブロックがあればそこへ追加
-            if (FunctionBlocks.ContainsKey(outputNames[0]))
+            //既にブロックがあるか
+            if (FunctionBlocks.ContainsKey(functionBlockName))
             {
-                //既にブロックがあればそこへ追加
-                FunctionBlocks[outputNames[0]].Add(function);
+                //あればそこへ追加
+                FunctionBlocks[functionBlockName].Add(function);
             }
             else
             {

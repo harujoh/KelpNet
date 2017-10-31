@@ -1,5 +1,5 @@
 ﻿using KelpNet.Common;
-using KelpNet.Common.Functions;
+using KelpNet.Common.Functions.Type;
 
 namespace KelpNet.Functions.Mathmetrics.BasicMath
 {

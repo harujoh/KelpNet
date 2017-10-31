@@ -1,5 +1,5 @@
 ﻿using System;
-using KelpNet.Common.Functions;
+using KelpNet.Common.Functions.Container;
 using KelpNet.Common.Loss;
 
 namespace KelpNet.Common.Tools

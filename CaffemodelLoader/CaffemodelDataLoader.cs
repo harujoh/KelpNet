@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
+using KelpNet.Common.Functions.Container;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Arrays;
 using KelpNet.Functions.Connections;
@@ -65,7 +66,7 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
-                        functionDictionary.Add(layer.Name, func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                        functionDictionary.Add(layer.Tops[0], func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
                     }
                 }
 
@@ -75,7 +76,7 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
-                        functionDictionary.Add(layer.Name, func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                        functionDictionary.Add(layer.Tops[0], func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
                     }
                 }
             }
@@ -124,7 +125,7 @@ namespace CaffemodelLoader
                     return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name);
 
                 case "Split":
-                    return new Splitter(layer.Name);
+                    return new Splitter(layer.Tops.Count, layer.Name);
 
                 case "Slice":
                     return SetupSlice(layer.SliceParam, layer.Name);
@@ -173,7 +174,7 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Split:
-                    return new Splitter(layer.Name);
+                    return new Splitter(layer.Tops.Count, layer.Name);
 
                 case V1LayerParameter.LayerType.Slice:
                     return SetupSlice(layer.SliceParam, layer.Name);

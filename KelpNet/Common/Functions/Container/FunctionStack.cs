@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Common.Functions
+namespace KelpNet.Common.Functions.Container
 {
     //層を積み上げるこのライブラリのメインとなるクラス
     //一回のForward、Backward、Updateで同時に実行される関数の集まり

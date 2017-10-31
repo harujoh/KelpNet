@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KelpNet.Common.Functions
+namespace KelpNet.Common.Functions.Type
 {
     [Serializable]
     public abstract class SingleInputFunction : Function
