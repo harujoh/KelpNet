@@ -83,6 +83,6 @@ Twitter: https://twitter.com/harujoh
 　・LRN
 - Noise:
 　・DropOut
- 
+　・StochasticDepth
  
  最後に、このライブラリが誰かの学習の助けになれば幸いです
