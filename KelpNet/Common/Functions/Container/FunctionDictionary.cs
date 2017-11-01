@@ -102,9 +102,9 @@ namespace KelpNet.Common.Functions.Container
         }
 
         //Backward
-        public override void Backward(params NdArray[] y)
+        public override void Backward(params NdArray[] ys)
         {
-            NdArray.Backward(y[0]);
+            NdArray.Backward(ys[0]);
         }
 
         //重みの更新処理

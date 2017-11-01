@@ -96,6 +96,7 @@
     <Compile Include="Functions\Mathmetrics\Trigonometric\Tan.cs" />
     <Compile Include="Functions\Mathmetrics\Trigonometric\Tanh.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
+    <Compile Include="Functions\Noise\StochasticDepth.cs" />
     <Compile Include="Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="Common\Loss\LossFunction.cs" />
     <Compile Include="Functions\Normalization\LRN.cs" />

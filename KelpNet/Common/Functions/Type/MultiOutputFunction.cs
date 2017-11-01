@@ -21,7 +21,7 @@ namespace KelpNet.Common.Functions.Type
             return SingleInputForward(xs[0]);
         }
 
-        public override void Backward(params NdArray[] y)
+        public override void Backward(params NdArray[] ys)
         {
             NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);
@@ -33,7 +33,7 @@ namespace KelpNet.Common.Functions.Type
 
             xs[0].UseCount--;
 
-            SingleOutputBackward(y, xs[0]);
+            SingleOutputBackward(ys, xs[0]);
         }
 
         public override NdArray[] Predict(params NdArray[] xs)
