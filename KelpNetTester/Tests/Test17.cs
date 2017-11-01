@@ -61,9 +61,9 @@ namespace KelpNetTester.Tests
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
-                foreach (KeyValuePair<string, FunctionRecord> resNetFunctionBlock in nn.FunctionBlocks)
+                foreach (FunctionRecord resNetFunctionBlock in nn.FunctionBlocks)
                 {
-                    foreach (Function function in resNetFunctionBlock.Value.Functions)
+                    foreach (Function function in resNetFunctionBlock.Functions)
                     {
                         if (function is Convolution2D || function is Linear || function is MaxPooling)
                         {
@@ -72,7 +72,7 @@ namespace KelpNetTester.Tests
                     }
 
                     //ブロック単位で層の圧縮を実行
-                    resNetFunctionBlock.Value.Compress();
+                    resNetFunctionBlock.Compress();
                 }
 
                 Console.WriteLine("Model Loading done.");

@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using KelpNet.Common.Functions.Type;
 using KelpNet.Common.Optimizers;
 
 namespace KelpNet.Common.Functions.Container
 {
     [Serializable]
-    //関数をFunctionRecordという単位で追加していく
     public class FunctionDictionary : Function
     {
         const string FUNCTION_NAME = "FunctionDictionary";
 
-        //出力名称のKey付きのファンクションブロック<Key:functionBlockName>
-        public Dictionary<string, FunctionRecord> FunctionBlocks = new Dictionary<string, FunctionRecord>();
-
-        //実行時に登録する出力データの辞書<Key:OutputName>
-        public Dictionary<string, NdArray> OutPuts = new Dictionary<string, NdArray>();
+        //関数に入出力のキーを付加したFunctionRecordという単位で管理する
+        public Dictionary<string, FunctionRecord> FunctionBlockDictionary = new Dictionary<string, FunctionRecord>();
 
         //辞書の実行順リスト
-        public List<string> FunctionBlockNames = new List<string>();
+        public List<FunctionRecord> FunctionBlocks = new List<FunctionRecord>();
 
         //コンストラクタ
         public FunctionDictionary(string name = FUNCTION_NAME) : base(name)
@@ -25,56 +22,81 @@ namespace KelpNet.Common.Functions.Container
         }
 
         //関数の追加
-        public void Add(string functionBlockName, Function function, string[] inputNames, string[] outputNames)
-        {
-            //既にブロックがあるか
-            if (FunctionBlocks.ContainsKey(functionBlockName))
+        public void Add(string functionBlockName, Function function, string[] inputNames, string[] outputNames, bool compress = true)
+        {            
+            if (compress && //分岐毎の纏めを行うか
+                (function is SingleInputFunction || function is MultiOutputFunction)) //まとめられる対象は入力が一つの関数のみ
             {
-                //あればそこへ追加
-                FunctionBlocks[functionBlockName].Add(function);
+                //入力が登録済みの場合連結する
+                if (FunctionBlockDictionary.ContainsKey(inputNames[0]))
+                {
+                    FunctionRecord functionBlock = this.FunctionBlockDictionary[inputNames[0]];
+                    functionBlock.Add(function);
+
+                    //出力名称を上書き
+                    functionBlock.OutputNames = outputNames;
+
+                    //リンクを追加
+                    if (!(function is MultiOutputFunction) && //分岐する場合は親を登録せずリンクを切る
+                        !FunctionBlockDictionary.ContainsKey(outputNames[0]))
+                    {
+                        FunctionBlockDictionary.Add(outputNames[0], functionBlock);
+                    }
+
+                    return;
+                }
+            }
+
+            //既に辞書登録されている
+            if (FunctionBlockDictionary.ContainsKey(functionBlockName))
+            {
+                FunctionBlockDictionary[functionBlockName].Add(function);
             }
             else
             {
+                //どこにも登録がない
                 //ブロックを新規に作る
-                FunctionBlockNames.Add(functionBlockName);
                 FunctionRecord functionRecord = new FunctionRecord(function, inputNames, outputNames, functionBlockName);
-                FunctionBlocks.Add(functionBlockName, functionRecord);
+                FunctionBlocks.Add(functionRecord);
+                FunctionBlockDictionary.Add(function.Name, functionRecord);
             }
         }
 
         //Forward
         public override NdArray[] Forward(params NdArray[] xs)
         {
-            NdArray[] result = FunctionBlocks[FunctionBlockNames[0]].Forward(xs);
+            NdArray[] result = xs;
 
-            //出力したデータを辞書に登録
-            for (int j = 0; j < result.Length; j++)
+            //出力データの辞書
+            Dictionary<string, NdArray> outPuts = new Dictionary<string, NdArray>();
+
+            //最初のデータを辞書に登録
+            for (int i = 0; i < FunctionBlocks[0].InputNames.Length; i++)
             {
-                OutPuts.Add(FunctionBlocks[FunctionBlockNames[0]].OutputNames[j], result[j]);
+                outPuts.Add(FunctionBlocks[0].InputNames[i], xs[i]);
             }
 
-            for (int i = 1; i < FunctionBlockNames.Count; i++)
+            //登録順で実行していく
+            for (int i = 0; i < FunctionBlocks.Count; i++)
             {
-                string[] inputBlockNames = FunctionBlocks[FunctionBlockNames[i]].InputNames;
+                string[] inputBlockNames = FunctionBlocks[i].InputNames;
                 List<NdArray> inputData = new List<NdArray>();
 
                 //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
                 {
-                    inputData.Add(OutPuts[inputBlockNames[j]]);
+                    inputData.Add(outPuts[inputBlockNames[j]]);
                 }
 
                 //関数を実施
-                result = FunctionBlocks[FunctionBlockNames[i]].Forward(inputData.ToArray());
+                result = FunctionBlocks[i].Forward(inputData.ToArray());
 
                 //出力したデータを辞書に登録
                 for (int j = 0; j < result.Length; j++)
                 {
-                    OutPuts.Add(FunctionBlocks[FunctionBlockNames[i]].OutputNames[j],result[j]);
+                    outPuts.Add(FunctionBlocks[i].OutputNames[j], result[j]);
                 }
             }
-
-            OutPuts.Clear();
 
             return result;
         }
@@ -90,7 +112,7 @@ namespace KelpNet.Common.Functions.Container
         {
             foreach (var functionBlock in FunctionBlocks)
             {
-                functionBlock.Value.Update();
+                functionBlock.Update();
             }
         }
 
@@ -99,42 +121,44 @@ namespace KelpNet.Common.Functions.Container
         {
             foreach (var functionBlock in FunctionBlocks)
             {
-                functionBlock.Value.ResetState();
+                functionBlock.ResetState();
             }
         }
 
         //予想を実行する
         public override NdArray[] Predict(params NdArray[] xs)
         {
-            NdArray[] result = FunctionBlocks[FunctionBlockNames[0]].Predict(xs);
+            NdArray[] result = xs;
+
+            //出力データの辞書
+            Dictionary<string, NdArray> outPuts = new Dictionary<string, NdArray>();
+
             //出力したデータを辞書に登録
-            for (int j = 0; j < result.Length; j++)
+            for (int j = 0; j < FunctionBlocks[0].InputNames.Length; j++)
             {
-                OutPuts.Add(FunctionBlocks[FunctionBlockNames[0]].OutputNames[j], result[j]);
+                outPuts.Add(FunctionBlocks[0].InputNames[j], xs[j]);
             }
 
-            for (int i = 1; i < FunctionBlockNames.Count; i++)
+            for (int i = 0; i < FunctionBlocks.Count; i++)
             {
-                string[] inputBlockNames = FunctionBlocks[FunctionBlockNames[i]].InputNames;
+                string[] inputBlockNames = FunctionBlocks[i].InputNames;
                 List<NdArray> inputData = new List<NdArray>();
 
                 //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
                 {
-                    inputData.Add(OutPuts[inputBlockNames[j]]);
+                    inputData.Add(outPuts[inputBlockNames[j]]);
                 }
 
                 //関数を実施
-                result = FunctionBlocks[FunctionBlockNames[i]].Predict(inputData.ToArray());
+                result = FunctionBlocks[i].Predict(inputData.ToArray());
 
                 //出力したデータを辞書に登録
                 for (int j = 0; j < result.Length; j++)
                 {
-                    OutPuts.Add(FunctionBlocks[FunctionBlockNames[i]].OutputNames[j], result[j]);
+                    outPuts.Add(FunctionBlocks[i].OutputNames[j], result[j]);
                 }
             }
-
-            OutPuts.Clear();
 
             return result;
         }
@@ -143,7 +167,7 @@ namespace KelpNet.Common.Functions.Container
         {
             foreach (var functionBlock in FunctionBlocks)
             {
-                functionBlock.Value.SetOptimizer(optimizers);
+                functionBlock.SetOptimizer(optimizers);
             }
         }
     }

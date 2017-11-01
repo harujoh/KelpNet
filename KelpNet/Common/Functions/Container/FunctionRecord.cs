@@ -11,8 +11,9 @@ namespace KelpNet.Common.Functions.Container
         public string[] InputNames;
         public string[] OutputNames;
 
-        public FunctionRecord(Function function, string[] inputNames, string[] outputNames, string name= FUNCTION_NAME) : base(new[] { function }, name)
+        public FunctionRecord(Function function, string[] inputNames, string[] outputNames, string name= FUNCTION_NAME) : base(function)
         {
+            this.Name = name;
             this.InputNames = inputNames.ToArray();
             this.OutputNames = outputNames.ToArray();
         }
