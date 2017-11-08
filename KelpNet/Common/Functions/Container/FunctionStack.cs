@@ -22,15 +22,28 @@ namespace KelpNet.Common.Functions.Container
 
         public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)
         {
-            this.Functions = functions;
+            this.Add(functions);
         }
 
         //頻繁に使用することを想定していないため効率の悪い実装になっている
-        public void Add(Function function)
+        public void Add(params Function[] function)
         {
-            List<Function> functionList = new List<Function>(Functions);
-            functionList.Add(function);
-            this.Functions = functionList.ToArray();
+            if (function != null)
+            {
+                List<Function> functionList = new List<Function>();
+
+                if (this.Functions != null)
+                {
+                    functionList.AddRange(this.Functions);
+                }
+
+                for (int i = 0; i < function.Length; i++)
+                {
+                    if (function[i] != null) functionList.Add(function[i]);
+                }
+
+                this.Functions = functionList.ToArray();
+            }
         }
 
         public void Compress()
@@ -56,14 +69,14 @@ namespace KelpNet.Common.Functions.Container
         //Forward
         public override NdArray[] Forward(params NdArray[] xs)
         {
-            NdArray[] result = this.Functions[0].Forward(xs);
+            NdArray[] ys = xs;
 
-            for (int i = 1; i < this.Functions.Length; i++)
+            for (int i = 0; i < this.Functions.Length; i++)
             {
-                result = this.Functions[i].Forward(result);
+                ys = this.Functions[i].Forward(ys);
             }
 
-            return result;
+            return ys;
         }
 
         //Backward
@@ -93,14 +106,14 @@ namespace KelpNet.Common.Functions.Container
         //予想を実行する
         public override NdArray[] Predict(params NdArray[] xs)
         {
-            NdArray[] y = this.Functions[0].Predict(xs);
+            NdArray[] ys = xs;
 
-            for (int i = 1; i < this.Functions.Length; i++)
+            for (int i = 0; i < this.Functions.Length; i++)
             {
-                y = this.Functions[i].Predict(y);
+                ys = this.Functions[i].Predict(ys);
             }
 
-            return y;
+            return ys;
         }
 
         public override void SetOptimizer(params Optimizer[] optimizers)

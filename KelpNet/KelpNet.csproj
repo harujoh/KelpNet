@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Functions\CompressibleActivation.cs" />
+    <Compile Include="Common\Functions\Container\SplitFunction.cs" />
     <Compile Include="Common\Functions\Splitter.cs" />
     <Compile Include="Common\Functions\Type\DualInputFunction.cs" />
     <Compile Include="Common\Functions\Container\FunctionDictionary.cs" />

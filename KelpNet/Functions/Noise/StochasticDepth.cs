@@ -35,11 +35,20 @@ namespace KelpNet.Functions.Noise
 
         public override NdArray[] Forward(params NdArray[] xs)
         {
+            List<NdArray> resultArray = new List<NdArray>();
+            NdArray[] resResult = xs;
+
+            if (_resBlock != null)
+            {
+                resResult = _resBlock.Forward(xs);
+            }
+
+            resultArray.AddRange(resResult);
+
             if (!IsSkip())
             {
                 Real scale = 1 / (1 - this._pl);
                 NdArray[] result = _function.Forward(xs);
-                NdArray[] resResult = _resBlock.Forward(xs);
 
                 for (int i = 0; i < result.Length; i++)
                 {
@@ -47,21 +56,23 @@ namespace KelpNet.Functions.Noise
                     {
                         result[i].Data[j] *= scale;
                     }
-
-                    result[i] += resResult[i];
                 }
 
-                return result;
-            }
-
-            if (_resBlock != null)
-            {
-                return _resBlock.Forward(xs);
+                resultArray.AddRange(result);
             }
             else
             {
-                return xs;
+                NdArray[] result = new NdArray[resResult.Length];
+
+                for (int i = 0; i < result.Length; i++)
+                {
+                    result[i] = new NdArray(resResult[i].Shape, resResult[i].BatchCount, resResult[i].ParentFunc);
+                }
+
+                resultArray.AddRange(result);
             }
+
+            return resultArray.ToArray();
         }
 
         public override void Backward(params NdArray[] ys)
@@ -82,7 +93,7 @@ namespace KelpNet.Functions.Noise
 
                 for (int i = 0; i < ys.Length; i++)
                 {
-                    copyys[i] = ys[i].Clone();                    
+                    copyys[i] = ys[i].Clone();
 
                     for (int j = 0; j < ys[i].Data.Length; j++)
                     {

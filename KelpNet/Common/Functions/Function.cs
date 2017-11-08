@@ -20,7 +20,7 @@ namespace KelpNet.Common.Functions
         public List<NdArray[]> PrevInputs = new List<NdArray[]>();
 
         public abstract NdArray[] Forward(params NdArray[] xs);
-        public abstract void Backward(params NdArray[] ys);
+        public virtual void Backward(params NdArray[] ys){}
 
         //コンストラクタ
         protected Function(string name)
