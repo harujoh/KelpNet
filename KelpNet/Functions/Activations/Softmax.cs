@@ -17,15 +17,17 @@ namespace KelpNet.Functions.Activations
         {
             Real[] y = new Real[x.Data.Length];
 
+            int indexOffset = 0;
+
             for (int b = 0; b < x.BatchCount; b++)
             {
-                Real maxval = x.Data[b * x.Length];
+                Real maxval = x.Data[indexOffset];
 
                 for (int i = 1; i < x.Length; i++)
                 {
-                    if (maxval < x.Data[i + b * x.Length])
+                    if (maxval < x.Data[indexOffset + i])
                     {
-                        maxval = x.Data[i + b * x.Length];
+                        maxval = x.Data[indexOffset + i];
                     }
                 }
 
@@ -33,14 +35,16 @@ namespace KelpNet.Functions.Activations
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = Math.Exp(x.Data[i + b * x.Length] - maxval);
-                    sumval += y[i + b * x.Length];
+                    y[indexOffset + i] = Math.Exp(x.Data[indexOffset + i] - maxval);
+                    sumval += y[indexOffset + i];
                 }
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] /= sumval;
+                    y[indexOffset + i] /= sumval;
                 }
+
+                indexOffset += x.Length;
             }
 
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
@@ -50,20 +54,24 @@ namespace KelpNet.Functions.Activations
         {
             Real[] gx = new Real[y.Grad.Length];
 
+            int indexOffset = 0;
+
             for (int b = 0; b < y.BatchCount; b++)
             {
                 Real sumdx = 0;
 
                 for (int i = 0; i < y.Length; i++)
                 {
-                    gx[i + b * y.Length] = y.Data[i + b * y.Length] * y.Data[i + b * y.Length];
-                    sumdx += gx[i + b * y.Length];
+                    gx[indexOffset + i] = y.Data[indexOffset + i] * y.Data[indexOffset + i];
+                    sumdx += gx[indexOffset + i];
                 }
 
                 for (int i = 0; i < y.Length; i++)
                 {
-                    gx[i + b * y.Length] -= y.Data[i + b * y.Length] * sumdx;
+                    gx[indexOffset + i] -= y.Data[indexOffset + i] * sumdx;
                 }
+
+                indexOffset += y.Length;
             }
 
             for (int i = 0; i < x.Grad.Length; i++)
