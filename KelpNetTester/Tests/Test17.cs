@@ -61,7 +61,7 @@ namespace KelpNetTester.Tests
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
-                foreach (FunctionRecord resNetFunctionBlock in nn.FunctionBlocks)
+                foreach (FunctionStack resNetFunctionBlock in nn.FunctionBlocks)
                 {
                     foreach (Function function in resNetFunctionBlock.Functions)
                     {

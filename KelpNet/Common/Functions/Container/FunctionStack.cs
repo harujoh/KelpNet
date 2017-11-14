@@ -15,9 +15,14 @@ namespace KelpNet.Common.Functions.Container
         public Function[] Functions { get; private set; }
 
         //コンストラクタ
-        public FunctionStack(Function[] functions, string name = FUNCTION_NAME) : base(name)
+        public FunctionStack(Function[] functions, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Functions = functions;
+        }
+
+        public FunctionStack(Function function, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        {
+            this.Functions = new[] { function };
         }
 
         public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)

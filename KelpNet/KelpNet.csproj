@@ -49,7 +49,6 @@
     <Compile Include="Common\Functions\Splitter.cs" />
     <Compile Include="Common\Functions\Type\DualInputFunction.cs" />
     <Compile Include="Common\Functions\Container\FunctionDictionary.cs" />
-    <Compile Include="Common\Functions\Container\FunctionRecord.cs" />
     <Compile Include="Common\Functions\Type\MultiInputFunction.cs" />
     <Compile Include="Common\Functions\Type\MultiOutputFunction.cs" />
     <Compile Include="Common\Functions\Type\SingleInputFunction.cs" />

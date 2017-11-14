@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KelpNet.Common.Optimizers;
 using KelpNet.Common.Tools;
 
@@ -22,10 +23,23 @@ namespace KelpNet.Common.Functions
         public abstract NdArray[] Forward(params NdArray[] xs);
         public virtual void Backward(params NdArray[] ys){}
 
+        public string[] InputNames;
+        public string[] OutputNames;
+
         //コンストラクタ
-        protected Function(string name)
+        protected Function(string name, string[] inputNames = null, string[] outputNames = null)
         {
             this.Name = name;
+
+            if (inputNames != null)
+            {
+                this.InputNames = inputNames.ToArray();
+            }
+
+            if (outputNames != null)
+            {
+                this.OutputNames = outputNames.ToArray();
+            }
         }
 
         public virtual void SetOptimizer(params Optimizer[] optimizers)

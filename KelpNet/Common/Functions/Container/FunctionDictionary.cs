@@ -11,10 +11,10 @@ namespace KelpNet.Common.Functions.Container
         const string FUNCTION_NAME = "FunctionDictionary";
 
         //関数に入出力のキーを付加したFunctionRecordという単位で管理する
-        public Dictionary<string, FunctionRecord> FunctionBlockDictionary = new Dictionary<string, FunctionRecord>();
+        public Dictionary<string, FunctionStack> FunctionBlockDictionary = new Dictionary<string, FunctionStack>();
 
         //辞書の実行順リスト
-        public List<FunctionRecord> FunctionBlocks = new List<FunctionRecord>();
+        public List<FunctionStack> FunctionBlocks = new List<FunctionStack>();
 
         //コンストラクタ
         public FunctionDictionary(string name = FUNCTION_NAME) : base(name)
@@ -30,7 +30,7 @@ namespace KelpNet.Common.Functions.Container
                 //入力が登録済みの場合連結する
                 if (FunctionBlockDictionary.ContainsKey(inputNames[0]))
                 {
-                    FunctionRecord functionBlock = this.FunctionBlockDictionary[inputNames[0]];
+                    FunctionStack functionBlock = this.FunctionBlockDictionary[inputNames[0]];
                     functionBlock.Add(function);
 
                     //出力名称を上書き
@@ -56,7 +56,7 @@ namespace KelpNet.Common.Functions.Container
             {
                 //どこにも登録がない
                 //ブロックを新規に作る
-                FunctionRecord functionRecord = new FunctionRecord(function, inputNames, outputNames, functionBlockName);
+                FunctionStack functionRecord = new FunctionStack(function, functionBlockName, inputNames, outputNames);
                 FunctionBlocks.Add(functionRecord);
                 FunctionBlockDictionary.Add(function.Name, functionRecord);
             }
