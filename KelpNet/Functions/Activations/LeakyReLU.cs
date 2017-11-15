@@ -13,7 +13,7 @@ namespace KelpNet.Functions.Activations
 
         private readonly Real _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name, gpuEnable, FUNCTION_NAME, new KeyValuePair<string, string>(PARAM_NAME, slope.ToString()))
+        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, new[] { new KeyValuePair<string, string>(PARAM_NAME, slope.ToString()) }, name, inputNames, outputNames, gpuEnable)
         {
             this._slope = slope;
         }

@@ -16,47 +16,51 @@ namespace KelpNet.Common.Functions.Container
         //辞書の実行順リスト
         public List<FunctionStack> FunctionBlocks = new List<FunctionStack>();
 
+        private readonly bool _compress = false;
+
         //コンストラクタ
-        public FunctionDictionary(string name = FUNCTION_NAME) : base(name)
+        public FunctionDictionary(bool compress = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
+            this._compress = compress;
         }
 
         //関数の追加
-        public void Add(string functionBlockName, Function function, string[] inputNames, string[] outputNames, bool compress = true)
-        {            
-            if (compress && //分岐毎の纏めを行うか
-                (function is SingleInputFunction || function is MultiOutputFunction)) //まとめられる対象は入力が一つの関数のみ
+        public void Add(Function function, string functionBlockName)
+        {
+            if (_compress && //分岐毎のまとめを行うか
+                (function is SingleInputFunction || function is MultiOutputFunction)) //入力が一つの関数のみまとめられる
             {
-                //入力が登録済みの場合連結する
-                if (FunctionBlockDictionary.ContainsKey(inputNames[0]))
+                //入力名称で辞書に登録が有るかチェック
+                if (FunctionBlockDictionary.ContainsKey(function.InputNames[0]))
                 {
-                    FunctionStack functionBlock = this.FunctionBlockDictionary[inputNames[0]];
+                    //入力が登録済みの場合連結する
+                    FunctionStack functionBlock = this.FunctionBlockDictionary[function.InputNames[0]];
                     functionBlock.Add(function);
 
                     //出力名称を上書き
-                    functionBlock.OutputNames = outputNames;
+                    functionBlock.OutputNames = function.OutputNames;
 
-                    //リンクを追加
-                    if (!(function is MultiOutputFunction) && //分岐する場合は親を登録せずリンクを切る
-                        !FunctionBlockDictionary.ContainsKey(outputNames[0]))
+                    if (!(function is MultiOutputFunction) && //出力が分岐する場合は登録せずリンクを切る
+                        !FunctionBlockDictionary.ContainsKey(function.OutputNames[0]))//既に登録されている場合は登録しない
                     {
-                        FunctionBlockDictionary.Add(outputNames[0], functionBlock);
+                        //リンクを追加
+                        FunctionBlockDictionary.Add(function.OutputNames[0], functionBlock);
                     }
 
                     return;
                 }
             }
 
-            //既に辞書登録されている
+            //ブロックが辞書に登録されているか
             if (FunctionBlockDictionary.ContainsKey(functionBlockName))
             {
+                //ブロックが既に辞書登録されていれば追加
                 FunctionBlockDictionary[functionBlockName].Add(function);
             }
             else
             {
-                //どこにも登録がない
-                //ブロックを新規に作る
-                FunctionStack functionRecord = new FunctionStack(function, functionBlockName, inputNames, outputNames);
+                //登録がなければブロックを新規に作る
+                FunctionStack functionRecord = new FunctionStack(function, functionBlockName, function.InputNames, function.OutputNames);
                 FunctionBlocks.Add(functionRecord);
                 FunctionBlockDictionary.Add(function.Name, functionRecord);
             }

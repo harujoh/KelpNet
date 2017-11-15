@@ -37,7 +37,7 @@ namespace KelpNet.Functions.Connections
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name)
+        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             this.InputCount = inSize;
             this.OutputCount = outSize;

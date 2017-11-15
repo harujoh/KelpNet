@@ -7,7 +7,7 @@ namespace KelpNet.Common.Functions
         const string FUNCTION_NAME = "Splitter";
         private readonly int _splitNum;
 
-        public Splitter(int splitNum = 2, string name = FUNCTION_NAME) : base(name)
+        public Splitter(int splitNum = 2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._splitNum = splitNum;
 

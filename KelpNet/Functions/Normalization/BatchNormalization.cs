@@ -9,6 +9,8 @@ namespace KelpNet.Functions.Normalization
     [Serializable]
     public class BatchNormalization : SingleInputFunction
     {
+        const string FUNCTION_NAME = "BatchNormalization";
+
         public bool IsTrain;
 
         public NdArray Gamma;
@@ -31,7 +33,7 @@ namespace KelpNet.Functions.Normalization
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = "BatchNorm") : base(name)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;

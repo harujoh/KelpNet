@@ -31,7 +31,7 @@ namespace KelpNet.Common.Functions
 
         protected string ActivateKernelString;
 
-        protected CompressibleActivation(string name, bool gpuEnable, string functionName, params KeyValuePair<string, string>[] parameters) : base(name)
+        protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";
@@ -40,9 +40,12 @@ namespace KelpNet.Common.Functions
             this.ActivateKernelString = Weaver.GetKernelSource(FUNCTION_NAME).Replace("/*kernelNameBase*/", kernelNameBase);
             this.ActivateFunctionString = Weaver.GetKernelSource(functionName);
 
-            foreach (var parameter in parameters)
+            if (parameters != null)
             {
-                this.ActivateFunctionString = this.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
+                foreach (var parameter in parameters)
+                {
+                    this.ActivateFunctionString = this.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
+                }
             }
 
             this.SetGpuEnable(gpuEnable);

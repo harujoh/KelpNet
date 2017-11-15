@@ -15,7 +15,7 @@ namespace KelpNet.Functions.Normalization
         private Real[] unitScale;
         private Real[] scale;
 
-        public LRN(int n = 5, double k = 2, double alpha = 1e-4, double beta = 0.75, string name = FUNCTION_NAME) : base(name)
+        public LRN(int n = 5, double k = 2, double alpha = 1e-4, double beta = 0.75, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.n = n;
             this.k = (Real)k;

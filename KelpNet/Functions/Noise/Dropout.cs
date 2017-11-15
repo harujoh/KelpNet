@@ -25,7 +25,7 @@ namespace KelpNet.Functions.Noise
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardKernel;
 
-        public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name)
+        public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             this.dropoutRatio = dropoutRatio;
 

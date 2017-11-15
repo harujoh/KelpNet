@@ -7,7 +7,7 @@ namespace KelpNet.Functions.Mathmetrics.BasicMath
     {
         private const string FUNCTION_NAME = "Add";
 
-        public Add(string name = FUNCTION_NAME) : base(name)
+        public Add(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             DualInputForward = ForwardCpu;
             DualOutputBackward = BackwardCpu;

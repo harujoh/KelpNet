@@ -10,9 +10,9 @@ namespace KelpNet.Functions.Arrays
     public class Broadcast : SingleInputFunction
     {
         const string FUNCTION_NAME = "Broadcast";
-        private readonly int[] Shape;
+        public int[] Shape;
 
-        public Broadcast(int[] shape, string name = FUNCTION_NAME) : base(name)
+        public Broadcast(int[] shape, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Shape = shape.ToArray();
 

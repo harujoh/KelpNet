@@ -7,9 +7,9 @@ namespace KelpNet.Functions.Arrays
     class Reshape : SingleInputFunction
     {
         const string FUNCTION_NAME = "Reshape";
-        private int[] Shape;
+        public int[] Shape;
 
-        public Reshape(int[] shape, string name = FUNCTION_NAME) : base(name)
+        public Reshape(int[] shape, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Shape = shape;
 

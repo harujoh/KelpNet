@@ -8,7 +8,7 @@ namespace KelpNet.Functions.Mathmetrics.Trigonometric
     {
         private const string FUNCTION_NAME = "Cosh";
 
-        public Cosh(string name = FUNCTION_NAME) : base(name)
+        public Cosh(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;

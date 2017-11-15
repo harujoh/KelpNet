@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Activations
 
         private readonly Real _alpha;
 
-        public ELU(double alpha = 1, string name = FUNCTION_NAME) : base(name)
+        public ELU(double alpha = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._alpha = alpha;
 

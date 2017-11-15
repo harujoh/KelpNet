@@ -8,7 +8,7 @@ namespace KelpNet.Common.Functions.Type
         protected Func<NdArray, NdArray, NdArray> DualInputForward;
         protected Action<NdArray, NdArray, NdArray> DualOutputBackward;
 
-        protected DualInputFunction(string name) : base(name)
+        protected DualInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
         }
 

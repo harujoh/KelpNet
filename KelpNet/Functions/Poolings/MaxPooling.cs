@@ -27,7 +27,7 @@ namespace KelpNet.Functions.Poolings
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = FUNCTION_NAME, bool gpuEnable = false) : base(name)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -58,7 +58,7 @@ namespace KelpNet.Functions.Poolings
             return GpuEnable;
         }
 
-        public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, bool gpuEnable = false) : base(name)
+        public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);

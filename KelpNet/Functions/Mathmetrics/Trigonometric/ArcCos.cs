@@ -8,7 +8,7 @@ namespace KelpNet.Functions.Mathmetrics.Trigonometric
     {
         private const string FUNCTION_NAME = "ArcCos";
 
-        public ArcCos(string name = FUNCTION_NAME) : base(name)
+        public ArcCos(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;

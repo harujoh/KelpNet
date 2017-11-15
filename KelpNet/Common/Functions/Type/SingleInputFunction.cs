@@ -8,7 +8,7 @@ namespace KelpNet.Common.Functions.Type
         protected Func<NdArray, NdArray> SingleInputForward;
         protected Action<NdArray, NdArray> SingleOutputBackward;
 
-        protected SingleInputFunction(string name) : base(name)
+        protected SingleInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
         }
 

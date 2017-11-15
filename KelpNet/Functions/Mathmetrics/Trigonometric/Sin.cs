@@ -8,7 +8,7 @@ namespace KelpNet.Functions.Mathmetrics.Trigonometric
     {
         private const string FUNCTION_NAME = "Sin";
 
-        public Sin(string name = FUNCTION_NAME) : base(name)
+        public Sin(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;

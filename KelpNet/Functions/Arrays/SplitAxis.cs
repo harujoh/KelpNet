@@ -7,22 +7,22 @@ namespace KelpNet.Functions.Arrays
     public class SplitAxis : MultiOutputFunction
     {
         const string FUNCTION_NAME = "SplitAxis";
-        private int _axis;
-        private int[] _indices;
+        public int Axis;
+        public int[] Indices;
 
-        public SplitAxis(int indices, int axis, string name = FUNCTION_NAME) : base(name)
+        public SplitAxis(int indices, int axis, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this._indices = new[] { indices };
-            this._axis = axis;
+            this.Indices = new[] { indices };
+            this.Axis = axis;
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
         }
 
-        public SplitAxis(int[] indices, int axis, string name = FUNCTION_NAME) : base(name)
+        public SplitAxis(int[] indices, int axis, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this._indices = indices.ToArray();
-            this._axis = axis;
+            this.Indices = indices.ToArray();
+            this.Axis = axis;
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
@@ -30,7 +30,7 @@ namespace KelpNet.Functions.Arrays
 
         private NdArray[] ForwardCpu(NdArray x)
         {
-            NdArray[] resultArays = NdArray.Split(x, _indices, _axis);
+            NdArray[] resultArays = NdArray.Split(x, Indices, Axis);
 
             foreach (var resultArray in resultArays)
             {
@@ -46,7 +46,7 @@ namespace KelpNet.Functions.Arrays
 
             for (int i = 1; i < ys.Length; i++)
             {
-                resultNdArray = NdArray.Concatenate(resultNdArray, ys[i], _axis);
+                resultNdArray = NdArray.Concatenate(resultNdArray, ys[i], Axis);
             }
 
             for (int i = 0; i < x.Grad.Length; i++)

@@ -59,14 +59,14 @@ namespace CaffemodelLoader
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
                 NetParameter netparam = Serializer.Deserialize<NetParameter>(stream);
-                
+
                 foreach (V1LayerParameter layer in netparam.Layers)
                 {
                     Function func = CreateFunction(layer);
 
                     if (func != null)
                     {
-                        functionDictionary.Add(layer.Tops[0], func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                        functionDictionary.Add(func, layer.Tops[0]);
                     }
                 }
 
@@ -76,7 +76,7 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
-                        functionDictionary.Add(layer.Tops[0], func, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                        functionDictionary.Add(func, layer.Tops[0]);
                     }
                 }
             }
@@ -122,43 +122,43 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case "Scale":
-                    return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name);
+                    return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Split":
-                    return new Splitter(layer.Tops.Count, layer.Name);
+                    return new Splitter(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Slice":
-                    return SetupSlice(layer.SliceParam, layer.Name);
+                    return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "LRN":
-                    return SetupLRN(layer.LrnParam, layer.Name);
+                    return SetupLRN(layer.LrnParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Concat":
-                    return SetupConcat(layer.ConcatParam, layer.Name);
+                    return SetupConcat(layer.ConcatParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Eltwise":
-                    return SetupEltwise(layer.EltwiseParam, layer.Name);
+                    return SetupEltwise(layer.EltwiseParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "BatchNorm":
-                    return SetupBatchnorm(layer.BatchNormParam, layer.Blobs, layer.Name);
+                    return SetupBatchnorm(layer.BatchNormParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Convolution":
-                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name);
+                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Dropout":
-                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name);
+                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Pooling":
-                    return SetupPooling(layer.PoolingParam, layer.Name);
+                    return SetupPooling(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "ReLU":
-                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name) : (Function)new ReLU(name: layer.Name);
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "InnerProduct":
-                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name);
+                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Softmax":
-                    return new Softmax();
+                    return new Softmax(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "SoftmaxWithLoss":
                     return null;
@@ -174,34 +174,34 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Split:
-                    return new Splitter(layer.Tops.Count, layer.Name);
+                    return new Splitter(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Slice:
-                    return SetupSlice(layer.SliceParam, layer.Name);
+                    return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Concat:
-                    return SetupConcat(layer.ConcatParam, layer.Name);
+                    return SetupConcat(layer.ConcatParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Lrn:
-                    return SetupLRN(layer.LrnParam, layer.Name);
+                    return SetupLRN(layer.LrnParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Eltwise:
-                    return SetupEltwise(layer.EltwiseParam, layer.Name);
+                    return SetupEltwise(layer.EltwiseParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Convolution:
-                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name);
+                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Dropout:
-                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name);
+                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Pooling:
-                    return SetupPooling(layer.PoolingParam, layer.Name);
+                    return SetupPooling(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Relu:
-                    return layer.ReluParam != null ? (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name) : (Function)new ReLU(name: layer.Name);
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.InnerProduct:
-                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name);
+                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Softmax:
                     return new Softmax();
@@ -215,7 +215,7 @@ namespace CaffemodelLoader
             return null;
         }
 
-        static Function SetupScale(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name)
+        static Function SetupScale(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name, string[] inputNames, string[] outputNames)
         {
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
             int axis = param.Axis - 1;
@@ -231,7 +231,7 @@ namespace CaffemodelLoader
                     wShape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                return new MultiplyScale(axis, wShape, biasTerm, blobs[0].Datas, blobs[1].Datas, name);
+                return new MultiplyScale(axis, wShape, biasTerm, blobs[0].Datas, blobs[1].Datas, name, inputNames, outputNames);
             }
             else
             {
@@ -247,7 +247,7 @@ namespace CaffemodelLoader
             }
         }
 
-        static Function SetupSlice(SliceParameter param, string name)
+        static Function SetupSlice(SliceParameter param, string name, string[] inputNames, string[] outputNames)
         {
             int[] slicePoints = new int[param.SlicePoints.Length];
 
@@ -257,10 +257,10 @@ namespace CaffemodelLoader
             }
 
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
-            return new SplitAxis(slicePoints, param.Axis - 1, name);
+            return new SplitAxis(slicePoints, param.Axis - 1, name, inputNames, outputNames);
         }
 
-        static Function SetupPooling(PoolingParameter param, string name)
+        static Function SetupPooling(PoolingParameter param, string name, string[] inputNames, string[] outputNames)
         {
             Size ksize = GetKernelSize(param);
             Size stride = GetKernelStride(param);
@@ -269,16 +269,16 @@ namespace CaffemodelLoader
             switch (param.Pool)
             {
                 case PoolingParameter.PoolMethod.Max:
-                    return new MaxPooling(ksize, stride, pad, name);
+                    return new MaxPooling(ksize, stride, pad, name: name, inputNames: inputNames, outputNames: outputNames);
 
                 case PoolingParameter.PoolMethod.Ave:
-                    return new AveragePooling(ksize, stride, pad, name);
+                    return new AveragePooling(ksize, stride, pad, name, inputNames, outputNames);
             }
 
             return null;
         }
 
-        static BatchNormalization SetupBatchnorm(BatchNormParameter param, List<BlobProto> blobs, string name)
+        static BatchNormalization SetupBatchnorm(BatchNormParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
             double decay = param.MovingAverageFraction;
             double eps = param.Eps;
@@ -302,12 +302,10 @@ namespace CaffemodelLoader
                 }
             }
 
-            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, avgMean, avgVar, name: name);
-
-            return batchNormalization;
+            return new BatchNormalization(size, decay, eps, avgMean, avgVar, name: name, inputNames: inputNames, outputNames: outputNames);
         }
 
-        static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name)
+        static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
             Size ksize = GetKernelSize(param);
             Size stride = GetKernelStride(param);
@@ -321,13 +319,13 @@ namespace CaffemodelLoader
             if (param.BiasTerm)
             {
                 float[] b = blobs[1].Datas;
-                return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b, name);
+                return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b, name: name, inputNames: inputNames, outputNames: outputNames);
             }
 
-            return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, name: name);
+            return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, name: name, inputNames: inputNames, outputNames: outputNames);
         }
 
-        static Linear SetupInnerProduct(InnerProductParameter param, List<BlobProto> blobs, string name)
+        static Linear SetupInnerProduct(InnerProductParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
             if (param.Axis != 1)
             {
@@ -340,30 +338,30 @@ namespace CaffemodelLoader
 
             if (param.BiasTerm)
             {
-                return new Linear(width, height, !param.BiasTerm, w, blobs[1].Datas, name);
+                return new Linear(width, height, !param.BiasTerm, w, blobs[1].Datas, name: name, inputNames: inputNames, outputNames: outputNames);
             }
 
             return new Linear(width, height, !param.BiasTerm, w, name: name);
         }
 
-        static LRN SetupLRN(LRNParameter param, string name)
+        static LRN SetupLRN(LRNParameter param, string name, string[] inputNames, string[] outputNames)
         {
-            return new LRN((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name);
+            return new LRN((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name, inputNames, outputNames);
         }
 
-        static Eltwise SetupEltwise(EltwiseParameter param, string name)
+        static Eltwise SetupEltwise(EltwiseParameter param, string name, string[] inputNames, string[] outputNames)
         {
             if (param != null)
             {
-                return new Eltwise(param.Operation, param.Coeffs, name);
+                return new Eltwise(param.Operation, param.Coeffs, name, inputNames, outputNames);
             }
             else
             {
-                return new Eltwise(EltwiseParameter.EltwiseOp.Sum, null, name);
+                return new Eltwise(EltwiseParameter.EltwiseOp.Sum, null, name, inputNames, outputNames);
             }
         }
 
-        static Concat SetupConcat(ConcatParameter param, string name)
+        static Concat SetupConcat(ConcatParameter param, string name, string[] inputNames, string[] outputNames)
         {
             int axis = param.Axis;
 
@@ -373,7 +371,7 @@ namespace CaffemodelLoader
             }
 
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
-            return new Concat(axis - 1, name);
+            return new Concat(axis - 1, name, inputNames, outputNames);
         }
 
         static int GetHeight(BlobProto blob)

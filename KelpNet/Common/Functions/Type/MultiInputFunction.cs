@@ -8,7 +8,7 @@ namespace KelpNet.Common.Functions.Type
         protected Func<NdArray[], NdArray> MultiInputForward;
         protected Action<NdArray, NdArray[]> MultiOutputBackward;
 
-        protected MultiInputFunction(string name) : base(name)
+        protected MultiInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
         }
 
@@ -21,7 +21,7 @@ namespace KelpNet.Common.Functions.Type
                 x.UseCount++;
             }
 
-            return new []{MultiInputForward(xs)};
+            return new[] { MultiInputForward(xs) };
         }
 
         public override void Backward(params NdArray[] ys)
@@ -41,7 +41,7 @@ namespace KelpNet.Common.Functions.Type
 
         public override NdArray[] Predict(params NdArray[] xs)
         {
-            return new []{MultiInputForward(xs)};
+            return new[] { MultiInputForward(xs) };
         }
     }
 }

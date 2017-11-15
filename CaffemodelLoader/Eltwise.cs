@@ -14,7 +14,7 @@ namespace CaffemodelLoader
         private EltwiseParameter.EltwiseOp _operation;
         private float[] _coeffs;
 
-        public Eltwise(EltwiseParameter.EltwiseOp operation, float[] coeffs, string name = FUNCTION_NAME) : base(name)
+        public Eltwise(EltwiseParameter.EltwiseOp operation, float[] coeffs, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._operation = operation;
             this._coeffs = coeffs;

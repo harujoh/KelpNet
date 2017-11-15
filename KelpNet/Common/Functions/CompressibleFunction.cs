@@ -9,6 +9,8 @@ namespace KelpNet.Common.Functions
     [Serializable]
     public abstract class CompressibleFunction : SingleInputFunction, IParallelizable
     {
+        const string FUNCTION_NAME = "CompressibleFunction";
+
         public CompressibleActivation Activator { get; protected set; }
 
         [NonSerialized]
@@ -29,14 +31,14 @@ namespace KelpNet.Common.Functions
 
         protected string KernelString;
 
-        private KeyValuePair<string, string>[] _activationParameters;
+        private readonly KeyValuePair<string, string>[] _activationParameters;
 
         protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
         protected abstract NdArray NeedPreviousForwardGpu(NdArray input);
         protected abstract void NeedPreviousBackwardCpu(NdArray y, NdArray x);
         protected abstract void NeedPreviousBackwardGpu(NdArray y, NdArray x);
 
-        protected CompressibleFunction(string name, bool gpuEnable, string functionName, CompressibleActivation activation = null, params KeyValuePair<string, string>[] activationParameters) : base(name)
+        protected CompressibleFunction(string functionName, CompressibleActivation activation = null, KeyValuePair<string, string>[] activationParameters = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";

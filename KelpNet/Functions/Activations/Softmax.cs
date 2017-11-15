@@ -7,7 +7,9 @@ namespace KelpNet.Functions.Activations
     [Serializable]
     public class Softmax : SingleInputFunction
     {
-        public Softmax(string name = "Softmax") : base(name)
+        private const string FUNCTION_NAME = "Softmax";
+
+        public Softmax(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             SingleInputForward = NeedPreviousForwardCpu;
             SingleOutputBackward = NeedPreviousBackwardCpu;

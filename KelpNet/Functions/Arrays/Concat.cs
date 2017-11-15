@@ -7,13 +7,13 @@ namespace KelpNet.Functions.Arrays
     public class Concat : MultiInputFunction
     {
         const string FUNCTION_NAME = "Concat";
-        private int _axis;
+        public int Axis;
 
         private readonly List<int[]> _prevInputSections = new List<int[]>();
 
-        public Concat(int axis = 1, string name = FUNCTION_NAME) : base(name)
+        public Concat(int axis = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this._axis = axis;
+            this.Axis = axis;
 
             MultiInputForward = ForwardCpu;
             MultiOutputBackward = BackwardCpu;
@@ -22,7 +22,7 @@ namespace KelpNet.Functions.Arrays
         private NdArray ForwardCpu(params NdArray[] xs)
         {
             int[] sections = new int[xs.Length - 1];
-            int sizeOffset = xs[0].Shape[_axis];
+            int sizeOffset = xs[0].Shape[Axis];
 
             NdArray resultNdArray = xs[0].Clone();
             resultNdArray.ParentFunc = this;
@@ -31,9 +31,9 @@ namespace KelpNet.Functions.Arrays
             {
                 //BackwardのSplitで使用しないため最後のshapeを保存しないロジックになっている
                 sections[i - 1] = sizeOffset;
-                sizeOffset += xs[i].Shape[_axis];
+                sizeOffset += xs[i].Shape[Axis];
 
-                resultNdArray = NdArray.Concatenate(resultNdArray, xs[i], _axis);
+                resultNdArray = NdArray.Concatenate(resultNdArray, xs[i], Axis);
             }
 
             _prevInputSections.Add(sections);
@@ -46,7 +46,7 @@ namespace KelpNet.Functions.Arrays
             int[] prevInputShapes = this._prevInputSections[this._prevInputSections.Count - 1];
             this._prevInputSections.RemoveAt(this._prevInputSections.Count - 1);
 
-            NdArray[] result = NdArray.Split(y, prevInputShapes, this._axis);
+            NdArray[] result = NdArray.Split(y, prevInputShapes, this.Axis);
 
             for (int i = 0; i < xs.Length; i++)
             {

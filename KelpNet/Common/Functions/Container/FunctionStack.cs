@@ -48,6 +48,9 @@ namespace KelpNet.Common.Functions.Container
                 }
 
                 this.Functions = functionList.ToArray();
+
+                InputNames = Functions[0].InputNames;
+                OutputNames = Functions[Functions.Length - 1].OutputNames;
             }
         }
 

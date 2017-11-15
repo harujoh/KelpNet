@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Activations
     {
         const string FUNCTION_NAME = "Swish";
 
-        public Swish(string name = FUNCTION_NAME) : base(name)
+        public Swish(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
         }
 

@@ -11,7 +11,7 @@ namespace KelpNet.Functions.Activations
         private readonly Real _beta;
         private readonly Real _betaInv;
 
-        public Softplus(double beta = 1, string name = FUNCTION_NAME) : base(name)
+        public Softplus(double beta = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._beta = beta;
             this._betaInv = 1 / this._beta;

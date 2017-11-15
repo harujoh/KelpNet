@@ -26,7 +26,7 @@ namespace KelpNet.Functions.Noise
             return result;
         }
 
-        public StochasticDepth(Function function, Function resBlock = null, double pl = 0.5, string name = FUNCTION_NAME) : base(name)
+        public StochasticDepth(Function function, Function resBlock = null, double pl = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._function = function;
             this._resBlock = resBlock;

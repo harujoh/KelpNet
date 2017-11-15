@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Activations
     {
         const string FUNCTION_NAME = "Tanh";
 
-        public Tanh(string name = FUNCTION_NAME, bool gpuEnable = false) : base(name, gpuEnable, FUNCTION_NAME)
+        public Tanh(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
         {
         }
 

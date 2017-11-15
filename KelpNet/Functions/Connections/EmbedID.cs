@@ -8,12 +8,14 @@ namespace KelpNet.Functions.Connections
     [Serializable]
     public class EmbedID : SingleInputFunction
     {
+        const string FUNCTION_NAME = "EmbedID";
+
         public NdArray Weight;
 
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = "EmbedID") : base(name)
+        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.InputCount = inputCount;
             this.OutputCount = outputCount;
