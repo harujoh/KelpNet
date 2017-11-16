@@ -6,7 +6,7 @@ using KelpNet.Common.Functions;
 namespace KelpNet.Functions.Noise
 {
     [Serializable]
-    public class StochasticDepth : Function
+    public class StochasticDepth : Function //SplitFunctionと置き換えるように使用する
     {
         const string FUNCTION_NAME = "StochasticDepth";
 
@@ -30,6 +30,7 @@ namespace KelpNet.Functions.Noise
         {
             this._function = function;
             this._resBlock = resBlock;
+
             this._pl = pl;
         }
 

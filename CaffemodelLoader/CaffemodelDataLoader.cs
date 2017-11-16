@@ -125,7 +125,7 @@ namespace CaffemodelLoader
                     return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Split":
-                    return new Splitter(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new SplitFunction(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Slice":
                     return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
@@ -174,7 +174,7 @@ namespace CaffemodelLoader
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Split:
-                    return new Splitter(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new SplitFunction(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Slice:
                     return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());

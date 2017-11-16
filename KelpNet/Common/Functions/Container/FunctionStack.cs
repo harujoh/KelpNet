@@ -27,13 +27,14 @@ namespace KelpNet.Common.Functions.Container
 
         public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)
         {
+            this.Functions = new Function[]{};
             this.Add(functions);
         }
 
         //頻繁に使用することを想定していないため効率の悪い実装になっている
         public void Add(params Function[] function)
         {
-            if (function != null)
+            if (function != null && function.Length > 0)
             {
                 List<Function> functionList = new List<Function>();
 

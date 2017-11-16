@@ -41,9 +41,9 @@ namespace KelpNet.Common.Functions.Container
                     functionBlock.OutputNames = function.OutputNames;
 
                     if (!(function is MultiOutputFunction) && //出力が分岐する場合は登録せずリンクを切る
-                        !FunctionBlockDictionary.ContainsKey(function.OutputNames[0]))//既に登録されている場合は登録しない
+                        !FunctionBlockDictionary.ContainsKey(function.OutputNames[0])) //既に登録されている場合は登録しない
                     {
-                        //リンクを追加
+                        //リンクを辞書へ追加
                         FunctionBlockDictionary.Add(function.OutputNames[0], functionBlock);
                     }
 
@@ -54,14 +54,18 @@ namespace KelpNet.Common.Functions.Container
             //ブロックが辞書に登録されているか
             if (FunctionBlockDictionary.ContainsKey(functionBlockName))
             {
-                //ブロックが既に辞書登録されていれば追加
+                //ブロックが既に辞書登録されていればリンクへ追加
                 FunctionBlockDictionary[functionBlockName].Add(function);
             }
             else
             {
                 //登録がなければブロックを新規に作る
                 FunctionStack functionRecord = new FunctionStack(function, functionBlockName, function.InputNames, function.OutputNames);
+
+                //実行順に登録
                 FunctionBlocks.Add(functionRecord);
+
+                //リンクを辞書へ追加
                 FunctionBlockDictionary.Add(function.Name, functionRecord);
             }
         }
