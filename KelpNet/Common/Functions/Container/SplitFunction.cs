@@ -18,7 +18,7 @@ namespace KelpNet.Common.Functions.Container
 
             for (int i = 0; i < SplitedFunctions.Length; i++)
             {
-                SplitedFunctions[i] = new FunctionStack();
+                SplitedFunctions[i] = new FunctionStack(new Function[] { }, name + i, new[] { inputNames[0] }, new[] { outputNames[i] });
             }
 
             SingleInputForward = ForwardCpu;

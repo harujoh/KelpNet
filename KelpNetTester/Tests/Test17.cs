@@ -22,9 +22,9 @@ namespace KelpNetTester.Tests
     class Test17
     {
         private const string DOWNLOAD_URL_MEAN = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117894&authkey=%21AAFW2%2DFVoxeVRck";
-        private const string DOWNLOAD_URL_50   = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117895&authkey=%21AAFW2%2DFVoxeVRck";
-        private const string DOWNLOAD_URL_101  = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117896&authkey=%21AAFW2%2DFVoxeVRck";
-        private const string DOWNLOAD_URL_152  = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117897&authkey=%21AAFW2%2DFVoxeVRck";
+        private const string DOWNLOAD_URL_50 = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117895&authkey=%21AAFW2%2DFVoxeVRck";
+        private const string DOWNLOAD_URL_101 = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117896&authkey=%21AAFW2%2DFVoxeVRck";
+        private const string DOWNLOAD_URL_152 = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117897&authkey=%21AAFW2%2DFVoxeVRck";
 
         private const string MODEL_FILE_MEAN = "ResNet_mean.binaryproto";
         private const string MODEL_FILE_50 = "ResNet-50-model.caffemodel";
@@ -63,16 +63,7 @@ namespace KelpNetTester.Tests
                 //GPUを初期化
                 foreach (FunctionStack resNetFunctionBlock in nn.FunctionBlocks)
                 {
-                    foreach (Function function in resNetFunctionBlock.Functions)
-                    {
-                        if (function is Convolution2D || function is Linear || function is MaxPooling)
-                        {
-                            ((IParallelizable)function).SetGpuEnable(true);
-                        }
-                    }
-
-                    //ブロック単位で層の圧縮を実行
-                    resNetFunctionBlock.Compress();
+                    SwitchGPU(resNetFunctionBlock);
                 }
 
                 Console.WriteLine("Model Loading done.");
@@ -104,6 +95,29 @@ namespace KelpNetTester.Tests
                     Console.WriteLine("[" + result.Data[maxIndex] + "] : " + classList[maxIndex]);
                 } while (ofd.ShowDialog() == DialogResult.OK);
             }
+        }
+
+        static void SwitchGPU(FunctionStack functionStack)
+        {
+            foreach (Function function in functionStack.Functions)
+            {
+                if (function is Convolution2D || function is Linear || function is MaxPooling)
+                {
+                    ((IParallelizable)function).SetGpuEnable(true);
+                }
+
+                if (function is SplitFunction)
+                {
+                    SplitFunction splitFunction = (SplitFunction)function;
+                    for (int i = 0; i < splitFunction.SplitedFunctions.Length; i++)
+                    {
+                        SwitchGPU(splitFunction.SplitedFunctions[i]);
+                    }
+                }
+            }
+
+            //ブロック単位で層の圧縮を実行
+            functionStack.Compress();
         }
     }
 }

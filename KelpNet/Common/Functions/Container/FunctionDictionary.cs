@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KelpNet.Common.Functions.Type;
 using KelpNet.Common.Optimizers;
 
@@ -13,13 +14,16 @@ namespace KelpNet.Common.Functions.Container
         //関数に入出力のキーを付加したFunctionRecordという単位で管理する
         public Dictionary<string, FunctionStack> FunctionBlockDictionary = new Dictionary<string, FunctionStack>();
 
+        //分割関数の名前を保持する辞書
+        public Dictionary<string, FunctionStack> SplitedFunctionDictionary = new Dictionary<string, FunctionStack>();
+
         //辞書の実行順リスト
         public List<FunctionStack> FunctionBlocks = new List<FunctionStack>();
 
         private readonly bool _compress = false;
 
         //コンストラクタ
-        public FunctionDictionary(bool compress = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public FunctionDictionary(bool compress = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._compress = compress;
         }
@@ -31,31 +35,64 @@ namespace KelpNet.Common.Functions.Container
                 (function is SingleInputFunction || function is MultiOutputFunction)) //入力が一つの関数のみまとめられる
             {
                 //入力名称で辞書に登録が有るかチェック
-                if (FunctionBlockDictionary.ContainsKey(function.InputNames[0]))
+                if (this.FunctionBlockDictionary.ContainsKey(function.InputNames[0]))
                 {
-                    //入力が登録済みの場合連結する
-                    FunctionStack functionBlock = this.FunctionBlockDictionary[function.InputNames[0]];
-                    functionBlock.Add(function);
+                    //ブロックが既に辞書登録されていればブロックに連結
+                    this.FunctionBlockDictionary[function.InputNames[0]].Add(function);
 
                     //出力名称を上書き
-                    functionBlock.OutputNames = function.OutputNames;
+                    this.FunctionBlockDictionary[function.InputNames[0]].OutputNames = function.OutputNames.ToArray();
+
+                    //分割済み関数なら分割元の出力名を更新する
+                    if (SplitedFunctionDictionary.ContainsKey(function.InputNames[0]))
+                    {
+                        FunctionStack spliteFunction = SplitedFunctionDictionary[function.InputNames[0]];
+
+                        for (int i = 0; i < spliteFunction.OutputNames.Length; i++)
+                        {
+                            if (spliteFunction.OutputNames[i] == function.InputNames[0])
+                            {
+                                spliteFunction.OutputNames[i] = function.OutputNames[0];
+
+                                if (!SplitedFunctionDictionary.ContainsKey(function.OutputNames[0]))
+                                {
+                                    SplitedFunctionDictionary.Add(function.OutputNames[0], spliteFunction);
+                                }
+                            }
+                        }
+                    }
 
                     if (!(function is MultiOutputFunction) && //出力が分岐する場合は登録せずリンクを切る
-                        !FunctionBlockDictionary.ContainsKey(function.OutputNames[0])) //既に登録されている場合は登録しない
+                      !this.FunctionBlockDictionary.ContainsKey(function.OutputNames[0])) //既に登録されている場合は登録しない
                     {
                         //リンクを辞書へ追加
-                        FunctionBlockDictionary.Add(function.OutputNames[0], functionBlock);
+                        this.FunctionBlockDictionary.Add(function.OutputNames[0], this.FunctionBlockDictionary[function.InputNames[0]]);
+                    }
+                    else if (function is SplitFunction) //SplitFunctionの場合
+                    {
+                        var splitFunctions = ((SplitFunction)function).SplitedFunctions;
+
+                        for (int i = 0; i < splitFunctions.Length; i++)
+                        {
+                            //内部のFunctionStackをリンクの辞書へ追加
+                            FunctionBlockDictionary.Add(function.OutputNames[i], splitFunctions[i]);
+
+                            //SplitFunctionのリストへ追加
+                            SplitedFunctionDictionary.Add(function.OutputNames[i], this.FunctionBlockDictionary[function.InputNames[0]]);
+                        }
                     }
 
                     return;
                 }
             }
 
+            //以下MultiInput,DualInput用の処理
+
             //ブロックが辞書に登録されているか
-            if (FunctionBlockDictionary.ContainsKey(functionBlockName))
+            if (this.FunctionBlockDictionary.ContainsKey(functionBlockName))
             {
-                //ブロックが既に辞書登録されていればリンクへ追加
-                FunctionBlockDictionary[functionBlockName].Add(function);
+                //ブロックが既に辞書登録されていればブロックに連結
+                this.FunctionBlockDictionary[functionBlockName].Add(function);
             }
             else
             {
@@ -63,10 +100,10 @@ namespace KelpNet.Common.Functions.Container
                 FunctionStack functionRecord = new FunctionStack(function, functionBlockName, function.InputNames, function.OutputNames);
 
                 //実行順に登録
-                FunctionBlocks.Add(functionRecord);
+                this.FunctionBlocks.Add(functionRecord);
 
                 //リンクを辞書へ追加
-                FunctionBlockDictionary.Add(function.Name, functionRecord);
+                this.FunctionBlockDictionary.Add(function.Name, functionRecord);
             }
         }
 
