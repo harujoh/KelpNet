@@ -29,7 +29,7 @@ namespace KelpNet.Common.Functions.Container
         }
 
         //関数の追加
-        public void Add(Function function, string functionBlockName)
+        public void Add(Function function)
         {
             if (_compress && //分岐毎のまとめを行うか
                 (function is SingleInputFunction || function is MultiOutputFunction)) //入力が一つの関数のみまとめられる
@@ -86,18 +86,18 @@ namespace KelpNet.Common.Functions.Container
                 }
             }
 
-            //以下MultiInput,DualInput用の処理
+            //以下無圧縮、もしくはMultiInput,DualInput用の処理
 
             //ブロックが辞書に登録されているか
-            if (this.FunctionBlockDictionary.ContainsKey(functionBlockName))
+            if (this.FunctionBlockDictionary.ContainsKey(function.OutputNames[0]))
             {
                 //ブロックが既に辞書登録されていればブロックに連結
-                this.FunctionBlockDictionary[functionBlockName].Add(function);
+                this.FunctionBlockDictionary[function.OutputNames[0]].Add(function);
             }
             else
             {
                 //登録がなければブロックを新規に作る
-                FunctionStack functionRecord = new FunctionStack(function, functionBlockName, function.InputNames, function.OutputNames);
+                FunctionStack functionRecord = new FunctionStack(function, function.Name, function.InputNames, function.OutputNames);
 
                 //実行順に登録
                 this.FunctionBlocks.Add(functionRecord);

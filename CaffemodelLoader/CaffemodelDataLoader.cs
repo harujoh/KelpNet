@@ -66,7 +66,7 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
-                        functionDictionary.Add(func, layer.Tops[0]);
+                        functionDictionary.Add(func);
                     }
                 }
 
@@ -76,7 +76,7 @@ namespace CaffemodelLoader
 
                     if (func != null)
                     {
-                        functionDictionary.Add(func, layer.Tops[0]);
+                        functionDictionary.Add(func);
                     }
                 }
             }
