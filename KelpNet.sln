@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet", "KelpNet\KelpNet.csproj", "{750BB541-BF90-471D-A93F-54230B6FB07D}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDataManager", "TestDataManager\TestDataManager.csproj", "{6D41064E-38DB-4A3D-9336-BEC27ED9F2DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainerModelLoader", "ChainerModelLoader\ChainerModelLoader.csproj", "{6A966034-822E-4062-9D6B-23AF3B10C89E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarArchive", "TarArchive\TarArchive.csproj", "{1AA605FF-48AE-42C7-A623-CF91BC27B963}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{6A966034-822E-4062-9D6B-23AF3B10C89E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A966034-822E-4062-9D6B-23AF3B10C89E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A966034-822E-4062-9D6B-23AF3B10C89E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
