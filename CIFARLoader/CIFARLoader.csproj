@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1AA605FF-48AE-42C7-A623-CF91BC27B963}</ProjectGuid>
+    <ProjectGuid>{9DC1C066-D522-416B-AEB3-BD4DA0093EE8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TarArchive</RootNamespace>
-    <AssemblyName>TarArchive</AssemblyName>
+    <RootNamespace>CIFARLoader</RootNamespace>
+    <AssemblyName>CIFARLoader</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

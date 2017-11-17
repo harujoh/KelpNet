@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using TarArchive.Common;
+using CIFARLoader.Common;
 
-namespace TarArchive
+namespace CIFARLoader
 {
     public class Tar
     {

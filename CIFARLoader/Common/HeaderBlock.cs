@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace TarArchive.Common
+namespace CIFARLoader.Common
 {
     [StructLayout(LayoutKind.Sequential, Size = 512)]
     internal struct HeaderBlock

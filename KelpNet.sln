@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDataManager", "TestData
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainerModelLoader", "ChainerModelLoader\ChainerModelLoader.csproj", "{6A966034-822E-4062-9D6B-23AF3B10C89E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarArchive", "TarArchive\TarArchive.csproj", "{1AA605FF-48AE-42C7-A623-CF91BC27B963}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIFARLoader", "CIFARLoader\CIFARLoader.csproj", "{9DC1C066-D522-416B-AEB3-BD4DA0093EE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,10 +65,10 @@ Global
 		{6A966034-822E-4062-9D6B-23AF3B10C89E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A966034-822E-4062-9D6B-23AF3B10C89E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A966034-822E-4062-9D6B-23AF3B10C89E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1AA605FF-48AE-42C7-A623-CF91BC27B963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DC1C066-D522-416B-AEB3-BD4DA0093EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DC1C066-D522-416B-AEB3-BD4DA0093EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DC1C066-D522-416B-AEB3-BD4DA0093EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DC1C066-D522-416B-AEB3-BD4DA0093EE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

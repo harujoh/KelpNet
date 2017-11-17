@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace TarArchive
+namespace CIFARLoader
 {
     internal class RawSerializer<T>
     {
