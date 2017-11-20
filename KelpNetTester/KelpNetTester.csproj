@@ -85,6 +85,10 @@
       <Project>{6a966034-822e-4062-9d6b-23af3b10c89e}</Project>
       <Name>ChainerModelLoader</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CIFARLoader\CIFARLoader.csproj">
+      <Project>{9dc1c066-d522-416b-aeb3-bd4da0093ee8}</Project>
+      <Name>CIFARLoader</Name>
+    </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
       <Name>KelpNet</Name>
