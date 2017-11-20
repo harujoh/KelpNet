@@ -27,7 +27,7 @@ namespace KelpNet.Common
 
         //関数によって使用された回数をカウントしBackward動作のタイミングを図る
         [NonSerialized]
-        public int UseCount = 0;
+        public int UseCount;
 
         //自身が関数から生成された場合、その関数をここに保存する
         [NonSerialized]

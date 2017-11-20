@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using KelpNet.Common.Optimizers;
 using KelpNet.Common.Tools;
 
@@ -40,6 +41,12 @@ namespace KelpNet.Common.Functions
             {
                 this.OutputNames = outputNames.ToArray();
             }
+        }
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            this.PrevInputs = new List<NdArray[]>();
         }
 
         public virtual void SetOptimizer(params Optimizer[] optimizers)
