@@ -66,6 +66,9 @@ namespace KelpNetTester
             //CaffeモデルのRESNETを読み込んで画像分類をさせるテスト
             //Test17.Run(Test17.ResnetModel.ResNet50);  //任意のResnetモデルを選択してください
 
+            //CIFAR-10を5層CNNを使って学習する
+            //Test18.Run();
+
             //Linearの分割実行
             //TestX.Run();
 

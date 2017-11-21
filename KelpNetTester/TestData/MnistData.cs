@@ -2,7 +2,7 @@
 using KelpNet.Common;
 using MNISTLoader;
 
-namespace KelpNetTester
+namespace KelpNetTester.TestData
 {
     class MnistData
     {
@@ -51,7 +51,7 @@ namespace KelpNetTester
             }
         }
 
-        public MnistDataSet GetRandomYSet(int dataCount)
+        public TestDataSet GetRandomYSet(int dataCount)
         {
             NdArray listY = new NdArray(new[] { 1, 28, 28 }, dataCount);
             NdArray listTy = new NdArray(new[] { 1 }, dataCount);
@@ -64,10 +64,10 @@ namespace KelpNetTester
                 listTy.Data[i] = this.Ty[index].Data[0];
             }
 
-            return new MnistDataSet(listY, listTy);
+            return new TestDataSet(listY, listTy);
         }
 
-        public MnistDataSet GetRandomXSet(int dataCount)
+        public TestDataSet GetRandomXSet(int dataCount)
         {
             NdArray listX = new NdArray(new[] { 1, 28, 28 }, dataCount);
             NdArray listTx = new NdArray(new[] { 1 }, dataCount);
@@ -80,19 +80,7 @@ namespace KelpNetTester
                 listTx.Data[i] = this.Tx[index].Data[0];
             }
 
-            return new MnistDataSet(listX, listTx);
-        }
-    }
-
-    public class MnistDataSet
-    {
-        public NdArray Data;
-        public NdArray Label;
-
-        public MnistDataSet(NdArray data, NdArray label)
-        {
-            this.Data = data;
-            this.Label = label;
+            return new TestDataSet(listX, listTx);
         }
     }
 }

@@ -48,9 +48,11 @@
   <ItemGroup>
     <Compile Include="Benchmarker\BenchDataMaker.cs" />
     <Compile Include="Benchmarker\SingleBenchmark.cs" />
-    <Compile Include="MnistData.cs" />
+    <Compile Include="TestData\CifarData.cs" />
+    <Compile Include="TestData\MnistData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestData\TestDataSet.cs" />
     <Compile Include="Tests\Test12.cs" />
     <Compile Include="Tests\Test10.cs" />
     <Compile Include="Tests\Test11.cs" />
@@ -65,6 +67,7 @@
     <Compile Include="Tests\Test15.cs" />
     <Compile Include="Tests\Test16.cs" />
     <Compile Include="Tests\Test17.cs" />
+    <Compile Include="Tests\Test18.cs" />
     <Compile Include="Tests\Test3.cs" />
     <Compile Include="Tests\Test5.cs" />
     <Compile Include="Tests\Test6.cs" />

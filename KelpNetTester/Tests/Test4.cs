@@ -6,6 +6,7 @@ using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
+using KelpNetTester.TestData;
 
 namespace KelpNetTester.Tests
 {
@@ -55,7 +56,7 @@ namespace KelpNetTester.Tests
                 {
 
                     //訓練データからランダムにデータを取得
-                    MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
                     Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
@@ -73,7 +74,7 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        TestDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
                         Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);

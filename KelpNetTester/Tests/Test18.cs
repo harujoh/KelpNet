@@ -13,9 +13,7 @@ using KelpNetTester.TestData;
 
 namespace KelpNetTester.Tests
 {
-    //5層CNNによるMNIST（手書き文字）の学習
-    //Test4と違うのはネットワークの構成とOptimizerだけです
-    class Test6
+    class Test18
     {
         //ミニバッチの数
         const int BATCH_DATA_COUNT = 20;
@@ -31,23 +29,23 @@ namespace KelpNetTester.Tests
             Stopwatch sw = new Stopwatch();
 
             //MNISTのデータを用意する
-            Console.WriteLine("MNIST Data Loading...");
-            MnistData mnistData = new MnistData();
+            Console.WriteLine("CIFAR Data Loading...");
+            CifarData cifarData = new CifarData();
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D", gpuEnable: true),
+                new Convolution2D(3, 32, 3, name: "l1 Conv2D", gpuEnable: true),
                 new ReLU(name: "l1 ReLU"),
-                //new AveragePooling(2, 2, name: "l1 AVGPooling"),
-                new MaxPooling(2, 2, name: "l1 MaxPooling", gpuEnable: true),
-                new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D", gpuEnable: true),
+                new MaxPooling(2, name: "l1 MaxPooling", gpuEnable: true),
+                new Dropout(0.25, name: "l1 DropOut"),
+                new Convolution2D(32, 64, 3, name: "l2 Conv2D", gpuEnable: true),
                 new ReLU(name: "l2 ReLU"),
-                //new AveragePooling(2, 2, name: "l2 AVGPooling"),
                 new MaxPooling(2, 2, name: "l2 MaxPooling", gpuEnable: true),
-                new Linear(13 * 13 * 64, 1024, name: "l3 Linear", gpuEnable: true),
+                new Dropout(0.25, name: "l2 DropOut"),
+                new Linear(13 * 13 * 64, 512, name: "l3 Linear", gpuEnable: true),
                 new ReLU(name: "l3 ReLU"),
                 new Dropout(name: "l3 DropOut"),
-                new Linear(1024, 10, name: "l4 Linear", gpuEnable: true)
+                new Linear(512, 10, name: "l4 Linear", gpuEnable: true)
             );
 
             //optimizerを宣言
@@ -72,7 +70,7 @@ namespace KelpNetTester.Tests
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestData.TestDataSet datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
                     Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
@@ -92,7 +90,7 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = mnistData.GetRandomYSet(TEACH_DATA_COUNT);
+                        TestData.TestDataSet datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
 
                         //テストを実行
                         Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);

@@ -8,6 +8,7 @@ using KelpNet.Functions.Connections;
 using KelpNet.Functions.Normalization;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
+using KelpNetTester.TestData;
 
 namespace KelpNetTester.Tests
 {
@@ -124,7 +125,7 @@ namespace KelpNetTester.Tests
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
                     //訓練データからランダムにデータを取得
-                    MnistDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
                     NdArray[] layer1ForwardResult = Layer1.Forward(datasetX.Data);
@@ -231,7 +232,7 @@ namespace KelpNetTester.Tests
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        MnistDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        TestDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
                         Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
