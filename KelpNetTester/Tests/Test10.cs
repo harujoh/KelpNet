@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
 using KelpNet.Common.Functions.Container;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
