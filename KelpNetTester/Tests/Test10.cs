@@ -117,7 +117,7 @@ namespace KelpNetTester.Tests
 
         static double Evaluate(FunctionStack model, int[] dataset)
         {
-            Function predictModel = model.Clone();
+            FunctionStack predictModel = (FunctionStack)model.Clone();
             predictModel.ResetState();
 
             Real totalLoss = 0;

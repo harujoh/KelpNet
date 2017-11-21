@@ -233,6 +233,7 @@ namespace KelpNet.Functions.Connections
 
         public override void ResetState()
         {
+            base.ResetState();
             this.gcPrev = null;
             this.hParam = null;
         }

@@ -82,9 +82,10 @@ namespace KelpNet.Common.Functions
             }
         }
 
-        //ある処理実行後に特定のデータを初期値に戻す処理
+        //RNN等で使い切れなかった入力データを初期化
         public virtual void ResetState()
         {
+            PrevInputs.Clear();
         }
 
         //名前を返す

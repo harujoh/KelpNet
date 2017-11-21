@@ -58,7 +58,6 @@ namespace CIFARLoader
                 {
                     for (int j = 0; j < CIFAR10_DATA_COUNT; j++)
                     {
-
                         trainLabel.Add(data[CIFAR10TrainNames[i]][j * (DATA_SIZE + LABEL_SIZE)]);
                         byte[] tmpArray = new byte[DATA_SIZE];
                         Array.Copy(data[CIFAR10TrainNames[i]], j * (DATA_SIZE + LABEL_SIZE) + LABEL_SIZE, tmpArray, 0, tmpArray.Length);
