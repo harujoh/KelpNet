@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet", "KelpNet\KelpNet.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNetTester", "KelpNetTester\KelpNetTester.csproj", "{6FC4693A-FE47-46E4-B5A0-7DB254DCBDB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MNistLoader", "MNISTLoader\MNistLoader.csproj", "{6782A5FF-52AD-4757-B7E4-2F661459E812}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MnistLoader", "MNISTLoader\MnistLoader.csproj", "{6782A5FF-52AD-4757-B7E4-2F661459E812}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocabularyMaker", "VocabularyMaker\VocabularyMaker.csproj", "{97349E4B-E378-40D2-A712-8922D5F80406}"
 EndProject
