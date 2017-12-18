@@ -98,7 +98,7 @@ typedef REAL Real;
 
         public static ComputeProgram CreateProgram(string source)
         {
-            string realType = Marshal.SizeOf(typeof(Real)) == Marshal.SizeOf(typeof(double)) ? "double" : "float";
+            string realType = Real.Size == sizeof(double) ? "double" : "float";
 
             //浮動小数点の精度設定用
             source = REAL_HEADER_STRING + source;

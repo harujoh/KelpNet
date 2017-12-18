@@ -17,19 +17,21 @@ namespace KelpNet.Loss
             for (int k = 0; k < input.Length; k++)
             {
                 Real sumLoss = 0;
-                Real[] result = new Real[input[k].Data.Length];
+                Real[] resultArray = new Real[input[k].Data.Length];
 
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {
                     Real localloss = 0;
                     Real coeff = 2.0 / teachSignal[k].Length;
 
+                    int batchoffset = b * teachSignal[k].Length;
+
                     for (int i = 0; i < input[k].Length; i++)
                     {
-                        result[i + b * teachSignal[k].Length] = input[k].Data[i + b * input[k].Length] - teachSignal[k].Data[i + b * teachSignal[k].Length];
-                        localloss += result[i + b * teachSignal[k].Length] * result[i + b * teachSignal[k].Length];
+                        Real result = input[k].Data[b * input[k].Length + i] - teachSignal[k].Data[batchoffset + i];
+                        localloss += result * result;
 
-                        result[i + b * teachSignal[k].Length] *= coeff;
+                        resultArray[batchoffset + i] *= coeff;
                     }
 
                     sumLoss += localloss / teachSignal[k].Length;
@@ -37,7 +39,7 @@ namespace KelpNet.Loss
 
                 resultLoss += sumLoss / input[k].BatchCount;
 
-                input[k].Grad = result;
+                input[k].Grad = resultArray;
             }
 
             resultLoss /= input.Length;

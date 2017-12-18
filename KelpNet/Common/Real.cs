@@ -16,6 +16,8 @@ namespace KelpNet.Common
     {
         public readonly RealType Value;
 
+        public static Int32 Size => sizeof(RealType);
+
         private Real(double value)
         {
             this.Value = (RealType)value;
@@ -61,7 +63,7 @@ namespace KelpNet.Common
             }
 
             //データを叩き込む
-            int size = Marshal.SizeOf(typeof(RealType)) * data.Length;
+            int size = sizeof(RealType) * data.Length;
             GCHandle gchObj = GCHandle.Alloc(data, GCHandleType.Pinned);
             GCHandle gchBytes = GCHandle.Alloc(resultData, GCHandleType.Pinned);
             RealTool.CopyMemory(gchBytes.AddrOfPinnedObject(), gchObj.AddrOfPinnedObject(), size);
