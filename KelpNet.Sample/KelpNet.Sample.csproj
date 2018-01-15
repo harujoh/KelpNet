@@ -51,7 +51,6 @@
     <Compile Include="Samples\Sample02.cs" />
     <Compile Include="Samples\Sample03.cs" />
     <Compile Include="Samples\Sample04.cs" />
-    <Compile Include="Samples\Sample05.cs" />
     <Compile Include="Samples\Sample06.cs" />
     <Compile Include="Samples\Sample07.cs" />
     <Compile Include="Samples\Sample08.cs" />

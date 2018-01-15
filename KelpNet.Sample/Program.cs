@@ -25,9 +25,6 @@ namespace KelpNet.Sample
             //MLPによるMNIST（手書き文字）の学習
             //Sample04.Run();
 
-            //エクセルCNNの再現
-            //Sample05.Run();
-
             //5層CNNによるMNISTの学習
             //Sample06.Run();
 
@@ -66,9 +63,6 @@ namespace KelpNet.Sample
 
             //CIFAR-10を5層CNNを使って学習する
             //Sample18.Run();
-
-            //Linearの分割実行
-            //TestX.Run();
 
             //ベンチマーク
             SingleBenchmark.Run();
