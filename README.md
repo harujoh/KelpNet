@@ -29,25 +29,22 @@ FunctionStack nn = new FunctionStack(
 ### C#で作られているメリット
 - 開発環境の構築が容易で、プログラミング初学者にも学びやすい言語です
 - WindowsFormやUnity等、処理結果を視覚的に表示するための選択肢が豊富です
-- PCや携帯、組み込み機器等、様々なプラットフォームに向けたアプリケーションの開発ができます
+- PCや携帯、ブラウザ、組み込み機器と様々な環境に向けたアプリケーションの開発ができます
 
 ## このライブラリについて
 このライブラリの基幹部分はChainerを参考に実装されています。
 その為ほとんどの関数パラメータがChainerと同じになっており、Chainer向けのサンプルを参考に開発することが可能になっています。
 
-
-
 ## 連絡方法
-ご質問、ご要望は Issues へご登録頂くか Twitter からご連絡ください。
-細やかなことでも構いませんので、何かお気づきの点が御座いましたら、お気軽にご連絡ください。
+ご質問、ご要望は日本語、英語を問わず Issues へご登録頂くか Twitter からご連絡ください。
+細やかなことでも構いませんので、何かお気づきの点が御座いましたら、お気軽にお申し付けください。
 
 Twitter: https://twitter.com/harujoh
 
 
 
 ## License
-- KelpNet [Apache License 2.0]
-- Cloo [MIT License] https://sourceforge.net/projects/cloo/
+- Apache License 2.0
 
 ## 実装済み関数
 - Activations:
@@ -84,5 +81,3 @@ Twitter: https://twitter.com/harujoh
 - Noise:
 　・DropOut
 　・StochasticDepth
- 
- 最後に、このライブラリが誰かの学習の助けになれば幸いです
