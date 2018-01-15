@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Cloo;
+using Cloo.Bindings;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
@@ -102,12 +104,13 @@ namespace KelpNet.Functions.Connections
         {
             Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
-            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
-            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, this.Weight.Data))
-            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, y))
+            CLMemoryHandle handle = GetHandle();
+
+            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))            
+            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer | ComputeMemoryFlags.AllocateHostPointer, y))
             {
                 ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuW);
+                ForwardKernel.SetValueArgument(1, handle);
                 ForwardKernel.SetMemoryArgument(2, gpuY);
                 ForwardKernel.SetValueArgument(3, this.OutputCount);
                 ForwardKernel.SetValueArgument(4, this.InputCount);
@@ -125,7 +128,28 @@ namespace KelpNet.Functions.Connections
                 Weaver.CommandQueue.ReadFromBuffer(gpuY, ref y, true, null);
             }
 
+            CL10.ReleaseMemObject(handle);
+            handle.Invalidate();
+
             return NdArray.Convert(y, new[] { OutputCount }, x.BatchCount, this);
+        }
+
+        CLMemoryHandle GetHandle()
+        {
+            CLMemoryHandle handle;
+            GCHandle dataPtr = GCHandle.Alloc(this.Weight.Data, GCHandleType.Pinned);
+
+            try
+            {
+                handle = CL10.CreateBuffer(Weaver.Context.Handle, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, Real.Size * this.Weight.Data.Length, dataPtr.AddrOfPinnedObject(), out var error);
+                ComputeException.ThrowOnError(error);
+            }
+            finally
+            {
+                dataPtr.Free();
+            }
+
+            return handle;
         }
 
         Real[] GetActivatedgy(NdArray y)

@@ -53,7 +53,7 @@ namespace Cloo
         /// <param name="context"> A <see cref="ComputeContext"/> used to create the <see cref="ComputeBuffer{T}"/>. </param>
         /// <param name="flags"> A bit-field that is used to specify allocation and usage information about the <see cref="ComputeBuffer{T}"/>. </param>
         /// <param name="count"> The number of elements of the <see cref="ComputeBuffer{T}"/>. </param>
-        public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, long count)
+        public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, int count)
             : this(context, flags, count, IntPtr.Zero)
         { }
 
@@ -64,11 +64,11 @@ namespace Cloo
         /// <param name="flags"> A bit-field that is used to specify allocation and usage information about the <see cref="ComputeBuffer{T}"/>. </param>
         /// <param name="count"> The number of elements of the <see cref="ComputeBuffer{T}"/>. </param>
         /// <param name="dataPtr"> A pointer to the data for the <see cref="ComputeBuffer{T}"/>. </param>
-        public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, long count, IntPtr dataPtr)
+        public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, int count, IntPtr dataPtr)
             : base(context, flags)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL12.CreateBuffer(context.Handle, flags, new IntPtr(Marshal.SizeOf(typeof(T)) * count), dataPtr, out error);
+            Handle = CL12.CreateBuffer(context.Handle, flags, Marshal.SizeOf(typeof(T)) * count, dataPtr, out error);
             ComputeException.ThrowOnError(error);
             Init();
         }
@@ -87,7 +87,7 @@ namespace Cloo
             try
             {
                 ComputeErrorCode error = ComputeErrorCode.Success;
-                Handle = CL12.CreateBuffer(context.Handle, flags, new IntPtr(Marshal.SizeOf(typeof(T)) * data.Length), dataPtr.AddrOfPinnedObject(), out error);
+                Handle = CL12.CreateBuffer(context.Handle, flags, Marshal.SizeOf(typeof(T)) * data.Length, dataPtr.AddrOfPinnedObject(), out error);
                 ComputeException.ThrowOnError(error);
             }
             finally 

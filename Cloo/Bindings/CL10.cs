@@ -190,7 +190,7 @@ namespace Cloo.Bindings
         public extern static CLMemoryHandle CreateBuffer(
             CLContextHandle context,
             ComputeMemoryFlags flags,
-            IntPtr size,
+            int size,
             IntPtr host_ptr,
             out ComputeErrorCode errcode_ret);
 

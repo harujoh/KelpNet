@@ -12,8 +12,8 @@ namespace KelpNetTester
         static void Main(string[] args)
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
-            Weaver.Initialize(ComputeDeviceTypes.Gpu);
-            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
+            //Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
 
             //MLPによるXORの学習
             //Test1.Run();
@@ -31,7 +31,7 @@ namespace KelpNetTester
             //Test5.Run();
 
             //5層CNNによるMNISTの学習
-            //Test6.Run();
+            Test6.Run();
 
             //BatchNormを使った15層MLPによるMNISTの学習
             //Test7.Run();
