@@ -73,6 +73,7 @@
     <Compile Include="TestData\CifarData.cs" />
     <Compile Include="TestData\MnistData.cs" />
     <Compile Include="TestData\TestDataSet.cs" />
+    <Compile Include="TestData\Vocabulary.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -87,13 +88,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\KelpNet.ModelImporter\KelpNet.ModelImporter.csproj">
-      <Project>{2efacd92-209c-49ed-b772-24fec5e4e497}</Project>
-      <Name>KelpNet.ModelImporter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\KelpNet.TestDataImporter\KelpNet.TestDataImporter.csproj">
-      <Project>{b0099b81-119b-4c0d-ac4b-1ecd2ffe3df5}</Project>
-      <Name>KelpNet.TestDataImporter</Name>
+    <ProjectReference Include="..\KelpNet.DataImporter\KelpNet.DataImporter.csproj">
+      <Project>{abf68f88-e0c0-474a-a48a-c52d23d790cc}</Project>
+      <Name>KelpNet.DataImporter</Name>
     </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>

@@ -10,8 +10,8 @@ using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Functions.Container;
 using KelpNet.Common.Tools;
-using KelpNet.ModelImporter.CaffeModel;
-using KelpNet.TestDataImporter;
+using KelpNet.DataImporter;
+using KelpNet.DataImporter.Models.Caffe;
 
 namespace KelpNet.Sample.Samples
 {

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using KelpNet.Common;
 using KelpNet.Common.Functions.Container;
+using KelpNet.DataImporter;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
-using KelpNet.TestDataImporter;
-using KelpNet.TestDataImporter.Vocabulary;
+using KelpNet.Sample.TestData;
 
 namespace KelpNet.Sample.Samples
 {
