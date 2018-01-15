@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet.Sample", "KelpNet.Sample\KelpNet.Sample.csproj", "{EF602B5E-8F67-448B-BA84-8EF0BC92A02D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet", "KelpNet\KelpNet.csproj", "{750BB541-BF90-471D-A93F-54230B6FB07D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet.ModelImporter", "KelpNet.ModelImporter\KelpNet.ModelImporter.csproj", "{2EFACD92-209C-49ED-B772-24FEC5E4E497}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet.Sample", "KelpNet.Sample\KelpNet.Sample.csproj", "{EF602B5E-8F67-448B-BA84-8EF0BC92A02D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet.TestDataImporter", "KelpNet.TestDataImporter\KelpNet.TestDataImporter.csproj", "{B0099B81-119B-4C0D-AC4B-1ECD2FFE3DF5}"
 EndProject
