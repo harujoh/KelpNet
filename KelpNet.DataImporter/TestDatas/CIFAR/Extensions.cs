@@ -1,4 +1,4 @@
-﻿namespace KelpNet.TestDataImporter.CIFAR
+﻿namespace KelpNet.DataImporter.TestDatas.CIFAR
 {
     internal static class Extensions
     {

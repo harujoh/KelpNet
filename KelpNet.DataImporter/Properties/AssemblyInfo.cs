@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // アセンブリに関する一般情報は以下の属性セットをとおして制御されます。
 // アセンブリに関連付けられている情報を変更するには、
 // これらの属性値を変更してください。
-[assembly: AssemblyTitle("KelpNet.TestDataImporter")]
+[assembly: AssemblyTitle("KelpNet.DataImporter")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("KelpNet.TestDataImporter")]
+[assembly: AssemblyProduct("KelpNet.DataImporter")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // このプロジェクトが COM に公開される場合、次の GUID が typelib の ID になります
-[assembly: Guid("b0099b81-119b-4c0d-ac4b-1ecd2ffe3df5")]
+[assembly: Guid("abf68f88-e0c0-474a-a48a-c52d23d790cc")]
 
 // アセンブリのバージョン情報は次の 4 つの値で構成されています:
 //

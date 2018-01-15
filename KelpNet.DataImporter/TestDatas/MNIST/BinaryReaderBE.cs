@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace KelpNet.TestDataImporter.MNIST
+namespace KelpNet.DataImporter.TestDatas.MNIST
 {
     class BinaryReaderBE : BinaryReader
     {

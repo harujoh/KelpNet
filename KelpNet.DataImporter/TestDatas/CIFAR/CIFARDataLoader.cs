@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace KelpNet.TestDataImporter.CIFAR
+namespace KelpNet.DataImporter.TestDatas.CIFAR
 {
     public class CIFARDataLoader
     {

@@ -2,7 +2,7 @@
 using System.IO.Compression;
 using System.Text;
 
-namespace KelpNet.TestDataImporter.MNIST
+namespace KelpNet.DataImporter.TestDatas.MNIST
 {
     /// <summary>
     /// MNIST のラベルファイルをロードするためのクラス.

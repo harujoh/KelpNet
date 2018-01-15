@@ -1,4 +1,4 @@
-﻿namespace KelpNet.TestDataImporter.CIFAR.Common
+﻿namespace KelpNet.DataImporter.TestDatas.CIFAR.Common
 {
     public enum TarEntryType : byte
     {
