@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // このプロジェクトが COM に公開される場合、次の GUID が typelib の ID になります
-[assembly: Guid("ef602b5e-8f67-448b-ba84-8ef0bc92a02d")]
+[assembly: Guid("3af35889-9954-4484-81fb-a864dd6e0cdd")]
 
 // アセンブリのバージョン情報は次の 4 つの値で構成されています:
 //
@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 //      Revision
 //
 // すべての値を指定するか、次を使用してビルド番号とリビジョン番号を既定に設定できます
-// 以下のように '*' を使用します:
+// 既定値にすることができます:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

@@ -4,15 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EF602B5E-8F67-448B-BA84-8EF0BC92A02D}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <ProjectGuid>{3AF35889-9954-4484-81FB-A864DD6E0CDD}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <RootNamespace>KelpNet.Sample</RootNamespace>
     <AssemblyName>KelpNet.Sample</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +22,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -46,10 +47,15 @@
     <Compile Include="Benchmarker\SingleBenchmark.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestData\CifarData.cs" />
-    <Compile Include="TestData\MnistData.cs" />
-    <Compile Include="TestData\TestDataSet.cs" />
     <Compile Include="Samples\Sample01.cs" />
+    <Compile Include="Samples\Sample02.cs" />
+    <Compile Include="Samples\Sample03.cs" />
+    <Compile Include="Samples\Sample04.cs" />
+    <Compile Include="Samples\Sample05.cs" />
+    <Compile Include="Samples\Sample06.cs" />
+    <Compile Include="Samples\Sample07.cs" />
+    <Compile Include="Samples\Sample08.cs" />
+    <Compile Include="Samples\Sample09.cs" />
     <Compile Include="Samples\Sample10.cs" />
     <Compile Include="Samples\Sample11.cs" />
     <Compile Include="Samples\Sample12.cs" />
@@ -65,24 +71,16 @@
     <Compile Include="Samples\Sample16.cs" />
     <Compile Include="Samples\Sample17.cs" />
     <Compile Include="Samples\Sample18.cs" />
-    <Compile Include="Samples\Sample02.cs" />
-    <Compile Include="Samples\Sample03.cs" />
-    <Compile Include="Samples\Sample04.cs" />
-    <Compile Include="Samples\Sample05.cs" />
-    <Compile Include="Samples\Sample06.cs" />
-    <Compile Include="Samples\Sample07.cs" />
-    <Compile Include="Samples\Sample08.cs" />
-    <Compile Include="Samples\Sample09.cs" />
+    <Compile Include="TestData\CifarData.cs" />
+    <Compile Include="TestData\MnistData.cs" />
+    <Compile Include="TestData\TestDataSet.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\ChainerModel.npz">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="App.config" />
+    <None Include="Data\ChainerModel.npz" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\synset_words.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Data\synset_words.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Samples\Sample13WinForm.resx">
