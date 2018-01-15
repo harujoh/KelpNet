@@ -40,7 +40,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Functions\IParallelizable.cs" />
+    <Compile Include="Common\Weaver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenCL\Activations\Activation.cl" />
+    <None Include="OpenCL\Activations\LeakyReLU.cl" />
+    <None Include="OpenCL\Activations\ReLU.cl" />
+    <None Include="OpenCL\Activations\Sigmoid.cl" />
+    <None Include="OpenCL\Activations\Tanh.cl" />
+    <None Include="OpenCL\Connections\Convolution2D.cl" />
+    <None Include="OpenCL\Connections\Deconvolution2D.cl" />
+    <None Include="OpenCL\Connections\Linear.cl" />
+    <None Include="OpenCL\Noise\Dropout.cl" />
+    <None Include="OpenCL\Poolings\MaxPooling.cl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

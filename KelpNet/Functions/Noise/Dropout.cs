@@ -2,62 +2,25 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Cloo;
 using KelpNet.Common;
-using KelpNet.Common.Functions;
 using KelpNet.Common.Functions.Type;
 
 namespace KelpNet.Functions.Noise
 {
     [Serializable]
-    public class Dropout : SingleInputFunction, IParallelizable
+    public class Dropout : SingleInputFunction
     {
         const string FUNCTION_NAME = "Dropout";
 
         private readonly Real dropoutRatio;
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
-        [NonSerialized]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public ComputeKernel ForwardKernel;
-
-        [NonSerialized]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public ComputeKernel BackwardKernel;
-
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             this.dropoutRatio = dropoutRatio;
 
-            this.SetGpuEnable(gpuEnable);
-        }
-
-        public bool SetGpuEnable(bool enable)
-        {
-            this.GpuEnable = enable & Weaver.Enable;
-
-            if (GpuEnable)
-            {
-                CreateKernel();
-                SingleInputForward = ForwardGpu;
-                SingleOutputBackward = BackwardGpu;
-            }
-            else
-            {
-                SingleInputForward = ForwardCpu;
-                SingleOutputBackward = BackwardCpu;
-            }
-
-            return GpuEnable;
-        }
-
-        public void CreateKernel()
-        {
-            string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
-            ComputeProgram program = Weaver.CreateProgram(kernelSource);
-
-            ForwardKernel = program.CreateKernel("DropoutForward");
-            BackwardKernel = program.CreateKernel("DropoutBackward");
+            SingleInputForward = ForwardCpu;
+            SingleOutputBackward = BackwardCpu;
         }
 
         private Real[] MakeMask(int xLength)
@@ -88,36 +51,6 @@ namespace KelpNet.Functions.Noise
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        public NdArray ForwardGpu(NdArray x)
-        {
-            Real[] result = new Real[x.Data.Length];
-            Real[] mask = MakeMask(x.Length);
-
-            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, x.Data))
-            using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
-            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
-            {
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuMask);
-                ForwardKernel.SetMemoryArgument(2, gpuY);
-                ForwardKernel.SetValueArgument(3, mask.Length);
-
-                Weaver.CommandQueue.Execute
-                (
-                    ForwardKernel,
-                    null,
-                    new long[] { x.Data.Length },
-                    null,
-                    null
-                );
-
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
-            }
-
-            return NdArray.Convert(result, x.Shape, x.BatchCount, this);
-        }
-
         public void BackwardCpu(NdArray y, NdArray x)
         {
             Real[] result = y.Grad.ToArray();
@@ -137,39 +70,6 @@ namespace KelpNet.Functions.Noise
                 x.Grad[i] += result[i];
             }
         }
-
-        public void BackwardGpu(NdArray y, NdArray x)
-        {
-            Real[] result = y.Grad.ToArray();
-            Real[] mask = this.maskStack[this.maskStack.Count - 1];
-            this.maskStack.RemoveAt(this.maskStack.Count - 1);
-
-            using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, mask))
-            using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.CopyHostPointer, result))
-            {
-                BackwardKernel.SetMemoryArgument(0, gpuMask);
-                BackwardKernel.SetMemoryArgument(1, gpugX);
-                BackwardKernel.SetValueArgument(2, y.Length);
-
-                Weaver.CommandQueue.Execute
-                (
-                    BackwardKernel,
-                    null,
-                    new long[] { mask.Length, y.BatchCount },
-                    null,
-                    null
-                );
-
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpugX, ref result, true, null);
-            }
-
-            for (int i = 0; i < x.Grad.Length; i++)
-            {
-                x.Grad[i] += result[i];
-            }
-        }
-
 
         //Predict時に何もしない
         public override NdArray Predict(NdArray input)

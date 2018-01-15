@@ -36,13 +36,13 @@ namespace KelpNetTester.Tests
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
-                for (int i = 0; i < vgg16Net.Count - 1; i++)
-                {
-                    if (vgg16Net[i] is Convolution2D || vgg16Net[i] is Linear || vgg16Net[i] is MaxPooling)
-                    {
-                        ((IParallelizable) vgg16Net[i]).SetGpuEnable(true);
-                    }
-                }
+                //for (int i = 0; i < vgg16Net.Count - 1; i++)
+                //{
+                //    if (vgg16Net[i] is Convolution2D || vgg16Net[i] is Linear || vgg16Net[i] is MaxPooling)
+                //    {
+                //        ((IParallelizable) vgg16Net[i]).SetGpuEnable(true);
+                //    }
+                //}
 
                 FunctionStack nn = new FunctionStack(vgg16Net.ToArray());
 

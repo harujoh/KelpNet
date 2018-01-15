@@ -117,35 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Activation" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\activations\activation.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Convolution2D" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\connections\convolution2d.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Deconvolution2D" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\connections\deconvolution2d.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Dropout" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\noise\dropout.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="LeakyReLU" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\activations\leakyrelu.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Linear" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\connections\linear.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="MaxPooling" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\poolings\maxpooling.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="ReLU" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\activations\relu.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Sigmoid" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\activations\sigmoid.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Tanh" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\opencl\activations\tanh.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
 </root>

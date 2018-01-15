@@ -53,13 +53,11 @@
     <Compile Include="Common\Functions\Type\SingleInputFunction.cs" />
     <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Functions\CompressibleFunction.cs" />
-    <Compile Include="Common\Functions\IParallelizable.cs" />
     <Compile Include="Common\Real.cs" />
     <Compile Include="Common\Tools\DeepCopyHelper.cs" />
     <Compile Include="Common\Tools\Initializer.cs" />
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Common\Tools\NdArrayConverter.cs" />
-    <Compile Include="Common\Weaver.cs" />
     <Compile Include="Common\Functions\Container\FunctionStack.cs" />
     <Compile Include="Common\Functions\Function.cs" />
     <Compile Include="Functions\Activations\ELU.cs" />
@@ -121,30 +119,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="OpenCL\Activations\Activation.cl" />
-    <None Include="OpenCL\Activations\LeakyReLU.cl" />
-    <None Include="OpenCL\Activations\ReLU.cl" />
-    <None Include="OpenCL\Activations\Sigmoid.cl" />
-    <None Include="OpenCL\Activations\Tanh.cl" />
-    <None Include="OpenCL\Connections\Deconvolution2D.cl" />
-    <None Include="OpenCL\Connections\Linear.cl" />
-    <None Include="OpenCL\Noise\Dropout.cl" />
-    <None Include="OpenCL\Poolings\MaxPooling.cl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="OpenCL\Connections\Convolution2D.cl" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Cloo\Cloo.csproj">
-      <Project>{6ec82c77-96ba-4102-9589-ad89e3f4e068}</Project>
-      <Name>Cloo</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

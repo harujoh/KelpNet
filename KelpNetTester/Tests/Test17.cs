@@ -60,10 +60,10 @@ namespace KelpNetTester.Tests
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
-                foreach (FunctionStack resNetFunctionBlock in nn.FunctionBlocks)
-                {
-                    SwitchGPU(resNetFunctionBlock);
-                }
+                //foreach (FunctionStack resNetFunctionBlock in nn.FunctionBlocks)
+                //{
+                //    SwitchGPU(resNetFunctionBlock);
+                //}
 
                 Console.WriteLine("Model Loading done.");
 
@@ -96,27 +96,27 @@ namespace KelpNetTester.Tests
             }
         }
 
-        static void SwitchGPU(FunctionStack functionStack)
-        {
-            foreach (Function function in functionStack.Functions)
-            {
-                if (function is Convolution2D || function is Linear || function is MaxPooling)
-                {
-                    ((IParallelizable)function).SetGpuEnable(true);
-                }
+        //static void SwitchGPU(FunctionStack functionStack)
+        //{
+        //    foreach (Function function in functionStack.Functions)
+        //    {
+        //        if (function is Convolution2D || function is Linear || function is MaxPooling)
+        //        {
+        //            ((IParallelizable)function).SetGpuEnable(true);
+        //        }
 
-                if (function is SplitFunction)
-                {
-                    SplitFunction splitFunction = (SplitFunction)function;
-                    for (int i = 0; i < splitFunction.SplitedFunctions.Length; i++)
-                    {
-                        SwitchGPU(splitFunction.SplitedFunctions[i]);
-                    }
-                }
-            }
+        //        if (function is SplitFunction)
+        //        {
+        //            SplitFunction splitFunction = (SplitFunction)function;
+        //            for (int i = 0; i < splitFunction.SplitedFunctions.Length; i++)
+        //            {
+        //                SwitchGPU(splitFunction.SplitedFunctions[i]);
+        //            }
+        //        }
+        //    }
 
-            //ブロック単位で層の圧縮を実行
-            functionStack.Compress();
-        }
+        //    //ブロック単位で層の圧縮を実行
+        //    functionStack.Compress();
+        //}
     }
 }

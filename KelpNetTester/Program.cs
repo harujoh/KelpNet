@@ -13,10 +13,10 @@ namespace KelpNetTester
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
             //Weaver.Initialize(ComputeDeviceTypes.Gpu);
-            Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
+            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
 
             //MLPによるXORの学習
-            //Test1.Run();
+            Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
