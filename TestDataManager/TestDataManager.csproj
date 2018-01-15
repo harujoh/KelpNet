@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -42,8 +43,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CIFAR\CIFARDataLoader.cs" />
+    <Compile Include="CIFAR\Common\HeaderBlock.cs" />
+    <Compile Include="CIFAR\Common\TarEntryType.cs" />
+    <Compile Include="CIFAR\Extensions.cs" />
+    <Compile Include="CIFAR\RawSerializer.cs" />
+    <Compile Include="CIFAR\Tar.cs" />
     <Compile Include="InternetFileDownloader.cs" />
+    <Compile Include="MNIST\BinaryReaderBE.cs" />
+    <Compile Include="MNIST\MnistDataLoader.cs" />
+    <Compile Include="MNIST\MnistImageLoader.cs" />
+    <Compile Include="MNIST\MnistLabelLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Vocabulary\Vocabulary.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KelpNet\KelpNet.csproj">
+      <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
+      <Name>KelpNet</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

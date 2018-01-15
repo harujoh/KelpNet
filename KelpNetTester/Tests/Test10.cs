@@ -7,7 +7,7 @@ using KelpNet.Functions.Noise;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
 using TestDataManager;
-using VocabularyMaker;
+using TestDataManager.Vocabulary;
 
 namespace KelpNetTester.Tests
 {

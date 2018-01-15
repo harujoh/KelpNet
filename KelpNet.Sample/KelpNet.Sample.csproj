@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EF602B5E-8F67-448B-BA84-8EF0BC92A02D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KelpNet.Sample</RootNamespace>
+    <AssemblyName>KelpNet.Sample</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Benchmarker\BenchDataMaker.cs" />
+    <Compile Include="Benchmarker\SingleBenchmark.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestData\CifarData.cs" />
+    <Compile Include="TestData\MnistData.cs" />
+    <Compile Include="TestData\TestDataSet.cs" />
+    <Compile Include="Samples\Sample01.cs" />
+    <Compile Include="Samples\Sample10.cs" />
+    <Compile Include="Samples\Sample11.cs" />
+    <Compile Include="Samples\Sample12.cs" />
+    <Compile Include="Samples\Sample13.cs" />
+    <Compile Include="Samples\Sample13WinForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Samples\Sample13WinForm.Designer.cs">
+      <DependentUpon>Sample13WinForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Sample14.cs" />
+    <Compile Include="Samples\Sample15.cs" />
+    <Compile Include="Samples\Sample16.cs" />
+    <Compile Include="Samples\Sample17.cs" />
+    <Compile Include="Samples\Sample18.cs" />
+    <Compile Include="Samples\Sample02.cs" />
+    <Compile Include="Samples\Sample03.cs" />
+    <Compile Include="Samples\Sample04.cs" />
+    <Compile Include="Samples\Sample05.cs" />
+    <Compile Include="Samples\Sample06.cs" />
+    <Compile Include="Samples\Sample07.cs" />
+    <Compile Include="Samples\Sample08.cs" />
+    <Compile Include="Samples\Sample09.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\ChainerModel.npz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\synset_words.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Samples\Sample13WinForm.resx">
+      <DependentUpon>Sample13WinForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KelpNet.ModelImporter\KelpNet.ModelImporter.csproj">
+      <Project>{2efacd92-209c-49ed-b772-24fec5e4e497}</Project>
+      <Name>KelpNet.ModelImporter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KelpNet\KelpNet.csproj">
+      <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
+      <Name>KelpNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TestDataManager\TestDataManager.csproj">
+      <Project>{6d41064e-38db-4a3d-9336-bec27ed9f2db}</Project>
+      <Name>TestDataManager</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

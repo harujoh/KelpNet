@@ -16,7 +16,7 @@ namespace KelpNetTester
             //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
 
             //MLPによるXORの学習
-            Test1.Run();
+            //Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -31,7 +31,7 @@ namespace KelpNetTester
             //Test5.Run();
 
             //5層CNNによるMNISTの学習
-            Test6.Run();
+            //Test6.Run();
 
             //BatchNormを使った15層MLPによるMNISTの学習
             //Test7.Run();

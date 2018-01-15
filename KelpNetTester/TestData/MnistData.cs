@@ -1,6 +1,6 @@
 ﻿using System;
 using KelpNet.Common;
-using MNISTLoader;
+using TestDataManager.MNIST;
 
 namespace KelpNetTester.TestData
 {
