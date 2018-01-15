@@ -20,14 +20,6 @@ namespace KelpNet.Common.Functions
 
         protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
-            if (parameters != null)
-            {
-                foreach (var parameter in parameters)
-                {
-                    this.ActivateFunctionString = this.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
-                }
-            }
-
             SingleInputForward = NeedPreviousForwardCpu;
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
