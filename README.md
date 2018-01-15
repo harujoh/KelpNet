@@ -19,7 +19,7 @@ FunctionStack nn = new FunctionStack(
 
 ## 特徴
 - 行列演算をライブラリに頼らないため全ソースが可読になっており、どこで何をしているかを全て観測できます
-- KerasやChainerが採用している、関数を積み重ねるように記述するコーディングスタイルを採用しています
+- KerasやChainerが採用している、層を書き連ねるコーディングスタイルを採用しています
 - 並列演算にOpenCLを採用しているため、GPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
 > ※OpenCLを使用するためには対応するドライバの追加インストールが必要になることがあります
 > - Intel製 CPU GPU: https://software.intel.com/en-us/articles/opencl-drivers
