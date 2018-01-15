@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 
-namespace TestDataManager
+namespace KelpNet.TestDataImporter
 {
     public class InternetFileDownloader
     {

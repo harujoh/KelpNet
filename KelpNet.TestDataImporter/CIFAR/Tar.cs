@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using TestDataManager.CIFAR.Common;
+using KelpNet.TestDataImporter.CIFAR.Common;
 
-namespace TestDataManager.CIFAR
+namespace KelpNet.TestDataImporter.CIFAR
 {
     public class Tar
     {

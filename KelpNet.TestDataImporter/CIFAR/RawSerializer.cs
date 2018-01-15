@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace TestDataManager.CIFAR
+namespace KelpNet.TestDataImporter.CIFAR
 {
     internal class RawSerializer<T>
     {

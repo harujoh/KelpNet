@@ -1,6 +1,6 @@
 ﻿using System;
 using KelpNet.Common;
-using TestDataManager.CIFAR;
+using KelpNet.TestDataImporter.CIFAR;
 
 namespace KelpNet.Sample.TestData
 {

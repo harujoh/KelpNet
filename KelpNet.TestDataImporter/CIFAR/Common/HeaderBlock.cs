@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace TestDataManager.CIFAR.Common
+namespace KelpNet.TestDataImporter.CIFAR.Common
 {
     [StructLayout(LayoutKind.Sequential, Size = 512)]
     internal struct HeaderBlock

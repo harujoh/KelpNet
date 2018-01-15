@@ -11,7 +11,7 @@ using KelpNet.Common.Functions;
 using KelpNet.Common.Functions.Container;
 using KelpNet.Common.Tools;
 using KelpNet.ModelImporter.CaffeModel;
-using TestDataManager;
+using KelpNet.TestDataImporter;
 
 namespace KelpNet.Sample.Samples
 {

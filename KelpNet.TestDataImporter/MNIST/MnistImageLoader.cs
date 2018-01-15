@@ -7,7 +7,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace TestDataManager.MNIST
+namespace KelpNet.TestDataImporter.MNIST
 {
     /// <summary>
     /// MNIST の画像をロードするためのクラス.

@@ -94,13 +94,13 @@
       <Project>{2efacd92-209c-49ed-b772-24fec5e4e497}</Project>
       <Name>KelpNet.ModelImporter</Name>
     </ProjectReference>
+    <ProjectReference Include="..\KelpNet.TestDataImporter\KelpNet.TestDataImporter.csproj">
+      <Project>{b0099b81-119b-4c0d-ac4b-1ecd2ffe3df5}</Project>
+      <Name>KelpNet.TestDataImporter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
       <Name>KelpNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TestDataManager\TestDataManager.csproj">
-      <Project>{6d41064e-38db-4a3d-9336-bec27ed9f2db}</Project>
-      <Name>TestDataManager</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,8 +6,8 @@ using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
-using TestDataManager;
-using TestDataManager.Vocabulary;
+using KelpNet.TestDataImporter;
+using KelpNet.TestDataImporter.Vocabulary;
 
 namespace KelpNet.Sample.Samples
 {

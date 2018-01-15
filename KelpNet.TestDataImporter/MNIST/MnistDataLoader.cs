@@ -1,4 +1,4 @@
-﻿namespace TestDataManager.MNIST
+﻿namespace KelpNet.TestDataImporter.MNIST
 {
     public class MnistDataLoader
     {
