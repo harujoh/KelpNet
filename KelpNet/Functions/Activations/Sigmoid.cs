@@ -9,7 +9,7 @@ namespace KelpNet.Functions.Activations
     {
         const string FUNCTION_NAME = "Sigmoid";
 
-        public Sigmoid(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
+        public Sigmoid(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, null, name, inputNames, outputNames)
         {
         }
 

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using KelpNet.Common;
 using KelpNet.Common.Functions.Container;
-using KelpNet.DataImporter;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Noise;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
 using KelpNet.Sample.TestData;
+using KelpNet.Tools;
 
 namespace KelpNet.Sample.Samples
 {
@@ -116,7 +116,7 @@ namespace KelpNet.Sample.Samples
 
         static double Evaluate(FunctionStack model, int[] dataset)
         {
-            FunctionStack predictModel = (FunctionStack)model.Clone();
+            FunctionStack predictModel = DeepCopyHelper.DeepCopy(model);
             predictModel.ResetState();
 
             Real totalLoss = 0;

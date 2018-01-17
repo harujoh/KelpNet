@@ -88,9 +88,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\KelpNet.DataImporter\KelpNet.DataImporter.csproj">
-      <Project>{abf68f88-e0c0-474a-a48a-c52d23d790cc}</Project>
-      <Name>KelpNet.DataImporter</Name>
+    <ProjectReference Include="..\KelpNet.Tools\KelpNet.Tools.csproj">
+      <Project>{f814e43c-ade5-496d-a885-04aa009fac64}</Project>
+      <Name>KelpNet.Tools</Name>
     </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>

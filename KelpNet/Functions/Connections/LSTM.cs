@@ -44,10 +44,10 @@ namespace KelpNet.Functions.Connections
 
             List<NdArray> functionParameters = new List<NdArray>();
 
-            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0", gpuEnable: gpuEnable);
-            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1", gpuEnable: gpuEnable);
-            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2", gpuEnable: gpuEnable);
-            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3", gpuEnable: gpuEnable);
+            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0");
+            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1");
+            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2");
+            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3");
 
             functionParameters.AddRange(this.upward0.Parameters);
             functionParameters.AddRange(this.upward1.Parameters);
@@ -55,10 +55,10 @@ namespace KelpNet.Functions.Connections
             functionParameters.AddRange(this.upward3.Parameters);
 
             //lateralはBiasは無し
-            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0", gpuEnable: gpuEnable);
-            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1", gpuEnable: gpuEnable);
-            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2", gpuEnable: gpuEnable);
-            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3", gpuEnable: gpuEnable);
+            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0");
+            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1");
+            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2");
+            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3");
 
             functionParameters.AddRange(this.lateral0.Parameters);
             functionParameters.AddRange(this.lateral1.Parameters);

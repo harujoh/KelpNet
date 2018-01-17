@@ -1,6 +1,6 @@
 ﻿using System;
 using KelpNet.Common;
-using KelpNet.DataImporter.TestDatas.MNIST;
+using KelpNet.Tools.DataImporter.TestDatas.MNIST;
 
 namespace KelpNet.Sample.TestData
 {

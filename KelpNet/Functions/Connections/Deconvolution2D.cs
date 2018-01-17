@@ -29,7 +29,7 @@ namespace KelpNet.Functions.Connections
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, new []{new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE)}, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new []{new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE)}, name, inputNames, outputNames)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -47,22 +47,16 @@ namespace KelpNet.Functions.Connections
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, new []{new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE)}, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kWidth, int kHeight, int subSampleX = 1, int subSampleY = 1, int trimX = 0, int trimY = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new[] { new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE) }, name, inputNames, outputNames)
         {
-            if (subSample == Size.Empty)
-                subSample = new Size(1, 1);
-
-            if (trim == Size.Empty)
-                trim = new Size(0, 0);
-
-            this._kWidth = kSize.Width;
-            this._kHeight = kSize.Height;
-            this._trimX = trim.Width;
-            this._trimY = trim.Height;
+            this._kWidth = kWidth;
+            this._kHeight = kHeight;
+            this._trimX = trimX;
+            this._trimY = trimY;
             this.NoBias = noBias;
 
-            this._subSampleX = subSample.Width;
-            this._subSampleY = subSample.Height;
+            this._subSampleX = subSampleX;
+            this._subSampleY = subSampleY;
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
 

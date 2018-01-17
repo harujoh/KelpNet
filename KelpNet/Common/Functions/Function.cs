@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using KelpNet.Common.Optimizers;
-using KelpNet.Common.Tools;
 
 namespace KelpNet.Common.Functions
 {
@@ -12,8 +11,6 @@ namespace KelpNet.Common.Functions
     public abstract class Function
     {
         public string Name;
-
-        public bool GpuEnable { get; protected set; }
 
         public NdArray[] Parameters = { };
         public Optimizer[] Optimizers = { };
@@ -41,12 +38,6 @@ namespace KelpNet.Common.Functions
             {
                 this.OutputNames = outputNames.ToArray();
             }
-        }
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
-        {
-            this.PrevInputs = new List<NdArray[]>();
         }
 
         public virtual void SetOptimizer(params Optimizer[] optimizers)
@@ -92,12 +83,6 @@ namespace KelpNet.Common.Functions
         public override string ToString()
         {
             return this.Name;
-        }
-
-        //コピーを作成するメソッド
-        public Function Clone()
-        {
-            return DeepCopyHelper.DeepCopy(this);
         }
     }
 }

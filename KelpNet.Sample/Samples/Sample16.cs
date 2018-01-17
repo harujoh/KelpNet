@@ -2,12 +2,12 @@
 using KelpNet.Common;
 using KelpNet.Common.Functions.Container;
 using KelpNet.Common.Tools;
-using KelpNet.DataImporter.Models.Chainer;
 using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Functions.Poolings;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
+using KelpNet.Tools.DataImporter.Models.Chainer;
 
 namespace KelpNet.Sample.Samples
 {
@@ -21,12 +21,12 @@ namespace KelpNet.Sample.Samples
             //ここで必ず name を Chainer の変数名に合わせておくこと
 
             FunctionStack nn = new FunctionStack(
-                new Convolution2D(1, 2, 3, name: "conv1", gpuEnable: true),//必要であればGPUフラグも忘れずに
+                new Convolution2D(1, 2, 3, name: "conv1"),//必要であればGPUフラグも忘れずに
                 new ReLU(),
-                new MaxPooling(2, 2),
-                new Convolution2D(2, 2, 2, name: "conv2", gpuEnable: true),
+                new MaxPooling(2, stride:2),
+                new Convolution2D(2, 2, 2, name: "conv2"),
                 new ReLU(),
-                new MaxPooling(2, 2),
+                new MaxPooling(2, stride: 2),
                 new Linear(8, 2, name: "fl3"),
                 new ReLU(),
                 new Linear(2, 2, name: "fl4")

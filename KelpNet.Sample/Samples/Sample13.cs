@@ -14,12 +14,12 @@ namespace KelpNet.Sample.Samples
         public static void Run()
         {
             //目標とするフィルタを作成（実践であればココは不明な値となる）
-            Deconvolution2D decon_core = new Deconvolution2D(1, 1, 15, 1, 7, gpuEnable: true)
+            Deconvolution2D decon_core = new Deconvolution2D(1, 1, 15, 1, trim:7)
             {
                 Weight = { Data = MakeOneCore() }
             };
 
-            Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7, gpuEnable: true);
+            Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, trim:7);
 
             SGD optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
             model.SetOptimizer(optimizer);
@@ -29,7 +29,7 @@ namespace KelpNet.Sample.Samples
             for (int i = 0; i < 11; i++)
             {
                 //ランダムに点が打たれた画像を生成
-                NdArray img_p = getRandomImage();
+                NdArray img_p = GetRandomImage();
 
                 //目標とするフィルタで学習用の画像を出力
                 NdArray[] img_core = decon_core.Forward(img_p);
@@ -46,7 +46,7 @@ namespace KelpNet.Sample.Samples
             }
         }
 
-        static NdArray getRandomImage(int N = 1, int img_w = 128, int img_h = 128)
+        static NdArray GetRandomImage(int N = 1, int img_w = 128, int img_h = 128)
         {
             // ランダムに0.1％の点を作る
             Real[] img_p = new Real[N * img_w * img_h];

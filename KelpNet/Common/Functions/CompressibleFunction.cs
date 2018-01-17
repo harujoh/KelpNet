@@ -18,7 +18,7 @@ namespace KelpNet.Common.Functions
         protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
         protected abstract void NeedPreviousBackwardCpu(NdArray y, NdArray x);
 
-        protected CompressibleFunction(string functionName, CompressibleActivation activation = null, KeyValuePair<string, string>[] activationParameters = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        protected CompressibleFunction(string functionName, CompressibleActivation activation = null, KeyValuePair<string, string>[] activationParameters = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             _activationParameters = activationParameters;
 

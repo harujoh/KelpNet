@@ -9,8 +9,8 @@ using System.Windows.Forms;
 using KelpNet.Common;
 using KelpNet.Common.Functions.Container;
 using KelpNet.Common.Tools;
-using KelpNet.DataImporter;
-using KelpNet.DataImporter.Models.Caffe;
+using KelpNet.Tools;
+using KelpNet.Tools.DataImporter.Models.Caffe;
 
 namespace KelpNet.Sample.Samples
 {

@@ -30,20 +30,14 @@ namespace KelpNet.Functions.Poolings
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        public AveragePooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public AveragePooling(int kWidth, int kHeight, int strideX = 1, int strideY = 1, int padX = 0, int padY = 0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            if (pad == Size.Empty)
-                pad = new Size(0, 0);
-
-            if (stride == Size.Empty)
-                stride = new Size(0, 0);
-
-            this._kWidth = ksize.Width;
-            this._kHeight = ksize.Height;
-            this._padY = pad.Height;
-            this._padX = pad.Width;
-            this._strideX = stride.Width;
-            this._strideY = stride.Height;
+            this._kWidth = kWidth;
+            this._kHeight = kHeight;
+            this._padX = padX;
+            this._padY = padY;
+            this._strideX = strideX;
+            this._strideY = strideY;
 
             SingleInputForward = NeedPreviousForwardCpu;
             SingleOutputBackward = NeedPreviousBackwardCpu;

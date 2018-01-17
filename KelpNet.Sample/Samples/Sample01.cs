@@ -7,6 +7,7 @@ using KelpNet.Functions.Activations;
 using KelpNet.Functions.Connections;
 using KelpNet.Loss;
 using KelpNet.Optimizers;
+using KelpNet.Tools;
 
 namespace KelpNet.Sample.Samples
 {

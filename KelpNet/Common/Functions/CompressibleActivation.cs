@@ -18,7 +18,7 @@ namespace KelpNet.Common.Functions
 
         protected string ActivateKernelString;
 
-        protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             SingleInputForward = NeedPreviousForwardCpu;
             SingleOutputBackward = NeedPreviousBackwardCpu;

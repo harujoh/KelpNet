@@ -34,18 +34,18 @@ namespace KelpNet.Sample.Samples
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
-                new Convolution2D(3, 32, 3, name: "l1 Conv2D", gpuEnable: true),
+                new Convolution2D(3, 32, 3, name: "l1 Conv2D"),
                 new ReLU(name: "l1 ReLU"),
-                new MaxPooling(2, name: "l1 MaxPooling", gpuEnable: true),
+                new MaxPooling(2, name: "l1 MaxPooling"),
                 new Dropout(0.25, name: "l1 DropOut"),
-                new Convolution2D(32, 64, 3, name: "l2 Conv2D", gpuEnable: true),
+                new Convolution2D(32, 64, 3, name: "l2 Conv2D"),
                 new ReLU(name: "l2 ReLU"),
-                new MaxPooling(2, 2, name: "l2 MaxPooling", gpuEnable: true),
+                new MaxPooling(2, stride: 2, name: "l2 MaxPooling"),
                 new Dropout(0.25, name: "l2 DropOut"),
-                new Linear(13 * 13 * 64, 512, name: "l3 Linear", gpuEnable: true),
+                new Linear(13 * 13 * 64, 512, name: "l3 Linear"),
                 new ReLU(name: "l3 ReLU"),
                 new Dropout(name: "l3 DropOut"),
-                new Linear(512, 10, name: "l4 Linear", gpuEnable: true)
+                new Linear(512, 10, name: "l4 Linear")
             );
 
             //optimizerを宣言

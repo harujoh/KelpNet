@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using KelpNet.Common;
 using KelpNet.Common.Functions.Type;
 
@@ -21,7 +19,7 @@ namespace KelpNet.Functions.Poolings
 
         private readonly List<int[]> _outputIndicesList = new List<int[]>();
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling(int ksize, int stride = 1, int pad = 0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -34,20 +32,14 @@ namespace KelpNet.Functions.Poolings
             SingleOutputBackward = BackwardCpu;
         }
 
-        public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling(int kWidth, int kHeight, int strideX = 1, int strideY = 1, int padX = 0, int padY = 0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            if (pad == Size.Empty)
-                pad = new Size(0, 0);
-
-            if (stride == Size.Empty)
-                stride = new Size(1, 1);
-
-            this._kHeight = ksize.Height;
-            this._kWidth = ksize.Width;
-            this._padY = pad.Height;
-            this._padX = pad.Width;
-            this._strideX = stride.Width;
-            this._strideY = stride.Height;
+            this._kHeight = kHeight;
+            this._kWidth = kWidth;
+            this._padY = padY;
+            this._padX = padX;
+            this._strideX = strideX;
+            this._strideY = strideY;
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
