@@ -8,7 +8,6 @@ using System.Linq;
 using System.Windows.Forms;
 using KelpNet.Common;
 using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
 using KelpNet.Tools;
 using KelpNet.Tools.DataImporter.Models.Caffe;
 

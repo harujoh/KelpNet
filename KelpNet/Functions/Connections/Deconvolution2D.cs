@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using KelpNet.Common;
 using KelpNet.Common.Functions;
 using KelpNet.Common.Tools;
