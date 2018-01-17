@@ -42,6 +42,8 @@ FunctionStack nn = new FunctionStack(
 Twitter: https://twitter.com/harujoh
 
 
+## 実行環境
+- .Net Standard 1.1
 
 ## License
 - Apache License 2.0
