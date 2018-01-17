@@ -36,7 +36,7 @@ namespace KelpNet.Functions.Poolings
                 pad = new Size(0, 0);
 
             if (stride == Size.Empty)
-                stride = new Size(0, 0);
+                stride = new Size(1, 1);
 
             this._kWidth = ksize.Width;
             this._kHeight = ksize.Height;
