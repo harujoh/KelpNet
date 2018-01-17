@@ -43,7 +43,8 @@ Twitter: https://twitter.com/harujoh
 
 
 ## 実行環境
-- .Net Standard 1.1
+- KelpNet : .Net Standard 1.1
+- KelpNet.Tools, KelpNet.Sample : .Net Framework 4.5
 
 ## License
 - Apache License 2.0
