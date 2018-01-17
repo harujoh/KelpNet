@@ -42,9 +42,9 @@ FunctionStack nn = new FunctionStack(
 Twitter: https://twitter.com/harujoh
 
 
-## 実行環境
-- KelpNet : .Net Standard 1.1
-- KelpNet.Tools, KelpNet.Sample : .Net Framework 4.5
+## ターゲットフレームワーク
+- KelpNet　:　.Net Standard 1.1　(.Net Framework 4.0,　.Net Core 1.0 相当)
+- KelpNet.Tools,　KelpNet.Sample　:　.Net Framework 4.5
 
 ## License
 - Apache License 2.0
