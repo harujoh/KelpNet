@@ -43,8 +43,8 @@ Twitter: https://twitter.com/harujoh
 
 
 ## ターゲットフレームワーク
-- KelpNet　:　.Net Standard 1.1　(.Net Framework 4.0,　.Net Core 1.0 相当)
-- KelpNet.Tools,　KelpNet.Sample　:　.Net Framework 4.5
+- KelpNet : .Net Standard 1.1, .Net Core 1.0, .Net Framework 4.0,　
+- KelpNet.Tools, KelpNet.Sample : .Net Framework 4.5
 
 ## License
 - Apache License 2.0
