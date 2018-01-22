@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace KelpNet.Common.Tools
 {
@@ -14,7 +14,7 @@ namespace KelpNet.Common.Tools
 
             using (MemoryStream mem = new MemoryStream())
             {
-                BinaryFormatter bf = new BinaryFormatter();
+                NetDataContractSerializer bf = new NetDataContractSerializer();
 
                 try
                 {
