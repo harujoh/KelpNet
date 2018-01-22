@@ -1,5 +1,6 @@
 ﻿using System;
 using KelpNet.Sample.Benchmarker;
+using KelpNet.Sample.Samples;
 
 namespace KelpNet.Sample
 {

@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 using KelpNet.Common.Functions.Container;
 
 namespace KelpNet.Tools
@@ -8,7 +8,7 @@ namespace KelpNet.Tools
     {
         public static void Save(FunctionStack functionStack, string fileName)
         {
-            BinaryFormatter bf = new BinaryFormatter();
+            NetDataContractSerializer bf = new NetDataContractSerializer();
 
             using (Stream stream = File.OpenWrite(fileName))
             {
@@ -18,7 +18,7 @@ namespace KelpNet.Tools
 
         public static FunctionStack Load(string fileName)
         {
-            BinaryFormatter bf = new BinaryFormatter();
+            NetDataContractSerializer bf = new NetDataContractSerializer();
             FunctionStack result;
 
             using (Stream stream = File.OpenRead(fileName))
@@ -28,6 +28,5 @@ namespace KelpNet.Tools
 
             return result;
         }
-
     }
 }
