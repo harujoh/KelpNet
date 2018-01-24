@@ -45,9 +45,10 @@ namespace KelpNet.Functions.Poolings
         {
             this.GpuEnable = enable & Weaver.Enable;
 
+            CreateKernel();
+
             if (GpuEnable)
             {
-                CreateKernel();
                 SingleInputForward = ForwardGpu;
             }
             else
@@ -88,7 +89,8 @@ namespace KelpNet.Functions.Poolings
 
         public void CreateKernel()
         {
-            ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
+            if (GpuEnable)
+                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
         }
 
         private NdArray ForwardCpu(NdArray input)

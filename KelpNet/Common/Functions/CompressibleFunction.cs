@@ -47,7 +47,7 @@ namespace KelpNet.Common.Functions
 
             this.KernelString = Weaver.GetKernelSource(functionName);
 
-            _activationParameters = activationParameters;
+            this._activationParameters = activationParameters;
 
             this.SetActivation(activation);
 
@@ -58,16 +58,17 @@ namespace KelpNet.Common.Functions
         {
             this.GpuEnable = enable & Weaver.Enable;
 
-            if (GpuEnable)
+            this.CreateKernel();
+
+            if (this.GpuEnable)
             {
-                CreateKernel();
-                SingleInputForward = NeedPreviousForwardGpu;
-                SingleOutputBackward = NeedPreviousBackwardGpu;
+                this.SingleInputForward = this.NeedPreviousForwardGpu;
+                this.SingleOutputBackward = this.NeedPreviousBackwardGpu;
             }
             else
             {
-                SingleInputForward = NeedPreviousForwardCpu;
-                SingleOutputBackward = NeedPreviousBackwardCpu;
+                this.SingleInputForward = this.NeedPreviousForwardCpu;
+                this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
             }
 
             return GpuEnable;
@@ -80,32 +81,32 @@ namespace KelpNet.Common.Functions
 
             if (this.Activator != null)
             {
-                foreach (var activationParameterer in _activationParameters)
+                foreach (var activationParameterer in this._activationParameters)
                 {
-                    KernelString = KernelString.Replace(activationParameterer.Key, activationParameterer.Value);
+                    this.KernelString = this.KernelString.Replace(activationParameterer.Key, activationParameterer.Value);
                 }
             }
 
             //Kernelの再構築が必要
-            if (this.GpuEnable)
-            {
-                CreateKernel();
-            }
+            CreateKernel();
         }
 
         public void CreateKernel()
         {
-            string kernelSource = KernelString;
-
-            if (this.Activator != null)
+            if (this.GpuEnable)
             {
-                kernelSource = this.Activator.ActivateFunctionString + KernelString;
-            }
+                string kernelSource = this.KernelString;
 
-            ComputeProgram program = Weaver.CreateProgram(kernelSource);
-            this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
-            BackwardgWKernel = program.CreateKernel(BackwardgWKernelName);
-            BackwardgXKernel = program.CreateKernel(BackwardgXKernelName);
+                if (this.Activator != null)
+                {
+                    kernelSource = this.Activator.ActivateFunctionString + this.KernelString;
+                }
+
+                ComputeProgram program = Weaver.CreateProgram(kernelSource);
+                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+                this.BackwardgWKernel = program.CreateKernel(this.BackwardgWKernelName);
+                this.BackwardgXKernel = program.CreateKernel(this.BackwardgXKernelName);
+            }
         }
     }
 }

@@ -55,16 +55,17 @@ namespace KelpNet.Common.Functions
         {
             this.GpuEnable = enable & Weaver.Enable;
 
+            this.CreateKernel();
+
             if (this.GpuEnable)
             {
-                CreateKernel();
-                SingleInputForward = NeedPreviousForwardGpu;
-                SingleOutputBackward = NeedPreviousBackwardGpu;
+                this.SingleInputForward = this.NeedPreviousForwardGpu;
+                this.SingleOutputBackward = this.NeedPreviousBackwardGpu;
             }
             else
             {
-                SingleInputForward = NeedPreviousForwardCpu;
-                SingleOutputBackward = NeedPreviousBackwardCpu;
+                this.SingleInputForward = this.NeedPreviousForwardCpu;
+                this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
             }
 
             return GpuEnable;
@@ -72,11 +73,14 @@ namespace KelpNet.Common.Functions
 
         public void CreateKernel()
         {
-            string kernelSource = this.ActivateFunctionString + this.ActivateKernelString;
+            if (this.GpuEnable)
+            {
+                string kernelSource = this.ActivateFunctionString + this.ActivateKernelString;
 
-            ComputeProgram program = Weaver.CreateProgram(kernelSource);
-            this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
-            this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
+                ComputeProgram program = Weaver.CreateProgram(kernelSource);
+                this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
+                this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
+            }
         }
 
         private NdArray NeedPreviousForwardCpu(NdArray x)

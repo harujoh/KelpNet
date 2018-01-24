@@ -36,9 +36,10 @@ namespace KelpNet.Functions.Noise
         {
             this.GpuEnable = enable & Weaver.Enable;
 
+            CreateKernel();
+
             if (GpuEnable)
             {
-                CreateKernel();
                 SingleInputForward = ForwardGpu;
                 SingleOutputBackward = BackwardGpu;
             }
@@ -53,11 +54,14 @@ namespace KelpNet.Functions.Noise
 
         public void CreateKernel()
         {
-            string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
-            ComputeProgram program = Weaver.CreateProgram(kernelSource);
+            if (GpuEnable)
+            {
+                string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
+                ComputeProgram program = Weaver.CreateProgram(kernelSource);
 
-            ForwardKernel = program.CreateKernel("DropoutForward");
-            BackwardKernel = program.CreateKernel("DropoutBackward");
+                ForwardKernel = program.CreateKernel("DropoutForward");
+                BackwardKernel = program.CreateKernel("DropoutBackward");
+            }
         }
 
         private Real[] MakeMask(int xLength)

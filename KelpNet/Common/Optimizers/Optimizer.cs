@@ -34,6 +34,16 @@ namespace KelpNet.Common.Optimizers
                 this.UpdateCount++;
             }
         }
+
+        public void ResetParams()
+        {
+            for (int i = 0; i < this.OptimizerParameters.Count; i++)
+            {
+                this.OptimizerParameters[i].FunctionParameter.ClearGrad();
+            }
+
+            this.UpdateCount = 0;
+        }
     }
 
     //このクラスはFunctionParameterと1:1で作成される

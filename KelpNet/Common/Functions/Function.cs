@@ -43,12 +43,6 @@ namespace KelpNet.Common.Functions
             }
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
-        {
-            this.PrevInputs = new List<NdArray[]>();
-        }
-
         public virtual void SetOptimizer(params Optimizer[] optimizers)
         {
             this.Optimizers = optimizers;
@@ -85,7 +79,7 @@ namespace KelpNet.Common.Functions
         //RNN等で使い切れなかった入力データを初期化
         public virtual void ResetState()
         {
-            PrevInputs.Clear();
+            this.PrevInputs = new List<NdArray[]>();
         }
 
         //名前を返す

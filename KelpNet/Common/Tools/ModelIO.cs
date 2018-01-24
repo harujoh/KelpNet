@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.Serialization;
+using KelpNet.Common.Functions;
 using KelpNet.Common.Functions.Container;
 
 namespace KelpNet.Common.Tools
@@ -24,6 +25,21 @@ namespace KelpNet.Common.Tools
             using (Stream stream = File.OpenRead(fileName))
             {
                 result = (FunctionStack)bf.Deserialize(stream);
+            }
+
+            foreach (Function function in result.Functions)
+            {
+                function.ResetState();
+
+                for (int i = 0; i < function.Optimizers.Length; i++)
+                {
+                    function.Optimizers[i].ResetParams();
+                }
+
+                if (function is IParallelizable)
+                {
+                    ((IParallelizable)function).CreateKernel();
+                }
             }
 
             return result;
