@@ -9,9 +9,6 @@ namespace KelpNet.Common.Functions
     {
         const string FUNCTION_NAME = "Activation";
 
-        //GPU向けのActivate関数の文字列
-        public string ActivateFunctionString;
-
         //.Netで使用するActivateの仮想関数
         internal abstract Real ForwardActivate(Real x);
         internal abstract Real BackwardActivate(Real gy, Real y);
@@ -20,8 +17,8 @@ namespace KelpNet.Common.Functions
 
         protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
+            this.SingleInputForward = this.NeedPreviousForwardCpu;
+            this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
         }
 
         private NdArray NeedPreviousForwardCpu(NdArray x)

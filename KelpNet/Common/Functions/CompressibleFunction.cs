@@ -11,8 +11,6 @@ namespace KelpNet.Common.Functions
 
         public CompressibleActivation Activator { get; protected set; }
 
-        protected string KernelString;
-
         private readonly KeyValuePair<string, string>[] _activationParameters;
 
         protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
@@ -20,26 +18,18 @@ namespace KelpNet.Common.Functions
 
         protected CompressibleFunction(string functionName, CompressibleActivation activation = null, KeyValuePair<string, string>[] activationParameters = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            _activationParameters = activationParameters;
+            this._activationParameters = activationParameters;
 
             this.SetActivation(activation);
 
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
+            this.SingleInputForward = this.NeedPreviousForwardCpu;
+            this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
         }
 
         //後からActivationを追加する用
         public void SetActivation(CompressibleActivation activation)
         {
             this.Activator = activation;
-
-            if (this.Activator != null)
-            {
-                foreach (var activationParameterer in _activationParameters)
-                {
-                    KernelString = KernelString.Replace(activationParameterer.Key, activationParameterer.Value);
-                }
-            }
         }
     }
 }

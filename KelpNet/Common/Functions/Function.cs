@@ -75,7 +75,7 @@ namespace KelpNet.Common.Functions
         //RNN等で使い切れなかった入力データを初期化
         public virtual void ResetState()
         {
-            PrevInputs.Clear();
+            this.PrevInputs = new List<NdArray[]>();
         }
 
         //名前を返す
