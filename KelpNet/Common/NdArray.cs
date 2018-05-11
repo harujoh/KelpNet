@@ -73,7 +73,7 @@ namespace KelpNet.Common
         public NdArray(Real[] data, int[] shape, int batchCount = 1, Function parentFunc = null)
         {
             this.Shape = shape.ToArray();
-            this.Length = ShapeToArrayLength(this.Shape);
+            this.Length = data.Length / batchCount;
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
             this.Grad = new Real[this.Length * batchCount];
@@ -120,7 +120,7 @@ namespace KelpNet.Common
 
         public static NdArray ZerosLike(NdArray baseArray)
         {
-            return new NdArray(baseArray.Shape.ToArray(), baseArray.BatchCount);
+            return new NdArray(baseArray.Shape, baseArray.BatchCount);
         }
 
         //インデクサはあまり早くないので頻繁にアクセスする場合は使用をオススメしません。デバッグ用途向けと割り切ってください。
@@ -548,15 +548,11 @@ namespace KelpNet.Common
         //コピーを作成するメソッド
         public NdArray Clone()
         {
-            return new NdArray
+            return new NdArray(Data, Shape, BatchCount, ParentFunc)
             {
-                ParentFunc = ParentFunc,
-                Data = Data.ToArray(),
                 Grad = Grad.ToArray(),
-                Shape = Shape.ToArray(),
                 Name = Name,
                 Length = Length,
-                BatchCount = BatchCount,
                 UseCount = UseCount,
                 TrainCount = TrainCount
             };
@@ -701,7 +697,7 @@ namespace KelpNet.Common
             }
 #endif
 
-            NdArray result = new NdArray(shapeList.ToArray(), a.BatchCount);
+            NdArray result = new NdArray(shapeList, a.BatchCount);
 
             for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
             {

@@ -40,7 +40,7 @@ namespace KelpNet.Functions.Mathmetrics
 
             if (initialW == null)
             {
-                this.Weight.Data = Enumerable.Repeat((Real) 1.0, Weight.Data.Length).ToArray();
+                this.Weight.Data = Enumerable.Repeat((Real)1.0, Weight.Data.Length).ToArray();
             }
             else
             {

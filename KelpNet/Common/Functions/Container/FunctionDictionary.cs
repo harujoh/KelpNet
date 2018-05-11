@@ -125,16 +125,16 @@ namespace KelpNet.Common.Functions.Container
             for (int i = 0; i < FunctionBlocks.Count; i++)
             {
                 string[] inputBlockNames = FunctionBlocks[i].InputNames;
-                List<NdArray> inputData = new List<NdArray>();
+                NdArray[] inputData = new NdArray[inputBlockNames.Length];
 
                 //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
                 {
-                    inputData.Add(outPuts[inputBlockNames[j]]);
+                    inputData[j] = outPuts[inputBlockNames[j]];
                 }
 
                 //関数を実施
-                result = FunctionBlocks[i].Forward(inputData.ToArray());
+                result = FunctionBlocks[i].Forward(inputData);
 
                 //出力したデータを辞書に登録
                 for (int j = 0; j < result.Length; j++)
@@ -187,16 +187,16 @@ namespace KelpNet.Common.Functions.Container
             for (int i = 0; i < FunctionBlocks.Count; i++)
             {
                 string[] inputBlockNames = FunctionBlocks[i].InputNames;
-                List<NdArray> inputData = new List<NdArray>();
+                NdArray[] inputData = new NdArray[inputBlockNames.Length];
 
                 //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
                 {
-                    inputData.Add(outPuts[inputBlockNames[j]]);
+                    inputData[j] = outPuts[inputBlockNames[j]];
                 }
 
                 //関数を実施
-                result = FunctionBlocks[i].Predict(inputData.ToArray());
+                result = FunctionBlocks[i].Predict(inputData);
 
                 //出力したデータを辞書に登録
                 for (int j = 0; j < result.Length; j++)
