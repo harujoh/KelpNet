@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using RealType = System.Double;
-//using RealType = System.Single;
+//using RealType = System.Double;
+using RealType = System.Single;
 
 namespace KelpNet.Common
 {
