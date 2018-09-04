@@ -8,13 +8,13 @@ namespace KelpNetTester.TestData
     {
         private NdArray[] X;
         private NdArray[] Tx;
-        private NdArray[] TxFine;
 
         private NdArray[] Y;
         private NdArray[] Ty;
-        private NdArray[] TyFine;
 
-        public CifarData(bool isCifar100 = false)
+        public readonly int ClassCount;
+
+        public CifarData(bool isCifar100 = false, bool isFineLabel = false)
         {
             CIFARDataLoader cifarDataLoader = new CIFARDataLoader(isCifar100);
 
@@ -22,8 +22,9 @@ namespace KelpNetTester.TestData
             this.X = new NdArray[cifarDataLoader.TrainData.Length];
             //トレーニングデータラベル
             this.Tx = new NdArray[cifarDataLoader.TrainData.Length];
-            //トレーニングデータラベル（詳細）
-            this.TxFine = new NdArray[cifarDataLoader.TrainData.Length];
+
+            //Cifar100のときは100クラス、簡素であれば20クラス、Cifar10のときは10クラス分類
+            ClassCount = isCifar100 ? isFineLabel ? 100 : 20 : 10;
 
             for (int i = 0; i < cifarDataLoader.TrainData.Length; i++)
             {
@@ -34,16 +35,14 @@ namespace KelpNetTester.TestData
                 }
                 this.X[i] = new NdArray(x, new[] { 3, 32, 32 });
 
-                this.Tx[i] = new NdArray(new[] { (Real)cifarDataLoader.TrainLabel[i] });
 
-                if (isCifar100)
+                if (isCifar100 & isFineLabel)
                 {
-                    this.TxFine[i] = new NdArray(new[] {(Real) cifarDataLoader.TrainFineLabel[i]});
+                    this.Tx[i] = new NdArray(new[] { (Real)cifarDataLoader.TrainFineLabel[i] });
                 }
                 else
                 {
-                    //詳細ラベルはCifar100のみなのでダミーデータを挿入
-                    this.TxFine[i] = new NdArray(new[] { (Real)cifarDataLoader.TrainLabel[i] });
+                    this.Tx[i] = new NdArray(new[] { (Real)cifarDataLoader.TrainLabel[i] });
                 }
             }
 
@@ -51,8 +50,6 @@ namespace KelpNetTester.TestData
             this.Y = new NdArray[cifarDataLoader.TestData.Length];
             //教師データラベル
             this.Ty = new NdArray[cifarDataLoader.TestData.Length];
-            //教師データラベル（詳細）
-            this.TyFine = new NdArray[cifarDataLoader.TestData.Length];
 
             for (int i = 0; i < cifarDataLoader.TestData.Length; i++)
             {
@@ -65,22 +62,20 @@ namespace KelpNetTester.TestData
 
                 this.Y[i] = new NdArray(y, new[] { 3, 32, 32 });
 
-                this.Ty[i] = new NdArray(new[] { (Real)cifarDataLoader.TestLabel[i] });
 
-                if (isCifar100)
+                if (isCifar100 & isFineLabel)
                 {
-                    this.TyFine[i] = new NdArray(new[] { (Real)cifarDataLoader.TestFineLabel[i] });
+                    this.Ty[i] = new NdArray(new[] { (Real)cifarDataLoader.TestFineLabel[i] });
                 }
                 else
                 {
-                    //詳細ラベルはCifar100のみなのでダミーデータを挿入
-                    this.TyFine[i] = new NdArray(new[] { (Real)cifarDataLoader.TrainLabel[i] });
+                    this.Ty[i] = new NdArray(new[] { (Real)cifarDataLoader.TrainLabel[i] });
                 }
             }
         }
 
         //トレーニングデータを取得
-        public TestDataSet GetRandomYSet(int dataCount, bool isFineLabel = false)
+        public TestDataSet GetRandomYSet(int dataCount)
         {
             NdArray listY = new NdArray(new[] { 3, 32, 32 }, dataCount);
             NdArray listTy = new NdArray(new[] { 1 }, dataCount);
@@ -90,14 +85,14 @@ namespace KelpNetTester.TestData
                 int index = Mother.Dice.Next(this.Y.Length);
 
                 Array.Copy(this.Y[index].Data, 0, listY.Data, i * listY.Length, listY.Length);
-                listTy.Data[i] = isFineLabel ? this.TyFine[index].Data[0] : this.Ty[index].Data[0];
+                listTy.Data[i] = this.Ty[index].Data[0];
             }
 
             return new TestDataSet(listY, listTy);
         }
 
         //教師データを取得
-        public TestDataSet GetRandomXSet(int dataCount, bool isFineLabel = false)
+        public TestDataSet GetRandomXSet(int dataCount)
         {
             NdArray listX = new NdArray(new[] { 3, 32, 32 }, dataCount);
             NdArray listTx = new NdArray(new[] { 1 }, dataCount);
@@ -107,7 +102,7 @@ namespace KelpNetTester.TestData
                 int index = Mother.Dice.Next(this.X.Length);
 
                 Array.Copy(this.X[index].Data, 0, listX.Data, i * listX.Length, listX.Length);
-                listTx.Data[i] = isFineLabel ? this.TxFine[index].Data[0] : this.Tx[index].Data[0];
+                listTx.Data[i] = this.Tx[index].Data[0];
             }
 
             return new TestDataSet(listX, listTx);

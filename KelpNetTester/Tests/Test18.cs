@@ -30,7 +30,7 @@ namespace KelpNetTester.Tests
 
             //CIFARのデータを用意する
             Console.WriteLine("CIFAR Data Loading...");
-            CifarData cifarData = new CifarData(isCifar100);
+            CifarData cifarData = new CifarData(isCifar100, isFineLabel);
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
@@ -46,7 +46,7 @@ namespace KelpNetTester.Tests
                 new ReLU(name: "l3 ReLU"),
                 new Dropout(name: "l3 DropOut"),
                 //Cifar100のときは100クラス、簡素であれば20クラス、Cifar10のときは10クラス分類
-                new Linear(512, isCifar100 ? isFineLabel ? 100 : 20 : 10, name: "l4 Linear", gpuEnable: true)
+                new Linear(512, cifarData.ClassCount, name: "l4 Linear", gpuEnable: true)
             );
 
             //optimizerを宣言
@@ -71,7 +71,7 @@ namespace KelpNetTester.Tests
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT, isFineLabel);
+                    TestDataSet datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
                     Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
