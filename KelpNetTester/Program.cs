@@ -16,7 +16,7 @@ namespace KelpNetTester
             //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
 
             //MLPによるXORの学習
-            //Test1.Run();
+            Test1.Run();
 
             //MLPによるXORの学習【回帰版】
             //Test2.Run();
@@ -67,7 +67,7 @@ namespace KelpNetTester
             //Test17.Run(Test17.ResnetModel.ResNet50);  //任意のResnetモデルを選択してください
 
             //CIFAR-10を5層CNNを使って学習する
-            //Test18.Run();
+            //Test18.Run(isCifar100:false, isFineLabel:false);
 
             //Linearの分割実行
             //TestX.Run();
