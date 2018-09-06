@@ -69,6 +69,9 @@ namespace KelpNetTester
             //CIFAR-10を5層CNNを使って学習する
             //Test18.Run(isCifar100:false, isFineLabel:false);
 
+            //CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
+            //Test19.Run();
+
             //Linearの分割実行
             //TestX.Run();
 
