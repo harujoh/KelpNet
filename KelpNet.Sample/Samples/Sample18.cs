@@ -24,13 +24,13 @@ namespace KelpNet.Sample.Samples
         //性能評価時のデータ数
         const int TEACH_DATA_COUNT = 200;
 
-        public static void Run()
+        public static void Run(bool isCifar100 = false, bool isFineLabel = false)
         {
             Stopwatch sw = new Stopwatch();
 
-            //MNISTのデータを用意する
+            //CIFARのデータを用意する
             Console.WriteLine("CIFAR Data Loading...");
-            CifarData cifarData = new CifarData();
+            CifarData cifarData = new CifarData(isCifar100, isFineLabel);
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
@@ -45,7 +45,7 @@ namespace KelpNet.Sample.Samples
                 new Linear(13 * 13 * 64, 512, name: "l3 Linear"),
                 new ReLU(name: "l3 ReLU"),
                 new Dropout(name: "l3 DropOut"),
-                new Linear(512, 10, name: "l4 Linear")
+                new Linear(512, cifarData.ClassCount, name: "l4 Linear")
             );
 
             //optimizerを宣言

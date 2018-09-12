@@ -70,6 +70,7 @@
     <Compile Include="Samples\Sample16.cs" />
     <Compile Include="Samples\Sample17.cs" />
     <Compile Include="Samples\Sample18.cs" />
+    <Compile Include="Samples\Sample19.cs" />
     <Compile Include="TestData\CifarData.cs" />
     <Compile Include="TestData\MnistData.cs" />
     <Compile Include="TestData\TestDataSet.cs" />

@@ -160,8 +160,11 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                 case "Softmax":
                     return new Softmax(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
+                case "Data":
+                    return null; //読み飛ばし
+
                 case "SoftmaxWithLoss":
-                    return null;
+                    return null; //読み飛ばし
             }
 
             Console.WriteLine("Skip the layer \"{0}\", since CaffemodelLoader does not support {0} layer", layer.Type);
@@ -206,8 +209,11 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                 case V1LayerParameter.LayerType.Softmax:
                     return new Softmax();
 
+                case V1LayerParameter.LayerType.Data:
+                    return null; //読み飛ばし
+
                 case V1LayerParameter.LayerType.SoftmaxLoss:
-                    return null;
+                    return null; //読み飛ばし
             }
 
             Console.WriteLine("Skip the layer \"{0}\", since CaffemodelLoader does not support {0} layer", layer.Type);

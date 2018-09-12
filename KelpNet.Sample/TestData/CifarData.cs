@@ -14,23 +14,39 @@ namespace KelpNet.Sample.TestData
         private NdArray[] Y;
         private NdArray[] Ty;
 
-        public CifarData()
+        public readonly int ClassCount;
+
+
+        public CifarData(bool isCifar100 = false, bool isFineLabel = false)
         {
             //トレーニングデータ
             this.X = new NdArray[this.cifarDataLoader.TrainData.Length];
             //トレーニングデータラベル
             this.Tx = new NdArray[this.cifarDataLoader.TrainData.Length];
 
+            //Cifar100のときは100クラス、簡素であれば20クラス、Cifar10のときは10クラス分類
+            ClassCount = isCifar100 ? isFineLabel ? 100 : 20 : 10;
+
+
             for (int i = 0; i < this.cifarDataLoader.TrainData.Length; i++)
             {
                 Real[] x = new Real[3 * 32 * 32];
+
                 for (int j = 0; j < this.cifarDataLoader.TrainData[i].Length; j++)
                 {
                     x[j] = this.cifarDataLoader.TrainData[i][j] / 255.0;
                 }
+
                 this.X[i] = new NdArray(x, new[] { 3, 32, 32 });
 
-                this.Tx[i] = new NdArray(new[] { (Real)this.cifarDataLoader.TrainLabel[i] });
+                if (isCifar100 & isFineLabel)
+                {
+                    this.Tx[i] = new NdArray(new[] { (Real)this.cifarDataLoader.TrainFineLabel[i] });
+                }
+                else
+                {
+                    this.Tx[i] = new NdArray(new[] { (Real)this.cifarDataLoader.TrainLabel[i] });
+                }
             }
 
             //教師データ
@@ -49,7 +65,14 @@ namespace KelpNet.Sample.TestData
 
                 this.Y[i] = new NdArray(y, new[] { 3, 32, 32 });
 
-                this.Ty[i] = new NdArray(new[] { (Real)this.cifarDataLoader.TestLabel[i] });
+                if (isCifar100 & isFineLabel)
+                {
+                    this.Ty[i] = new NdArray(new[] { (Real)this.cifarDataLoader.TestFineLabel[i] });
+                }
+                else
+                {
+                    this.Ty[i] = new NdArray(new[] { (Real)this.cifarDataLoader.TestLabel[i] });
+                }
             }
         }
 

@@ -31,7 +31,7 @@ namespace KelpNet.Loss
                         Real result = input[k].Data[b * input[k].Length + i] - teachSignal[k].Data[batchoffset + i];
                         localloss += result * result;
 
-                        resultArray[batchoffset + i] *= coeff;
+                        resultArray[batchoffset + i] = result * coeff;
                     }
 
                     sumLoss += localloss / teachSignal[k].Length;

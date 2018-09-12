@@ -63,7 +63,10 @@ namespace KelpNet.Sample
             //Sample17.Run(Sample17.ResnetModel.ResNet50);  //任意のResnetモデルを選択してください
 
             //CIFAR-10を5層CNNを使って学習する
-            //Sample18.Run();
+            //Sample18.Run(isCifar100:false, isFineLabel:false);
+
+            //CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
+            //Test19.Run();
 
             //ベンチマーク
             SingleBenchmark.Run();

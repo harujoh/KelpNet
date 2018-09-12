@@ -86,7 +86,9 @@ namespace KelpNet.Tools.DataImporter.TestDatas.CIFAR
                 string cifar100Path = InternetFileDownloader.Donwload(DOWNLOAD_URL + CIFAR100, CIFAR100);
                 Dictionary<string, byte[]> data = Tar.GetExtractedStreams(cifar100Path);
 
+                //簡素なラベル名称
                 this.LabelNames = Encoding.ASCII.GetString(data["cifar-100-binary/coarse_label_names.txt"]).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                //詳細なラベル名称
                 this.FineLabelNames = Encoding.ASCII.GetString(data["cifar-100-binary/fine_label_names.txt"]).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
                 List<byte> trainLabel = new List<byte>();
@@ -98,8 +100,7 @@ namespace KelpNet.Tools.DataImporter.TestDatas.CIFAR
                     trainLabel.Add(data[CIFAR100TrainName][j * (DATA_SIZE + LABEL_SIZE + LABEL_SIZE)]);
                     trainFineLabel.Add(data[CIFAR100TrainName][j * (DATA_SIZE + LABEL_SIZE + LABEL_SIZE) + LABEL_SIZE]);
                     byte[] tmpArray = new byte[DATA_SIZE];
-                    Array.Copy(data[CIFAR100TrainName], j * (DATA_SIZE + LABEL_SIZE + LABEL_SIZE) + LABEL_SIZE + LABEL_SIZE, tmpArray, 0,
-                        tmpArray.Length);
+                    Array.Copy(data[CIFAR100TrainName], j * (DATA_SIZE + LABEL_SIZE + LABEL_SIZE) + LABEL_SIZE + LABEL_SIZE, tmpArray, 0, tmpArray.Length);
                     trainData.Add(tmpArray);
                 }
 
