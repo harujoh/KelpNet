@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
-using KelpNet.Functions.Arrays;
 
-namespace KelpNet.Functions.Mathmetrics
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class AddBias : SingleInputFunction
@@ -21,7 +24,7 @@ namespace KelpNet.Functions.Mathmetrics
 
             if (initialb != null)
             {
-                Bias.Data = Real.GetArray(initialb);
+                Bias.Data = NdArray.GetArray(initialb);
             }
 
             this.Parameters = new[] { Bias };

@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Noise;
-using KelpNet.Functions.Poolings;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
-using KelpNet.Sample.TestData;
+using KelpNet.Sample.DataManager;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -37,11 +31,11 @@ namespace KelpNet.Sample.Samples
                 new Convolution2D(3, 32, 3, name: "l1 Conv2D"),
                 new ReLU(name: "l1 ReLU"),
                 new MaxPooling(2, name: "l1 MaxPooling"),
-                new Dropout(0.25, name: "l1 DropOut"),
+                new Dropout(0.25f, name: "l1 DropOut"),
                 new Convolution2D(32, 64, 3, name: "l2 Conv2D"),
                 new ReLU(name: "l2 ReLU"),
                 new MaxPooling(2, stride: 2, name: "l2 MaxPooling"),
-                new Dropout(0.25, name: "l2 DropOut"),
+                new Dropout(0.25f, name: "l2 DropOut"),
                 new Linear(13 * 13 * 64, 512, name: "l3 Linear"),
                 new ReLU(name: "l3 ReLU"),
                 new Dropout(name: "l3 DropOut"),
@@ -70,7 +64,7 @@ namespace KelpNet.Sample.Samples
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    TestData.TestDataSet datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
                     Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
@@ -90,7 +84,7 @@ namespace KelpNet.Sample.Samples
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        TestData.TestDataSet datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
+                        TestDataSet datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
 
                         //テストを実行
                         Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);

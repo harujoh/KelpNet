@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
     [Serializable]
@@ -10,7 +14,7 @@ namespace KelpNet.Optimizers
     {
         public Real Threshold;
 
-        public GradientClipping(double threshold)
+        public GradientClipping(Real threshold)
         {
             this.Threshold = threshold;
         }
@@ -37,15 +41,15 @@ namespace KelpNet.Optimizers
         public override void UpdateFunctionParameters()
         {
             //_sum_sqnorm
-            double s = 0;
+            Real s = 0;
 
             for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
                 s += this.FunctionParameter.Grad[i] * this.FunctionParameter.Grad[i];
             }
 
-            double norm = Math.Sqrt(s);
-            double rate = this.optimizer.Threshold / norm;
+            Real norm = (Real)Math.Sqrt(s);
+            Real rate = this.optimizer.Threshold / norm;
 
             if (rate < 1)
             {

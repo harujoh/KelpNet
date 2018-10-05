@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class Adam : Optimizer
@@ -12,7 +16,7 @@ namespace KelpNet.Optimizers
         public Real Beta2;
         public Real Epsilon;
 
-        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8)
+        public Adam(Real alpha = 0.001f, Real beta1 = 0.9f, Real beta2 = 0.999f, Real epsilon = 1e-8f)
         {
             this.Alpha = alpha;
             this.Beta1 = beta1;
@@ -59,7 +63,7 @@ namespace KelpNet.Optimizers
             fix1 = 1 - fix1;
             fix2 = 1 - fix2;
 
-            Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
+            Real learningRate = this._optimizer.Alpha * (Real)Math.Sqrt(fix2) / fix1;
 
             for (int i = 0; i < FunctionParameter.Data.Length; i++)
             {
@@ -68,7 +72,7 @@ namespace KelpNet.Optimizers
                 this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Data[i] -= learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= learningRate * this.m[i] / ((Real)Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
             }
         }
     }

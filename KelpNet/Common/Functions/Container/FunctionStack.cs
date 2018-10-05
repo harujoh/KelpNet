@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Common.Functions.Container
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     //層を積み上げるこのライブラリのメインとなるクラス
     //一回のForward、Backward、Updateで同時に実行される関数の集まり

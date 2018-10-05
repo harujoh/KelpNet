@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
-using KelpNet.Sample.TestData;
+using KelpNet.Sample.DataManager;
 using KelpNet.Tools;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -173,7 +170,7 @@ namespace KelpNet.Sample.Samples
                 //l3 Softmax(l3 Linear)
                 NdArray yv = model.Functions[4].Forward(model.Functions[3].Forward(h))[0];
                 Real pi = yv.Data[s[i - 1]];
-                sum -= Math.Log(pi, 2);
+                sum -= (Real)Math.Log(pi, 2);
             }
 
             return sum;

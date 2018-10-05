@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -59,7 +57,7 @@ namespace KelpNet.Sample.Samples
             NdArray[] testSequences = dataMaker.MakeMiniBatch(trainData, MINI_BATCH_SIZE, LENGTH_OF_SEQUENCE);
 
             int sample_index = 45;
-            predict(testSequences[sample_index], model, PREDICTION_LENGTH);
+            Predict(testSequences[sample_index], model, PREDICTION_LENGTH);
         }
 
         static Real ComputeLoss(FunctionStack model, NdArray[] sequences)
@@ -92,7 +90,7 @@ namespace KelpNet.Sample.Samples
             return totalLoss / (LENGTH_OF_SEQUENCE - 1);
         }
 
-        static void predict(NdArray seq, FunctionStack model, int pre_length)
+        static void Predict(NdArray seq, FunctionStack model, int pre_length)
         {
             Real[] pre_input_seq = new Real[seq.Data.Length / 4];
             if (pre_input_seq.Length < 1)
@@ -109,7 +107,7 @@ namespace KelpNet.Sample.Samples
 
             for (int i = 0; i < pre_length; i++)
             {
-                Real future = predict_sequence(model, input_seq);
+                Real future = Predict_sequence(model, input_seq);
                 input_seq.RemoveAt(0);
                 input_seq.Add(future);
                 output_seq.Add(future);
@@ -123,7 +121,7 @@ namespace KelpNet.Sample.Samples
             Console.WriteLine(seq);
         }
 
-        static Real predict_sequence(FunctionStack model, List<Real> input_seq)
+        private static Real Predict_sequence(FunctionStack model, List<Real> input_seq)
         {
             model.ResetState();
 
@@ -156,7 +154,7 @@ namespace KelpNet.Sample.Samples
                 {
                     for (int j = 0; j < this.stepsPerCycle; j++)
                     {
-                        result.Data[j + i * this.stepsPerCycle] = Math.Sin(j * 2 * Math.PI / this.stepsPerCycle);
+                        result.Data[j + i * this.stepsPerCycle] = (Real)Math.Sin(j * 2 * Math.PI / this.stepsPerCycle);
                     }
                 }
 

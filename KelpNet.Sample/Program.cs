@@ -1,6 +1,4 @@
 ﻿using System;
-using KelpNet.Sample.Benchmarker;
-using KelpNet.Sample.Samples;
 
 namespace KelpNet.Sample
 {
@@ -67,9 +65,6 @@ namespace KelpNet.Sample
 
             //CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
             //Test19.Run();
-
-            //ベンチマーク
-            SingleBenchmark.Run();
 
             Console.WriteLine("Done...");
             Console.Read();

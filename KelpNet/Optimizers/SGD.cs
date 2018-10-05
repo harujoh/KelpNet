@@ -1,15 +1,19 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class SGD : Optimizer
     {
         public Real LearningRate;
 
-        public SGD(double learningRate = 0.1)
+        public SGD(Real learningRate = 0.1f)
         {
             this.LearningRate = learningRate;
         }

@@ -2,17 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Arrays;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Mathmetrics;
-using KelpNet.Functions.Noise;
-using KelpNet.Functions.Normalization;
-using KelpNet.Functions.Poolings;
 using ProtoBuf;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tools.DataImporter.Models.Caffe
 {
@@ -29,22 +22,22 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
                 if (bp.Datas != null)
                 {
-                    result.Data = Real.GetArray(bp.Datas);
+                    result.Data = NdArray.GetArray(bp.Datas);
                 }
 
                 if (bp.DoubleDatas != null)
                 {
-                    result.Data = Real.GetArray(bp.DoubleDatas);
+                    result.Data = NdArray.GetArray(bp.DoubleDatas);
                 }
 
                 if (bp.Diffs != null)
                 {
-                    result.Grad = Real.GetArray(bp.Diffs);
+                    result.Grad = NdArray.GetArray(bp.Diffs);
                 }
 
                 if (bp.DoubleDiffs != null)
                 {
-                    result.Grad = Real.GetArray(bp.DoubleDiffs);
+                    result.Grad = NdArray.GetArray(bp.DoubleDiffs);
                 }
 
                 return result;
@@ -286,8 +279,6 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
         static BatchNormalization SetupBatchnorm(BatchNormParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
-            double decay = param.MovingAverageFraction;
-            double eps = param.Eps;
             int size = (int)blobs[0].Shape.Dims[0];
 
             float[] avgMean = blobs[0].Datas;
@@ -308,7 +299,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                 }
             }
 
-            return new BatchNormalization(size, decay, eps, avgMean, avgVar, name: name, inputNames: inputNames, outputNames: outputNames);
+            return new BatchNormalization(size, param.MovingAverageFraction, param.Eps, avgMean, avgVar, name: name, inputNames: inputNames, outputNames: outputNames);
         }
 
         static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)

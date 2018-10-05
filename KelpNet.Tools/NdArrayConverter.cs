@@ -2,7 +2,9 @@
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
-using KelpNet.Common;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tools
 {

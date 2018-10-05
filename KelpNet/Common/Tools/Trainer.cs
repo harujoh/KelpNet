@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Loss;
 
-namespace KelpNet.Common.Tools
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     //ネットワークの訓練を実行するクラス
     //主にArray->NdArrayの型変換を担う
@@ -34,14 +38,14 @@ namespace KelpNet.Common.Tools
         }
 
         //精度測定
-        public static double Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
+        public static Real Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
         {
             return Accuracy(functionStack, NdArray.FromArrays(x), NdArray.FromArrays(y));
         }
 
-        public static double Accuracy(FunctionStack functionStack, NdArray x, NdArray y)
+        public static Real Accuracy(FunctionStack functionStack, NdArray x, NdArray y)
         {
-            double matchCount = 0;
+            Real matchCount = 0;
 
             NdArray forwardResult = functionStack.Predict(x)[0];
 

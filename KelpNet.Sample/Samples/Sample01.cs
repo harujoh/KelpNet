@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Linq;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
 using KelpNet.Tools;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {

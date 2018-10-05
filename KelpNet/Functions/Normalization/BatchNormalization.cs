@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Linq;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Normalization
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     //Chainerより移植　finetuningは未実装
     [Serializable]
@@ -33,7 +37,7 @@ namespace KelpNet.Functions.Normalization
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public BatchNormalization(int channelSize, Real decay = 0.9f, Real eps = 1e-5f, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;
@@ -60,12 +64,12 @@ namespace KelpNet.Functions.Normalization
 
             if (initialAvgMean != null)
             {
-                this.AvgMean.Data = Real.GetArray(initialAvgMean);
+                this.AvgMean.Data = NdArray.GetArray(initialAvgMean);
             }
 
             if (initialAvgVar != null)
             {
-                this.AvgVar.Data = Real.GetArray(initialAvgVar);
+                this.AvgVar.Data = NdArray.GetArray(initialAvgVar);
             }
 
             if (!this.IsTrain)
@@ -125,7 +129,7 @@ namespace KelpNet.Functions.Normalization
             this.Std = new Real[this.Variance.Length];
             for (int i = 0; i < this.Variance.Length; i++)
             {
-                this.Std[i] = Math.Sqrt(this.Variance[i]);
+                this.Std[i] = (Real)Math.Sqrt(this.Variance[i]);
             }
 
             //結果を計算
@@ -156,7 +160,7 @@ namespace KelpNet.Functions.Normalization
             if (this.IsTrain)
             {
                 int m = x.BatchCount;
-                Real adjust = m / Math.Max(m - 1.0, 1.0); // unbiased estimation
+                Real adjust = (Real)(m / Math.Max(m - 1.0, 1.0)); // unbiased estimation
 
                 for (int i = 0; i < this.AvgMean.Data.Length; i++)
                 {
@@ -211,7 +215,7 @@ namespace KelpNet.Functions.Normalization
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
                     this.AvgMean.Grad[i] = -gs * this.Beta.Grad[i];
-                    this.AvgVar.Grad[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.Gamma.Grad[i];
+                    this.AvgVar.Grad[i] = -0.5f * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.Gamma.Grad[i];
 
                     for (int j = 0; j < y.BatchCount; j++)
                     {
@@ -223,24 +227,24 @@ namespace KelpNet.Functions.Normalization
 
         public override NdArray[] Predict(params NdArray[] input)
         {
-            NdArray[] result;
+            NdArray result;
 
             if (this.IsTrain)
             {
                 //Predictはトレーニングしない
                 this.IsTrain = false;
 
-                result = this.Forward(input);
+                result = this.SingleInputForward(input[0]);
 
                 //フラグをリセット
                 this.IsTrain = true;
             }
             else
             {
-                result = this.Forward(input);
+                result = this.SingleInputForward(input[0]);
             }
 
-            return result;
+            return new[] { result };
         }
     }
 }

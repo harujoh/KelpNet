@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions.Activations
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class Sigmoid : CompressibleActivation
@@ -15,12 +19,12 @@ namespace KelpNet.Functions.Activations
 
         internal override Real ForwardActivate(Real x)
         {
-            return 1 / (1 + Math.Exp(-x));
+            return (Real)(1.0 / (1.0 + Math.Exp(-x)));
         }
 
         internal override Real BackwardActivate(Real gy, Real y)
         {
-            return gy * y * (1 - y);
+            return gy * y * (1.0f - y);
         }
     }
 }

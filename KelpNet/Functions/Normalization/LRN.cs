@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Normalization
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     public class LRN : SingleInputFunction
     {
@@ -15,12 +19,12 @@ namespace KelpNet.Functions.Normalization
         private Real[] unitScale;
         private Real[] scale;
 
-        public LRN(int n = 5, double k = 2, double alpha = 1e-4, double beta = 0.75, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public LRN(int n = 5, Real k = 2, Real alpha = 1e-4f, Real beta = 0.75f, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.n = n;
-            this.k = (Real)k;
-            this.alpha = (Real)alpha;
-            this.beta = (Real)beta;
+            this.k = k;
+            this.alpha = alpha;
+            this.beta = beta;
 
             SingleInputForward = NeedPreviousForwardCpu;
             SingleOutputBackward = NeedPreviousBackwardCpu;
@@ -72,7 +76,7 @@ namespace KelpNet.Functions.Normalization
             for (int i = 0; i < sumPart.Length; i++)
             {
                 this.unitScale[i] = this.k + this.alpha * sumPart[i];
-                this.scale[i] = Math.Pow(this.unitScale[i], -this.beta);
+                this.scale[i] = (Real)Math.Pow(this.unitScale[i], -this.beta);
                 result[i] *= this.scale[i];
             }
 

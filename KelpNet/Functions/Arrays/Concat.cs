@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Arrays
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     public class Concat : MultiInputFunction
     {

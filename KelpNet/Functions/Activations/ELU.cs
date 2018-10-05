@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Activations
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class ELU : SingleInputFunction
@@ -11,7 +15,7 @@ namespace KelpNet.Functions.Activations
 
         private readonly Real _alpha;
 
-        public ELU(double alpha = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public ELU(Real alpha = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._alpha = alpha;
 
@@ -31,7 +35,7 @@ namespace KelpNet.Functions.Activations
                 }
                 else
                 {
-                    result[i] = this._alpha * (Math.Exp(x.Data[i]) - 1);
+                    result[i] = this._alpha * (Real)(Math.Exp(x.Data[i]) - 1.0);
                 }
             }
 
@@ -48,7 +52,7 @@ namespace KelpNet.Functions.Activations
                 }
                 else
                 {
-                    x.Grad[i] += y.Grad[i] * this._alpha * Math.Exp(x.Data[i]);
+                    x.Grad[i] += y.Grad[i] * this._alpha * (Real)Math.Exp(x.Data[i]);
                 }
             }
         }

@@ -8,8 +8,9 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>KelpNet.Sample</RootNamespace>
     <AssemblyName>KelpNet.Sample</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -43,8 +45,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Benchmarker\BenchDataMaker.cs" />
-    <Compile Include="Benchmarker\SingleBenchmark.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Samples\Sample01.cs" />
@@ -71,10 +71,10 @@
     <Compile Include="Samples\Sample17.cs" />
     <Compile Include="Samples\Sample18.cs" />
     <Compile Include="Samples\Sample19.cs" />
-    <Compile Include="TestData\CifarData.cs" />
-    <Compile Include="TestData\MnistData.cs" />
-    <Compile Include="TestData\TestDataSet.cs" />
-    <Compile Include="TestData\Vocabulary.cs" />
+    <Compile Include="DataManager\CifarData.cs" />
+    <Compile Include="DataManager\MnistData.cs" />
+    <Compile Include="DataManager\TestDataSet.cs" />
+    <Compile Include="DataManager\Vocabulary.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

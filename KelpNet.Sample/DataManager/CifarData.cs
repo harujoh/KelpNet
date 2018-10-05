@@ -1,8 +1,9 @@
 ﻿using System;
-using KelpNet.Common;
 using KelpNet.Tools.DataImporter.TestDatas.CIFAR;
+//using Real = System.Double;
+using Real = System.Single;
 
-namespace KelpNet.Sample.TestData
+namespace KelpNet.Sample.DataManager
 {
     class CifarData
     {
@@ -34,7 +35,7 @@ namespace KelpNet.Sample.TestData
 
                 for (int j = 0; j < this.cifarDataLoader.TrainData[i].Length; j++)
                 {
-                    x[j] = this.cifarDataLoader.TrainData[i][j] / 255.0;
+                    x[j] = this.cifarDataLoader.TrainData[i][j] / 255.0f;
                 }
 
                 this.X[i] = new NdArray(x, new[] { 3, 32, 32 });
@@ -60,7 +61,7 @@ namespace KelpNet.Sample.TestData
 
                 for (int j = 0; j < this.cifarDataLoader.TestData[i].Length; j++)
                 {
-                    y[j] = this.cifarDataLoader.TestData[i][j] / 255.0;
+                    y[j] = this.cifarDataLoader.TestData[i][j] / 255.0f;
                 }
 
                 this.Y[i] = new NdArray(y, new[] { 3, 32, 32 });

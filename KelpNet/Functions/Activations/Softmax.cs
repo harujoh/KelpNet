@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Activations
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class Softmax : SingleInputFunction
@@ -37,7 +41,7 @@ namespace KelpNet.Functions.Activations
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[indexOffset + i] = Math.Exp(x.Data[indexOffset + i] - maxval);
+                    y[indexOffset + i] = (Real)Math.Exp(x.Data[indexOffset + i] - maxval);
                     sumval += y[indexOffset + i];
                 }
 

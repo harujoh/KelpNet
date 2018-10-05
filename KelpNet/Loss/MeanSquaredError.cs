@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Loss;
 
-namespace KelpNet.Loss
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     public class MeanSquaredError : LossFunction
     {
@@ -22,7 +26,7 @@ namespace KelpNet.Loss
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {
                     Real localloss = 0;
-                    Real coeff = 2.0 / teachSignal[k].Length;
+                    Real coeff = 2.0f / teachSignal[k].Length;
 
                     int batchoffset = b * teachSignal[k].Length;
 

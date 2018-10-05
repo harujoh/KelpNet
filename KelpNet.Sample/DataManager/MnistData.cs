@@ -1,8 +1,9 @@
 ﻿using System;
-using KelpNet.Common;
 using KelpNet.Tools.DataImporter.TestDatas.MNIST;
+//using Real = System.Double;
+using Real = System.Single;
 
-namespace KelpNet.Sample.TestData
+namespace KelpNet.Sample.DataManager
 {
     class MnistData
     {
@@ -26,7 +27,7 @@ namespace KelpNet.Sample.TestData
                 Real[] x = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TrainData[i].Length; j++)
                 {
-                    x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0;
+                    x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0f;
                 }
                 this.X[i] = new NdArray(x, new[] { 1, 28, 28 });
 
@@ -43,7 +44,7 @@ namespace KelpNet.Sample.TestData
                 Real[] y = new Real[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TeachData[i].Length; j++)
                 {
-                    y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0;
+                    y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0f;
                 }
                 this.Y[i] = new NdArray(y, new[] { 1, 28, 28 });
 

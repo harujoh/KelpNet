@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Loss;
 
-namespace KelpNet.Loss
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     public class SoftmaxCrossEntropy : LossFunction
     {
@@ -45,10 +49,10 @@ namespace KelpNet.Loss
 
                     for (int i = 0; i < input[k].Length; i++)
                     {
-                        y += Math.Exp(input[k].Data[i + b * input[k].Length] - m);
+                        y += (Real)Math.Exp(input[k].Data[i + b * input[k].Length] - m);
                     }
 
-                    m += Math.Log(y);
+                    m += (Real)Math.Log(y);
 
                     for (int i = 0; i < input[k].Length; i++)
                     {
@@ -60,7 +64,7 @@ namespace KelpNet.Loss
 
                     for (int i = 0; i < logY.Length; i++)
                     {
-                        gx[i + b * input[k].Length] = Math.Exp(logY[i]);
+                        gx[i + b * input[k].Length] = (Real)Math.Exp(logY[i]);
                     }
 
                     gx[(int)maxIndex + b * input[k].Length] -= 1;

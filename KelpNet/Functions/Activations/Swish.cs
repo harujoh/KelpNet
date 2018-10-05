@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Activations
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class Swish : SingleInputFunction
@@ -19,7 +23,7 @@ namespace KelpNet.Functions.Activations
 
             for (int i = 0; i < x.Data.Length; i++)
             {
-                result[i] = x.Data[i] / (1 + Math.Exp(-x.Data[i]));
+                result[i] = x.Data[i] / (Real)(1.0 + Math.Exp(-x.Data[i]));
             }
 
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);

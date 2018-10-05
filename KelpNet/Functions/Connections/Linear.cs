@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Tools;
 
-namespace KelpNet.Functions.Connections
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class Linear : CompressibleFunction
@@ -40,7 +43,7 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                this.Weight.Data = Real.GetArray(initialW);
+                this.Weight.Data = NdArray.GetArray(initialW);
             }
 
             this.Parameters[0] = this.Weight;
@@ -52,7 +55,7 @@ namespace KelpNet.Functions.Connections
 
                 if (initialb != null)
                 {
-                    this.Bias.Data = Real.GetArray(initialb);
+                    this.Bias.Data = NdArray.GetArray(initialb);
                 }
 
                 this.Parameters[1] = this.Bias;

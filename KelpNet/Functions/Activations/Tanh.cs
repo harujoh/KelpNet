@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions.Activations
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class Tanh : CompressibleActivation
@@ -15,12 +19,12 @@ namespace KelpNet.Functions.Activations
 
         internal override Real ForwardActivate(Real x)
         {
-            return Math.Tanh(x);
+            return (Real)Math.Tanh(x);
         }
 
         internal override Real BackwardActivate(Real gy, Real y)
         {
-            return gy * (1 - y * y);
+            return gy * (1.0f - y * y);
         }
     }
 }

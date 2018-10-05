@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Runtime.Serialization;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Functions.Container;
 
 namespace KelpNet.Tools
 {

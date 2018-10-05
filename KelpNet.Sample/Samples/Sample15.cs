@@ -6,11 +6,11 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Functions.Container;
 using KelpNet.Tools;
 using KelpNet.Tools.DataImporter.Models.Caffe;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -57,7 +57,7 @@ namespace KelpNet.Sample.Samples
                     g.DrawImage(baseImage, 0, 0, 224, 224);
                     g.Dispose();
 
-                    Real[] bias = {-123.68, -116.779, -103.939}; //補正値のチャンネル順は入力画像に従う
+                    Real[] bias = {-123.68f, -116.779f, -103.939f}; //補正値のチャンネル順は入力画像に従う
                     NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true, bias);
 
                     Console.WriteLine("Start predict.");

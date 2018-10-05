@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Common.Functions
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public abstract class CompressibleActivation : SingleInputFunction

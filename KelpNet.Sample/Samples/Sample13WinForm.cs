@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using KelpNet.Common;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
 using KelpNet.Tools;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -31,7 +30,7 @@ namespace KelpNet.Sample.Samples
 
             this.model = new Deconvolution2D(1, 1, 15, 1, trim:7);
 
-            this.optimizer = new SGD(learningRate: 0.01); //大きいと発散する
+            this.optimizer = new SGD(learningRate: 0.01f); //大きいと発散する
             this.model.SetOptimizer(this.optimizer);
         }
 
@@ -53,24 +52,24 @@ namespace KelpNet.Sample.Samples
         static Real[] MakeOneCore()
         {
             int max_xy = 15;
-            Real sig = 5;
-            Real sig2 = sig * sig;
-            Real c_xy = 7;
+            double sig = 5.0;
+            double sig2 = sig * sig;
+            double c_xy = 7.0;
             Real[] core = new Real[max_xy * max_xy];
 
             for (int px = 0; px < max_xy; px++)
             {
                 for (int py = 0; py < max_xy; py++)
                 {
-                    Real r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
-                    core[py * max_xy + px] = Math.Exp(-r2 / sig2) * 1;
+                    double r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
+                    core[py * max_xy + px] = (Real)(Math.Exp(-r2 / sig2) * 1.0);
                 }
             }
 
             return core;
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
+        private void Timer1_Tick(object sender, EventArgs e)
         {
             //移植元では同じ教育画像で教育しているが、より実践に近い学習に変更
             if (this.counter < 11)

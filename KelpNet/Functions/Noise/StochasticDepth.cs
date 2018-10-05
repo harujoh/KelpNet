@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions.Noise
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class StochasticDepth : Function //SplitFunctionと置き換えるように使用する
@@ -26,7 +30,7 @@ namespace KelpNet.Functions.Noise
             return result;
         }
 
-        public StochasticDepth(Function function, Function resBlock = null, double pl = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public StochasticDepth(Function function, Function resBlock = null, Real pl = 0.5f, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._function = function;
             this._resBlock = resBlock;

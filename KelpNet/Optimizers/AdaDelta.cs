@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class AdaDelta : Optimizer
@@ -10,7 +14,7 @@ namespace KelpNet.Optimizers
         public Real Rho;
         public Real Epsilon;
 
-        public AdaDelta(double rho = 0.95, double epsilon = 1e-6)
+        public AdaDelta(Real rho = 0.95f, Real epsilon = 1e-6f)
         {
             this.Rho = rho;
             this.Epsilon = epsilon;
@@ -47,7 +51,7 @@ namespace KelpNet.Optimizers
                 this.msg[i] *= this.optimizer.Rho;
                 this.msg[i] += (1 - this.optimizer.Rho) * grad * grad;
 
-                Real dx = Math.Sqrt((this.msdx[i] + this.optimizer.Epsilon) / (this.msg[i] + this.optimizer.Epsilon)) * grad;
+                Real dx = (Real)Math.Sqrt((this.msdx[i] + this.optimizer.Epsilon) / (this.msg[i] + this.optimizer.Epsilon)) * grad;
 
                 this.msdx[i] *= this.optimizer.Rho;
                 this.msdx[i] += (1 - this.optimizer.Rho) * dx * dx;

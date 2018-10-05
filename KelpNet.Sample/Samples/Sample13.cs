@@ -1,8 +1,7 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -21,7 +20,7 @@ namespace KelpNet.Sample.Samples
 
             Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, trim:7);
 
-            SGD optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
+            SGD optimizer = new SGD(learningRate: 0.00005f); //大きいと発散する
             model.SetOptimizer(optimizer);
             MeanSquaredError meanSquaredError = new MeanSquaredError();
 
@@ -64,17 +63,17 @@ namespace KelpNet.Sample.Samples
         static Real[] MakeOneCore()
         {
             int max_xy = 15;
-            Real sig = 5;
-            Real sig2 = sig * sig;
-            Real c_xy = 7;
+            double sig = 5;
+            double sig2 = sig * sig;
+            double c_xy = 7;
             Real[] core = new Real[max_xy * max_xy];
 
             for (int px = 0; px < max_xy; px++)
             {
                 for (int py = 0; py < max_xy; py++)
                 {
-                    Real r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
-                    core[py * max_xy + px] = Math.Exp(-r2 / sig2) * 1;
+                    double r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
+                    core[py * max_xy + px] = (Real)(Math.Exp(-r2 / sig2) * 1.0);
                 }
             }
 

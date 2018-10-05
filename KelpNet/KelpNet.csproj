@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KelpNet</RootNamespace>
     <AssemblyName>KelpNet</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -52,7 +52,6 @@
     <Compile Include="Common\Functions\Type\SingleInputFunction.cs" />
     <Compile Include="Common\NdArray.cs" />
     <Compile Include="Common\Functions\CompressibleFunction.cs" />
-    <Compile Include="Common\Real.cs" />
     <Compile Include="Common\Functions\Container\FunctionStack.cs" />
     <Compile Include="Common\Functions\Function.cs" />
     <Compile Include="Common\Tools\Initializer.cs" />

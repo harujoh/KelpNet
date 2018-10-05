@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
-using KelpNet.Common.Functions;
-using KelpNet.Functions.Mathmetrics.BasicMath;
 
-namespace KelpNet.Common
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     [DebuggerDisplay("{Name + ToString(\"Size\")}", Type = "{\"NdArray\" + ToString(\"Size\")}")]
@@ -42,7 +47,7 @@ namespace KelpNet.Common
 
         public NdArray(Array data, Function parentFunc = null)
         {
-            Real[] resultData = Real.GetArray(data);
+            Real[] resultData = GetArray(data);
 
             int[] resultShape = new int[data.Rank];
 
@@ -107,7 +112,7 @@ namespace KelpNet.Common
 
             for (int i = 0; i < arrays.Length; i++)
             {
-                Array.Copy(Real.GetArray(arrays[i]), 0, result, length * i, length);
+                Array.Copy(GetArray(arrays[i]), 0, result, length * i, length);
             }
 
             return new NdArray(result, resultShape, arrays.Length, parentFunc);
@@ -757,6 +762,39 @@ namespace KelpNet.Common
             }
 
             return index;
+        }
+
+        [DllImport("kernel32.dll")]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
+
+        public static Real[] GetArray(Array data)
+        {
+            Type arrayType = data.GetType().GetElementType();
+            Real[] resultData = new Real[data.Length];
+
+            //型の不一致をここで吸収
+            if (arrayType != typeof(Real) && arrayType != typeof(Real))
+            {
+                //一次元の長さの配列を用意
+                Array array = Array.CreateInstance(arrayType, data.Length);
+                //一次元化して
+                Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * resultData.Length);
+
+                data = new Real[array.Length];
+
+                //型変換しつつコピー
+                Array.Copy(array, data, array.Length);
+            }
+
+            //データを叩き込む
+            int size = sizeof(Real) * data.Length;
+            GCHandle gchObj = GCHandle.Alloc(data, GCHandleType.Pinned);
+            GCHandle gchBytes = GCHandle.Alloc(resultData, GCHandleType.Pinned);
+            CopyMemory(gchBytes.AddrOfPinnedObject(), gchObj.AddrOfPinnedObject(), size);
+            gchObj.Free();
+            gchBytes.Free();
+
+            return resultData;
         }
     }
 }

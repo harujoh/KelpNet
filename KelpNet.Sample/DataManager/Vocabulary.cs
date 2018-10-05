@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace KelpNet.Sample.TestData
+namespace KelpNet.Sample.DataManager
 {
     public class Vocabulary
     {

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tools.DataImporter.Models.Caffe
 {

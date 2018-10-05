@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Connections
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class LSTM : SingleInputFunction
@@ -128,14 +132,14 @@ namespace KelpNet.Functions.Connections
                     int index = j * 4;
                     int batchIndex = b * OutputCount + j;
 
-                    la[batchIndex] = Math.Tanh(upwards[index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
+                    la[batchIndex] = (Real)Math.Tanh(upwards[index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
                     li[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
                     lf[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
                     lo[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
 
                     cResult[batchIndex] = la[batchIndex] * li[batchIndex] + lf[batchIndex] * cPrev[batchIndex];
 
-                    lhParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
+                    lhParam[batchIndex] = lo[batchIndex] * (Real)Math.Tanh(cResult[batchIndex]);
                 }
             }
 
@@ -195,7 +199,7 @@ namespace KelpNet.Functions.Connections
                     int prevOutputIndex = j + i * this.OutputCount;
                     int prevInputIndex = j + i * this.InputCount;
 
-                    double co = Math.Tanh(lcParam[prevOutputIndex]);
+                    Real co = (Real)Math.Tanh(lcParam[prevOutputIndex]);
 
                     this.gcPrev[prevInputIndex] += y.Grad[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
                     gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
@@ -238,19 +242,19 @@ namespace KelpNet.Functions.Connections
             this.hParam = null;
         }
 
-        static double Sigmoid(double x)
+        static Real Sigmoid(Real x)
         {
-            return 1 / (1 + Math.Exp(-x));
+            return (Real)(1.0 / (1.0 + Math.Exp(-x)));
         }
 
-        static double GradSigmoid(double x)
+        static Real GradSigmoid(Real x)
         {
-            return x * (1 - x);
+            return (Real)(x * (1.0 - x));
         }
 
-        static double GradTanh(double x)
+        static Real GradTanh(Real x)
         {
-            return 1 - x * x;
+            return (Real)(1.0 - x * x);
         }
     }
 }

@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Common.Functions
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     //FunctionStackに積み上げるFunctionの基底クラス
     [Serializable]

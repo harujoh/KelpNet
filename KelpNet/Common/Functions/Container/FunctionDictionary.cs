@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet.Common.Functions.Type;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Common.Functions.Container
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class FunctionDictionary : Function

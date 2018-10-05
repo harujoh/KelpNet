@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Noise;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
-using KelpNet.Sample.TestData;
+using KelpNet.Sample.DataManager;
 using KelpNet.Tools;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -104,7 +101,7 @@ namespace KelpNet.Sample.Samples
 
                     if (epoch >= 6)
                     {
-                        sgd.LearningRate /= 1.2;
+                        sgd.LearningRate /= 1.2f;
                         Console.WriteLine("learning rate =" + sgd.LearningRate);
                     }
                 }

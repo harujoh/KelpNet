@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class MomentumSGD : Optimizer
@@ -10,7 +14,7 @@ namespace KelpNet.Optimizers
         public Real LearningRate;
         public Real Momentum;
 
-        public MomentumSGD(double learningRate = 0.01, double momentum = 0.9)
+        public MomentumSGD(Real learningRate = 0.01f, Real momentum = 0.9f)
         {
             this.LearningRate = learningRate;
             this.Momentum = momentum;

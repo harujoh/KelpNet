@@ -1,11 +1,7 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
+
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
@@ -29,9 +25,9 @@ namespace KelpNet.Sample.Samples
             for (int i = 0; i < N; i++)
             {
                 //Sin波を一周期分用意
-                Real radian = -Math.PI + Math.PI * 2.0 * i / (N - 1);
+                Real radian = (Real)(-Math.PI + Math.PI * 2.0 * i / (N - 1));
                 trainData[i] = new[] { radian };
-                trainLabel[i] = new Real[] { Math.Sin(radian) };
+                trainLabel[i] = new Real[] { (Real)Math.Sin(radian) };
             }
 
             //ネットワークの構成を FunctionStack に書き連ねる

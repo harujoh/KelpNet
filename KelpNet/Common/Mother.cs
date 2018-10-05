@@ -1,6 +1,12 @@
 ﻿using System;
 
-namespace KelpNet.Common
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     //乱数の素
     //C#ではRandomを複数同時にインスタンスすると似たような値しか吐かないため
@@ -13,29 +19,29 @@ namespace KelpNet.Common
 #else
         public static Random Dice = new Random();
 #endif
-        static double Alpha, Beta, BoxMuller1, BoxMuller2;
-        static bool Flip;
-        public static double Mu = 0;
-        public static double Sigma = 1;
+        static bool _flip;
+        private static double _beta;
+        static Real _boxMuller1;
 
         // 平均mu, 標準偏差sigmaの正規分布乱数を得る。Box-Muller法による。
-        public static double RandomNormal()
+        public static Real RandomNormal(Real sigma = 1.0f, Real mu = 0.0f)
         {
-            if (!Flip)
+            Real boxMuller2;
+
+            if (!_flip)
             {
-                Alpha = Dice.NextDouble();
-                Beta = Dice.NextDouble() * Math.PI * 2;
-                BoxMuller1 = Math.Sqrt(-2 * Math.Log(Alpha));
-                BoxMuller2 = Math.Sin(Beta);
+                _boxMuller1 = (Real)Math.Sqrt(-2 * Math.Log(Dice.NextDouble()));
+                _beta = Dice.NextDouble() * Math.PI * 2.0;
+                boxMuller2 = (Real)Math.Sin(_beta);
             }
             else
             {
-                BoxMuller2 = Math.Cos(Beta);
+                boxMuller2 = (Real)Math.Cos(_beta);
             }
 
-            Flip = !Flip;
+            _flip = !_flip;
 
-            return Sigma * (BoxMuller1 * BoxMuller2) + Mu;
+            return sigma * (_boxMuller1 * boxMuller2) + mu;
         }
     }
 }

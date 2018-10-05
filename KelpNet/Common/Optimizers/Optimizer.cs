@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace KelpNet.Common.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     //Optimizerの素となるクラスでパラメータを持つ
     [Serializable]

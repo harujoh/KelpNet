@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class AdaGrad : Optimizer
@@ -10,7 +14,7 @@ namespace KelpNet.Optimizers
         public Real LearningRate;
         public Real Epsilon;
 
-        public AdaGrad(double learningRate = 0.01, double epsilon = 1e-8)
+        public AdaGrad(Real learningRate = 0.01f, Real epsilon = 1e-8f)
         {
             this.LearningRate = learningRate;
             this.Epsilon = epsilon;
@@ -45,7 +49,7 @@ namespace KelpNet.Optimizers
 
                 this.h[i] += grad * grad;
 
-                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / (Real)(Math.Sqrt(this.h[i]) + this.optimizer.Epsilon);
             }
         }
     }

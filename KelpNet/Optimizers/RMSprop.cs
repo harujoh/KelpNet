@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class RMSprop : Optimizer
@@ -11,7 +15,7 @@ namespace KelpNet.Optimizers
         public Real Alpha;
         public Real Epsilon;
 
-        public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8)
+        public RMSprop(Real learningRate = 0.01f, Real alpha = 0.99f, Real epsilon = 1e-8f)
         {
             this.LearningRate = learningRate;
             this.Alpha = alpha;
@@ -47,7 +51,7 @@ namespace KelpNet.Optimizers
                 this.ms[i] *= this.optimizer.Alpha;
                 this.ms[i] += (1 - this.optimizer.Alpha) * grad * grad;
 
-                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / ((Real)Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
             }
         }
     }

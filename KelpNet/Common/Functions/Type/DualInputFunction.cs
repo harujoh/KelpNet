@@ -1,6 +1,12 @@
 ﻿using System;
 
-namespace KelpNet.Common.Functions.Type
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public abstract class DualInputFunction : Function

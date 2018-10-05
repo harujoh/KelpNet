@@ -1,8 +1,12 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Mathmetrics.Trigonometric
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet.Mathmetricsetrics
+#else
+using Real = System.Single;
+namespace KelpNet.Mathmetrics
+#endif
 {
     public class Tan : SingleInputFunction
     {

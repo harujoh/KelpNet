@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
-using KelpNet.Functions.Arrays;
 
-namespace KelpNet.Functions.Mathmetrics
+#if DOUBLE
+using Real = System.Double;
+namespace Double.KelpNet
+#else
+using Real = System.Single;
+namespace KelpNet
+#endif
 {
     [Serializable]
     public class MultiplyScale : SingleInputFunction
@@ -40,11 +43,11 @@ namespace KelpNet.Functions.Mathmetrics
 
             if (initialW == null)
             {
-                this.Weight.Data = Enumerable.Repeat((Real) 1.0, Weight.Data.Length).ToArray();
+                this.Weight.Data = Enumerable.Repeat((Real)1.0, Weight.Data.Length).ToArray();
             }
             else
             {
-                this.Weight.Data = Real.GetArray(initialW);
+                this.Weight.Data = NdArray.GetArray(initialW);
             }
 
             this.Parameters[0] = this.Weight;
@@ -55,7 +58,7 @@ namespace KelpNet.Functions.Mathmetrics
 
                 if (initialb != null)
                 {
-                    this.Bias.Data = Real.GetArray(initialb);
+                    this.Bias.Data = NdArray.GetArray(initialb);
                 }
 
                 this.Parameters[1] = this.Bias;
