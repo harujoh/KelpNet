@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using KelpNet.Common.Optimizers;
 using KelpNet.Common.Tools;
 
@@ -22,6 +21,7 @@ namespace KelpNet.Common.Functions
         public List<NdArray[]> PrevInputs = new List<NdArray[]>();
 
         public abstract NdArray[] Forward(params NdArray[] xs);
+        public abstract NdArray[] Predict(params NdArray[] xs);
         public virtual void Backward(params NdArray[] ys){}
 
         public string[] InputNames;
@@ -60,12 +60,6 @@ namespace KelpNet.Common.Functions
             {
                 parameter.CountUp();
             }
-        }
-
-        //評価関数
-        public virtual NdArray[] Predict(params NdArray[] input)
-        {
-            return this.Forward(input);
         }
 
         public virtual void Update()

@@ -223,24 +223,24 @@ namespace KelpNet.Functions.Normalization
 
         public override NdArray[] Predict(params NdArray[] input)
         {
-            NdArray[] result;
+            NdArray result;
 
             if (this.IsTrain)
             {
                 //Predictはトレーニングしない
                 this.IsTrain = false;
 
-                result = this.Forward(input);
+                result = this.SingleInputForward(input[0]);
 
                 //フラグをリセット
                 this.IsTrain = true;
             }
             else
             {
-                result = this.Forward(input);
+                result = this.SingleInputForward(input[0]);
             }
 
-            return result;
+            return new[] { result};
         }
     }
 }
