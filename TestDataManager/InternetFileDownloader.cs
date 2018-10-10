@@ -19,7 +19,7 @@ namespace TestDataManager
             if (File.Exists(savedPath))
             {
                 //ファイルを開く
-                using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (FileStream fs = new FileStream(savedPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     //ハッシュ値を計算する
                     byte[] bs = new MD5CryptoServiceProvider().ComputeHash(fs);
@@ -37,7 +37,7 @@ namespace TestDataManager
                 Console.WriteLine(fileName + "が破損しているため再ダウンロードを行います");
 
                 //失敗していたファイルを削除
-                File.Delete(fileName);
+                File.Delete(savedPath);
             }
 
             //ファイルのチェックとダウンロード

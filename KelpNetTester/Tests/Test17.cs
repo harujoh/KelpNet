@@ -30,8 +30,14 @@ namespace KelpNetTester.Tests
         private const string MODEL_FILE_101 = "ResNet-101-model.caffemodel";
         private const string MODEL_FILE_152 = "ResNet-152-model.caffemodel";
 
+        private const string MODEL_FILE_MEAN_HASH = "b8feee57921224a11e6345c12efb4378";
+        private const string MODEL_FILE_50_HASH = "44b20660c5948391734036963e855dd2";
+        private const string MODEL_FILE_101_HASH = "3f8ccc93329ddc280b91efae09f71973";
+        private const string MODEL_FILE_152_HASH = "654892a23df300ca47ebfe66b4cfaa1b";
+
         private static readonly string[] Urls = { DOWNLOAD_URL_50, DOWNLOAD_URL_101, DOWNLOAD_URL_152 };
         private static readonly string[] FileNames = { MODEL_FILE_50, MODEL_FILE_101, MODEL_FILE_152 };
+        private static readonly string[] Hashes = { MODEL_FILE_50_HASH, MODEL_FILE_101_HASH, MODEL_FILE_152_HASH };
 
         private const string CLASS_LIST_PATH = "Data/synset_words.txt";
 
@@ -51,11 +57,11 @@ namespace KelpNetTester.Tests
                 int resnetId = (int)modelType;
 
                 Console.WriteLine("Mean Loading.");
-                string meanFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL_MEAN, MODEL_FILE_MEAN);
+                string meanFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL_MEAN, MODEL_FILE_MEAN, MODEL_FILE_MEAN_HASH);
                 NdArray mean = CaffemodelDataLoader.ReadBinary(meanFilePath);
 
                 Console.WriteLine("Model Loading.");
-                string modelFilePath = InternetFileDownloader.Donwload(Urls[resnetId], FileNames[resnetId]);
+                string modelFilePath = InternetFileDownloader.Donwload(Urls[resnetId], FileNames[resnetId], Hashes[resnetId]);
                 FunctionDictionary nn = CaffemodelDataLoader.LoadNetWork(modelFilePath);
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
