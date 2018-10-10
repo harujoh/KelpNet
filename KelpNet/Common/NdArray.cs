@@ -15,9 +15,9 @@ namespace KelpNet
 {
     [Serializable]
     [DebuggerDisplay("{Name + ToString(\"Size\")}", Type = "{\"NdArray\" + ToString(\"Size\")}")]
-    public class NdArray
+    public struct NdArray
     {
-        public string Name = "NdArray";
+        public string Name;
 
         public Real[] Data;
 
@@ -47,6 +47,9 @@ namespace KelpNet
 
         public NdArray(Array data, Function parentFunc = null)
         {
+            this.Name = "NdArray";
+            this.UseCount = 0;
+
             Real[] resultData = GetArray(data);
 
             int[] resultShape = new int[data.Rank];
@@ -67,6 +70,10 @@ namespace KelpNet
 
         public NdArray(params int[] shape)
         {
+            this.Name = "NdArray";
+            this.UseCount = 0;
+            this.ParentFunc = null;
+
             this.Data = new Real[ShapeToArrayLength(shape)];
             this.Shape = shape.ToArray();
             this.Length = Data.Length;
@@ -77,6 +84,9 @@ namespace KelpNet
 
         public NdArray(Real[] data, int[] shape, int batchCount = 1, Function parentFunc = null)
         {
+            this.Name = "NdArray";
+            this.UseCount = 0;
+
             this.Shape = shape.ToArray();
             this.Length = data.Length / batchCount; ;
             this.BatchCount = batchCount;
@@ -88,6 +98,9 @@ namespace KelpNet
 
         public NdArray(int[] shape, int batchCount, Function parentFunc = null)
         {
+            this.Name = "NdArray";
+            this.UseCount = 0;
+
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;

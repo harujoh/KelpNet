@@ -22,9 +22,9 @@ namespace KelpNet
         {
             PrevInputs.Add(xs);
 
-            foreach (NdArray x in xs)
+            for (int i = 0; i < xs.Length; i++)
             {
-                x.UseCount++;
+                xs[i].UseCount++;
             }
 
             return new[] { MultiInputForward(xs) };
@@ -37,9 +37,9 @@ namespace KelpNet
 
             BackwardCountUp();
 
-            foreach (NdArray x in xs)
+            for (int i = 0; i < xs.Length; i++)
             {
-                x.UseCount--;
+                xs[i].UseCount--;
             }
 
             MultiOutputBackward(ys[0], xs);

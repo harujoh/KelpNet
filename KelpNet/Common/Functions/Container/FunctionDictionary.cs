@@ -200,7 +200,7 @@ namespace KelpNet
                 }
 
                 //関数を実施
-                result = FunctionBlocks[i].Forward(inputData);
+                result = FunctionBlocks[i].Predict(inputData);
 
                 //出力したデータを辞書に登録
                 for (int j = 0; j < result.Length; j++)

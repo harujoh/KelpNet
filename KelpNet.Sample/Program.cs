@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Sample.Samples;
 
 namespace KelpNet.Sample
 {
@@ -13,7 +14,7 @@ namespace KelpNet.Sample
             //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
 
             //MLPによるXORの学習
-            //Sample01.Run();
+            Sample01.Run();
 
             //MLPによるXORの学習【回帰版】
             //Sample02.Run();
@@ -51,8 +52,8 @@ namespace KelpNet.Sample
             //Test6を連結して実行
             //Sample14.Run();
 
-            //CaffeモデルのVGG16を読み込んで画像分類をさせるテスト
-            //Sample15.Run();
+            //CaffeモデルのVGGを読み込んで画像分類をさせるテスト
+            //Test15.Run(Test15.VGGModel.VGG16); //VGG16またはVGG19を選択してください
 
             //ChainerモデルのTest5と同じ内容を読み込んで実行
             //Sample16.Run();

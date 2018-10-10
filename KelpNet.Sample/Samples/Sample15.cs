@@ -14,34 +14,49 @@ using Real = System.Single;
 
 namespace KelpNet.Sample.Samples
 {
-    //CaffeモデルのVGG16を読み込んで画像分類をさせるテスト
+    //CaffeモデルのVGGを読み込んで画像分類をさせるテスト
     class Sample15
     {
-        private const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/VGG_ILSVRC_16_layers.caffemodel";
-        private const string MODEL_FILE = "VGG_ILSVRC_16_layers.caffemodel";
+        private const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/";
+        private const string VGG16_MODEL_FILE = "VGG_ILSVRC_16_layers.caffemodel";
+        private const string VGG19_MODEL_FILE = "VGG_ILSVRC_19_layers.caffemodel";
+        private const string VGG16_MODEL_FILE_HASH = "441315b0ff6932dbfde97731be7ca852";
+        private const string VGG19_MODEL_FILE_HASH = "b5c644beabd7cf06bdd9065cfd674c97";
         private const string CLASS_LIST_PATH = "Data/synset_words.txt";
 
-        public static void Run()
+        private static readonly string[] Urls = { DOWNLOAD_URL + VGG16_MODEL_FILE, DOWNLOAD_URL + VGG19_MODEL_FILE };
+        private static readonly string[] FileNames = { VGG16_MODEL_FILE, VGG19_MODEL_FILE };
+        private static readonly string[] Hashes = { VGG16_MODEL_FILE_HASH, VGG19_MODEL_FILE_HASH };
+        public enum VGGModel
+        {
+            VGG16,
+            VGG19
+        }
+
+        public static void Run(VGGModel modelType)
         {
             OpenFileDialog ofd = new OpenFileDialog { Filter = "画像ファイル(*.jpg;*.png;*.gif;*.bmp)|*.jpg;*.png;*.gif;*.bmp|すべてのファイル(*.*)|*.*" };
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
+                int vggId = (int)modelType;
+
                 Console.WriteLine("Model Loading.");
-                string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL, MODEL_FILE);
-                List<Function> vgg16Net = CaffemodelDataLoader.ModelLoad(modelFilePath);
+                string modelFilePath = InternetFileDownloader.Donwload(Urls[vggId], FileNames[vggId], Hashes[vggId]);
+                List<Function> vggNet = CaffemodelDataLoader.ModelLoad(modelFilePath);
+
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
-                //for (int i = 0; i < vgg16Net.Count - 1; i++)
+                //for (int i = 0; i < vggNet.Count - 1; i++)
                 //{
-                //    if (vgg16Net[i] is Convolution2D || vgg16Net[i] is Linear || vgg16Net[i] is MaxPooling)
+                //    if (vggNet[i] is Convolution2D || vggNet[i] is Linear || vggNet[i] is MaxPooling)
                 //    {
-                //        ((IParallelizable) vgg16Net[i]).SetGpuEnable(true);
+                //        ((IParallelizable) vggNet[i]).SetGpuEnable(true);
                 //    }
                 //}
 
-                FunctionStack nn = new FunctionStack(vgg16Net.ToArray());
+                FunctionStack nn = new FunctionStack(vggNet.ToArray());
 
                 //層を圧縮
                 nn.Compress();

@@ -31,6 +31,7 @@ namespace KelpNet
         private List<Real[]> cParam;
 
         private NdArray hParam;
+        private bool Initialized;
 
         NdArray gxPrev0;
         NdArray gxPrev1;
@@ -85,7 +86,7 @@ namespace KelpNet
 
             int outputDataSize = x.BatchCount * this.OutputCount;
 
-            if (this.hParam == null)
+            if(!Initialized)
             {
                 //値がなければ初期化
                 this.aParam = new List<Real[]>();
@@ -150,6 +151,7 @@ namespace KelpNet
             this.fParam.Add(lf);
             this.oParam.Add(lo);
 
+            Initialized = true;
             this.hParam = new NdArray(lhParam, new[] { OutputCount }, x.BatchCount, this);
             return this.hParam;
         }
@@ -238,8 +240,9 @@ namespace KelpNet
         public override void ResetState()
         {
             base.ResetState();
-            this.gcPrev = null;
-            this.hParam = null;
+            this.gcPrev = new Real[]{};
+            this.hParam = new NdArray();
+            this.Initialized = false;
         }
 
         static Real Sigmoid(Real x)

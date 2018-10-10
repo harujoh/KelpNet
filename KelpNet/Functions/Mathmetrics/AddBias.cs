@@ -62,6 +62,7 @@ namespace KelpNet
 
         protected void BackwardCpu(NdArray y, NdArray x)
         {
+            //AddBiasとしては処理はない
         }
     }
 }

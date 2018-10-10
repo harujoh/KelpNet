@@ -19,13 +19,16 @@ namespace KelpNet.Sample.Samples
         const string TRAIN_FILE = "ptb.train.txt";
         const string TEST_FILE = "ptb.test.txt";
 
+        const string TRAIN_FILE_HASH = "f26c4b92c5fdc7b3f8c7cdcb991d8420";
+        const string TEST_FILE_HASH = "8b80168b89c18661a38ef683c0dc3721";
+
         public static void Run()
         {
             Console.WriteLine("Build Vocabulary.");
 
             Vocabulary vocabulary = new Vocabulary();
-            string trainPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_FILE, TRAIN_FILE);
-            string testPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEST_FILE, TEST_FILE);
+            string trainPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TRAIN_FILE, TRAIN_FILE, TRAIN_FILE_HASH);
+            string testPath = InternetFileDownloader.Donwload(DOWNLOAD_URL + TEST_FILE, TEST_FILE, TEST_FILE_HASH);
 
             int[] trainData = vocabulary.LoadData(trainPath);
             int[] testData = vocabulary.LoadData(testPath);

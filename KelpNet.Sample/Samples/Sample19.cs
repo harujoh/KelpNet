@@ -20,6 +20,7 @@ namespace KelpNetTester.Tests
     {
         private const string DOWNLOAD_URL = "http://dl.caffe.berkeleyvision.org/bvlc_alexnet.caffemodel";
         private const string MODEL_FILE = "bvlc_alexnet.caffemodel";
+        private const string MODEL_FILE_HASH = "29eb495b11613825c1900382f5286963";
         private const string CLASS_LIST_PATH = "Data/synset_words.txt";
 
         public static void Run()
@@ -32,7 +33,7 @@ namespace KelpNetTester.Tests
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 Console.WriteLine("Model Loading.");
-                string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL, MODEL_FILE);
+                string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL, MODEL_FILE, MODEL_FILE_HASH);
                 List<Function> alexNet = CaffemodelDataLoader.ModelLoad(modelFilePath);
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
