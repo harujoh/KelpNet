@@ -53,7 +53,7 @@ namespace KelpNet.Sample
             //Sample14.Run();
 
             //CaffeモデルのVGGを読み込んで画像分類をさせるテスト
-            //Test15.Run(Test15.VGGModel.VGG16); //VGG16またはVGG19を選択してください
+            //Sample15.Run(Sample15.VGGModel.VGG16); //VGG16またはVGG19を選択してください
 
             //ChainerモデルのTest5と同じ内容を読み込んで実行
             //Sample16.Run();
