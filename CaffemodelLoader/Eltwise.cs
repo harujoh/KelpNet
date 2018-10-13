@@ -91,7 +91,7 @@ namespace CaffemodelLoader
             Real[][] result = new Real[xs.Length][];
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = new Real[xs[i].Length];
+                result[i] = new Real[xs[i].Data.Length];
             }
 
             switch (_operation)
