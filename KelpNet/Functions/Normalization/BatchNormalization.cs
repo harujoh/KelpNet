@@ -25,222 +25,220 @@ namespace KelpNet.Functions.Normalization
         private readonly Real Decay;
         private readonly Real Eps;
 
-        private Real[] Std;
-        private Real[] Xhat;
+        private Real [] Std;
+        private Real [] Xhat;
 
-        private Real[] Mean;
-        private Real[] Variance;
+        private Real [] Mean;
+        private Real [] Variance;
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public BatchNormalization (int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string [] inputNames = null, string [] outputNames = null) : base (name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;
             this.Eps = eps;
             this.IsTrain = isTrain;
 
-            this.Gamma = new NdArray(channelSize);
-            this.Gamma.Data = Enumerable.Repeat((Real)1, channelSize).ToArray();
+            this.Gamma = new NdArray (channelSize);
+            this.Gamma.Data = Enumerable.Repeat ((Real)1, channelSize).ToArray ();
             this.Gamma.Name = this.Name + " Gamma";
 
-            this.Beta = new NdArray(channelSize);
+            this.Beta = new NdArray (channelSize);
             this.Beta.Name = this.Name + " Beta";
 
-            this.Parameters = new NdArray[this.IsTrain ? 2 : 4];
+            this.Parameters = new NdArray [this.IsTrain ? 2 : 4];
 
             //学習対象のParameterを登録
-            this.Parameters[0] = this.Gamma;
-            this.Parameters[1] = this.Beta;
+            this.Parameters [0] = this.Gamma;
+            this.Parameters [1] = this.Beta;
 
-            this.AvgMean = new NdArray(channelSize);
+            this.AvgMean = new NdArray (channelSize);
             this.AvgMean.Name = this.Name + " Mean";
-            this.AvgVar = new NdArray(channelSize);
+            this.AvgVar = new NdArray (channelSize);
             this.AvgVar.Name = this.Name + " Variance";
 
-            if (initialAvgMean != null)
-            {
-                this.AvgMean.Data = Real.GetArray(initialAvgMean);
+            if (initialAvgMean != null) {
+                this.AvgMean.Data = Real.GetArray (initialAvgMean);
             }
 
-            if (initialAvgVar != null)
-            {
-                this.AvgVar.Data = Real.GetArray(initialAvgVar);
+            if (initialAvgVar != null) {
+                this.AvgVar.Data = Real.GetArray (initialAvgVar);
             }
 
-            if (!this.IsTrain)
-            {
-                this.Parameters[2] = this.AvgMean;
-                this.Parameters[3] = this.AvgVar;
+            if (!this.IsTrain) {
+                this.Parameters [2] = this.AvgMean;
+                this.Parameters [3] = this.AvgVar;
             }
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
         }
 
-        private NdArray ForwardCpu(NdArray x)
+        private NdArray ForwardCpu (NdArray x)
         {
-            //計算用パラメータの取得
-            if (this.IsTrain)
-            {
-                //メンバのMeanとVarianceを設定する
-                this.Variance = new Real[this.ChannelSize];
-                for (int i = 0; i < this.Variance.Length; i++)
-                {
-                    this.Variance[i] = 0;
-                }
 
-                this.Mean = new Real[this.ChannelSize];
-                for (int i = 0; i < this.Mean.Length; i++)
-                {
-                    for (int index = 0; index < x.BatchCount; index++)
-                    {
-                        this.Mean[i] += x.Data[i + index * x.Length];
-                    }
-
-                    this.Mean[i] /= x.BatchCount;
-                }
-
-                for (int i = 0; i < this.Mean.Length; i++)
-                {
-                    for (int index = 0; index < x.BatchCount; index++)
-                    {
-                        this.Variance[i] += (x.Data[i + index * x.Length] - this.Mean[i]) * (x.Data[i + index * x.Length] - this.Mean[i]);
-                    }
-
-                    this.Variance[i] /= x.BatchCount;
-                }
-
-                for (int i = 0; i < this.Variance.Length; i++)
-                {
-                    this.Variance[i] += this.Eps;
-                }
+            int dataSize = 1;
+            for (int i = 1; i < x.Shape.Length; i++) {
+                dataSize *= x.Shape [i];
             }
-            else
-            {
+
+            //計算用パラメータの取得
+            if (this.IsTrain) {
+                //メンバのMeanとVarianceを設定する
+                this.Variance = new Real [this.ChannelSize];
+                for (int i = 0; i < this.Variance.Length; i++) {
+                    this.Variance [i] = 0;
+                }
+
+                this.Mean = new Real [this.ChannelSize];
+                // ChannelSize
+                for (int c = 0; c < this.Mean.Length; c++) {
+                    // BatchSize
+                    for (int b = 0; b < x.BatchCount; b++) {
+                        // DataSize
+                        for (int location = 0; location < dataSize; location++) {
+                            this.Mean [c] += x.Data [b * x.Length + c * dataSize + location];
+                        }
+                    }
+
+                    this.Mean [c] /= x.BatchCount;
+                    this.Mean [c] /= dataSize;
+                }
+
+                for (int c = 0; c < this.Mean.Length; c++) {
+                    for (int b = 0; b < x.BatchCount; b++) {
+                        for (int location = 0; location < dataSize; location++) {
+                            this.Variance [c] += (x.Data [b * x.Length + c * dataSize + location] - this.Mean [c])
+                                * (x.Data [b * x.Length + c * dataSize + location] - this.Mean [c]);
+                        }
+                    }
+
+                    this.Variance [c] /= x.BatchCount;
+                    this.Variance [c] /= dataSize;
+                }
+
+                for (int i = 0; i < this.Variance.Length; i++) {
+                    this.Variance [i] += this.Eps;
+                }
+            } else {
                 this.Mean = this.AvgMean.Data;
                 this.Variance = this.AvgVar.Data;
             }
 
-            this.Std = new Real[this.Variance.Length];
-            for (int i = 0; i < this.Variance.Length; i++)
-            {
-                this.Std[i] = Math.Sqrt(this.Variance[i]);
+            this.Std = new Real [this.Variance.Length];
+            for (int i = 0; i < this.Variance.Length; i++) {
+                this.Std [i] = Math.Sqrt (this.Variance [i]);
             }
 
             //結果を計算
-            this.Xhat = new Real[x.Data.Length];
+            this.Xhat = new Real [x.Data.Length];
 
-            Real[] y = new Real[x.Data.Length];
+            Real [] y = new Real [x.Data.Length];
 
-            int dataSize = 1;
-            for (int i = 1; i < x.Shape.Length; i++)
-            {
-                dataSize *= x.Shape[i];
-            }
-
-            for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
-            {
-                for (int i = 0; i < this.ChannelSize; i++)
-                {
-                    for (int location = 0; location < dataSize; location++)
-                    {
-                        int index = batchCount * this.ChannelSize * dataSize + i * dataSize + location;
-                        this.Xhat[index] = (x.Data[index] - this.Mean[i]) / this.Std[i];
-                        y[index] = this.Gamma.Data[i] * this.Xhat[index] + this.Beta.Data[i];
+            // BatchSize
+            for (int batchCount = 0; batchCount < x.BatchCount; batchCount++) {
+                // ChannelSize
+                for (int c = 0; c < this.ChannelSize; c++) {
+                    // DataSize
+                    for (int location = 0; location < dataSize; location++) {
+                        int index = batchCount * x.Length + c * dataSize + location;
+                        this.Xhat [index] = (x.Data [index] - this.Mean [c]) / this.Std [c];
+                        y [index] = this.Gamma.Data [c] * this.Xhat [index] + this.Beta.Data [c];
                     }
                 }
             }
 
             //パラメータを更新
-            if (this.IsTrain)
-            {
+            if (this.IsTrain) {
                 int m = x.BatchCount;
-                Real adjust = m / Math.Max(m - 1.0, 1.0); // unbiased estimation
+                Real adjust = m / Math.Max (m - 1.0, 1.0); // unbiased estimation
 
-                for (int i = 0; i < this.AvgMean.Data.Length; i++)
-                {
-                    this.AvgMean.Data[i] *= this.Decay;
-                    this.Mean[i] *= 1 - this.Decay; // reuse buffer as a temporary
-                    this.AvgMean.Data[i] += this.Mean[i];
+                for (int i = 0; i < this.AvgMean.Data.Length; i++) {
+                    this.AvgMean.Data [i] *= this.Decay;
+                    this.Mean [i] *= 1 - this.Decay; // reuse buffer as a temporary
+                    this.AvgMean.Data [i] += this.Mean [i];
 
-                    this.AvgVar.Data[i] *= this.Decay;
-                    this.Variance[i] *= (1 - this.Decay) * adjust; // reuse buffer as a temporary
-                    this.AvgVar.Data[i] += this.Variance[i];
+                    this.AvgVar.Data [i] *= this.Decay;
+                    this.Variance [i] *= (1 - this.Decay) * adjust; // reuse buffer as a temporary
+                    this.AvgVar.Data [i] += this.Variance [i];
                 }
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
+            return NdArray.Convert (y, x.Shape, x.BatchCount, this);
         }
 
-        private void BackwardCpu(NdArray y, NdArray x)
+        private void BackwardCpu (NdArray y, NdArray x)
         {
-            this.Beta.ClearGrad();
-            this.Gamma.ClearGrad();
+            this.Beta.ClearGrad ();
+            this.Gamma.ClearGrad ();
 
-            for (int i = 0; i < this.ChannelSize; i++)
-            {
-                for (int j = 0; j < y.BatchCount; j++)
-                {
-                    this.Beta.Grad[i] += y.Grad[i + j * y.Length];
-                    this.Gamma.Grad[i] += y.Grad[i + j * y.Length] * this.Xhat[j * this.ChannelSize + i];
+            int dataSize = 1;
+            for (int i = 1; i < x.Shape.Length; i++) {
+                dataSize *= x.Shape [i];
+            }
+
+            // ChannelSize
+            for (int c = 0; c < this.ChannelSize; c++) {
+                // BatchSize
+                for (int b = 0; b < x.BatchCount; b++) {
+                    // dataSize
+                    for (int location = 0; location < dataSize; location++) {
+                        this.Beta.Grad [c] += y.Grad [b * y.Length + c * dataSize + location];
+                        this.Gamma.Grad [c] += y.Grad [b * y.Length + c * dataSize + location] * this.Xhat [b * x.Length + c * dataSize + location];
+                    }
                 }
             }
 
-            if (this.IsTrain)
-            {
+            if (this.IsTrain) {
                 // 学習あり
                 int m = y.BatchCount;
 
-                for (int i = 0; i < this.ChannelSize; i++)
-                {
-                    Real gs = this.Gamma.Data[i] / this.Std[i];
-
-                    for (int j = 0; j < y.BatchCount; j++)
-                    {
-                        Real val = (this.Xhat[j * this.ChannelSize + i] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / m;
-
-                        x.Grad[i + j * this.ChannelSize] += gs * (y.Grad[i + j * y.Length] - val);
+                // ChannelSize
+                for (int c = 0; c < this.ChannelSize; c++) {
+                    Real gs = this.Gamma.Data [c] / this.Std [c];
+                    // BatchSize
+                    for (int b = 0; b < y.BatchCount; b++) {
+                        // dataSize    
+                        for (int location = 0; location < dataSize; location++) {
+                            Real val = (this.Xhat [b * y.Length + c * dataSize + location] * this.Gamma.Grad [c] + this.Beta.Grad [c]) / (m * dataSize);
+                            x.Grad [b * y.Length + c * dataSize + location] += gs * (y.Grad [b * y.Length + c * dataSize + location] - val);
+                        }
                     }
                 }
-            }
-            else
-            {
+            } else {
                 // 学習なし
-                for (int i = 0; i < this.ChannelSize; i++)
-                {
-                    Real gs = this.Gamma.Data[i] / this.Std[i];
-                    this.AvgMean.Grad[i] = -gs * this.Beta.Grad[i];
-                    this.AvgVar.Grad[i] = -0.5 * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.Gamma.Grad[i];
+                for (int c = 0; c < this.ChannelSize; c++) {
+                    Real gs = this.Gamma.Data [c] / this.Std [c];
+                    this.AvgMean.Grad [c] = -gs * this.Beta.Grad [c];
+                    this.AvgVar.Grad [c] = -0.5 * this.Gamma.Data [c] / this.AvgVar.Data [c] * this.Gamma.Grad [c];
 
-                    for (int j = 0; j < y.BatchCount; j++)
-                    {
-                        x.Grad[i + j * this.ChannelSize] += gs * y.Grad[i + j * y.Length];
+                    for (int b = 0; b < y.BatchCount; b++) {
+                        for (int location = 0; location < dataSize; location++) {
+                            x.Grad [b * y.Length + c * dataSize + location] += gs * y.Grad [b * y.Length + c * dataSize + location];
+                        }
                     }
                 }
             }
         }
 
-        public override NdArray[] Predict(params NdArray[] input)
+        public override NdArray [] Predict (params NdArray [] input)
         {
-            NdArray result;
+            NdArray [] result;
 
-            if (this.IsTrain)
-            {
+            if (this.IsTrain) {
                 //Predictはトレーニングしない
                 this.IsTrain = false;
 
-                result = this.SingleInputForward(input[0]);
+                result = new [] { SingleInputForward (input [0]) }; //Forward (input);
 
                 //フラグをリセット
                 this.IsTrain = true;
-            }
-            else
-            {
-                result = this.SingleInputForward(input[0]);
+            } else {
+                result = new [] { SingleInputForward (input [0]) }; //this.Forward (input);
             }
 
-            return new[] { result};
+            return result;
         }
     }
 }
