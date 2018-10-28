@@ -87,23 +87,20 @@ namespace KelpNet.Functions.Normalization
             }
 
             //計算用パラメータの取得
-            if (this.IsTrain) {
+            if (this.IsTrain)
+            {
                 //メンバのMeanとVarianceを設定する
-                this.Variance = new Real[this.ChannelSize];                
+                this.Variance = new Real[this.ChannelSize];
                 for (int i = 0; i < this.Variance.Length; i++)
                 {
                     this.Variance[i] = 0;
                 }
 
                 this.Mean = new Real[this.ChannelSize];
-                
-                // ChannelSize
                 for (int i = 0; i < this.Mean.Length; i++)
                 {
-                    // BatchSize
                     for (int b = 0; b < x.BatchCount; b++)
                     {
-                        // DataSize
                         for (int location = 0; location < dataSize; location++)
                         {
                             this.Mean[i] += x.Data[b * x.Length + i * dataSize + location];
@@ -120,8 +117,7 @@ namespace KelpNet.Functions.Normalization
                     {
                         for (int location = 0; location < dataSize; location++)
                         {
-                            this.Variance[i] += (x.Data[b * x.Length + i * dataSize + location] - this.Mean[i])
-                                * (x.Data[b * x.Length + i * dataSize + location] - this.Mean[i]);
+                            this.Variance[i] += (x.Data[b * x.Length + i * dataSize + location] - this.Mean[i]) * (x.Data[b * x.Length + i * dataSize + location] - this.Mean[i]);
                         }
                     }
 
@@ -143,7 +139,7 @@ namespace KelpNet.Functions.Normalization
             this.Std = new Real[this.Variance.Length];
             for (int i = 0; i < this.Variance.Length; i++)
             {
-                this.Std[i] = Math.Sqrt(this.Variance [i]);
+                this.Std[i] = Math.Sqrt(this.Variance[i]);
             }
 
             //結果を計算
@@ -151,13 +147,10 @@ namespace KelpNet.Functions.Normalization
 
             Real[] y = new Real[x.Data.Length];
 
-            // BatchSize
             for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
-                // ChannelSize
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    // DataSize
                     for (int location = 0; location < dataSize; location++)
                     {
                         int index = batchCount * x.Length + i * dataSize + location;
@@ -199,13 +192,10 @@ namespace KelpNet.Functions.Normalization
                 dataSize *= x.Shape[i];
             }
 
-            // ChannelSize
             for (int i = 0; i < this.ChannelSize; i++)
             {
-                // BatchSize
                 for (int b = 0; b < x.BatchCount; b++)
                 {
-                    // dataSize
                     for (int location = 0; location < dataSize; location++)
                     {
                         this.Beta.Grad[i] += y.Grad[b * y.Length + i * dataSize + location];
@@ -234,7 +224,7 @@ namespace KelpNet.Functions.Normalization
                         }
                     }
                 }
-            } 
+            }
             else
             {
                 // 学習なし
@@ -257,24 +247,24 @@ namespace KelpNet.Functions.Normalization
 
         public override NdArray[] Predict(params NdArray[] input)
         {
-            NdArray[] result;
+            NdArray result;
 
             if (this.IsTrain)
             {
                 //Predictはトレーニングしない
                 this.IsTrain = false;
 
-                result = new [] { SingleInputForward (input[0]) };
+                result =  SingleInputForward(input[0]);
 
                 //フラグをリセット
                 this.IsTrain = true;
-            } 
+            }
             else
             {
-                result = new [] { SingleInputForward (input[0]) };
+                result = SingleInputForward(input[0]);
             }
 
-            return result;
+            return new [] {result};
         }
     }
 }
