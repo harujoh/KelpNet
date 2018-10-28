@@ -209,14 +209,11 @@ namespace KelpNet.Functions.Normalization
                 // 学習あり
                 int m = y.BatchCount;
 
-                // ChannelSize
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
-                    // BatchSize
                     for (int b = 0; b < y.BatchCount; b++)
                     {
-                        // dataSize    
                         for (int location = 0; location < dataSize; location++)
                         {
                             Real val = (this.Xhat[b * y.Length + i * dataSize + location] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / (m * dataSize);
@@ -254,17 +251,17 @@ namespace KelpNet.Functions.Normalization
                 //Predictはトレーニングしない
                 this.IsTrain = false;
 
-                result =  SingleInputForward(input[0]);
+                result = this.SingleInputForward(input[0]);
 
                 //フラグをリセット
                 this.IsTrain = true;
             }
             else
             {
-                result = SingleInputForward(input[0]);
+                result = this.SingleInputForward(input[0]);
             }
 
-            return new [] {result};
+            return new []{result};
         }
     }
 }
