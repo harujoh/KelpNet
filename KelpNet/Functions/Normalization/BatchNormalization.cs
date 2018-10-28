@@ -25,45 +25,45 @@ namespace KelpNet.Functions.Normalization
         private readonly Real Decay;
         private readonly Real Eps;
 
-        private Real [] Std;
-        private Real [] Xhat;
+        private Real[] Std;
+        private Real[] Xhat;
 
-        private Real [] Mean;
-        private Real [] Variance;
+        private Real[] Mean;
+        private Real[] Variance;
 
         private readonly int ChannelSize;
 
-        public BatchNormalization (int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string [] inputNames = null, string [] outputNames = null) : base (name, inputNames, outputNames)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;
             this.Eps = eps;
             this.IsTrain = isTrain;
 
-            this.Gamma = new NdArray (channelSize);
-            this.Gamma.Data = Enumerable.Repeat ((Real)1, channelSize).ToArray ();
+            this.Gamma = new NdArray(channelSize);
+            this.Gamma.Data = Enumerable.Repeat((Real)1, channelSize).ToArray();
             this.Gamma.Name = this.Name + " Gamma";
 
-            this.Beta = new NdArray (channelSize);
+            this.Beta = new NdArray(channelSize);
             this.Beta.Name = this.Name + " Beta";
 
-            this.Parameters = new NdArray [this.IsTrain ? 2 : 4];
+            this.Parameters = new NdArray[this.IsTrain ? 2 : 4];
 
             //学習対象のParameterを登録
-            this.Parameters [0] = this.Gamma;
-            this.Parameters [1] = this.Beta;
+            this.Parameters[0] = this.Gamma;
+            this.Parameters[1] = this.Beta;
 
-            this.AvgMean = new NdArray (channelSize);
+            this.AvgMean = new NdArray(channelSize);
             this.AvgMean.Name = this.Name + " Mean";
-            this.AvgVar = new NdArray (channelSize);
+            this.AvgVar = new NdArray(channelSize);
             this.AvgVar.Name = this.Name + " Variance";
 
             if (initialAvgMean != null) {
-                this.AvgMean.Data = Real.GetArray (initialAvgMean);
+                this.AvgMean.Data = Real.GetArray(initialAvgMean);
             }
 
             if (initialAvgVar != null) {
-                this.AvgVar.Data = Real.GetArray (initialAvgVar);
+                this.AvgVar.Data = Real.GetArray(initialAvgVar);
             }
 
             if (!this.IsTrain) {
