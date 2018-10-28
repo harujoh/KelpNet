@@ -212,6 +212,7 @@ namespace KelpNet.Functions.Normalization
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
+                    
                     for (int b = 0; b < y.BatchCount; b++)
                     {
                         for (int location = 0; location < dataSize; location++)
@@ -261,7 +262,7 @@ namespace KelpNet.Functions.Normalization
                 result = this.SingleInputForward(input[0]);
             }
 
-            return new []{result};
+            return new[] { result};
         }
     }
 }
