@@ -212,7 +212,7 @@ namespace KelpNet.Functions.Normalization
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
-                    
+
                     for (int b = 0; b < y.BatchCount; b++)
                     {
                         for (int location = 0; location < dataSize; location++)
