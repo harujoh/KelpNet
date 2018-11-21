@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,20 +10,64 @@ namespace ChainerModelLoader
 {
     public class NpyFormat
     {
+        public static T Load<T>(byte[] bytes) where T : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+        {
+            return ToGenericType<T>(LoadMatrix(bytes));
+        }
+
+        public static T Load<T>(byte[] bytes, out T value) where T : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+        {
+            return value = Load<T>(bytes);
+        }
+
+        public static T Load<T>(string path, out T value) where T : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+        {
+            return value = Load<T>(path);
+        }
+
+        public static T Load<T>(Stream stream, out T value) where T : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+        {
+            return value = Load<T>(stream);
+        }
+
+        public static T Load<T>(string path) where T : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+        {
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                return Load<T>(stream);
+            }
+        }
+
         public static T Load<T>(Stream stream) where T : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
         {
             return ToGenericType<T>(LoadMatrix(stream));
         }
 
+        public static Array LoadMatrix(byte[] bytes)
+        {
+            using (var stream = new MemoryStream(bytes))
+            {
+                return LoadMatrix(stream);
+            }
+        }
+
+        public static Array LoadMatrix(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                return LoadMatrix(stream);
+            }
+        }
+
         public static Array LoadMatrix(Stream stream)
         {
-            using (var reader = new BinaryReader(stream, Encoding.ASCII, true))
+            using (var reader = new BinaryReader(stream, Encoding.ASCII))
             {
                 int bytes;
                 Type type;
                 int[] shape;
 
-                if (!parseReader(reader, out bytes, out type, out shape))
+                if (!ParseReader(reader, out bytes, out type, out shape))
                 {
                     throw new FormatException();
                 }
@@ -30,74 +75,15 @@ namespace ChainerModelLoader
                 Array matrix = Array.CreateInstance(type, shape);
 
                 if (type == typeof(String))
-                    throw new NotImplementedException();
-
-                if (type == typeof(object))
-                    return new object[]{};
-
-                return readValueMatrix(reader, matrix, bytes, shape);
-            }
-        }
-
-        public static Array JaggedCreate(Type elementType, params int[] shape)
-        {
-            int s = shape[0];
-
-            if (shape.Length == 1)
-            {
-                return Array.CreateInstance(elementType, s);
-            }
-            else
-            {
-                int[] rest = Get(shape, 1, 0);
-
-                if (s == 0)
                 {
-                    Array dummy = Array.CreateInstance(elementType, rest);
-                    Array container = Array.CreateInstance(dummy.GetType(), 0);
-                    return container;
+                    new NotImplementedException();
                 }
-                else
-                {
-                    Array first = JaggedCreate(elementType, rest);
-                    Array container = Array.CreateInstance(first.GetType(), s);
 
-                    container.SetValue(first, 0);
-                    for (int i = 1; i < container.Length; i++)
-                        container.SetValue(JaggedCreate(elementType, rest), i);
-
-                    return container;
-                }
+                return ReadValueMatrix(reader, matrix, bytes, type, shape);
             }
         }
 
-        public static T[] Get<T>(T[] source, int startRow, int endRow)
-        {
-            startRow = index(startRow, source.Length);
-            endRow = end(endRow, source.Length);
-
-            var destination = new T[endRow - startRow];
-            for (int i = startRow; i < endRow; i++)
-                destination[i - startRow] = source[i];
-            return destination;
-        }
-
-        private static int end(int end, int length)
-        {
-            if (end <= 0)
-                end = length + end;
-            return end;
-        }
-
-        private static int index(int end, int length)
-        {
-            if (end < 0)
-                end = length + end;
-            return end;
-        }
-
-
-        private static Array readValueMatrix(BinaryReader reader, Array matrix, int bytes, int[] shape)
+        private static Array ReadValueMatrix(BinaryReader reader, Array matrix, int bytes, Type type, int[] shape)
         {
             int total = 1;
 
@@ -107,14 +93,13 @@ namespace ChainerModelLoader
             }
 
             var buffer = new byte[bytes * total];
-
             reader.Read(buffer, 0, buffer.Length);
             Buffer.BlockCopy(buffer, 0, matrix, 0, buffer.Length);
 
             return matrix;
         }
 
-        private static bool parseReader(BinaryReader reader, out int bytes, out Type t, out int[] shape)
+        private static bool ParseReader(BinaryReader reader, out int bytes, out Type t, out int[] shape)
         {
             bytes = 0;
             t = null;
@@ -167,14 +152,11 @@ namespace ChainerModelLoader
 
             if (e != -1)
             {
-                var a = header.Substring(s, e - s);
-                var b = a.Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
-                var c = b.Select(Int32.Parse);
-                shape = c.ToArray();
+                shape = header.Substring(s, e - s).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(Int32.Parse).ToArray();
             }
             else
             {
-                shape = new []{0};
+                shape = new[] { 0 };
             }
 
             return true;
@@ -183,49 +165,71 @@ namespace ChainerModelLoader
         private static Type GetType(string dtype, out int bytes, out bool? isLittleEndian)
         {
             isLittleEndian = IsLittleEndian(dtype);
+            bytes = Int32.Parse(dtype.Substring(2));
+
             string typeCode = dtype.Substring(1);
 
-            switch (typeCode)
+            if (typeCode == "b1")
             {
-                case "b1":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(bool);
-
-                case "i1":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(Byte);
-
-                case "i2":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(Int16);
-
-                case "i4":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(Int32);
-
-                case "f4":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(Single);
-
-                case "f8":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(Double);
-
-                case "i8":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(Int64);
-
-                case "S":
-                    bytes = Int32.Parse(dtype.Substring(2));
-                    return typeof(String);
-
-                case "O":
-                    bytes = 0;
-                    return typeof(object);
-
-                default:
-                    throw new NotSupportedException();
+                return typeof(bool);
             }
+
+            if (typeCode == "i1")
+            {
+                return typeof(SByte);
+            }
+
+            if (typeCode == "i2")
+            {
+                return typeof(Int16);
+            }
+
+            if (typeCode == "i4")
+            {
+                return typeof(Int32);
+            }
+
+            if (typeCode == "i8")
+            {
+                return typeof(Int64);
+            }
+
+            if (typeCode == "u1")
+            {
+                return typeof(Byte);
+            }
+
+            if (typeCode == "u2")
+            {
+                return typeof(UInt16);
+            }
+
+            if (typeCode == "u4")
+            {
+                return typeof(UInt32);
+            }
+
+            if (typeCode == "u8")
+            {
+                return typeof(UInt64);
+            }
+
+            if (typeCode == "f4")
+            {
+                return typeof(Single);
+            }
+
+            if (typeCode == "f8")
+            {
+                return typeof(Double);
+            }
+
+            if (typeCode.StartsWith("S"))
+            {
+                return typeof(String);
+            }
+
+            throw new NotSupportedException();
         }
 
         private static bool? IsLittleEndian(string type)
@@ -237,15 +241,12 @@ namespace ChainerModelLoader
                 case '<':
                     littleEndian = true;
                     break;
-
                 case '>':
                     littleEndian = false;
                     break;
-
                 case '|':
                     littleEndian = null;
                     break;
-
                 default:
                     throw new Exception();
             }
@@ -253,24 +254,51 @@ namespace ChainerModelLoader
             return littleEndian;
         }
 
+
         public static T ToGenericType<T>(object value)
         {
+            Type type = typeof(T);
+
             if (value == null)
-                return (T)Convert.ChangeType(null, typeof(T));
+            {
+                return (T)Convert.ChangeType(null, type);
+            }
 
-            if (value is IConvertible)
-                return (T)Convert.ChangeType(value, typeof(T));
+            if (type.IsInstanceOfType(value))
+            {
+                return (T)value;
+            }
 
-            Type type = value.GetType();
+            if (type.IsEnum)
+            {
+                return (T)Enum.ToObject(type, (int)Convert.ChangeType(value, typeof(int)));
+            }
 
-            MethodInfo[] methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            Type inputType = value.GetType();
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                MethodInfo setter = type.GetMethod("op_Implicit", new[] { inputType });
+                return (T)setter.Invoke(null, new object[] { value });
+            }
+
+            var methods = new List<MethodInfo>();
+            methods.AddRange(inputType.GetMethods(BindingFlags.Public | BindingFlags.Static));
+            methods.AddRange(type.GetMethods(BindingFlags.Public | BindingFlags.Static));
 
             foreach (MethodInfo m in methods)
             {
                 if (m.IsPublic && m.IsStatic)
                 {
-                    if ((m.Name == "op_Implicit" || m.Name == "op_Explicit") && m.ReturnType == typeof(T))
-                        return (T)m.Invoke(null, new[] { value });
+                    if ((m.Name == "op_Implicit" || m.Name == "op_Explicit") && m.ReturnType == type)
+                    {
+                        ParameterInfo[] p = m.GetParameters();
+
+                        if (p.Length == 1 && p[0].ParameterType.IsInstanceOfType(value))
+                        {
+                            return (T)m.Invoke(null, new[] { value });
+                        }
+                    }
                 }
             }
 
