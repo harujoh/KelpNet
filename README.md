@@ -1,6 +1,7 @@
 # KelpNet
-KelpNetはC#で実装された深層学習のライブラリです
 [![license shield][]](./LICENSE)
+KelpNetはC#で実装された深層学習のライブラリです
+
 ```java
 /* SampleCode */
 FunctionStack nn = new FunctionStack(
