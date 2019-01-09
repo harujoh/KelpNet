@@ -41,7 +41,7 @@ namespace KelpNet.Sample.Samples
             FunctionStack model = new FunctionStack(
                 new EmbedID(nVocab, N_UNITS, name: "l1 EmbedID"),
                 new Linear(N_UNITS, N_UNITS, name: "l2 Linear"),
-                new Tanh("l2 Tanh"),
+                new TanhActivation("l2 TanhActivation"),
                 new Linear(N_UNITS, nVocab, name: "l3 Linear"),
                 new Softmax("l3 Sonftmax")
             );
@@ -79,7 +79,7 @@ namespace KelpNet.Sample.Samples
                             //Add
                             NdArray xK = l1 + l2;
 
-                            //l2 Tanh
+                            //l2 TanhActivation
                             h = model.Functions[2].Forward(xK)[0];
 
                             //l3 Linear
@@ -167,7 +167,7 @@ namespace KelpNet.Sample.Samples
                     xK.Data[j] += l2.Data[j];
                 }
 
-                //l2 Tanh
+                //l2 TanhActivation
                 h = model.Functions[2].Forward(xK)[0];
 
                 //l3 Softmax(l3 Linear)

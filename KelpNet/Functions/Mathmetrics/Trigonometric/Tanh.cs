@@ -2,15 +2,15 @@
 
 #if DOUBLE
 using Real = System.Double;
-namespace Double.KelpNet.Mathmetricsetrics
+namespace Double.KelpNet
 #else
 using Real = System.Single;
-namespace KelpNet.Mathmetricsetrics
+namespace KelpNet
 #endif
 {
     public class Tanh : SingleInputFunction
     {
-        private const string FUNCTION_NAME = "Tanh";
+        private const string FUNCTION_NAME = "TanhActivation";
 
         public Tanh(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {

@@ -89,34 +89,26 @@ namespace KelpNet
             {
                 //メンバのMeanとVarianceを設定する
                 this.Variance = new Real[this.ChannelSize];
-                for (int i = 0; i < this.Variance.Length; i++)
-                {
-                    this.Variance[i] = 0;
-                }
-
                 this.Mean = new Real[this.ChannelSize];
-                for (int i = 0; i < this.Mean.Length; i++)
+
+                for (int i = 0; i < this.ChannelSize; i++)
                 {
                     for (int index = 0; index < x.BatchCount; index++)
                     {
-                        this.Mean[i] += x.Data[i + index * x.Length];
+                        for (int j = 0; j < x.Length; j++)
+                        {
+                            this.Mean[i] += x.Data[index * x.Length + i];
+                        }
                     }
 
                     this.Mean[i] /= x.BatchCount;
-                }
 
-                for (int i = 0; i < this.Mean.Length; i++)
-                {
                     for (int index = 0; index < x.BatchCount; index++)
                     {
-                        this.Variance[i] += (x.Data[i + index * x.Length] - this.Mean[i]) * (x.Data[i + index * x.Length] - this.Mean[i]);
+                        this.Variance[i] += (x.Data[index * x.Length + i] - this.Mean[i]) * (x.Data[index * x.Length + i] - this.Mean[i]);
                     }
 
                     this.Variance[i] /= x.BatchCount;
-                }
-
-                for (int i = 0; i < this.Variance.Length; i++)
-                {
                     this.Variance[i] += this.Eps;
                 }
             }
@@ -126,8 +118,9 @@ namespace KelpNet
                 this.Variance = this.AvgVar.Data;
             }
 
-            this.Std = new Real[this.Variance.Length];
-            for (int i = 0; i < this.Variance.Length; i++)
+            this.Std = new Real[this.ChannelSize];
+
+            for (int i = 0; i < this.Std.Length; i++)
             {
                 this.Std[i] = (Real)Math.Sqrt(this.Variance[i]);
             }
@@ -138,6 +131,7 @@ namespace KelpNet
             Real[] y = new Real[x.Data.Length];
 
             int dataSize = 1;
+
             for (int i = 1; i < x.Shape.Length; i++)
             {
                 dataSize *= x.Shape[i];
@@ -147,9 +141,10 @@ namespace KelpNet
             {
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    for (int location = 0; location < dataSize; location++)
+                    int indexOffset = batchCount * this.ChannelSize * dataSize + i * dataSize;
+
+                    for (int index = indexOffset; index < indexOffset + dataSize; index++)
                     {
-                        int index = batchCount * this.ChannelSize * dataSize + i * dataSize + location;
                         this.Xhat[index] = (x.Data[index] - this.Mean[i]) / this.Std[i];
                         y[index] = this.Gamma.Data[i] * this.Xhat[index] + this.Beta.Data[i];
                     }

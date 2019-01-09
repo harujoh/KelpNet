@@ -110,8 +110,8 @@
     <Compile Include="..\KelpNet\Functions\Activations\Swish.cs">
       <Link>Functions\Activations\Swish.cs</Link>
     </Compile>
-    <Compile Include="..\KelpNet\Functions\Activations\Tanh.cs">
-      <Link>Functions\Activations\Tanh.cs</Link>
+    <Compile Include="..\KelpNet\Functions\Activations\TanhActivation.cs">
+      <Link>Functions\Activations\TanhActivation.cs</Link>
     </Compile>
     <Compile Include="..\KelpNet\Functions\Arrays\Broadcast.cs">
       <Link>Functions\Arrays\Broadcast.cs</Link>

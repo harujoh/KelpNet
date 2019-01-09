@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-
 #if DOUBLE
 using Real = System.Double;
 namespace Double.KelpNet

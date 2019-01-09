@@ -36,19 +36,19 @@ namespace KelpNet.Benchmark
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
 
-            //Tanh
-            Tanh tanh = new Tanh();
-            Console.WriteLine("\n◆" + tanh.Name);
+            //TanhActivation
+            TanhActivation tanhActivation = new TanhActivation();
+            Console.WriteLine("\n◆" + tanhActivation.Name);
 
             sw.Restart();
-            gradArrayCpu = tanh.Forward(inputArrayCpu);
+            gradArrayCpu = tanhActivation.Forward(inputArrayCpu);
             sw.Stop();
             Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
             gradArrayCpu[0].Grad = gradArrayCpu[0].Data;
 
             sw.Restart();
-            tanh.Backward(gradArrayCpu);
+            tanhActivation.Backward(gradArrayCpu);
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 

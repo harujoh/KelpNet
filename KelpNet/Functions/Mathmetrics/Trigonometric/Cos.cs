@@ -2,10 +2,10 @@
 
 #if DOUBLE
 using Real = System.Double;
-namespace Double.KelpNet.Mathmetricsetrics
+namespace Double.KelpNet
 #else
 using Real = System.Single;
-namespace KelpNet.Mathmetricsetrics
+namespace KelpNet
 #endif
 {
     public class Cos : SingleInputFunction
