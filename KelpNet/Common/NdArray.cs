@@ -746,17 +746,16 @@ namespace KelpNet.Common
 
         internal int GetLocalIndex(int batchIndex, params int[] indices)
         {
-            int indicesLastIndex = indices.Length - 1;
-            int index = batchIndex * this.Length + indices[indicesLastIndex];
-            int rankoffset = 1;
+            int result = 0;
+            int rankOffset = 1;
 
-            for (int i = 1; i < indices.Length; i++)
+            for (int i = indices.Length - 1; i >= 0; i--)
             {
-                rankoffset *= this.Shape[indicesLastIndex--];
-                index += indices[indicesLastIndex] * rankoffset;
+                result += indices[i] * rankOffset;
+                rankOffset *= Shape[i];
             }
 
-            return index;
+            return result;
         }
     }
 }
