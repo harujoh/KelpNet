@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class MaxPooling : SingleInputFunction
+    public class MaxPooling<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "MaxPooling";
 
@@ -49,7 +43,7 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        private NdArray ForwardCpu(NdArray input)
+        private NdArray<T> ForwardCpu(NdArray<T> input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
@@ -74,7 +68,7 @@ namespace KelpNet
                             int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
 
                             outputIndices[resultIndex] = inputIndexOffset + dyOffset * input.Shape[2] + dxOffset;
-                            Real maxVal = input.Data[outputIndices[resultIndex]];
+                            Real<T> maxVal = input.Data[outputIndices[resultIndex]];
 
                             for (int dy = dyOffset; dy < dyLimit; dy++)
                             {
@@ -100,9 +94,9 @@ namespace KelpNet
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);
         }
 
-        NdArray GetForwardResult(NdArray input, int[] outputIndices, int outputWidth, int outputHeight)
+        NdArray<T> GetForwardResult(NdArray<T> input, int[] outputIndices, int outputWidth, int outputHeight)
         {
-            Real[] result = new Real[outputIndices.Length];
+            Real<T>[] result = new Real<T>[outputIndices.Length];
 
             for (int i = 0; i < result.Length; i++)
             {
@@ -111,10 +105,10 @@ namespace KelpNet
 
             this._outputIndicesList.Add(outputIndices);
 
-            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
+            return NdArray<T>.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        private void BackwardCpu(NdArray y, NdArray x)
+        private void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);

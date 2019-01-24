@@ -1,14 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    class Reshape : SingleInputFunction
+    class Reshape<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Reshape";
         public int[] Shape;
@@ -21,16 +16,16 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        NdArray ForwardCpu(NdArray val)
+        NdArray<T> ForwardCpu(NdArray<T> val)
         {
-            NdArray result = val.Clone();
+            NdArray<T> result = val.Clone();
             result.ParentFunc = this;
             result.Reshape(this.Shape);
 
             return result;
         }
 
-        void BackwardCpu(NdArray y, NdArray x)
+        void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             y.Grad = x.Grad.ToArray();
         }

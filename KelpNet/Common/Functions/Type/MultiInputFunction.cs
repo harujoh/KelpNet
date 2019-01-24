@@ -1,24 +1,18 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public abstract class MultiInputFunction : Function
+    public abstract class MultiInputFunction<T> : Function<T> where T : unmanaged, IComparable<T>
     {
-        protected Func<NdArray[], NdArray> MultiInputForward;
-        protected Action<NdArray, NdArray[]> MultiOutputBackward;
+        protected Func<NdArray<T>[], NdArray<T>> MultiInputForward;
+        protected Action<NdArray<T>, NdArray<T>[]> MultiOutputBackward;
 
         protected MultiInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
         }
 
-        public override NdArray[] Forward(params NdArray[] xs)
+        public override NdArray<T>[] Forward(params NdArray<T>[] xs)
         {
             PrevInputs.Add(xs);
 
@@ -30,9 +24,9 @@ namespace KelpNet
             return new[] { MultiInputForward(xs) };
         }
 
-        public override void Backward(params NdArray[] ys)
+        public override void Backward(params NdArray<T>[] ys)
         {
-            NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
+            NdArray<T>[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);
 
             BackwardCountUp();
@@ -45,7 +39,7 @@ namespace KelpNet
             MultiOutputBackward(ys[0], xs);
         }
 
-        public override NdArray[] Predict(params NdArray[] xs)
+        public override NdArray<T>[] Predict(params NdArray<T>[] xs)
         {
             return new[] { MultiInputForward(xs) };
         }

@@ -1,6 +1,6 @@
 ﻿namespace KelpNet.Sample.Samples
 {
-    partial class Sample13WinForm
+    partial class Sample13WinForm<T>
     {
         /// <summary>
         /// 必要なデザイナー変数です。

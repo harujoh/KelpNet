@@ -1,57 +1,51 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class RMSprop : Optimizer
+    public class RMSprop<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
-        public Real LearningRate;
-        public Real Alpha;
-        public Real Epsilon;
+        public Real<T> LearningRate;
+        public Real<T> Alpha;
+        public Real<T> Epsilon;
 
-        public RMSprop(Real learningRate = 0.01f, Real alpha = 0.99f, Real epsilon = 1e-8f)
+        public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8)
         {
             this.LearningRate = learningRate;
             this.Alpha = alpha;
             this.Epsilon = epsilon;
         }
 
-        internal override void AddFunctionParameters(NdArray[] functionParameters)
+        internal override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
-            foreach (NdArray functionParameter in functionParameters)
+            foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new RMSpropParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new RMSpropParameter<T>(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class RMSpropParameter : OptimizerParameter
+    class RMSpropParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        private readonly RMSprop optimizer;
-        private readonly Real[] ms;
+        private readonly RMSprop<T> optimizer;
+        private readonly Real<T>[] ms;
 
-        public RMSpropParameter(NdArray parameter, RMSprop optimizer) : base(parameter)
+        public RMSpropParameter(NdArray<T> parameter, RMSprop<T> optimizer) : base(parameter)
         {
             this.optimizer = optimizer;
-            this.ms = new Real[parameter.Data.Length];
+            this.ms = new Real<T>[parameter.Data.Length];
         }
 
         public override void UpdateFunctionParameters()
         {
             for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
-                Real grad = this.FunctionParameter.Grad[i];
+                Real<T> grad = this.FunctionParameter.Grad[i];
                 this.ms[i] *= this.optimizer.Alpha;
                 this.ms[i] += (1 - this.optimizer.Alpha) * grad * grad;
 
-                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / ((Real)Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / (Math.Sqrt(this.ms[i]) + this.optimizer.Epsilon);
             }
         }
     }

@@ -1,14 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    public class SplitAxis : MultiOutputFunction
+    public class SplitAxis<T> : MultiOutputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "SplitAxis";
         public int Axis;
@@ -32,9 +27,9 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        private NdArray[] ForwardCpu(NdArray x)
+        private NdArray<T>[] ForwardCpu(NdArray<T> x)
         {
-            NdArray[] resultArrays = NdArray.Split(x, Indices, Axis);
+            NdArray<T>[] resultArrays = NdArray<T>.Split(x, Indices, Axis);
 
             for (int i = 0; i < resultArrays.Length; i++)
             {
@@ -44,13 +39,13 @@ namespace KelpNet
             return resultArrays;
         }
 
-        private void BackwardCpu(NdArray[] ys, NdArray x)
+        private void BackwardCpu(NdArray<T>[] ys, NdArray<T> x)
         {
-            NdArray resultNdArray = ys[0].Clone();
+            NdArray<T> resultNdArray = ys[0].Clone();
 
             for (int i = 1; i < ys.Length; i++)
             {
-                resultNdArray = NdArray.Concatenate(resultNdArray, ys[i], Axis);
+                resultNdArray = NdArray<T>.Concatenate(resultNdArray, ys[i], Axis);
             }
 
             for (int i = 0; i < x.Grad.Length; i++)

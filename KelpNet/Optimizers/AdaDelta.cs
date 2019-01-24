@@ -1,45 +1,39 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class AdaDelta : Optimizer
+    public class AdaDelta<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
-        public Real Rho;
-        public Real Epsilon;
+        public Real<T> Rho;
+        public Real<T> Epsilon;
 
-        public AdaDelta(Real rho = 0.95f, Real epsilon = 1e-6f)
+        public AdaDelta(double rho = 0.95f, double epsilon = 1e-6f)
         {
             this.Rho = rho;
             this.Epsilon = epsilon;
         }
 
-        internal override void AddFunctionParameters(NdArray[] functionParameters)
+        internal override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
-            foreach (NdArray functionParameter in functionParameters)
+            foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdaDeltaParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new AdaDeltaParameter<T>(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class AdaDeltaParameter : OptimizerParameter
+    class AdaDeltaParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        private readonly Real[] msg;
-        private readonly Real[] msdx;
-        private readonly AdaDelta optimizer;
+        private readonly Real<T>[] msg;
+        private readonly Real<T>[] msdx;
+        private readonly AdaDelta<T> optimizer;
 
-        public AdaDeltaParameter(NdArray functionParameter, AdaDelta optimizer) : base(functionParameter)
+        public AdaDeltaParameter(NdArray<T> functionParameter, AdaDelta<T> optimizer) : base(functionParameter)
         {
-            this.msg = new Real[functionParameter.Data.Length];
-            this.msdx = new Real[functionParameter.Data.Length];
+            this.msg = new Real<T>[functionParameter.Data.Length];
+            this.msdx = new Real<T>[functionParameter.Data.Length];
             this.optimizer = optimizer;
         }
 
@@ -47,11 +41,11 @@ namespace KelpNet
         {
             for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
-                Real grad = this.FunctionParameter.Grad[i];
+                Real<T> grad = this.FunctionParameter.Grad[i];
                 this.msg[i] *= this.optimizer.Rho;
                 this.msg[i] += (1 - this.optimizer.Rho) * grad * grad;
 
-                Real dx = (Real)Math.Sqrt((this.msdx[i] + this.optimizer.Epsilon) / (this.msg[i] + this.optimizer.Epsilon)) * grad;
+                Real<T> dx = Math.Sqrt((this.msdx[i] + this.optimizer.Epsilon) / (this.msg[i] + this.optimizer.Epsilon)) * grad;
 
                 this.msdx[i] *= this.optimizer.Rho;
                 this.msdx[i] += (1 - this.optimizer.Rho) * dx * dx;

@@ -1,18 +1,12 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    public class SoftmaxCrossEntropy : LossFunction
+    public class SoftmaxCrossEntropy<T> : LossFunction<T> where T : unmanaged, IComparable<T>
     {
-        public override Real Evaluate(NdArray[] input, params NdArray[] teachSignal)
+        public override Real<T> Evaluate(NdArray<T>[] input, params NdArray<T>[] teachSignal)
         {
-            Real resultLoss = 0;
+            Real<T> resultLoss = 0;
 
 #if DEBUG
             if (input.Length != teachSignal.Length) throw new Exception("入力と教師信号のサイズが異なります");
@@ -20,12 +14,12 @@ namespace KelpNet
 
             for (int k = 0; k < input.Length; k++)
             {
-                Real localloss = 0;
-                Real[] gx = new Real[input[k].Data.Length];
+                Real<T> localloss = 0;
+                Real<T>[] gx = new Real<T>[input[k].Data.Length];
 
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {
-                    Real maxIndex = 0;
+                    Real<T> maxIndex = 0;
 
                     for (int i = 0; i < teachSignal[k].Length; i++)
                     {
@@ -35,9 +29,9 @@ namespace KelpNet
                         }
                     }
 
-                    Real[] logY = new Real[input[k].Length];
-                    Real y = 0;
-                    Real m = input[k].Data[b * input[k].Length];
+                    Real<T>[] logY = new Real<T>[input[k].Length];
+                    Real<T> y = 0;
+                    Real<T> m = input[k].Data[b * input[k].Length];
 
                     for (int i = 1; i < input[k].Length; i++)
                     {
@@ -49,10 +43,10 @@ namespace KelpNet
 
                     for (int i = 0; i < input[k].Length; i++)
                     {
-                        y += (Real)Math.Exp(input[k].Data[i + b * input[k].Length] - m);
+                        y += Math.Exp(input[k].Data[i + b * input[k].Length] - m);
                     }
 
-                    m += (Real)Math.Log(y);
+                    m += Math.Log(y);
 
                     for (int i = 0; i < input[k].Length; i++)
                     {
@@ -64,7 +58,7 @@ namespace KelpNet
 
                     for (int i = 0; i < logY.Length; i++)
                     {
-                        gx[i + b * input[k].Length] = (Real)Math.Exp(logY[i]);
+                        gx[i + b * input[k].Length] = Math.Exp(logY[i]);
                     }
 
                     gx[(int)maxIndex + b * input[k].Length] -= 1;

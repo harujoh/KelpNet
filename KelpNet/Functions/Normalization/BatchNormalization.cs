@@ -1,75 +1,69 @@
 ﻿using System;
 using System.Linq;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     //Chainerより移植　finetuningは未実装
     [Serializable]
-    public class BatchNormalization : SingleInputFunction
+    public class BatchNormalization<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "BatchNormalization";
 
         public bool IsTrain;
 
-        public NdArray Gamma;
+        public NdArray<T> Gamma;
 
-        public NdArray Beta;
+        public NdArray<T> Beta;
 
-        public NdArray AvgMean;
+        public NdArray<T> AvgMean;
 
-        public NdArray AvgVar;
+        public NdArray<T> AvgVar;
 
 
-        private readonly Real Decay;
-        private readonly Real Eps;
+        private readonly Real<T> Decay;
+        private readonly Real<T> Eps;
 
-        private Real[] Std;
-        private Real[] Xhat;
+        private Real<T>[] Std;
+        private Real<T>[] Xhat;
 
-        private Real[] Mean;
-        private Real[] Variance;
+        private Real<T>[] Mean;
+        private Real<T>[] Variance;
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, Real decay = 0.9f, Real eps = 1e-5f, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;
             this.Eps = eps;
             this.IsTrain = isTrain;
 
-            this.Gamma = new NdArray(channelSize);
-            this.Gamma.Data = Enumerable.Repeat((Real)1, channelSize).ToArray();
+            this.Gamma = new NdArray<T>(channelSize);
+            this.Gamma.Data = Enumerable.Repeat((Real<T>)1.0, channelSize).ToArray();
             this.Gamma.Name = this.Name + " Gamma";
 
-            this.Beta = new NdArray(channelSize);
+            this.Beta = new NdArray<T>(channelSize);
             this.Beta.Name = this.Name + " Beta";
 
-            this.Parameters = new NdArray[this.IsTrain ? 2 : 4];
+            this.Parameters = new NdArray<T>[this.IsTrain ? 2 : 4];
 
             //学習対象のParameterを登録
             this.Parameters[0] = this.Gamma;
             this.Parameters[1] = this.Beta;
 
-            this.AvgMean = new NdArray(channelSize);
+            this.AvgMean = new NdArray<T>(channelSize);
             this.AvgMean.Name = this.Name + " Mean";
-            this.AvgVar = new NdArray(channelSize);
+            this.AvgVar = new NdArray<T>(channelSize);
             this.AvgVar.Name = this.Name + " Variance";
 
             if (initialAvgMean != null)
             {
-                this.AvgMean.Data = NdArray.GetArray(initialAvgMean);
+                this.AvgMean.Data = Real<T>.GetArray(initialAvgMean);
             }
 
             if (initialAvgVar != null)
             {
-                this.AvgVar.Data = NdArray.GetArray(initialAvgVar);
+                this.AvgVar.Data = Real<T>.GetArray(initialAvgVar);
             }
 
             if (!this.IsTrain)
@@ -82,14 +76,14 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        private NdArray ForwardCpu(NdArray x)
+        private NdArray<T> ForwardCpu(NdArray<T> x)
         {
             //計算用パラメータの取得
             if (this.IsTrain)
             {
                 //メンバのMeanとVarianceを設定する
-                this.Variance = new Real[this.ChannelSize];
-                this.Mean = new Real[this.ChannelSize];
+                this.Variance = new Real<T>[this.ChannelSize];
+                this.Mean = new Real<T>[this.ChannelSize];
 
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
@@ -118,17 +112,17 @@ namespace KelpNet
                 this.Variance = this.AvgVar.Data;
             }
 
-            this.Std = new Real[this.ChannelSize];
+            this.Std = new Real<T>[this.ChannelSize];
 
             for (int i = 0; i < this.Std.Length; i++)
             {
-                this.Std[i] = (Real)Math.Sqrt(this.Variance[i]);
+                this.Std[i] = Math.Sqrt(this.Variance[i]);
             }
 
             //結果を計算
-            this.Xhat = new Real[x.Data.Length];
+            this.Xhat = new Real<T>[x.Data.Length];
 
-            Real[] y = new Real[x.Data.Length];
+            Real<T>[] y = new Real<T>[x.Data.Length];
 
             int dataSize = 1;
 
@@ -155,7 +149,7 @@ namespace KelpNet
             if (this.IsTrain)
             {
                 int m = x.BatchCount;
-                Real adjust = (Real)(m / Math.Max(m - 1.0, 1.0)); // unbiased estimation
+                Real<T> adjust = (m / Math.Max(m - 1.0, 1.0)); // unbiased estimation
 
                 for (int i = 0; i < this.AvgMean.Data.Length; i++)
                 {
@@ -169,10 +163,10 @@ namespace KelpNet
                 }
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
+            return NdArray<T>.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        private void BackwardCpu(NdArray y, NdArray x)
+        private void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             this.Beta.ClearGrad();
             this.Gamma.ClearGrad();
@@ -193,11 +187,11 @@ namespace KelpNet
 
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    Real gs = this.Gamma.Data[i] / this.Std[i];
+                    Real<T> gs = this.Gamma.Data[i] / this.Std[i];
 
                     for (int j = 0; j < y.BatchCount; j++)
                     {
-                        Real val = (this.Xhat[j * this.ChannelSize + i] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / m;
+                        Real<T> val = (this.Xhat[j * this.ChannelSize + i] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / m;
 
                         x.Grad[i + j * this.ChannelSize] += gs * (y.Grad[i + j * y.Length] - val);
                     }
@@ -208,7 +202,7 @@ namespace KelpNet
                 // 学習なし
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
-                    Real gs = this.Gamma.Data[i] / this.Std[i];
+                    Real<T> gs = this.Gamma.Data[i] / this.Std[i];
                     this.AvgMean.Grad[i] = -gs * this.Beta.Grad[i];
                     this.AvgVar.Grad[i] = -0.5f * this.Gamma.Data[i] / this.AvgVar.Data[i] * this.Gamma.Grad[i];
 
@@ -220,9 +214,9 @@ namespace KelpNet
             }
         }
 
-        public override NdArray[] Predict(params NdArray[] input)
+        public override NdArray<T>[] Predict(params NdArray<T>[] input)
         {
-            NdArray result;
+            NdArray<T> result;
 
             if (this.IsTrain)
             {

@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class Deconvolution2D : CompressibleFunction
+    public class Deconvolution2D<T> : CompressibleFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Deconvolution2D";
         private const string PARAM_NAME = "/*ForwardActivate*/";
         private const string PARAM_VALUE = "result = ForwardActivate(result);";
 
-        public NdArray Weight;
-        public NdArray Bias;
+        public NdArray<T> Weight;
+        public NdArray<T> Bias;
 
         public readonly bool NoBias;
 
@@ -31,7 +25,7 @@ namespace KelpNet
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new []{new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE)}, name, inputNames, outputNames)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new []{new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE)}, name, inputNames, outputNames)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -41,7 +35,7 @@ namespace KelpNet
             this._subSampleY = subSample;
             this.NoBias = noBias;
 
-            this.Parameters = new NdArray[noBias ? 1 : 2];
+            this.Parameters = new NdArray<T>[noBias ? 1 : 2];
 
             this.OutputCount = outputChannels;
             this.InputCount = inputChannels;
@@ -49,7 +43,7 @@ namespace KelpNet
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kWidth, int kHeight, int subSampleX = 1, int subSampleY = 1, int trimX = 0, int trimY = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new[] { new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE) }, name, inputNames, outputNames)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kWidth, int kHeight, int subSampleX = 1, int subSampleY = 1, int trimX = 0, int trimY = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new[] { new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE) }, name, inputNames, outputNames)
         {
             this._kWidth = kWidth;
             this._kHeight = kHeight;
@@ -60,7 +54,7 @@ namespace KelpNet
             this._subSampleX = subSampleX;
             this._subSampleY = subSampleY;
 
-            this.Parameters = new NdArray[noBias ? 1 : 2];
+            this.Parameters = new NdArray<T>[noBias ? 1 : 2];
 
             this.OutputCount = outputChannels;
             this.InputCount = inputChannels;
@@ -70,16 +64,16 @@ namespace KelpNet
 
         void Initialize(Array initialW = null, Array initialb = null)
         {
-            this.Weight = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
+            this.Weight = new NdArray<T>(OutputCount, InputCount, this._kHeight, this._kWidth);
             this.Weight.Name = this.Name + " Weight";
 
             if (initialW == null)
             {
-                Initializer.InitWeight(this.Weight);
+                Initializer<T>.InitWeight(this.Weight);
             }
             else
             {
-                this.Weight.Data = NdArray.GetArray(initialW);
+                this.Weight.Data = Real<T>.GetArray(initialW);
             }
 
             this.Parameters[0] = this.Weight;
@@ -87,24 +81,24 @@ namespace KelpNet
 
             if (!NoBias)
             {
-                this.Bias = new NdArray(OutputCount);
+                this.Bias = new NdArray<T>(OutputCount);
                 this.Bias.Name = this.Name + " Bias";
 
                 if (initialb != null)
                 {
-                    this.Bias.Data = NdArray.GetArray(initialb);
+                    this.Bias.Data = Real<T>.GetArray(initialb);
                 }
 
                 this.Parameters[1] = this.Bias;
             }
         }
 
-        protected override NdArray NeedPreviousForwardCpu(NdArray input)
+        protected override NdArray<T> NeedPreviousForwardCpu(NdArray<T> input)
         {
             int outputHeight = (input.Shape[1] - 1) * this._subSampleY + this._kHeight - this._trimY * 2;
             int outputWidth = (input.Shape[2] - 1) * this._subSampleX + this._kWidth - this._trimX * 2;
 
-            Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
+            Real<T>[] result = new Real<T>[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
             int outSizeOffset = outputWidth * outputHeight;
             int inputSizeOffset = input.Shape[1] * input.Shape[2];
@@ -204,14 +198,14 @@ namespace KelpNet
                 }
             }
 
-            return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
+            return NdArray<T>.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        Real[] GetActivatedgy(NdArray y)
+        Real<T>[] GetActivatedgy(NdArray<T> y)
         {
             int gyIndex = 0;
 
-            Real[] activatedgy = new Real[y.Grad.Length];
+            Real<T>[] activatedgy = new Real<T>[y.Grad.Length];
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
             {
@@ -228,7 +222,7 @@ namespace KelpNet
             return activatedgy;
         }
 
-        void CalcBiasGrad(Real[] gy, int[] gyShape, int batchCount)
+        void CalcBiasGrad(Real<T>[] gy, int[] gyShape, int batchCount)
         {
             int gyIndex = 0;
 
@@ -246,10 +240,10 @@ namespace KelpNet
             }
         }
 
-        protected override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected override void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            //Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            //Real<T>[] gx = new Real<T>[x.Data.Length];
+            Real<T>[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             //本来のロジック
@@ -271,7 +265,7 @@ namespace KelpNet
                             int ixStart = ox - this.Weight.Shape[3] < 0 ? 0 : (ox - this.Weight.Shape[3]) / this._subSampleX + 1;
 
                             int gyIndex = batchCount * y.Length + inputOffset + (oy - this._trimY) * y.Shape[2] + ox - this._trimX;
-                            Real gyData = activatedgy[gyIndex];
+                            Real<T> gyData = activatedgy[gyIndex];
 
                             for (int ich = 0; ich < InputCount; ich++)
                             {

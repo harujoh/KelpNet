@@ -1,18 +1,12 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    public class MeanSquaredError : LossFunction
+    public class MeanSquaredError<T> : LossFunction<T> where T : unmanaged, IComparable<T>
     {
-        public override Real Evaluate(NdArray[] input, NdArray[] teachSignal)
+        public override Real<T> Evaluate(NdArray<T>[] input, NdArray<T>[] teachSignal)
         {
-            Real resultLoss = 0;
+            Real<T> resultLoss = 0;
 
 #if DEBUG
             if (input.Length != teachSignal.Length) throw new Exception("入力と教師信号のサイズが異なります");
@@ -20,19 +14,19 @@ namespace KelpNet
 
             for (int k = 0; k < input.Length; k++)
             {
-                Real sumLoss = 0;
-                Real[] resultArray = new Real[input[k].Data.Length];
+                Real<T> sumLoss = 0;
+                Real<T>[] resultArray = new Real<T>[input[k].Data.Length];
 
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {
-                    Real localloss = 0;
-                    Real coeff = 2.0f / teachSignal[k].Length;
+                    Real<T> localloss = 0;
+                    Real<T> coeff = 2.0f / teachSignal[k].Length;
 
                     int batchoffset = b * teachSignal[k].Length;
 
                     for (int i = 0; i < input[k].Length; i++)
                     {
-                        Real result = input[k].Data[b * input[k].Length + i] - teachSignal[k].Data[batchoffset + i];
+                        Real<T> result = input[k].Data[b * input[k].Length + i] - teachSignal[k].Data[batchoffset + i];
                         localloss += result * result;
 
                         resultArray[batchoffset + i] = result * coeff;

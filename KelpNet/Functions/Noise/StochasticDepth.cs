@@ -1,36 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class StochasticDepth : Function //SplitFunctionと置き換えるように使用する
+    public class StochasticDepth<T> : Function<T> where T : unmanaged, IComparable<T> //SplitFunctionと置き換えるように使用する
     {
         const string FUNCTION_NAME = "StochasticDepth";
 
-        private readonly Real _pl;
+        private readonly Real<T> _pl;
 
         private readonly List<bool> _skipList = new List<bool>();
 
-        private readonly Function _function; //確率でスキップされる
-        private readonly Function _resBlock; //必ず実行される
+        private readonly Function<T> _function; //確率でスキップされる
+        private readonly Function<T> _resBlock; //必ず実行される
 
         private bool IsSkip()
         {
-            bool result = Mother.Dice.NextDouble() >= this._pl;
+            bool result = Mother<T>.Dice.NextDouble() >= this._pl;
 
             this._skipList.Add(result);
 
             return result;
         }
 
-        public StochasticDepth(Function function, Function resBlock = null, Real pl = 0.5f, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public StochasticDepth(Function<T> function, Function<T> resBlock = null, double pl = 0.5f, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._function = function;
             this._resBlock = resBlock;
@@ -38,10 +32,10 @@ namespace KelpNet
             this._pl = pl;
         }
 
-        public override NdArray[] Forward(params NdArray[] xs)
+        public override NdArray<T>[] Forward(params NdArray<T>[] xs)
         {
-            List<NdArray> resultArray = new List<NdArray>();
-            NdArray[] resResult = xs;
+            List<NdArray<T>> resultArray = new List<NdArray<T>>();
+            NdArray<T>[] resResult = xs;
 
             if (_resBlock != null)
             {
@@ -52,8 +46,8 @@ namespace KelpNet
 
             if (!IsSkip())
             {
-                Real scale = 1 / (1 - this._pl);
-                NdArray[] result = _function.Forward(xs);
+                Real<T> scale = 1 / (1 - this._pl);
+                NdArray<T>[] result = _function.Forward(xs);
 
                 for (int i = 0; i < result.Length; i++)
                 {
@@ -67,11 +61,11 @@ namespace KelpNet
             }
             else
             {
-                NdArray[] result = new NdArray[resResult.Length];
+                NdArray<T>[] result = new NdArray<T>[resResult.Length];
 
                 for (int i = 0; i < result.Length; i++)
                 {
-                    result[i] = new NdArray(resResult[i].Shape, resResult[i].BatchCount, resResult[i].ParentFunc);
+                    result[i] = new NdArray<T>(resResult[i].Shape, resResult[i].BatchCount, resResult[i].ParentFunc);
                 }
 
                 resultArray.AddRange(result);
@@ -80,7 +74,7 @@ namespace KelpNet
             return resultArray.ToArray();
         }
 
-        public override void Backward(params NdArray[] ys)
+        public override void Backward(params NdArray<T>[] ys)
         {
             if (_resBlock != null)
             {
@@ -92,9 +86,9 @@ namespace KelpNet
 
             if (!isSkip)
             {
-                NdArray[] copyys = new NdArray[ys.Length];
+                NdArray<T>[] copyys = new NdArray<T>[ys.Length];
 
-                Real scale = 1 / (1 - this._pl);
+                Real<T> scale = 1 / (1 - this._pl);
 
                 for (int i = 0; i < ys.Length; i++)
                 {
@@ -110,7 +104,7 @@ namespace KelpNet
             }
         }
 
-        public override NdArray[] Predict(params NdArray[] xs)
+        public override NdArray<T>[] Predict(params NdArray<T>[] xs)
         {
             return _function.Predict(xs);
         }

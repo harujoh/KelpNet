@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using KelpNet.Sample.DataManager;
 using KelpNet.Tools;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //SimpleなRNNによるRNNLM
     //『Chainerによる実践深層学習』より（ISBN 978-4-274-21934-4）
-    class Sample09
+    class Sample09<T> where T : unmanaged, IComparable<T>
     {
         const int TRAINING_EPOCHS = 5;
         const int N_UNITS = 100;
@@ -38,54 +35,54 @@ namespace KelpNet.Sample.Samples
             Console.WriteLine("Done.");
 
             Console.WriteLine("Network Initilizing.");
-            FunctionStack model = new FunctionStack(
-                new EmbedID(nVocab, N_UNITS, name: "l1 EmbedID"),
-                new Linear(N_UNITS, N_UNITS, name: "l2 Linear"),
-                new TanhActivation("l2 TanhActivation"),
-                new Linear(N_UNITS, nVocab, name: "l3 Linear"),
-                new Softmax("l3 Sonftmax")
+            FunctionStack<T> model = new FunctionStack<T>(
+                new EmbedID<T>(nVocab, N_UNITS, name: "l1 EmbedID"),
+                new Linear<T>(N_UNITS, N_UNITS, name: "l2 Linear"),
+                new TanhActivation<T>("l2 TanhActivation"),
+                new Linear<T>(N_UNITS, nVocab, name: "l3 Linear"),
+                new Softmax<T>("l3 Sonftmax")
             );
 
-            model.SetOptimizer(new Adam());
+            model.SetOptimizer(new Adam<T>());
 
-            List<int> s = new List<int>();
+            List<Real<T>> s = new List<Real<T>>();
 
             Console.WriteLine("Train Start.");
-            SoftmaxCrossEntropy softmaxCrossEntropy = new SoftmaxCrossEntropy();
+            SoftmaxCrossEntropy<T> softmaxCrossEntropy = new SoftmaxCrossEntropy<T>();
             for (int epoch = 0; epoch < TRAINING_EPOCHS; epoch++)
             {
                 for (int pos = 0; pos < trainData.Length; pos++)
                 {
-                    NdArray h = new NdArray(new Real[N_UNITS]);
+                    NdArray<T> h = new NdArray<T>(new Real<T>[N_UNITS]);
 
                     int id = trainData[pos];
                     s.Add(id);
 
                     if (id == vocabulary.EosID)
                     {
-                        Real accumloss = 0;
-                        Stack<NdArray> tmp = new Stack<NdArray>();
+                        Real<T> accumloss = 0;
+                        Stack<NdArray<T>> tmp = new Stack<NdArray<T>>();
 
                         for (int i = 0; i < s.Count; i++)
                         {
-                            int tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
+                            Real<T> tx = i == s.Count - 1 ? vocabulary.EosID : s[i + 1];
 
                             //l1 EmbedID
-                            NdArray l1 = model.Functions[0].Forward(s[i])[0];
+                            NdArray<T> l1 = model.Functions[0].Forward(s[i])[0];
 
                             //l2 Linear
-                            NdArray l2 = model.Functions[1].Forward(h)[0];
+                            NdArray<T> l2 = model.Functions[1].Forward(h)[0];
 
                             //Add
-                            NdArray xK = l1 + l2;
+                            NdArray<T> xK = l1 + l2;
 
                             //l2 TanhActivation
                             h = model.Functions[2].Forward(xK)[0];
 
                             //l3 Linear
-                            NdArray h2 = model.Functions[3].Forward(h)[0];
+                            NdArray<T> h2 = model.Functions[3].Forward(h)[0];
 
-                            Real loss = softmaxCrossEntropy.Evaluate(h2, tx);
+                            Real<T> loss = softmaxCrossEntropy.Evaluate(h2, tx);
                             tmp.Push(h2);
                             accumloss += loss;
                         }
@@ -110,9 +107,9 @@ namespace KelpNet.Sample.Samples
 
             Console.WriteLine("Test Start.");
 
-            Real sum = 0;
+            Real<T> sum = 0;
             int wnum = 0;
-            List<int> ts = new List<int>();
+            List<Real<T>> ts = new List<Real<T>>();
             bool unkWord = false;
 
             for (int pos = 0; pos < 1000; pos++)
@@ -149,19 +146,19 @@ namespace KelpNet.Sample.Samples
             Console.WriteLine(Math.Pow(2.0, sum / wnum));
         }
 
-        static Real CalPs(FunctionStack model, List<int> s)
+        static Real<T> CalPs(FunctionStack<T> model, List<Real<T>> s)
         {
-            Real sum = 0;
+            Real<T> sum = 0;
 
-            NdArray h = new NdArray(new Real[N_UNITS]);
+            NdArray<T> h = new NdArray<T>(new Real<T>[N_UNITS]);
 
             for (int i = 1; i < s.Count; i++)
             {
                 //l1 Linear
-                NdArray xK = model.Functions[0].Forward(s[i])[0];
+                NdArray<T> xK = model.Functions[0].Forward(s[i])[0];
 
                 //l2 Linear
-                NdArray l2 = model.Functions[1].Forward(h)[0];
+                NdArray<T> l2 = model.Functions[1].Forward(h)[0];
                 for (int j = 0; j < xK.Data.Length; j++)
                 {
                     xK.Data[j] += l2.Data[j];
@@ -171,9 +168,9 @@ namespace KelpNet.Sample.Samples
                 h = model.Functions[2].Forward(xK)[0];
 
                 //l3 Softmax(l3 Linear)
-                NdArray yv = model.Functions[4].Forward(model.Functions[3].Forward(h))[0];
-                Real pi = yv.Data[s[i - 1]];
-                sum -= (Real)Math.Log(pi, 2);
+                NdArray<T> yv = model.Functions[4].Forward(model.Functions[3].Forward(h))[0];
+                Real<T> pi = yv.Data[(int)s[i - 1]];
+                sum -= Math.Log(pi, 2);
             }
 
             return sum;

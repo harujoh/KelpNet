@@ -1,25 +1,19 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    public class LRN : SingleInputFunction
+    public class LRN<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "LRN";
 
         private int n;
-        private Real k;
-        private Real alpha;
-        private Real beta;
-        private Real[] unitScale;
-        private Real[] scale;
+        private Real<T> k;
+        private Real<T> alpha;
+        private Real<T> beta;
+        private Real<T>[] unitScale;
+        private Real<T>[] scale;
 
-        public LRN(int n = 5, Real k = 2, Real alpha = 1e-4f, Real beta = 0.75f, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public LRN(int n = 5, double k = 2, double alpha = 1e-4, double beta = 0.75, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.n = n;
             this.k = k;
@@ -30,14 +24,14 @@ namespace KelpNet
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        private NdArray NeedPreviousForwardCpu(NdArray input)
+        private NdArray<T> NeedPreviousForwardCpu(NdArray<T> input)
         {
             int nHalf = n / 2;
-            Real[] result = new Real[input.Data.Length];
-            Real[] x2 = new Real[input.Data.Length];
-            Real[] sumPart = new Real[input.Data.Length];
-            unitScale = new Real[input.Data.Length];
-            scale = new Real[input.Data.Length];
+            Real<T>[] result = new Real<T>[input.Data.Length];
+            Real<T>[] x2 = new Real<T>[input.Data.Length];
+            Real<T>[] sumPart = new Real<T>[input.Data.Length];
+            unitScale = new Real<T>[input.Data.Length];
+            scale = new Real<T>[input.Data.Length];
 
             for (int i = 0; i < x2.Length; i++)
             {
@@ -76,18 +70,18 @@ namespace KelpNet
             for (int i = 0; i < sumPart.Length; i++)
             {
                 this.unitScale[i] = this.k + this.alpha * sumPart[i];
-                this.scale[i] = (Real)Math.Pow(this.unitScale[i], -this.beta);
+                this.scale[i] = (Real<T>)Math.Pow(this.unitScale[i], -this.beta);
                 result[i] *= this.scale[i];
             }
 
-            return NdArray.Convert(result, input.Shape, input.BatchCount, this);
+            return NdArray<T>.Convert(result, input.Shape, input.BatchCount, this);
         }
 
-        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        private void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             int nHalf = n / 2;
-            Real[] summand = new Real[y.Grad.Length];
-            Real[] sumPart = new Real[y.Grad.Length];
+            Real<T>[] summand = new Real<T>[y.Grad.Length];
+            Real<T>[] sumPart = new Real<T>[y.Grad.Length];
 
             for (int i = 0; i < y.Grad.Length; i++)
             {

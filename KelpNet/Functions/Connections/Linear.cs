@@ -1,70 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class Linear : CompressibleFunction
+    public class Linear<T> : CompressibleFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Linear";
 
         private const string PARAM_NAME = "/*ForwardActivate*/";
         private const string PARAM_VALUE = "gpuYSum = ForwardActivate(gpuYSum);";
 
-        public NdArray Weight;
-        public NdArray Bias;
+        public NdArray<T> Weight;
+        public NdArray<T> Bias;
 
         public readonly bool NoBias;
 
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new[] { new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE) }, name, inputNames, outputNames)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(FUNCTION_NAME, activation, new[] { new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE) }, name, inputNames, outputNames)
         {
             this.OutputCount = outputCount;
             this.InputCount = inputCount;
 
-            this.Weight = new NdArray(outputCount, inputCount);
+            this.Weight = new NdArray<T>(outputCount, inputCount);
             this.Weight.Name = this.Name + " Weight";
 
             this.NoBias = noBias;
 
-            this.Parameters = new NdArray[noBias ? 1 : 2];
+            this.Parameters = new NdArray<T>[noBias ? 1 : 2];
 
             if (initialW == null)
             {
-                Initializer.InitWeight(this.Weight);
+                Initializer<T>.InitWeight(this.Weight);
             }
             else
             {
-                this.Weight.Data = NdArray.GetArray(initialW);
+                this.Weight.Data = Real<T>.GetArray(initialW);
             }
 
             this.Parameters[0] = this.Weight;
 
             if (!noBias)
             {
-                this.Bias = new NdArray(outputCount);
+                this.Bias = new NdArray<T>(outputCount);
                 this.Bias.Name = this.Name + " Bias";
 
                 if (initialb != null)
                 {
-                    this.Bias.Data = NdArray.GetArray(initialb);
+                    this.Bias.Data = Real<T>.GetArray(initialb);
                 }
 
                 this.Parameters[1] = this.Bias;
             }
         }
 
-        Real[] GetBiasedValue(int batchCount)
+        Real<T>[] GetBiasedValue(int batchCount)
         {
-            Real[] y = new Real[OutputCount * batchCount];
+            Real<T>[] y = new Real<T>[OutputCount * batchCount];
 
             for (int i = 0; i < batchCount; i++)
             {
@@ -74,9 +68,9 @@ namespace KelpNet
             return y;
         }
 
-        protected override NdArray NeedPreviousForwardCpu(NdArray x)
+        protected override NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
+            Real<T>[] y = this.NoBias ? new Real<T>[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
             for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
@@ -97,12 +91,12 @@ namespace KelpNet
                 }
             }
 
-            return NdArray.Convert(y, new[] { OutputCount }, x.BatchCount, this);
+            return NdArray<T>.Convert(y, new[] { OutputCount }, x.BatchCount, this);
         }
 
-        Real[] GetActivatedgy(NdArray y)
+        Real<T>[] GetActivatedgy(NdArray<T> y)
         {
-            Real[] activatedgY = new Real[y.Grad.Length];
+            Real<T>[] activatedgY = new Real<T>[y.Grad.Length];
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
             {
@@ -116,7 +110,7 @@ namespace KelpNet
             return activatedgY;
         }
 
-        void CalcBiasGrad(Real[] gy, int batchCount)
+        void CalcBiasGrad(Real<T>[] gy, int batchCount)
         {
             for (int batchCounter = 0; batchCounter < batchCount; batchCounter++)
             {
@@ -127,16 +121,16 @@ namespace KelpNet
             }
         }
 
-        protected override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected override void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            Real<T>[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
             {
                 for (int i = 0; i < this.OutputCount; i++)
                 {
-                    Real gyData = activatedgy[i + batchCount * this.OutputCount];
+                    Real<T> gyData = activatedgy[i + batchCount * this.OutputCount];
 
                     for (int j = 0; j < this.InputCount; j++)
                     {
@@ -147,9 +141,9 @@ namespace KelpNet
             }
         }
 
-        public Convolution2D AsConvolution2D()
+        public Convolution2D<T> AsConvolution2D()
         {
-            return new Convolution2D(this);
+            return new Convolution2D<T>(this);
         }
     }
 }

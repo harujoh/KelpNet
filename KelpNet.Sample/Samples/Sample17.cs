@@ -12,7 +12,7 @@ using KelpNet.Tools.DataImporter.Models.Caffe;
 namespace KelpNet.Sample.Samples
 {
     //ResNetを読み込んで実行する
-    class Sample17
+    class Sample17<T> where T : unmanaged, IComparable<T>
     {
         private const string DOWNLOAD_URL_MEAN = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117894&authkey=%21AAFW2%2DFVoxeVRck";
         private const string DOWNLOAD_URL_50 = "https://onedrive.live.com/download?cid=4006CBB8476FF777&resid=4006CBB8476FF777%2117895&authkey=%21AAFW2%2DFVoxeVRck";
@@ -52,11 +52,11 @@ namespace KelpNet.Sample.Samples
 
                 Console.WriteLine("Mean Loading.");
                 string meanFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL_MEAN, MODEL_FILE_MEAN, MODEL_FILE_MEAN_HASH);
-                NdArray mean = CaffemodelDataLoader.ReadBinary(meanFilePath);
+                NdArray<T> mean = CaffemodelDataLoader<T>.ReadBinary(meanFilePath);
 
                 Console.WriteLine("Model Loading.");
                 string modelFilePath = InternetFileDownloader.Donwload(Urls[resnetId], FileNames[resnetId], Hashes[resnetId]);
-                FunctionDictionary nn = CaffemodelDataLoader.LoadNetWork(modelFilePath);
+                FunctionDictionary<T> nn = CaffemodelDataLoader<T>.LoadNetWork(modelFilePath);
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
@@ -77,13 +77,13 @@ namespace KelpNet.Sample.Samples
                     g.DrawImage(baseImage, 0, 0, 224, 224);
                     g.Dispose();
 
-                    NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true);
+                    NdArray<T> imageArray = NdArrayConverter<T>.Image2NdArray(resultImage, false, true);
                     imageArray -= mean;
                     imageArray.ParentFunc = null;
 
                     Console.WriteLine("Start predict.");
                     Stopwatch sw = Stopwatch.StartNew();
-                    NdArray result = nn.Predict(imageArray)[0];
+                    NdArray<T> result = nn.Predict(imageArray)[0];
                     sw.Stop();
 
                     Console.WriteLine("Result Time : " +

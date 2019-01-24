@@ -2,13 +2,10 @@
 using System.Linq;
 using KelpNet.Tools;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //MLPによるXORの学習
-    class Sample01
+    class Sample01<T> where T : unmanaged, IComparable<T>
     {
         public static void Run()
         {
@@ -16,32 +13,32 @@ namespace KelpNet.Sample.Samples
             const int learningCount = 10000;
 
             //訓練データ
-            Real[][] trainData =
+            Real<T>[][] trainData =
             {
-                new Real[] { 0, 0 },
-                new Real[] { 1, 0 },
-                new Real[] { 0, 1 },
-                new Real[] { 1, 1 }
+                new Real<T>[] { 0, 0 },
+                new Real<T>[] { 1, 0 },
+                new Real<T>[] { 0, 1 },
+                new Real<T>[] { 1, 1 }
             };
 
             //訓練データラベル
-            Real[][] trainLabel =
+            Real<T>[][] trainLabel =
             {
-                new Real[] { 0 },
-                new Real[] { 1 },
-                new Real[] { 1 },
-                new Real[] { 0 }
+                new Real<T>[] { 0 },
+                new Real<T>[] { 1 },
+                new Real<T>[] { 1 },
+                new Real<T>[] { 0 }
             };
 
             //ネットワークの構成は FunctionStack に書き連ねる
-            FunctionStack nn = new FunctionStack(
-                new Linear(2, 2, name: "l1 Linear"),
-                new Sigmoid(name: "l1 Sigmoid"),
-                new Linear(2, 2, name: "l2 Linear")
+            FunctionStack<T> nn = new FunctionStack<T>(
+                new Linear<T>(2, 2, name: "l1 Linear"),
+                new Sigmoid<T>(name: "l1 Sigmoid"),
+                new Linear<T>(2, 2, name: "l2 Linear")
             );
 
             //optimizerを宣言
-            nn.SetOptimizer(new MomentumSGD());
+            nn.SetOptimizer(new MomentumSGD<T>());
 
             //訓練ループ
             Console.WriteLine("Training...");
@@ -50,29 +47,29 @@ namespace KelpNet.Sample.Samples
                 for (int j = 0; j < trainData.Length; j++)
                 {
                     //訓練実行時にロス関数を記述
-                    Trainer.Train(nn, trainData[j], trainLabel[j], new SoftmaxCrossEntropy());
+                    Trainer<T>.Train(nn, trainData[j], trainLabel[j], new SoftmaxCrossEntropy<T>());
                 }
             }
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (Real[] input in trainData)
+            foreach (Real<T>[] input in trainData)
             {
-                NdArray result = nn.Predict(input)[0];
+                NdArray<T> result = nn.Predict(input)[0];
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
 
             //学習の終わったネットワークを保存
-            ModelIO.Save(nn, "test.nn");
+            ModelIO<T>.Save(nn, "test.nn");
 
             //学習の終わったネットワークを読み込み
-            FunctionStack testnn = ModelIO.Load("test.nn");
+            FunctionStack<T> testnn = ModelIO<T>.Load("test.nn");
 
             Console.WriteLine("Test Start...");
-            foreach (Real[] input in trainData)
+            foreach (Real<T>[] input in trainData)
             {
-                NdArray result = testnn.Predict(input)[0];
+                NdArray<T> result = testnn.Predict(input)[0];
                 int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }

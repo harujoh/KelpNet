@@ -1,12 +1,9 @@
 ﻿using System;
 using KelpNet.Tools.DataImporter.Models.Chainer;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
-    class Sample16
+    class Sample16<T> where T : unmanaged, IComparable<T>
     {
         private const string MODEL_FILE_PATH = "Data/ChainerModel.npz";
 
@@ -15,16 +12,16 @@ namespace KelpNet.Sample.Samples
             //読み込みたいネットワークの構成を FunctionStack に書き連ね、各 Function のパラメータを合わせる
             //ここで必ず name を Chainer の変数名に合わせておくこと
 
-            FunctionStack nn = new FunctionStack(
-                new Convolution2D(1, 2, 3, name: "conv1"),//必要であればGPUフラグも忘れずに
-                new ReLU(),
-                new MaxPooling(2, stride:2),
-                new Convolution2D(2, 2, 2, name: "conv2"),
-                new ReLU(),
-                new MaxPooling(2, stride: 2),
-                new Linear(8, 2, name: "fl3"),
-                new ReLU(),
-                new Linear(2, 2, name: "fl4")
+            FunctionStack<T> nn = new FunctionStack<T>(
+                new Convolution2D<T>(1, 2, 3, name: "conv1"),//必要であればGPUフラグも忘れずに
+                new ReLU<T>(),
+                new MaxPooling<T>(2, stride:2),
+                new Convolution2D<T>(2, 2, 2, name: "conv2"),
+                new ReLU<T>(),
+                new MaxPooling<T>(2, stride: 2),
+                new Linear<T>(8, 2, name: "fl3"),
+                new ReLU<T>(),
+                new Linear<T>(2, 2, name: "fl4")
             );
 
             /* Chainerでの宣言
@@ -49,13 +46,13 @@ namespace KelpNet.Sample.Samples
 
 
             //パラメータを読み込み
-            ChainerModelDataLoader.ModelLoad(MODEL_FILE_PATH, nn);
+            ChainerModelDataLoader<T>.ModelLoad(MODEL_FILE_PATH, nn);
 
             //あとは通常通り使用する
-            nn.SetOptimizer(new SGD());
+            nn.SetOptimizer(new SGD<T>());
 
             //入力データ
-            NdArray x = new NdArray(new Real[,,]{{
+            NdArray<T> x = new NdArray<T>(new Real<T>[,,]{{
                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.9f, 0.2f, 0.0f, 0.0f, 0.0f, 0.0f},
                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.8f, 0.9f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f},
                 { 0.0f, 0.0f, 0.0f, 0.1f, 0.8f, 0.5f, 0.8f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f},
@@ -71,13 +68,13 @@ namespace KelpNet.Sample.Samples
             }});
 
             //教師信号
-            Real[] t = { 0.0f, 1.0f };
+            Real<T>[] t = { 0.0f, 1.0f };
 
             //訓練を実施
-            Trainer.Train(nn, x, t, new MeanSquaredError(), false);
+            Trainer<T>.Train(nn, x, t, new MeanSquaredError<T>(), false);
 
             //結果表示用に退避
-            Convolution2D l2 = (Convolution2D)nn.Functions[0];
+            Convolution2D<T> l2 = (Convolution2D<T>)nn.Functions[0];
 
 
             //Updateを実行するとgradが消費されてしまうため値を先に出力

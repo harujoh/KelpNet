@@ -2,23 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class Dropout : SingleInputFunction
+    public class Dropout<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Dropout";
 
-        private readonly Real dropoutRatio;
-        private readonly List<Real[]> maskStack = new List<Real[]>();
+        private readonly Real<T> dropoutRatio;
+        private readonly List<Real<T>[]> maskStack = new List<Real<T>[]>();
 
-        public Dropout(Real dropoutRatio = 0.5f, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             this.dropoutRatio = dropoutRatio;
 
@@ -26,14 +20,14 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        private Real[] MakeMask(int xLength)
+        private Real<T>[] MakeMask(int xLength)
         {
-            Real[] mask = new Real[xLength];
-            Real scale = 1 / (1 - this.dropoutRatio);
+            Real<T>[] mask = new Real<T>[xLength];
+            Real<T> scale = 1 / (1 - this.dropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)
             {
-                mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
+                mask[i] = Mother<T>.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
 
             this.maskStack.Add(mask);
@@ -41,23 +35,23 @@ namespace KelpNet
             return mask;
         }
 
-        public NdArray ForwardCpu(NdArray x)
+        public NdArray<T> ForwardCpu(NdArray<T> x)
         {
-            Real[] result = new Real[x.Data.Length];
-            Real[] mask = MakeMask(x.Length);
+            Real<T>[] result = new Real<T>[x.Data.Length];
+            Real<T>[] mask = MakeMask(x.Length);
 
             for (int i = 0; i < x.Data.Length; i++)
             {
                 result[i] = x.Data[i] * mask[i % mask.Length];
             }
 
-            return NdArray.Convert(result, x.Shape, x.BatchCount, this);
+            return NdArray<T>.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        public void BackwardCpu(NdArray y, NdArray x)
+        public void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            Real[] result = y.Grad.ToArray();
-            Real[] mask = this.maskStack[this.maskStack.Count - 1];
+            Real<T>[] result = y.Grad.ToArray();
+            Real<T>[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
             for (int b = 0; b < y.BatchCount; b++)
@@ -75,7 +69,7 @@ namespace KelpNet
         }
 
         //Predict時に何もしない
-        public override NdArray Predict(NdArray input)
+        public override NdArray<T> Predict(NdArray<T> input)
         {
             return input;
         }

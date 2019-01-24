@@ -1,14 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    public class Concat : MultiInputFunction
+    public class Concat<T> : MultiInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Concat";
         public int Axis;
@@ -23,12 +18,12 @@ namespace KelpNet
             MultiOutputBackward = BackwardCpu;
         }
 
-        private NdArray ForwardCpu(params NdArray[] xs)
+        private NdArray<T> ForwardCpu(params NdArray<T>[] xs)
         {
             int[] sections = new int[xs.Length - 1];
             int sizeOffset = xs[0].Shape[Axis];
 
-            NdArray resultNdArray = xs[0].Clone();
+            NdArray<T> resultNdArray = xs[0].Clone();
             resultNdArray.ParentFunc = this;
 
             for (int i = 1; i < xs.Length; i++)
@@ -37,7 +32,7 @@ namespace KelpNet
                 sections[i - 1] = sizeOffset;
                 sizeOffset += xs[i].Shape[Axis];
 
-                resultNdArray = NdArray.Concatenate(resultNdArray, xs[i], Axis);
+                resultNdArray = NdArray<T>.Concatenate(resultNdArray, xs[i], Axis);
             }
 
             _prevInputSections.Add(sections);
@@ -45,12 +40,12 @@ namespace KelpNet
             return resultNdArray;
         }
 
-        private void BackwardCpu(NdArray y, NdArray[] xs)
+        private void BackwardCpu(NdArray<T> y, NdArray<T>[] xs)
         {
             int[] prevInputShapes = this._prevInputSections[this._prevInputSections.Count - 1];
             this._prevInputSections.RemoveAt(this._prevInputSections.Count - 1);
 
-            NdArray[] result = NdArray.Split(y, prevInputShapes, this.Axis);
+            NdArray<T>[] result = NdArray<T>.Split(y, prevInputShapes, this.Axis);
 
             for (int i = 0; i < xs.Length; i++)
             {

@@ -1,12 +1,8 @@
-﻿#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
+﻿using System;
+
 namespace KelpNet
-#endif
 {
-    public class Div : DualInputFunction
+    public class Div<T> : DualInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "Div";
 
@@ -16,23 +12,23 @@ namespace KelpNet
             DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real[] resultData = new Real[a.Data.Length];
+            Real<T>[] resultData = new Real<T>[a.Data.Length];
 
             for (int i = 0; i < resultData.Length; i++)
             {
                 resultData[i] = a.Data[i] / b.Data[i];
             }
 
-            return new NdArray(resultData, a.Shape, a.BatchCount, this);
+            return new NdArray<T>(resultData, a.Shape, a.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> a, NdArray<T> b)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                Real gx = y.Grad[i] / b.Data[i];
+                Real<T> gx = y.Grad[i] / b.Data[i];
                 a.Grad[i] += gx;
                 b.Grad[i] += -gx * a.Data[i] / b.Data[i];
             }
@@ -40,7 +36,7 @@ namespace KelpNet
     }
 
     //右辺が定数
-    public class DivConst : DualInputFunction
+    public class DivConst<T> : DualInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "DivConst";
 
@@ -50,22 +46,22 @@ namespace KelpNet
             DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real[] resultData = new Real[a.Data.Length];
-            Real val = b.Data[0];
+            Real<T>[] resultData = new Real<T>[a.Data.Length];
+            Real<T> val = b.Data[0];
 
             for (int i = 0; i < resultData.Length; i++)
             {
                 resultData[i] = a.Data[i] / val;
             }
 
-            return new NdArray(resultData, a.Shape, a.BatchCount, this);
+            return new NdArray<T>(resultData, a.Shape, a.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> a, NdArray<T> b)
         {
-            Real val = b.Data[0];
+            Real<T> val = b.Data[0];
 
             for (int i = 0; i < y.Grad.Length; i++)
             {
@@ -75,7 +71,7 @@ namespace KelpNet
     }
 
     //左辺が定数
-    public class ConstDiv : DualInputFunction
+    public class ConstDiv<T> : DualInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "ConstDiv";
 
@@ -85,26 +81,26 @@ namespace KelpNet
             DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real[] resultData = new Real[a.Data.Length];
-            Real val = a.Data[0];
+            Real<T>[] resultData = new Real<T>[a.Data.Length];
+            Real<T> val = a.Data[0];
 
             for (int i = 0; i < resultData.Length; i++)
             {
                 resultData[i] = val / b.Data[i];
             }
 
-            return new NdArray(resultData, b.Shape, b.BatchCount, this);
+            return new NdArray<T>(resultData, b.Shape, b.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> a, NdArray<T> b)
         {
-            Real val = a.Data[0];
+            Real<T> val = a.Data[0];
 
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                Real gx = y.Grad[i] / b.Data[i];
+                Real<T> gx = y.Grad[i] / b.Data[i];
                 b.Grad[i] += -gx * val / b.Data[i];
             }
         }

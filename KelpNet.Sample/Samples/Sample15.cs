@@ -9,13 +9,10 @@ using System.Windows.Forms;
 using KelpNet.Tools;
 using KelpNet.Tools.DataImporter.Models.Caffe;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //CaffeモデルのVGGを読み込んで画像分類をさせるテスト
-    class Sample15
+    class Sample15<T> where T : unmanaged, IComparable<T>
     {
         private const string DOWNLOAD_URL = "http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/";
         private const string VGG16_MODEL_FILE = "VGG_ILSVRC_16_layers.caffemodel";
@@ -43,7 +40,7 @@ namespace KelpNet.Sample.Samples
 
                 Console.WriteLine("Model Loading.");
                 string modelFilePath = InternetFileDownloader.Donwload(Urls[vggId], FileNames[vggId], Hashes[vggId]);
-                List<Function> vggNet = CaffemodelDataLoader.ModelLoad(modelFilePath);
+                List<Function<T>> vggNet = CaffemodelDataLoader<T>.ModelLoad(modelFilePath);
 
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
@@ -56,7 +53,7 @@ namespace KelpNet.Sample.Samples
                 //    }
                 //}
 
-                FunctionStack nn = new FunctionStack(vggNet.ToArray());
+                FunctionStack<T> nn = new FunctionStack<T>(vggNet.ToArray());
 
                 //層を圧縮
                 nn.Compress();
@@ -72,12 +69,12 @@ namespace KelpNet.Sample.Samples
                     g.DrawImage(baseImage, 0, 0, 224, 224);
                     g.Dispose();
 
-                    Real[] bias = {-123.68f, -116.779f, -103.939f}; //補正値のチャンネル順は入力画像に従う
-                    NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true, bias);
+                    Real<T>[] bias = {-123.68f, -116.779f, -103.939f}; //補正値のチャンネル順は入力画像に従う
+                    NdArray<T> imageArray = NdArrayConverter<T>.Image2NdArray(resultImage, false, true, bias);
 
                     Console.WriteLine("Start predict.");
                     Stopwatch sw = Stopwatch.StartNew();
-                    NdArray result = nn.Predict(imageArray)[0];
+                    NdArray<T> result = nn.Predict(imageArray)[0];
                     sw.Stop();
 
                     Console.WriteLine("Result Time : " +

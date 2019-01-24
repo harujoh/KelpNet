@@ -1,39 +1,33 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
     [Serializable]
-    public class GradientClipping : Optimizer
+    public class GradientClipping<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
-        public Real Threshold;
+        public Real<T> Threshold;
 
-        public GradientClipping(Real threshold)
+        public GradientClipping(Real<T> threshold)
         {
             this.Threshold = threshold;
         }
 
-        internal override void AddFunctionParameters(NdArray[] functionParameters)
+        internal override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
-            foreach (NdArray functionParameter in functionParameters)
+            foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new GradientClippingParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new GradientClippingParameter<T>(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class GradientClippingParameter : OptimizerParameter
+    class GradientClippingParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        private readonly GradientClipping optimizer;
+        private readonly GradientClipping<T> optimizer;
 
-        public GradientClippingParameter(NdArray functionParameter, GradientClipping optimizer) : base(functionParameter)
+        public GradientClippingParameter(NdArray<T> functionParameter, GradientClipping<T> optimizer) : base(functionParameter)
         {
             this.optimizer = optimizer;
         }
@@ -41,15 +35,15 @@ namespace KelpNet
         public override void UpdateFunctionParameters()
         {
             //_sum_sqnorm
-            Real s = 0;
+            Real<T> s = 0;
 
             for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
                 s += this.FunctionParameter.Grad[i] * this.FunctionParameter.Grad[i];
             }
 
-            Real norm = (Real)Math.Sqrt(s);
-            Real rate = this.optimizer.Threshold / norm;
+            Real<T> norm = (Real<T>)Math.Sqrt(s);
+            Real<T> rate = this.optimizer.Threshold / norm;
 
             if (rate < 1)
             {

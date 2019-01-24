@@ -2,16 +2,13 @@
 using System.Linq;
 using KelpNet.Sample.DataManager;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //Decoupled Neural Interfaces using Synthetic GradientsによるMNIST（手書き文字）の学習
     // 教師信号にラベル情報を混ぜ込むcDNI
     // モデルDと表現されている全層のDecoupledを非同期で実行
     // http://ralo23.hatenablog.com/entry/2016/10/22/233405
-    class Sample12
+    class Sample12<T> where T : unmanaged, IComparable<T>
     {
         //ミニバッチの数
         const int BATCH_DATA_COUNT = 256;
@@ -24,18 +21,18 @@ namespace KelpNet.Sample.Samples
 
         class ResultDataSet
         {
-            public readonly NdArray[] Result;
-            public readonly NdArray Label;
+            public readonly NdArray<T>[] Result;
+            public readonly NdArray<T> Label;
 
-            public ResultDataSet(NdArray[] result, NdArray label)
+            public ResultDataSet(NdArray<T>[] result, NdArray<T> label)
             {
                 this.Result = result;
                 this.Label = label;
             }
 
-            public NdArray GetTrainData()
+            public NdArray<T> GetTrainData()
             {
-                Real[] tmp = new Real[(256 + 10) * BATCH_DATA_COUNT];
+                Real<T>[] tmp = new Real<T>[(256 + 10) * BATCH_DATA_COUNT];
 
                 for (int i = 0; i < BATCH_DATA_COUNT; i++)
                 {
@@ -43,7 +40,7 @@ namespace KelpNet.Sample.Samples
                     Array.Copy(this.Result[0].Data, i * this.Result.Length, tmp, i * (256 + 10), 256);
                 }
 
-                return NdArray.Convert(tmp, new[] { 256 + 10 }, BATCH_DATA_COUNT);
+                return NdArray<T>.Convert(tmp, new[] { 256 + 10 }, BATCH_DATA_COUNT);
             }
         }
 
@@ -51,35 +48,35 @@ namespace KelpNet.Sample.Samples
         {
             //MNISTのデータを用意する
             Console.WriteLine("MNIST Data Loading...");
-            MnistData mnistData = new MnistData();
+            MnistData<T> mnistData = new MnistData<T>();
 
             Console.WriteLine("Training Start...");
 
             //ネットワークの構成を FunctionStack に書き連ねる
-            FunctionStack Layer1 = new FunctionStack(
-                new Linear(28 * 28, 256, name: "l1 Linear"),
-                new BatchNormalization(256, name: "l1 Norm"),
-                new ReLU(name: "l1 ReLU")
+            FunctionStack<T> Layer1 = new FunctionStack<T>(
+                new Linear<T>(28 * 28, 256, name: "l1 Linear"),
+                new BatchNormalization<T>(256, name: "l1 Norm"),
+                new ReLU<T>(name: "l1 ReLU")
             );
 
-            FunctionStack Layer2 = new FunctionStack(
-                new Linear(256, 256, name: "l2 Linear"),
-                new BatchNormalization(256, name: "l2 Norm"),
-                new ReLU(name: "l2 ReLU")
+            FunctionStack<T> Layer2 = new FunctionStack<T>(
+                new Linear<T>(256, 256, name: "l2 Linear"),
+                new BatchNormalization<T>(256, name: "l2 Norm"),
+                new ReLU<T>(name: "l2 ReLU")
             );
 
-            FunctionStack Layer3 = new FunctionStack(
-                new Linear(256, 256, name: "l3 Linear"),
-                new BatchNormalization(256, name: "l3 Norm"),
-                new ReLU(name: "l3 ReLU")
+            FunctionStack<T> Layer3 = new FunctionStack<T>(
+                new Linear<T>(256, 256, name: "l3 Linear"),
+                new BatchNormalization<T>(256, name: "l3 Norm"),
+                new ReLU<T>(name: "l3 ReLU")
             );
 
-            FunctionStack Layer4 = new FunctionStack(
-                new Linear(256, 10, name: "l4 Linear")
+            FunctionStack<T> Layer4 = new FunctionStack<T>(
+                new Linear<T>(256, 10, name: "l4 Linear")
             );
 
             //FunctionStack自身もFunctionとして積み上げられる
-            FunctionStack nn = new FunctionStack
+            FunctionStack<T> nn = new FunctionStack<T>
             (
                 Layer1,
                 Layer2,
@@ -87,46 +84,46 @@ namespace KelpNet.Sample.Samples
                 Layer4
             );
 
-            FunctionStack cDNI1 = new FunctionStack(
-                new Linear(256 + 10, 1024, name: "cDNI1 Linear1"),
-                new BatchNormalization(1024, name: "cDNI1 Nrom1"),
-                new ReLU(name: "cDNI1 ReLU1"),
-                new Linear(1024, 256, initialW: new Real[1024, 256], name: "DNI1 Linear3")
+            FunctionStack<T> cDNI1 = new FunctionStack<T>(
+                new Linear<T>(256 + 10, 1024, name: "cDNI1 Linear1"),
+                new BatchNormalization<T>(1024, name: "cDNI1 Nrom1"),
+                new ReLU<T>(name: "cDNI1 ReLU1"),
+                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "DNI1 Linear3")
             );
 
-            FunctionStack cDNI2 = new FunctionStack(
-                new Linear(256 + 10, 1024, name: "cDNI2 Linear1"),
-                new BatchNormalization(1024, name: "cDNI2 Nrom1"),
-                new ReLU(name: "cDNI2 ReLU1"),
-                new Linear(1024, 256, initialW: new Real[1024, 256], name: "cDNI2 Linear3")
+            FunctionStack<T> cDNI2 = new FunctionStack<T>(
+                new Linear<T>(256 + 10, 1024, name: "cDNI2 Linear1"),
+                new BatchNormalization<T>(1024, name: "cDNI2 Nrom1"),
+                new ReLU<T>(name: "cDNI2 ReLU1"),
+                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "cDNI2 Linear3")
             );
 
-            FunctionStack cDNI3 = new FunctionStack(
-                new Linear(256 + 10, 1024, name: "cDNI3 Linear1"),
-                new BatchNormalization(1024, name: "cDNI3 Nrom1"),
-                new ReLU(name: "cDNI3 ReLU1"),
-                new Linear(1024, 256, initialW: new Real[1024, 256], name: "cDNI3 Linear3")
+            FunctionStack<T> cDNI3 = new FunctionStack<T>(
+                new Linear<T>(256 + 10, 1024, name: "cDNI3 Linear1"),
+                new BatchNormalization<T>(1024, name: "cDNI3 Nrom1"),
+                new ReLU<T>(name: "cDNI3 ReLU1"),
+                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "cDNI3 Linear3")
             );
 
             //optimizerを宣言
-            Layer1.SetOptimizer(new Adam(0.00003f));
-            Layer2.SetOptimizer(new Adam(0.00003f));
-            Layer3.SetOptimizer(new Adam(0.00003f));
-            Layer4.SetOptimizer(new Adam(0.00003f));
+            Layer1.SetOptimizer(new Adam<T>(0.00003f));
+            Layer2.SetOptimizer(new Adam<T>(0.00003f));
+            Layer3.SetOptimizer(new Adam<T>(0.00003f));
+            Layer4.SetOptimizer(new Adam<T>(0.00003f));
 
-            cDNI1.SetOptimizer(new Adam(0.00003f));
-            cDNI2.SetOptimizer(new Adam(0.00003f));
-            cDNI3.SetOptimizer(new Adam(0.00003f));
+            cDNI1.SetOptimizer(new Adam<T>(0.00003f));
+            cDNI2.SetOptimizer(new Adam<T>(0.00003f));
+            cDNI3.SetOptimizer(new Adam<T>(0.00003f));
 
             for (int epoch = 0; epoch < 10; epoch++)
             {
                 Console.WriteLine("epoch " + (epoch + 1));
 
                 //全体での誤差を集計
-                Real totalLoss = 0;
-                Real cDNI1totalLoss = 0;
-                Real cDNI2totalLoss = 0;
-                Real cDNI3totalLoss = 0;
+                Real<T> totalLoss = 0;
+                Real<T> cDNI1totalLoss = 0;
+                Real<T> cDNI2totalLoss = 0;
+                Real<T> cDNI3totalLoss = 0;
 
                 long totalLossCount = 0;
                 long cDNI1totalLossCount = 0;
@@ -138,14 +135,14 @@ namespace KelpNet.Sample.Samples
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet<T> datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //第一層を実行
-                    NdArray[] layer1ForwardResult = Layer1.Forward(datasetX.Data);
+                    NdArray<T>[] layer1ForwardResult = Layer1.Forward(datasetX.Data);
                     ResultDataSet layer1ResultDataSet = new ResultDataSet(layer1ForwardResult, datasetX.Label);
 
                     //第一層の傾きを取得
-                    NdArray[] cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
+                    NdArray<T>[] cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
 
                     //第一層の傾きを適用
                     layer1ForwardResult[0].Grad = cDNI1Result[0].Data.ToArray();
@@ -156,11 +153,11 @@ namespace KelpNet.Sample.Samples
                     Layer1.Update();
 
                     //第二層を実行
-                    NdArray[] layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
+                    NdArray<T>[] layer2ForwardResult = Layer2.Forward(layer1ResultDataSet.Result);
                     ResultDataSet layer2ResultDataSet = new ResultDataSet(layer2ForwardResult, layer1ResultDataSet.Label);
 
                     //第二層の傾きを取得
-                    NdArray[] cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
+                    NdArray<T>[] cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
                     //第二層の傾きを適用
                     layer2ForwardResult[0].Grad = cDNI2Result[0].Data.ToArray();
@@ -171,7 +168,7 @@ namespace KelpNet.Sample.Samples
 
 
                     //第一層用のcDNIの学習を実行
-                    Real cDNI1loss = new MeanSquaredError().Evaluate(cDNI1Result, new NdArray(layer1ResultDataSet.Result[0].Grad, cDNI1Result[0].Shape, cDNI1Result[0].BatchCount));
+                    Real<T> cDNI1loss = new MeanSquaredError<T>().Evaluate(cDNI1Result, new NdArray<T>(layer1ResultDataSet.Result[0].Grad, cDNI1Result[0].Shape, cDNI1Result[0].BatchCount));
 
                     Layer2.Update();
 
@@ -182,11 +179,11 @@ namespace KelpNet.Sample.Samples
                     cDNI1totalLossCount++;
 
                     //第三層を実行
-                    NdArray[] layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
+                    NdArray<T>[] layer3ForwardResult = Layer3.Forward(layer2ResultDataSet.Result);
                     ResultDataSet layer3ResultDataSet = new ResultDataSet(layer3ForwardResult, layer2ResultDataSet.Label);
 
                     //第三層の傾きを取得
-                    NdArray[] cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
+                    NdArray<T>[] cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
 
                     //第三層の傾きを適用
                     layer3ForwardResult[0].Grad = cDNI3Result[0].Data.ToArray();
@@ -196,7 +193,7 @@ namespace KelpNet.Sample.Samples
                     layer3ForwardResult[0].ParentFunc = null;
 
                     //第二層用のcDNIの学習を実行
-                    Real cDNI2loss = new MeanSquaredError().Evaluate(cDNI2Result, new NdArray(layer2ResultDataSet.Result[0].Grad, cDNI2Result[0].Shape, cDNI2Result[0].BatchCount));
+                    Real<T> cDNI2loss = new MeanSquaredError<T>().Evaluate(cDNI2Result, new NdArray<T>(layer2ResultDataSet.Result[0].Grad, cDNI2Result[0].Shape, cDNI2Result[0].BatchCount));
 
                     Layer3.Update();
 
@@ -207,10 +204,10 @@ namespace KelpNet.Sample.Samples
                     cDNI2totalLossCount++;
 
                     //第四層を実行
-                    NdArray[] layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
+                    NdArray<T>[] layer4ForwardResult = Layer4.Forward(layer3ResultDataSet.Result);
 
                     //第四層の傾きを取得
-                    Real sumLoss = new SoftmaxCrossEntropy().Evaluate(layer4ForwardResult, layer3ResultDataSet.Label);
+                    Real<T> sumLoss = new SoftmaxCrossEntropy<T>().Evaluate(layer4ForwardResult, layer3ResultDataSet.Label);
 
                     //第四層を更新
                     Layer4.Backward(layer4ForwardResult);
@@ -220,7 +217,7 @@ namespace KelpNet.Sample.Samples
                     totalLossCount++;
 
                     //第三層用のcDNIの学習を実行
-                    Real cDNI3loss = new MeanSquaredError().Evaluate(cDNI3Result, new NdArray(layer3ResultDataSet.Result[0].Grad, cDNI3Result[0].Shape, cDNI3Result[0].BatchCount));
+                    Real<T> cDNI3loss = new MeanSquaredError<T>().Evaluate(cDNI3Result, new NdArray<T>(layer3ResultDataSet.Result[0].Grad, cDNI3Result[0].Shape, cDNI3Result[0].BatchCount));
 
                     Layer4.Update();
 
@@ -249,10 +246,10 @@ namespace KelpNet.Sample.Samples
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        TestDataSet<T> datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real<T> accuracy = Trainer<T>.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

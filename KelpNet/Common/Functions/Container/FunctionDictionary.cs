@@ -2,27 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class FunctionDictionary : Function
+    public class FunctionDictionary<T> : Function<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "FunctionDictionary";
 
         //関数に入出力のキーを付加したFunctionRecordという単位で管理する
-        public Dictionary<string, FunctionStack> FunctionBlockDictionary = new Dictionary<string, FunctionStack>();
+        public Dictionary<string, FunctionStack<T>> FunctionBlockDictionary = new Dictionary<string, FunctionStack<T>>();
 
         //分割関数の名前を保持する辞書
-        public Dictionary<string, FunctionStack> SplitedFunctionDictionary = new Dictionary<string, FunctionStack>();
+        public Dictionary<string, FunctionStack<T>> SplitedFunctionDictionary = new Dictionary<string, FunctionStack<T>>();
 
         //辞書の実行順リスト
-        public List<FunctionStack> FunctionBlocks = new List<FunctionStack>();
+        public List<FunctionStack<T>> FunctionBlocks = new List<FunctionStack<T>>();
 
         private readonly bool _compress = false;
 
@@ -33,10 +27,10 @@ namespace KelpNet
         }
 
         //関数の追加
-        public void Add(Function function)
+        public void Add(Function<T> function)
         {
             if (_compress && //分岐毎のまとめを行うか
-                (function is SingleInputFunction || function is MultiOutputFunction)) //入力が一つの関数のみまとめられる
+                (function is SingleInputFunction<T> || function is MultiOutputFunction<T>)) //入力が一つの関数のみまとめられる
             {
                 //入力名称で辞書に登録が有るかチェック
                 if (this.FunctionBlockDictionary.ContainsKey(function.InputNames[0]))
@@ -50,7 +44,7 @@ namespace KelpNet
                     //分割済み関数なら分割元の出力名を更新する
                     if (SplitedFunctionDictionary.ContainsKey(function.InputNames[0]))
                     {
-                        FunctionStack spliteFunction = SplitedFunctionDictionary[function.InputNames[0]];
+                        FunctionStack<T> spliteFunction = SplitedFunctionDictionary[function.InputNames[0]];
 
                         for (int i = 0; i < spliteFunction.OutputNames.Length; i++)
                         {
@@ -66,15 +60,15 @@ namespace KelpNet
                         }
                     }
 
-                    if (!(function is MultiOutputFunction) && //出力が分岐する場合は登録せずリンクを切る
+                    if (!(function is MultiOutputFunction<T>) && //出力が分岐する場合は登録せずリンクを切る
                       !this.FunctionBlockDictionary.ContainsKey(function.OutputNames[0])) //既に登録されている場合は登録しない
                     {
                         //リンクを辞書へ追加
                         this.FunctionBlockDictionary.Add(function.OutputNames[0], this.FunctionBlockDictionary[function.InputNames[0]]);
                     }
-                    else if (function is SplitFunction) //SplitFunctionの場合
+                    else if (function is SplitFunction<T>) //SplitFunctionの場合
                     {
-                        var splitFunctions = ((SplitFunction)function).SplitedFunctions;
+                        var splitFunctions = ((SplitFunction<T>)function).SplitedFunctions;
 
                         for (int i = 0; i < splitFunctions.Length; i++)
                         {
@@ -101,7 +95,7 @@ namespace KelpNet
             else
             {
                 //登録がなければブロックを新規に作る
-                FunctionStack functionRecord = new FunctionStack(function, function.Name, function.InputNames, function.OutputNames);
+                FunctionStack<T> functionRecord = new FunctionStack<T>(function, function.Name, function.InputNames, function.OutputNames);
 
                 //実行順に登録
                 this.FunctionBlocks.Add(functionRecord);
@@ -112,12 +106,12 @@ namespace KelpNet
         }
 
         //Forward
-        public override NdArray[] Forward(params NdArray[] xs)
+        public override NdArray<T>[] Forward(params NdArray<T>[] xs)
         {
-            NdArray[] result = xs;
+            NdArray<T>[] result = xs;
 
             //出力データの辞書
-            Dictionary<string, NdArray> outPuts = new Dictionary<string, NdArray>();
+            Dictionary<string, NdArray<T>> outPuts = new Dictionary<string, NdArray<T>>();
 
             //最初のデータを辞書に登録
             for (int i = 0; i < FunctionBlocks[0].InputNames.Length; i++)
@@ -129,7 +123,7 @@ namespace KelpNet
             for (int i = 0; i < FunctionBlocks.Count; i++)
             {
                 string[] inputBlockNames = FunctionBlocks[i].InputNames;
-                NdArray[] inputData = new NdArray[inputBlockNames.Length];
+                NdArray<T>[] inputData = new NdArray<T>[inputBlockNames.Length];
 
                 //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
@@ -151,9 +145,9 @@ namespace KelpNet
         }
 
         //Backward
-        public override void Backward(params NdArray[] ys)
+        public override void Backward(params NdArray<T>[] ys)
         {
-            NdArray.Backward(ys[0]);
+            NdArray<T>.Backward(ys[0]);
         }
 
         //重みの更新処理
@@ -175,12 +169,12 @@ namespace KelpNet
         }
 
         //予想を実行する
-        public override NdArray[] Predict(params NdArray[] xs)
+        public override NdArray<T>[] Predict(params NdArray<T>[] xs)
         {
-            NdArray[] result = xs;
+            NdArray<T>[] result = xs;
 
             //出力データの辞書
-            Dictionary<string, NdArray> outPuts = new Dictionary<string, NdArray>();
+            Dictionary<string, NdArray<T>> outPuts = new Dictionary<string, NdArray<T>>();
 
             //出力したデータを辞書に登録
             for (int j = 0; j < FunctionBlocks[0].InputNames.Length; j++)
@@ -191,7 +185,7 @@ namespace KelpNet
             for (int i = 0; i < FunctionBlocks.Count; i++)
             {
                 string[] inputBlockNames = FunctionBlocks[i].InputNames;
-                NdArray[] inputData = new NdArray[inputBlockNames.Length];
+                NdArray<T>[] inputData = new NdArray<T>[inputBlockNames.Length];
 
                 //入力するデータを集めてくる
                 for (int j = 0; j < inputBlockNames.Length; j++)
@@ -212,7 +206,7 @@ namespace KelpNet
             return result;
         }
 
-        public override void SetOptimizer(params Optimizer[] optimizers)
+        public override void SetOptimizer(params Optimizer<T>[] optimizers)
         {
             foreach (var functionBlock in FunctionBlocks)
             {

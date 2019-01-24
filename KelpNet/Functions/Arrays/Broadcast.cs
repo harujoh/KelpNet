@@ -2,16 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class Broadcast : SingleInputFunction
+    public class Broadcast<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Broadcast";
         public int[] Shape;
@@ -24,7 +18,7 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        NdArray ForwardCpu(NdArray val)
+        NdArray<T> ForwardCpu(NdArray<T> val)
         {
             int[] resultShape;
 
@@ -69,7 +63,7 @@ namespace KelpNet
                 }
             }
 
-            NdArray result = new NdArray(resultShape, val.BatchCount, this);
+            NdArray<T> result = new NdArray<T>(resultShape, val.BatchCount, this);
             int indexOffset = result.Shape.Length - val.Shape.Length;
 
             for (int batchCount = 0; batchCount < result.BatchCount; batchCount++)
@@ -99,13 +93,13 @@ namespace KelpNet
             return result;
         }
 
-        protected void BackwardCpu(NdArray y, NdArray x)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             int ndim = x.Shape.Length;
 
             if (y.Shape.Length != ndim)
             {
-                NdArray.Sum(y, false, Enumerable.Range(0, y.Shape.Length - ndim).ToArray());
+                NdArray<T>.Sum(y, false, Enumerable.Range(0, y.Shape.Length - ndim).ToArray());
             }
 
             List<int> axis = new List<int>();
@@ -119,7 +113,7 @@ namespace KelpNet
 
             if (axis.Count > 0)
             {
-                NdArray result = NdArray.Sum(y, true, axis.ToArray());
+                NdArray<T> result = NdArray<T>.Sum(y, true, axis.ToArray());
                 for (int i = 0; i < x.Grad.Length; i++)
                 {
                     x.Grad[i] += result.Grad[i];

@@ -1,14 +1,8 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    public class Tan : SingleInputFunction
+    public class Tan<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "Tan";
 
@@ -18,23 +12,23 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray x)
+        protected NdArray<T> ForwardCpu(NdArray<T> x)
         {
-            Real[] resultData = new Real[x.Data.Length];
+            Real<T>[] resultData = new Real<T>[x.Data.Length];
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = (Real)Math.Tan(x.Data[i]);
+                resultData[i] = Math.Tan(x.Data[i]);
             }
 
-            return new NdArray(resultData, x.Shape, x.BatchCount, this);
+            return new NdArray<T>(resultData, x.Shape, x.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray x)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                Real gx = (Real)Math.Cos(x.Data[i]);
+                Real<T> gx = Math.Cos(x.Data[i]);
                 x.Grad[i] += 1 / (gx * gx) * y.Grad[i];
             }
         }

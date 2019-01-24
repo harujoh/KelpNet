@@ -1,14 +1,11 @@
 ﻿using System;
 using KelpNet.Sample.DataManager;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //バッチノーマライゼーションを使った15層MLPによるMNIST（手書き文字）の学習
     //参考： http://takatakamanbou.hatenablog.com/entry/2015/12/20/233232
-    class Sample07
+    class Sample07<T> where T : unmanaged, IComparable<T>
     {
         //ミニバッチの数
         const int BATCH_DATA_COUNT = 128;
@@ -26,55 +23,55 @@ namespace KelpNet.Sample.Samples
         {
             //MNISTのデータを用意する
             Console.WriteLine("MNIST Data Loading...");
-            MnistData mnistData = new MnistData();
+            MnistData<T> mnistData = new MnistData<T>();
 
             Console.WriteLine("Training Start...");
 
             //ネットワークの構成を FunctionStack に書き連ねる
-            FunctionStack nn = new FunctionStack(
-                new Linear(28 * 28, N, name: "l1 Linear"), // L1
-                new BatchNormalization(N, name: "l1 BatchNorm"),
-                new ReLU(name: "l1 ReLU"),
-                new Linear(N, N, name: "l2 Linear"), // L2
-                new BatchNormalization(N, name: "l2 BatchNorm"),
-                new ReLU(name: "l2 ReLU"),
-                new Linear(N, N, name: "l3 Linear"), // L3
-                new BatchNormalization(N, name: "l3 BatchNorm"),
-                new ReLU(name: "l3 ReLU"),
-                new Linear(N, N, name: "l4 Linear"), // L4
-                new BatchNormalization(N, name: "l4 BatchNorm"),
-                new ReLU(name: "l4 ReLU"),
-                new Linear(N, N, name: "l5 Linear"), // L5
-                new BatchNormalization(N, name: "l5 BatchNorm"),
-                new ReLU(name: "l5 ReLU"),
-                new Linear(N, N, name: "l6 Linear"), // L6
-                new BatchNormalization(N, name: "l6 BatchNorm"),
-                new ReLU(name: "l6 ReLU"),
-                new Linear(N, N, name: "l7 Linear"), // L7
-                new BatchNormalization(N, name: "l7 BatchNorm"),
-                new ReLU(name: "l7 ReLU"),
-                new Linear(N, N, name: "l8 Linear"), // L8
-                new BatchNormalization(N, name: "l8 BatchNorm"),
-                new ReLU(name: "l8 ReLU"),
-                new Linear(N, N, name: "l9 Linear"), // L9
-                new BatchNormalization(N, name: "l9 BatchNorm"),
-                new ReLU(name: "l9 ReLU"),
-                new Linear(N, N, name: "l10 Linear"), // L10
-                new BatchNormalization(N, name: "l10 BatchNorm"),
-                new ReLU(name: "l10 ReLU"),
-                new Linear(N, N, name: "l11 Linear"), // L11
-                new BatchNormalization(N, name: "l11 BatchNorm"),
-                new ReLU(name: "l11 ReLU"),
-                new Linear(N, N, name: "l12 Linear"), // L12
-                new BatchNormalization(N, name: "l12 BatchNorm"),
-                new ReLU(name: "l12 ReLU"),
-                new Linear(N, N, name: "l13 Linear"), // L13
-                new BatchNormalization(N, name: "l13 BatchNorm"),
-                new ReLU(name: "l13 ReLU"),
-                new Linear(N, N, name: "l14 Linear"), // L14
-                new BatchNormalization(N, name: "l14 BatchNorm"),
-                new ReLU(name: "l14 ReLU"),
-                new Linear(N, 10, name: "l15 Linear") // L15
+            FunctionStack<T> nn = new FunctionStack<T>(
+                new Linear<T>(28 * 28, N, name: "l1 Linear"), // L1
+                new BatchNormalization<T>(N, name: "l1 BatchNorm"),
+                new ReLU<T>(name: "l1 ReLU"),
+                new Linear<T>(N, N, name: "l2 Linear"), // L2
+                new BatchNormalization<T>(N, name: "l2 BatchNorm"),
+                new ReLU<T>(name: "l2 ReLU"),
+                new Linear<T>(N, N, name: "l3 Linear"), // L3
+                new BatchNormalization<T>(N, name: "l3 BatchNorm"),
+                new ReLU<T>(name: "l3 ReLU"),
+                new Linear<T>(N, N, name: "l4 Linear"), // L4
+                new BatchNormalization<T>(N, name: "l4 BatchNorm"),
+                new ReLU<T>(name: "l4 ReLU"),
+                new Linear<T>(N, N, name: "l5 Linear"), // L5
+                new BatchNormalization<T>(N, name: "l5 BatchNorm"),
+                new ReLU<T>(name: "l5 ReLU"),
+                new Linear<T>(N, N, name: "l6 Linear"), // L6
+                new BatchNormalization<T>(N, name: "l6 BatchNorm"),
+                new ReLU<T>(name: "l6 ReLU"),
+                new Linear<T>(N, N, name: "l7 Linear"), // L7
+                new BatchNormalization<T>(N, name: "l7 BatchNorm"),
+                new ReLU<T>(name: "l7 ReLU"),
+                new Linear<T>(N, N, name: "l8 Linear"), // L8
+                new BatchNormalization<T>(N, name: "l8 BatchNorm"),
+                new ReLU<T>(name: "l8 ReLU"),
+                new Linear<T>(N, N, name: "l9 Linear"), // L9
+                new BatchNormalization<T>(N, name: "l9 BatchNorm"),
+                new ReLU<T>(name: "l9 ReLU"),
+                new Linear<T>(N, N, name: "l10 Linear"), // L10
+                new BatchNormalization<T>(N, name: "l10 BatchNorm"),
+                new ReLU<T>(name: "l10 ReLU"),
+                new Linear<T>(N, N, name: "l11 Linear"), // L11
+                new BatchNormalization<T>(N, name: "l11 BatchNorm"),
+                new ReLU<T>(name: "l11 ReLU"),
+                new Linear<T>(N, N, name: "l12 Linear"), // L12
+                new BatchNormalization<T>(N, name: "l12 BatchNorm"),
+                new ReLU<T>(name: "l12 ReLU"),
+                new Linear<T>(N, N, name: "l13 Linear"), // L13
+                new BatchNormalization<T>(N, name: "l13 BatchNorm"),
+                new ReLU<T>(name: "l13 ReLU"),
+                new Linear<T>(N, N, name: "l14 Linear"), // L14
+                new BatchNormalization<T>(N, name: "l14 BatchNorm"),
+                new ReLU<T>(name: "l14 ReLU"),
+                new Linear<T>(N, 10, name: "l15 Linear") // L15
             );
 
             //この構成では学習が進まない
@@ -92,7 +89,7 @@ namespace KelpNet.Sample.Samples
             //);
 
             //optimizerを宣言
-            nn.SetOptimizer(new AdaGrad());
+            nn.SetOptimizer(new AdaGrad<T>());
 
             //三世代学習
             for (int epoch = 0; epoch < 3; epoch++)
@@ -101,17 +98,17 @@ namespace KelpNet.Sample.Samples
 
                 //全体での誤差を集計
                 //List<Real> totalLoss = new List<Real>();
-                Real totalLoss = 0;
+                Real<T> totalLoss = 0;
                 long totalLossCounter = 0;
 
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet<T> datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //学習を実行
-                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    Real<T> sumLoss = Trainer<T>.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy<T>());
                     totalLoss += sumLoss;
                     totalLossCounter++;
 
@@ -126,10 +123,10 @@ namespace KelpNet.Sample.Samples
                         Console.WriteLine("Testing...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        TestDataSet<T> datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real<T> accuracy = Trainer<T>.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

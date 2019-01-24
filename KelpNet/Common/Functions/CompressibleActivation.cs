@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public abstract class CompressibleActivation : SingleInputFunction
+    public abstract class CompressibleActivation<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Activation";
 
         //.Netで使用するActivateの仮想関数
-        internal abstract Real ForwardActivate(Real x);
-        internal abstract Real BackwardActivate(Real gy, Real y);
+        internal abstract Real<T> ForwardActivate(Real<T> x);
+        internal abstract Real<T> BackwardActivate(Real<T> gy, Real<T> y);
 
         protected string ActivateKernelString;
 
@@ -26,19 +20,19 @@ namespace KelpNet
             this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
         }
 
-        private NdArray NeedPreviousForwardCpu(NdArray x)
+        private NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real[] y = new Real[x.Data.Length];
+            Real<T>[] y = new Real<T>[x.Data.Length];
 
             for (int i = 0; i < y.Length; i++)
             {
                 y[i] = this.ForwardActivate(x.Data[i]);
             }
 
-            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
+            return NdArray<T>.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        private void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             for (int i = 0; i < x.Grad.Length; i++)
             {

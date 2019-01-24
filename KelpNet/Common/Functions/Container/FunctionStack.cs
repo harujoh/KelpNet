@@ -1,47 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     //層を積み上げるこのライブラリのメインとなるクラス
     //一回のForward、Backward、Updateで同時に実行される関数の集まり
     [Serializable]
-    public class FunctionStack : Function
+    public class FunctionStack<T> : Function<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "FunctionStack";
 
         //すべての層がココにFunctionクラスとして保管される
-        public Function[] Functions { get; private set; }
+        public Function<T>[] Functions { get; private set; }
 
         //コンストラクタ
-        public FunctionStack(Function[] functions, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public FunctionStack(Function<T>[] functions, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Functions = functions;
         }
 
-        public FunctionStack(Function function, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public FunctionStack(Function<T> function, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Functions = new[] { function };
         }
 
-        public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)
+        public FunctionStack(params Function<T>[] functions) : base(FUNCTION_NAME)
         {
-            this.Functions = new Function[]{};
+            this.Functions = new Function<T>[]{};
             this.Add(functions);
         }
 
         //頻繁に使用することを想定していないため効率の悪い実装になっている
-        public void Add(params Function[] function)
+        public void Add(params Function<T>[] function)
         {
             if (function != null && function.Length > 0)
             {
-                List<Function> functionList = new List<Function>();
+                List<Function<T>> functionList = new List<Function<T>>();
 
                 if (this.Functions != null)
                 {
@@ -62,16 +56,16 @@ namespace KelpNet
 
         public void Compress()
         {
-            List<Function> functionList = new List<Function>(Functions);
+            List<Function<T>> functionList = new List<Function<T>>(Functions);
 
             //層を圧縮
             for (int i = 0; i < functionList.Count - 1; i++)
             {
-                if (functionList[i] is CompressibleFunction)
+                if (functionList[i] is CompressibleFunction<T>)
                 {
-                    if (functionList[i + 1] is CompressibleActivation)
+                    if (functionList[i + 1] is CompressibleActivation<T>)
                     {
-                        ((CompressibleFunction)functionList[i]).SetActivation((CompressibleActivation)functionList[i + 1]);
+                        ((CompressibleFunction<T>)functionList[i]).SetActivation((CompressibleActivation<T>)functionList[i + 1]);
                         functionList.RemoveAt(i + 1);
                     }
                 }
@@ -81,9 +75,9 @@ namespace KelpNet
         }
 
         //Forward
-        public override NdArray[] Forward(params NdArray[] xs)
+        public override NdArray<T>[] Forward(params NdArray<T>[] xs)
         {
-            NdArray[] ys = xs;
+            NdArray<T>[] ys = xs;
 
             for (int i = 0; i < this.Functions.Length; i++)
             {
@@ -94,9 +88,9 @@ namespace KelpNet
         }
 
         //Backward
-        public override void Backward(params NdArray[] ys)
+        public override void Backward(params NdArray<T>[] ys)
         {
-            NdArray.Backward(ys[0]);
+            NdArray<T>.Backward(ys[0]);
         }
 
         //重みの更新処理
@@ -111,16 +105,16 @@ namespace KelpNet
         //ある処理実行後に特定のデータを初期値に戻す処理
         public override void ResetState()
         {
-            foreach (Function function in this.Functions)
+            foreach (Function<T> function in this.Functions)
             {
                 function.ResetState();
             }
         }
 
         //予想を実行する
-        public override NdArray[] Predict(params NdArray[] xs)
+        public override NdArray<T>[] Predict(params NdArray<T>[] xs)
         {
-            NdArray[] ys = xs;
+            NdArray<T>[] ys = xs;
 
             for (int i = 0; i < this.Functions.Length; i++)
             {
@@ -130,9 +124,9 @@ namespace KelpNet
             return ys;
         }
 
-        public override void SetOptimizer(params Optimizer[] optimizers)
+        public override void SetOptimizer(params Optimizer<T>[] optimizers)
         {
-            foreach (Function function in this.Functions)
+            foreach (Function<T> function in this.Functions)
             {
                 function.SetOptimizer(optimizers);
             }

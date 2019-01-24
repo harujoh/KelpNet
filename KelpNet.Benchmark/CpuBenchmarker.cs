@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace KelpNet.Benchmark
 {
-    class CpuBenchmarker
+    class CpuBenchmarker<T> where T : unmanaged, IComparable<T>
     {
         //VGG16のLinearの最大メモリを想定
         const int INPUT_SIZE = 25088;
@@ -15,16 +15,15 @@ namespace KelpNet.Benchmark
 
 
             //1次元データを用意
-            NdArray inputArrayCpu = new NdArray(BenchDataMaker.GetFloatArray(INPUT_SIZE));
-            NdArray inputArrayGpu = new NdArray(BenchDataMaker.GetFloatArray(INPUT_SIZE));
+            NdArray<T> inputArrayCpu = new NdArray<T>(BenchDataMaker<T>.GetArray(INPUT_SIZE));
 
 
             //Linear
-            Linear linear = new Linear(INPUT_SIZE, OUTPUT_SIZE);
+            Linear<T> linear = new Linear<T>(INPUT_SIZE, OUTPUT_SIZE);
             Console.WriteLine("◆" + linear.Name);
 
             sw.Restart();
-            NdArray[] gradArrayCpu = linear.Forward(inputArrayCpu);
+            NdArray<T>[] gradArrayCpu = linear.Forward(inputArrayCpu);
             sw.Stop();
             Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -37,7 +36,7 @@ namespace KelpNet.Benchmark
 
 
             //TanhActivation
-            TanhActivation tanhActivation = new TanhActivation();
+            TanhActivation<T> tanhActivation = new TanhActivation<T>();
             Console.WriteLine("\n◆" + tanhActivation.Name);
 
             sw.Restart();
@@ -54,7 +53,7 @@ namespace KelpNet.Benchmark
 
 
             //Sigmoid
-            Sigmoid sigmoid = new Sigmoid();
+            Sigmoid<T> sigmoid = new Sigmoid<T>();
             Console.WriteLine("\n◆" + sigmoid.Name);
 
             sw.Restart();
@@ -71,7 +70,7 @@ namespace KelpNet.Benchmark
 
 
             //ReLU
-            ReLU relu = new ReLU();
+            ReLU<T> relu = new ReLU<T>();
             Console.WriteLine("\n◆" + relu.Name);
 
             sw.Restart();
@@ -88,7 +87,7 @@ namespace KelpNet.Benchmark
 
 
             //LeakyReLU
-            LeakyReLU leakyRelu = new LeakyReLU();
+            LeakyReLU<T> leakyRelu = new LeakyReLU<T>();
             Console.WriteLine("\n◆" + leakyRelu.Name);
 
             sw.Restart();
@@ -106,16 +105,15 @@ namespace KelpNet.Benchmark
 
 
             //2次元3チャンネルのデータを用意
-            NdArray inputImageArrayGpu = new NdArray(BenchDataMaker.GetFloatArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
-            NdArray inputImageArrayCpu = new NdArray(BenchDataMaker.GetFloatArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
+            NdArray<T> inputImageArrayCpu = new NdArray<T>(BenchDataMaker<T>.GetArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
 
 
             //MaxPooling
-            MaxPooling maxPooling = new MaxPooling(3);
+            MaxPooling<T> maxPooling = new MaxPooling<T>(3);
             Console.WriteLine("\n◆" + maxPooling.Name);
 
             sw.Restart();
-            NdArray[] gradImageArrayCpu = maxPooling.Forward(inputImageArrayCpu);
+            NdArray<T>[] gradImageArrayCpu = maxPooling.Forward(inputImageArrayCpu);
             sw.Stop();
             Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -128,7 +126,7 @@ namespace KelpNet.Benchmark
 
 
             //Conv2D
-            Convolution2D conv2d = new Convolution2D(3, 3, 3);
+            Convolution2D<T> conv2d = new Convolution2D<T>(3, 3, 3);
             Console.WriteLine("\n◆" + conv2d.Name);
 
             sw.Restart();
@@ -145,7 +143,7 @@ namespace KelpNet.Benchmark
 
 
             //Deconv2D
-            Deconvolution2D deconv2d = new Deconvolution2D(3, 3, 3);
+            Deconvolution2D<T> deconv2d = new Deconvolution2D<T>(3, 3, 3);
             Console.WriteLine("\n◆" + deconv2d.Name);
 
             sw.Restart();
@@ -162,7 +160,7 @@ namespace KelpNet.Benchmark
 
 
             //Dropout
-            Dropout dropout = new Dropout();
+            Dropout<T> dropout = new Dropout<T>();
             Console.WriteLine("\n◆" + dropout.Name);
 
             sw.Restart();

@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     //Optimizerの素となるクラスでパラメータを持つ
     [Serializable]
-    public abstract class Optimizer
+    public abstract class Optimizer<T> where T : unmanaged, IComparable<T>
     {
         public long UpdateCount = 1;
-        protected List<OptimizerParameter> OptimizerParameters = new List<OptimizerParameter>();
+        protected List<OptimizerParameter<T>> OptimizerParameters = new List<OptimizerParameter<T>>();
 
-        internal abstract void AddFunctionParameters(NdArray[] functionParameters);
+        internal abstract void AddFunctionParameters(NdArray<T>[] functionParameters);
 
         public void Update()
         {
@@ -54,11 +48,11 @@ namespace KelpNet
 
     //このクラスはFunctionParameterと1:1で作成される
     [Serializable]
-    public abstract class OptimizerParameter
+    public abstract class OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        public NdArray FunctionParameter;
+        public NdArray<T> FunctionParameter;
 
-        protected OptimizerParameter(NdArray functionParameter)
+        protected OptimizerParameter(NdArray<T> functionParameter)
         {
             this.FunctionParameter = functionParameter;
         }

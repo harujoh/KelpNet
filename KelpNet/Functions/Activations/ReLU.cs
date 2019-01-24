@@ -1,15 +1,9 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class ReLU : CompressibleActivation
+    public class ReLU<T> : CompressibleActivation<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "ReLU";
 
@@ -17,12 +11,12 @@ namespace KelpNet
         {
         }
 
-        internal override Real ForwardActivate(Real x)
+        internal override Real<T> ForwardActivate(Real<T> x)
         {
             return x < 0 ? 0 : x;
         }
 
-        internal override Real BackwardActivate(Real gy, Real y)
+        internal override Real<T> BackwardActivate(Real<T> gy, Real<T> y)
         {
             return y <= 0 ? 0 : gy;
         }

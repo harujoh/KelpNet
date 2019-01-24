@@ -1,38 +1,32 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class SGD : Optimizer
+    public class SGD<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
-        public Real LearningRate;
+        public Real<T> LearningRate;
 
-        public SGD(Real learningRate = 0.1f)
+        public SGD(double learningRate = 0.1)
         {
             this.LearningRate = learningRate;
         }
 
-        internal override void AddFunctionParameters(NdArray[] functionParameters)
+        internal override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
-            foreach (NdArray functionParameter in functionParameters)
+            foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new SGDParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new SGDParameter<T>(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class SGDParameter : OptimizerParameter
+    class SGDParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        private readonly SGD optimizer;
+        private readonly SGD<T> optimizer;
 
-        public SGDParameter(NdArray functionParameter, SGD optimizer) : base(functionParameter)
+        public SGDParameter(NdArray<T> functionParameter, SGD<T> optimizer) : base(functionParameter)
         {
             this.optimizer = optimizer;
         }

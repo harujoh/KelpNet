@@ -2,26 +2,20 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
+
 namespace KelpNet
-#endif
 {
     [Serializable]
     [DebuggerDisplay("{Name + ToString(\"Size\")}", Type = "{\"NdArray\" + ToString(\"Size\")}")]
-    public struct NdArray
+    public unsafe class NdArray<T> : IDisposable where T : unmanaged, IComparable<T>
     {
         public string Name;
-
-        public Real[] Data;
+        
+        public Real<T>[] Data;
 
         [NonSerialized]
-        public Real[] Grad;
+        public Real<T>[] Grad;
 
         //このNdArrayの各次元のサイズ
         public int[] Shape { private set; get; }
@@ -35,7 +29,7 @@ namespace KelpNet
 
         //自身が関数から生成された場合、その関数をここに保存する
         [NonSerialized]
-        public Function ParentFunc;
+        public Function<T> ParentFunc;
 
         //各関数内でまとめて実行されるバッチの数を示し、Loss関数内の割引で使用される
         public int BatchCount;
@@ -44,12 +38,12 @@ namespace KelpNet
         [NonSerialized]
         public int TrainCount;
 
-        public NdArray(Array data, Function parentFunc = null)
+        public NdArray(Array data, Function<T> parentFunc = null)
         {
             this.Name = "NdArray";
             this.UseCount = 0;
 
-            Real[] resultData = GetArray(data);
+            Real<T>[] resultData = Real<T>.GetArray(data);
 
             int[] resultShape = new int[data.Rank];
 
@@ -61,7 +55,7 @@ namespace KelpNet
             this.Data = resultData;
             this.Shape = resultShape;
             this.Length = Data.Length;
-            this.Grad = new Real[this.Length];
+            this.Grad = new Real<T>[this.Length];
             this.BatchCount = 1;
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
@@ -73,15 +67,15 @@ namespace KelpNet
             this.UseCount = 0;
             this.ParentFunc = null;
 
-            this.Data = new Real[ShapeToArrayLength(shape)];
+            this.Data = new Real<T>[ShapeToArrayLength(shape)];
             this.Shape = shape.ToArray();
             this.Length = Data.Length;
             this.BatchCount = 1;
-            this.Grad = new Real[this.Length];
+            this.Grad = new Real<T>[this.Length];
             this.TrainCount = 0;
         }
 
-        public NdArray(Real[] data, int[] shape, int batchCount = 1, Function parentFunc = null)
+        public NdArray(Real<T>[] data, int[] shape, int batchCount = 1, Function<T> parentFunc = null)
         {
             this.Name = "NdArray";
             this.UseCount = 0;
@@ -90,12 +84,12 @@ namespace KelpNet
             this.Length = data.Length / batchCount; ;
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
-            this.Grad = new Real[this.Length * batchCount];
+            this.Grad = new Real<T>[this.Length * batchCount];
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
 
-        public NdArray(int[] shape, int batchCount, Function parentFunc = null)
+        public NdArray(int[] shape, int batchCount, Function<T> parentFunc = null)
         {
             this.Name = "NdArray";
             this.UseCount = 0;
@@ -103,14 +97,14 @@ namespace KelpNet
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
-            this.Data = new Real[this.Length * batchCount];
-            this.Grad = new Real[this.Length * batchCount];
+            this.Data = new Real<T>[this.Length * batchCount];
+            this.Grad = new Real<T>[this.Length * batchCount];
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
 
         //アレイ配列をバッチとして登録する
-        public static NdArray FromArrays(Array[] arrays, Function parentFunc = null)
+        public static NdArray<T> FromArrays(Array[] arrays, Function<T> parentFunc = null)
         {
             int[] resultShape = new int[arrays[0].Rank];
 
@@ -120,28 +114,28 @@ namespace KelpNet
             }
 
             int length = arrays[0].Length;
-            Real[] result = new Real[length * arrays.Length];
+            Real<T>[] result = new Real<T>[length * arrays.Length];
 
             for (int i = 0; i < arrays.Length; i++)
             {
-                Array.Copy(GetArray(arrays[i]), 0, result, length * i, length);
+                Array.Copy(Real<T>.GetArray(arrays[i]), 0, result, length * i, length);
             }
 
-            return new NdArray(result, resultShape, arrays.Length, parentFunc);
+            return new NdArray<T>(result, resultShape, arrays.Length, parentFunc);
         }
 
-        public static NdArray Convert(Real[] data, int[] shape, int batchCount, Function parentFunc = null)
+        public static NdArray<T> Convert(Real<T>[] data, int[] shape, int batchCount, Function<T> parentFunc = null)
         {
-            return new NdArray(shape, batchCount, parentFunc) { Data = data };
+            return new NdArray<T>(shape, batchCount, parentFunc) { Data = data };
         }
 
-        public static NdArray ZerosLike(NdArray baseArray)
+        public static NdArray<T> ZerosLike(NdArray<T> baseArray)
         {
-            return new NdArray(baseArray.Shape, baseArray.BatchCount);
+            return new NdArray<T>(baseArray.Shape, baseArray.BatchCount);
         }
 
         //インデクサはあまり早くないので頻繁にアクセスする場合は使用をオススメしません。デバッグ用途向けと割り切ってください。
-        public Real this[int batchcount, params int[] indices]
+        public Real<T> this[int batchcount, params int[] indices]
         {
             get
             {
@@ -200,9 +194,9 @@ namespace KelpNet
         }
 
         //バッチでまとまっているアレイをバラバラにして排出する
-        public NdArray[] DivideArrays()
+        public NdArray<T>[] DivideArrays()
         {
-            NdArray[] result = new NdArray[BatchCount];
+            NdArray<T>[] result = new NdArray<T>[BatchCount];
 
             for (int i = 0; i < result.Length; i++)
             {
@@ -213,12 +207,12 @@ namespace KelpNet
         }
 
         //バッチ番号に対応するアレイを排出する
-        public NdArray GetSingleArray(int i)
+        public NdArray<T> GetSingleArray(int i)
         {
-            Real[] data = new Real[this.Length];
+            Real<T>[] data = new Real<T>[this.Length];
             Array.Copy(this.Data, i * this.Length, data, 0, this.Length);
 
-            return new NdArray(data, this.Shape);
+            return new NdArray<T>(data, this.Shape);
         }
 
         static int ShapeToArrayLength(params int[] shapes)
@@ -242,16 +236,16 @@ namespace KelpNet
                     Grad[i] = 1;
                 }
 
-                NdArray.Backward(this);
+                NdArray<T>.Backward(this);
             }
         }
 
-        public static void Backward(NdArray y)
+        public static void Backward(NdArray<T> y)
         {
             if (y.ParentFunc != null)
             {
-                List<NdArray[]> prevInputs = y.ParentFunc.PrevInputs;
-                NdArray[] xs = prevInputs[prevInputs.Count - 1];
+                List<NdArray<T>[]> prevInputs = y.ParentFunc.PrevInputs;
+                NdArray<T>[] xs = prevInputs[prevInputs.Count - 1];
 
                 y.ParentFunc.Backward(y);
 
@@ -259,7 +253,7 @@ namespace KelpNet
                 {
                     if (xs[i].UseCount == 0)
                     {
-                        NdArray.Backward(xs[i]);
+                        NdArray<T>.Backward(xs[i]);
                     }
                 }
             }
@@ -289,7 +283,7 @@ namespace KelpNet
         //傾きの初期化
         public void ClearGrad()
         {
-            this.Grad = new Real[this.Data.Length];
+            this.Grad = new Real<T>[this.Data.Length];
 
             //カウンタをリセット
             this.TrainCount = 0;
@@ -325,7 +319,7 @@ namespace KelpNet
             }
         }
 
-        public string ToString(Real[] datas)
+        public string ToString(Real<T>[] datas)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -333,9 +327,9 @@ namespace KelpNet
             int realMaxLength = 0; //小数点以下の最大値
             bool isExponential = false; //指数表現にするか
 
-            foreach (Real data in datas)
+            foreach (Real<T> data in datas)
             {
-                string[] divStr = ((double)data).ToString().Split('.');
+                string[] divStr = data.ToString().Split('.');
                 intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
 
                 if (divStr.Length > 1)
@@ -385,11 +379,11 @@ namespace KelpNet
                     string[] divStr;
                     if (isExponential)
                     {
-                        divStr = string.Format("{0:0.00000000e+00}", (Real)datas[indexOffset + i]).Split('.');
+                        divStr = string.Format("{0:0.00000000e+00}", datas[indexOffset + i]).Split('.');
                     }
                     else
                     {
-                        divStr = ((Real)datas[indexOffset + i]).ToString().Split('.');
+                        divStr = (datas[indexOffset + i]).ToString().Split('.');
                     }
 
                     //最大文字数でインデントを揃える
@@ -484,88 +478,88 @@ namespace KelpNet
         }
 
 
-        public static NdArray operator +(NdArray a, NdArray b)
+        public static NdArray<T> operator +(NdArray<T> a, NdArray<T> b)
         {
-            return new Add().Forward(a, b)[0];
+            return new Add<T>().Forward(a, b)[0];
         }
 
-        public static NdArray operator +(NdArray a, Real b)
+        public static NdArray<T> operator +(NdArray<T> a, Real<T> b)
         {
-            return new AddConst().Forward(a, b)[0];
+            return new AddConst<T>().Forward(a, b)[0];
         }
 
-        public static NdArray operator +(Real a, NdArray b)
+        public static NdArray<T> operator +(Real<T> a, NdArray<T> b)
         {
-            return new AddConst().Forward(b, a)[0];
-        }
-
-
-        public static NdArray operator *(NdArray a, NdArray b)
-        {
-            return new Mul().Forward(a, b)[0];
-        }
-
-        public static NdArray operator *(NdArray a, Real b)
-        {
-            return new MulConst().Forward(a, b)[0];
-        }
-
-        public static NdArray operator *(Real a, NdArray b)
-        {
-            return new MulConst().Forward(b, a)[0];
+            return new AddConst<T>().Forward(b, a)[0];
         }
 
 
-        public static NdArray operator -(NdArray a, NdArray b)
+        public static NdArray<T> operator *(NdArray<T> a, NdArray<T> b)
         {
-            return new Sub().Forward(a, b)[0];
+            return new Mul<T>().Forward(a, b)[0];
         }
 
-        public static NdArray operator -(NdArray a, Real b)
+        public static NdArray<T> operator *(NdArray<T> a, Real<T> b)
         {
-            return new SubConst().Forward(a, b)[0];
+            return new MulConst<T>().Forward(a, b)[0];
         }
 
-        public static NdArray operator -(Real a, NdArray b)
+        public static NdArray<T> operator *(Real<T> a, NdArray<T> b)
         {
-            return new ConstSub().Forward(a, b)[0];
+            return new MulConst<T>().Forward(b, a)[0];
         }
 
 
-        public static NdArray operator /(NdArray a, NdArray b)
+        public static NdArray<T> operator -(NdArray<T> a, NdArray<T> b)
         {
-            return new Div().Forward(a, b)[0];
+            return new Sub<T>().Forward(a, b)[0];
         }
 
-        public static NdArray operator /(NdArray a, Real b)
+        public static NdArray<T> operator -(NdArray<T> a, Real<T> b)
         {
-            return new DivConst().Forward(a, b)[0];
+            return new SubConst<T>().Forward(a, b)[0];
         }
 
-        public static NdArray operator /(Real a, NdArray b)
+        public static NdArray<T> operator -(Real<T> a, NdArray<T> b)
         {
-            return new ConstDiv().Forward(a, b)[0];
+            return new ConstSub<T>().Forward(a, b)[0];
         }
 
-        public static implicit operator NdArray(Real[] a)
+
+        public static NdArray<T> operator /(NdArray<T> a, NdArray<T> b)
         {
-            return new NdArray(a);
+            return new Div<T>().Forward(a, b)[0];
         }
 
-        public static implicit operator NdArray(Real a)
+        public static NdArray<T> operator /(NdArray<T> a, Real<T> b)
         {
-            return new NdArray(new[] { a });
+            return new DivConst<T>().Forward(a, b)[0];
         }
 
-        public static implicit operator NdArray(long a)
+        public static NdArray<T> operator /(Real<T> a, NdArray<T> b)
         {
-            return new NdArray(new[] { (Real)a });
+            return new ConstDiv<T>().Forward(a, b)[0];
         }
+
+        public static implicit operator NdArray<T>(Real<T>[] a)
+        {
+            return new NdArray<T>(a);
+        }
+
+        public static implicit operator NdArray<T>(Real<T> a)
+        {
+            return new NdArray<T>(new[] { a });
+        }
+
+        //public static implicit operator NdArray<T>(long a)
+        //{
+        //    return new NdArray<T>(new[] { (Real<T>)a });
+        //}
 
         //コピーを作成するメソッド
-        public NdArray Clone()
+        public NdArray<T> Clone()
         {
-            return new NdArray(Data, Shape, BatchCount, ParentFunc)
+            return new NdArray<T>(Data, Shape, BatchCount, ParentFunc)
             {
                 Grad = Grad.ToArray(),
                 Name = Name,
@@ -575,7 +569,7 @@ namespace KelpNet
             };
         }
 
-        public static NdArray Sum(NdArray a, bool keepDims = false, params int[] axis)
+        public static NdArray<T> Sum(NdArray<T> a, bool keepDims = false, params int[] axis)
         {
 #if DEBUG
             if (axis.Length != axis.Distinct().ToArray().Length)
@@ -595,7 +589,7 @@ namespace KelpNet
 
             Array.Sort(axis);
 
-            NdArray result = Sum(a, axis[0]);
+            NdArray<T> result = Sum(a, axis[0]);
 
             for (int i = 1; i < axis.Length; i++)
             {
@@ -619,7 +613,7 @@ namespace KelpNet
             return result;
         }
 
-        private static NdArray Sum(NdArray a, int axis)
+        private static NdArray<T> Sum(NdArray<T> a, int axis)
         {
             int[] resultShape = new int[a.Shape.Length - 1];
 
@@ -631,7 +625,7 @@ namespace KelpNet
                 }
             }
 
-            NdArray result = new NdArray(resultShape, a.BatchCount);
+            NdArray<T> result = new NdArray<T>(resultShape, a.BatchCount);
 
             for (int i = 0; i < a.Length; i++)
             {
@@ -649,12 +643,12 @@ namespace KelpNet
             return result;
         }
 
-        public static NdArray[] Split(NdArray array, int indices, int axis = 1)
+        public static NdArray<T>[] Split(NdArray<T> array, int indices, int axis = 1)
         {
             return Split(array, new[] { indices }, axis);
         }
 
-        public static NdArray[] Split(NdArray array, int[] indices, int axis = 1)
+        public static NdArray<T>[] Split(NdArray<T> array, int[] indices, int axis = 1)
         {
             int[] shapeOffets = new int[indices.Length + 1];        //入力されたindicesの先頭0を追加した配列
             int[] resultAxisShapes = new int[indices.Length + 1];   //分割後の指定軸のShape
@@ -666,13 +660,13 @@ namespace KelpNet
             }
             resultAxisShapes[indices.Length] = array.Shape[axis] - indices[indices.Length - 1];
 
-            NdArray[] resultArrays = new NdArray[indices.Length + 1];
+            NdArray<T>[] resultArrays = new NdArray<T>[indices.Length + 1];
 
             for (int i = 0; i < resultArrays.Length; i++)
             {
                 int[] resultShape = array.Shape.ToArray();
                 resultShape[axis] = resultAxisShapes[i];
-                resultArrays[i] = new NdArray(resultShape, array.BatchCount);
+                resultArrays[i] = new NdArray<T>(resultShape, array.BatchCount);
             }
 
             for (int batchCount = 0; batchCount < array.BatchCount; batchCount++)
@@ -694,7 +688,7 @@ namespace KelpNet
             return resultArrays;
         }
 
-        public static NdArray Concatenate(NdArray a, NdArray b, int axis)
+        public static NdArray<T> Concatenate(NdArray<T> a, NdArray<T> b, int axis)
         {
             int[] shapeList = a.Shape.ToArray();
             shapeList[axis] += b.Shape[axis];
@@ -714,7 +708,7 @@ namespace KelpNet
             }
 #endif
 
-            NdArray result = new NdArray(shapeList, a.BatchCount);
+            NdArray<T> result = new NdArray<T>(shapeList, a.BatchCount);
 
             for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
             {
@@ -776,37 +770,8 @@ namespace KelpNet
             return index;
         }
 
-        [DllImport("kernel32.dll")]
-        public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
-
-        public static Real[] GetArray(Array data)
+        public void Dispose()
         {
-            Type arrayType = data.GetType().GetElementType();
-            Real[] resultData = new Real[data.Length];
-
-            //型の不一致をここで吸収
-            if (arrayType != typeof(Real) && arrayType != typeof(Real))
-            {
-                //一次元の長さの配列を用意
-                Array array = Array.CreateInstance(arrayType, data.Length);
-                //一次元化して
-                Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * resultData.Length);
-
-                data = new Real[array.Length];
-
-                //型変換しつつコピー
-                Array.Copy(array, data, array.Length);
-            }
-
-            //データを叩き込む
-            int size = sizeof(Real) * data.Length;
-            GCHandle gchObj = GCHandle.Alloc(data, GCHandleType.Pinned);
-            GCHandle gchBytes = GCHandle.Alloc(resultData, GCHandleType.Pinned);
-            CopyMemory(gchBytes.AddrOfPinnedObject(), gchObj.AddrOfPinnedObject(), size);
-            gchObj.Free();
-            gchBytes.Free();
-
-            return resultData;
         }
     }
 }

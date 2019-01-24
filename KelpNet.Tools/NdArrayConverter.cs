@@ -1,28 +1,26 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Tools
 {
-    public class NdArrayConverter
+    public class NdArrayConverter<T> where T : unmanaged, IComparable<T>
     {
         //Bitmapは [RGBRGB...]でデータが格納されているが多くの機械学習は[RR..GG..BB..]を前提にしているため入れ替えを行っている
         //Biasのチャンネル順は入力イメージに準ずる
-        public static NdArray Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, Real[] bias = null)
+        public static NdArray<T> Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, Real<T>[] bias = null)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
             if (bias == null || bitcount != bias.Length)
             {
-                bias = new Real[bitcount];
+                bias = new Real<T>[bitcount];
             }
 
-            Real norm = isNorm ? 255 : 1;
+            Real<T> norm = isNorm ? 255 : 1;
 
-            NdArray result = new NdArray(bitcount, input.Height, input.Width);
+            NdArray<T> result = new NdArray<T>(bitcount, input.Height, input.Width);
 
             BitmapData bmpdat = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly, input.PixelFormat);
             byte[] imageData = new byte[bmpdat.Stride * bmpdat.Height];
@@ -60,7 +58,7 @@ namespace KelpNet.Tools
             return result;
         }
 
-        public static Bitmap NdArray2Image(NdArray input, bool isNorm = true, bool isFromBgrArray = false)
+        public static Bitmap NdArray2Image(NdArray<T> input, bool isNorm = true, bool isFromBgrArray = false)
         {
             if (input.Shape.Length == 2)
             {
@@ -81,10 +79,10 @@ namespace KelpNet.Tools
             return null;
         }
 
-        static Bitmap CreateMonoImage(Real[] data, int width, int height, bool isNorm)
+        static Bitmap CreateMonoImage(Real<T>[] data, int width, int height, bool isNorm)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
-            Real norm = isNorm ? 255 : 1;
+            Real<T> norm = isNorm ? 255 : 1;
 
             ColorPalette pal = result.Palette;
             for (int i = 0; i < 255; i++)
@@ -97,7 +95,7 @@ namespace KelpNet.Tools
 
             byte[] resultData = new byte[bmpdat.Stride * height];
 
-            Real datamax = data.Max();
+            Real<T> datamax = data.Max();
 
             for (int y = 0; y < result.Height; y++)
             {
@@ -113,17 +111,17 @@ namespace KelpNet.Tools
             return result;
         }
 
-        static Bitmap CreateColorImage(Real[] data, int width, int height, bool isNorm, bool isFromBgrArray)
+        static Bitmap CreateColorImage(Real<T>[] data, int width, int height, bool isNorm, bool isFromBgrArray)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-            Real norm = isNorm ? 255 : 1;
+            Real<T> norm = isNorm ? 255 : 1;
             int bitcount = Image.GetPixelFormatSize(result.PixelFormat) / 8;
 
             BitmapData bmpdat = result.LockBits(new Rectangle(0, 0, result.Width, result.Height), ImageLockMode.WriteOnly, result.PixelFormat);
 
             byte[] resultData = new byte[bmpdat.Stride * height];
 
-            Real datamax = data.Max();
+            Real<T> datamax = data.Max();
 
             if (isFromBgrArray)
             {

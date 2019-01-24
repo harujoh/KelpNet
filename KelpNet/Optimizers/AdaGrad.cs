@@ -1,43 +1,37 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class AdaGrad : Optimizer
+    public class AdaGrad<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
-        public Real LearningRate;
-        public Real Epsilon;
+        public Real<T> LearningRate;
+        public Real<T> Epsilon;
 
-        public AdaGrad(Real learningRate = 0.01f, Real epsilon = 1e-8f)
+        public AdaGrad(double learningRate = 0.01f, double epsilon = 1e-8f)
         {
             this.LearningRate = learningRate;
             this.Epsilon = epsilon;
         }
 
-        internal override void AddFunctionParameters(NdArray[] functionParameters)
+        internal override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
-            foreach (NdArray functionParameter in functionParameters)
+            foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdaGradParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new AdaGradParameter<T>(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class AdaGradParameter : OptimizerParameter
+    class AdaGradParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        private readonly AdaGrad optimizer;
-        private readonly Real[] h;
+        private readonly AdaGrad<T> optimizer;
+        private readonly Real<T>[] h;
 
-        public AdaGradParameter(NdArray functionParameter, AdaGrad optimizer) : base(functionParameter)
+        public AdaGradParameter(NdArray<T> functionParameter, AdaGrad<T> optimizer) : base(functionParameter)
         {
-            this.h = new Real[functionParameter.Data.Length];
+            this.h = new Real<T>[functionParameter.Data.Length];
             this.optimizer = optimizer;
         }
 
@@ -45,11 +39,11 @@ namespace KelpNet
         {
             for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
             {
-                Real grad = this.FunctionParameter.Grad[i];
+                Real<T> grad = this.FunctionParameter.Grad[i];
 
                 this.h[i] += grad * grad;
 
-                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / (Real)(Math.Sqrt(this.h[i]) + this.optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * grad / (Math.Sqrt(this.h[i]) + this.optimizer.Epsilon);
             }
         }
     }

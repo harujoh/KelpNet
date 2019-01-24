@@ -1,23 +1,17 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
-    class Initializer
+    class Initializer<T> where T : unmanaged, IComparable<T>
     {
         //初期値が入力されなかった場合、この関数で初期化を行う
-        public static void InitWeight(NdArray array, Real masterScale = 1.0f)
+        public static void InitWeight(NdArray<T> array, double masterScale = 1.0)
         {
-            Real s = (Real)(1.0 / Math.Sqrt(2.0) * Math.Sqrt(2.0 / GetFans(array.Shape)));
+            Real<T> s = (1.0 / Math.Sqrt(2.0) * Math.Sqrt(2.0 / GetFans(array.Shape)));
 
             for (int i = 0; i < array.Data.Length; i++)
             {
-                array.Data[i] = Mother.RandomNormal(s) * masterScale;
+                array.Data[i] = Mother<T>.RandomNormal(s) * masterScale;
             }
         }
 

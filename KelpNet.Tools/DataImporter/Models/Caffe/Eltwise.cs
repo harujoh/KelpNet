@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Tools.DataImporter.Models.Caffe
 {
-    public class Eltwise : MultiInputFunction
+    public class Eltwise<T> : MultiInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "Eltwise";
 
@@ -24,9 +21,9 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             MultiOutputBackward = BackwardCpu;
         }
 
-        public NdArray ForwardCpu(params NdArray[] xs)
+        public NdArray<T> ForwardCpu(params NdArray<T>[] xs)
         {
-            Real[] result = new Real[xs[0].Data.Length];
+            Real<T>[] result = new Real<T>[xs[0].Data.Length];
 
             switch (_operation)
             {
@@ -84,15 +81,15 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                     break;
             }
 
-            return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount, this);
+            return NdArray<T>.Convert(result, xs[0].Shape, xs[0].BatchCount, this);
         }
 
-        public void BackwardCpu(NdArray y, params NdArray[] xs)
+        public void BackwardCpu(NdArray<T> y, params NdArray<T>[] xs)
         {
-            Real[][] result = new Real[xs.Length][];
+            Real<T>[][] result = new Real<T>[xs.Length][];
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = new Real[xs[i].Data.Length];
+                result[i] = new Real<T>[xs[i].Data.Length];
             }
 
             switch (_operation)

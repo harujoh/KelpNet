@@ -1,11 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.Serialization;
 
 namespace KelpNet.Tools
 {
-    public class ModelIO
+    public class ModelIO<T> where T : unmanaged, IComparable<T>
     {
-        public static void Save(FunctionStack functionStack, string fileName)
+        public static void Save(FunctionStack<T> functionStack, string fileName)
         {
             NetDataContractSerializer bf = new NetDataContractSerializer();
 
@@ -15,17 +16,17 @@ namespace KelpNet.Tools
             }
         }
 
-        public static FunctionStack Load(string fileName)
+        public static FunctionStack<T> Load(string fileName)
         {
             NetDataContractSerializer bf = new NetDataContractSerializer();
-            FunctionStack result;
+            FunctionStack<T> result;
 
             using (Stream stream = File.OpenRead(fileName))
             {
-                result = (FunctionStack)bf.Deserialize(stream);
+                result = (FunctionStack<T>)bf.Deserialize(stream);
             }
 
-            foreach (Function function in result.Functions)
+            foreach (Function<T> function in result.Functions)
             {
                 function.ResetState();
 

@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using KelpNet.Sample.DataManager;
 using KelpNet.Tools;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //ChainerのRNNサンプルを再現
     //https://github.com/pfnet/chainer/tree/master/examples/ptb
-    class Sample10
+    class Sample10<T> where T : unmanaged, IComparable<T>
     {
         const int N_EPOCH = 39;
         const int N_UNITS = 650;
@@ -45,33 +42,33 @@ namespace KelpNet.Sample.Samples
             int nVocab = vocabulary.Length;
 
             Console.WriteLine("Network Initilizing.");
-            FunctionStack model = new FunctionStack(
-                new EmbedID(nVocab, N_UNITS, name: "l1 EmbedID"),
-                new Dropout(),
-                new LSTM(N_UNITS, N_UNITS, name: "l2 LSTM"),
-                new Dropout(),
-                new LSTM(N_UNITS, N_UNITS, name: "l3 LSTM"),
-                new Dropout(),
-                new Linear(N_UNITS, nVocab, name: "l4 Linear")
+            FunctionStack<T> model = new FunctionStack<T>(
+                new EmbedID<T>(nVocab, N_UNITS, name: "l1 EmbedID"),
+                new Dropout<T>(),
+                new LSTM<T>(N_UNITS, N_UNITS, name: "l2 LSTM"),
+                new Dropout<T>(),
+                new LSTM<T>(N_UNITS, N_UNITS, name: "l3 LSTM"),
+                new Dropout<T>(),
+                new Linear<T>(N_UNITS, nVocab, name: "l4 Linear")
             );
 
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
-            GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);
-            SGD sgd = new SGD(learningRate: 1);
+            GradientClipping<T> gradientClipping = new GradientClipping<T>(threshold: GRAD_CLIP);
+            SGD<T> sgd = new SGD<T>(learningRate: 1);
             model.SetOptimizer(gradientClipping, sgd);
 
-            Real wholeLen = trainData.Length;
+            Real<T> wholeLen = trainData.Length;
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
             int epoch = 0;
 
-            Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
+            Stack<NdArray<T>[]> backNdArrays = new Stack<NdArray<T>[]>();
 
             Console.WriteLine("Train Start.");
 
             for (int i = 0; i < jump * N_EPOCH; i++)
             {
-                NdArray x = new NdArray(new[] { 1 }, BATCH_SIZE);
-                NdArray t = new NdArray(new[] { 1 }, BATCH_SIZE);
+                NdArray<T> x = new NdArray<T>(new[] { 1 }, BATCH_SIZE);
+                NdArray<T> t = new NdArray<T>(new[] { 1 }, BATCH_SIZE);
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {
@@ -79,8 +76,8 @@ namespace KelpNet.Sample.Samples
                     t.Data[j] = trainData[(int)((jump * j + i + 1) % wholeLen)];
                 }
 
-                NdArray[] result = model.Forward(x);
-                Real sumLoss = new SoftmaxCrossEntropy().Evaluate(result, t);
+                NdArray<T>[] result = model.Forward(x);
+                Real<T> sumLoss = new SoftmaxCrossEntropy<T>().Evaluate(result, t);
                 backNdArrays.Push(result);
                 Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
 
@@ -115,18 +112,18 @@ namespace KelpNet.Sample.Samples
             Console.WriteLine("test perplexity:" + Evaluate(model, testData));
         }
 
-        static double Evaluate(FunctionStack model, int[] dataset)
+        static double Evaluate(FunctionStack<T> model, int[] dataset)
         {
-            FunctionStack predictModel = DeepCopyHelper.DeepCopy(model);
+            FunctionStack<T> predictModel = DeepCopyHelper.DeepCopy(model);
             predictModel.ResetState();
 
-            Real totalLoss = 0;
+            Real<T> totalLoss = 0;
             long totalLossCount = 0;
 
             for (int i = 0; i < dataset.Length - 1; i++)
             {
-                NdArray x = new NdArray(new[] { 1 }, BATCH_SIZE);
-                NdArray t = new NdArray(new[] { 1 }, BATCH_SIZE);
+                NdArray<T> x = new NdArray<T>(new[] { 1 }, BATCH_SIZE);
+                NdArray<T> t = new NdArray<T>(new[] { 1 }, BATCH_SIZE);
 
                 for (int j = 0; j < BATCH_SIZE; j++)
                 {
@@ -134,7 +131,7 @@ namespace KelpNet.Sample.Samples
                     t.Data[j] = dataset[j + i + 1];
                 }
 
-                Real sumLoss = new SoftmaxCrossEntropy().Evaluate(predictModel.Forward(x), t);
+                Real<T> sumLoss = new SoftmaxCrossEntropy<T>().Evaluate(predictModel.Forward(x), t);
                 totalLoss += sumLoss;
                 totalLossCount++;
             }

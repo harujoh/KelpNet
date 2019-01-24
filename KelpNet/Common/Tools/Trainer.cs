@@ -1,29 +1,23 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     //ネットワークの訓練を実行するクラス
-    //主にArray->NdArrayの型変換を担う
-    public class Trainer
+    //主にArray->NdArray<T>の型変換を担う
+    public class Trainer<T> where T : unmanaged, IComparable<T>
     {
         //バッチで学習処理を行う
-        public static Real Train(FunctionStack functionStack, Array[] input, Array[] teach, LossFunction lossFunction, bool isUpdate = true)
+        public static Real<T> Train(FunctionStack<T> functionStack, Array[] input, Array[] teach, LossFunction<T> lossFunction, bool isUpdate = true)
         {
-            return Train(functionStack, NdArray.FromArrays(input), NdArray.FromArrays(teach), lossFunction, isUpdate);
+            return Train(functionStack, NdArray<T>.FromArrays(input), NdArray<T>.FromArrays(teach), lossFunction, isUpdate);
         }
 
         //バッチで学習処理を行う
-        public static Real Train(FunctionStack functionStack, NdArray input, NdArray teach, LossFunction lossFunction, bool isUpdate = true)
+        public static Real<T> Train(FunctionStack<T> functionStack, NdArray<T> input, NdArray<T> teach, LossFunction<T> lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
-            NdArray[] result = functionStack.Forward(input);
-            Real sumLoss = lossFunction.Evaluate(result, teach);
+            NdArray<T>[] result = functionStack.Forward(input);
+            Real<T> sumLoss = lossFunction.Evaluate(result, teach);
 
             //Backwardのバッチを実行
             functionStack.Backward(result);
@@ -38,20 +32,20 @@ namespace KelpNet
         }
 
         //精度測定
-        public static Real Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
+        public static Real<T> Accuracy(FunctionStack<T> functionStack, Array[] x, Array[] y)
         {
-            return Accuracy(functionStack, NdArray.FromArrays(x), NdArray.FromArrays(y));
+            return Accuracy(functionStack, NdArray<T>.FromArrays(x), NdArray<T>.FromArrays(y));
         }
 
-        public static Real Accuracy(FunctionStack functionStack, NdArray x, NdArray y)
+        public static Real<T> Accuracy(FunctionStack<T> functionStack, NdArray<T> x, NdArray<T> y)
         {
-            Real matchCount = 0;
+            Real<T> matchCount = 0;
 
-            NdArray forwardResult = functionStack.Predict(x)[0];
+            NdArray<T> forwardResult = functionStack.Predict(x)[0];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
-                Real maxval = forwardResult.Data[b * forwardResult.Length];
+                Real<T> maxval = forwardResult.Data[b * forwardResult.Length];
                 int maxindex = 0;
 
                 for (int i = 0; i < forwardResult.Length; i++)

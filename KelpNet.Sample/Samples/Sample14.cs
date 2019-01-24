@@ -2,13 +2,10 @@
 using System.Diagnostics;
 using KelpNet.Sample.DataManager;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //5層CNNによるMNIST（手書き文字）の学習 の連結宣言版
-    class Sample14
+    class Sample14<T> where T : unmanaged, IComparable<T>
     {
         //ミニバッチの数
         const int BATCH_DATA_COUNT = 20;
@@ -25,21 +22,21 @@ namespace KelpNet.Sample.Samples
 
             //MNISTのデータを用意する
             Console.WriteLine("MNIST Data Loading...");
-            MnistData mnistData = new MnistData();
+            MnistData<T> mnistData = new MnistData<T>();
 
             //ネットワークの構成を FunctionStack に書き連ねる
-            FunctionStack nn = new FunctionStack(
-                new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D", activation: new ReLU(name: "l1 ReLU")),
-                new MaxPooling(2, stride: 2, name: "l1 MaxPooling"),
-                new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D", activation: new ReLU(name: "l2 ReLU")),
-                new MaxPooling(2, stride:2, name: "l2 MaxPooling"),
-                new Linear(7 * 7 * 64, 1024, name: "l3 Linear", activation: new ReLU(name: "l3 ReLU")),
-                new Dropout(name: "l3 DropOut"),
-                new Linear(1024, 10, name: "l4 Linear")
+            FunctionStack<T> nn = new FunctionStack<T>(
+                new Convolution2D<T>(1, 32, 5, pad: 2, name: "l1 Conv2D", activation: new ReLU<T>(name: "l1 ReLU")),
+                new MaxPooling<T>(2, stride: 2, name: "l1 MaxPooling"),
+                new Convolution2D<T>(32, 64, 5, pad: 2, name: "l2 Conv2D", activation: new ReLU<T>(name: "l2 ReLU")),
+                new MaxPooling<T>(2, stride:2, name: "l2 MaxPooling"),
+                new Linear<T>(7 * 7 * 64, 1024, name: "l3 Linear", activation: new ReLU<T>(name: "l3 ReLU")),
+                new Dropout<T>(name: "l3 DropOut"),
+                new Linear<T>(1024, 10, name: "l4 Linear")
             );
 
             //optimizerを宣言
-            nn.SetOptimizer(new Adam());
+            nn.SetOptimizer(new Adam<T>());
 
             Console.WriteLine("Training Start...");
 
@@ -49,7 +46,7 @@ namespace KelpNet.Sample.Samples
                 Console.WriteLine("epoch " + epoch);
 
                 //全体での誤差を集計
-                Real totalLoss = 0;
+                Real<T> totalLoss = 0;
                 long totalLossCount = 0;
 
                 //何回バッチを実行するか
@@ -60,10 +57,10 @@ namespace KelpNet.Sample.Samples
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet<T> datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    Real<T> sumLoss = Trainer<T>.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy<T>());
                     totalLoss += sumLoss;
                     totalLossCount++;
 
@@ -80,10 +77,10 @@ namespace KelpNet.Sample.Samples
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = mnistData.GetRandomYSet(TEACH_DATA_COUNT);
+                        TestDataSet<T> datasetY = mnistData.GetRandomYSet(TEACH_DATA_COUNT);
 
                         //テストを実行
-                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real<T> accuracy = Trainer<T>.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

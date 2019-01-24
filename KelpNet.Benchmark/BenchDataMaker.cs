@@ -1,25 +1,16 @@
-﻿
+﻿using System;
+
 namespace KelpNet.Benchmark
 {
-    class BenchDataMaker
+    class BenchDataMaker<T> where T : unmanaged, IComparable<T>
     {
-        public static float[] GetFloatArray(int length)
+        public static Real<T>[] GetArray(int length)
         {
-            float[] result = new float[length];
+            Real<T>[] result = new Real<T>[length];
+
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = (float)Mother.Dice.NextDouble();
-            }
-
-            return result;
-        }
-
-        public static double[] GetDoubleArray(int length)
-        {
-            double[] result = new double[length];
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = Mother.Dice.NextDouble();
+                result[i] = Mother<T>.Next();
             }
 
             return result;

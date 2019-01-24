@@ -1,27 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public abstract class CompressibleFunction : SingleInputFunction
+    public abstract class CompressibleFunction<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "CompressibleFunction";
 
-        public CompressibleActivation Activator { get; protected set; }
+        public CompressibleActivation<T> Activator { get; protected set; }
 
         private readonly KeyValuePair<string, string>[] _activationParameters;
 
-        protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
-        protected abstract void NeedPreviousBackwardCpu(NdArray y, NdArray x);
+        protected abstract NdArray<T> NeedPreviousForwardCpu(NdArray<T> input);
+        protected abstract void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x);
 
-        protected CompressibleFunction(string functionName, CompressibleActivation activation = null, KeyValuePair<string, string>[] activationParameters = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        protected CompressibleFunction(string functionName, CompressibleActivation<T> activation = null, KeyValuePair<string, string>[] activationParameters = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._activationParameters = activationParameters;
 
@@ -32,7 +26,7 @@ namespace KelpNet
         }
 
         //後からActivationを追加する用
-        public void SetActivation(CompressibleActivation activation)
+        public void SetActivation(CompressibleActivation<T> activation)
         {
             this.Activator = activation;
         }

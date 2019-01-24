@@ -10,13 +10,10 @@ using KelpNet;
 using KelpNet.Tools;
 using KelpNet.Tools.DataImporter.Models.Caffe;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNetTester.Tests
 {
     //CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
-    class Test19
+    class Test19<T> where T : unmanaged, IComparable<T>
     {
         private const string DOWNLOAD_URL = "http://dl.caffe.berkeleyvision.org/bvlc_alexnet.caffemodel";
         private const string MODEL_FILE = "bvlc_alexnet.caffemodel";
@@ -34,7 +31,7 @@ namespace KelpNetTester.Tests
             {
                 Console.WriteLine("Model Loading.");
                 string modelFilePath = InternetFileDownloader.Donwload(DOWNLOAD_URL, MODEL_FILE, MODEL_FILE_HASH);
-                List<Function> alexNet = CaffemodelDataLoader.ModelLoad(modelFilePath);
+                List<Function<T>> alexNet = CaffemodelDataLoader<T>.ModelLoad(modelFilePath);
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
@@ -46,7 +43,7 @@ namespace KelpNetTester.Tests
                 //    }
                 //}
 
-                FunctionStack nn = new FunctionStack(alexNet.ToArray());
+                FunctionStack<T> nn = new FunctionStack<T>(alexNet.ToArray());
 
                 //層を圧縮
                 nn.Compress();
@@ -62,12 +59,12 @@ namespace KelpNetTester.Tests
                     g.DrawImage(baseImage, 0, 0, 227, 227);
                     g.Dispose();
 
-                    Real[] bias = {-123.68f, -116.779f, -103.939f}; //補正値のチャンネル順は入力画像に従う
-                    NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true, bias);
+                    Real<T>[] bias = {-123.68f, -116.779f, -103.939f}; //補正値のチャンネル順は入力画像に従う
+                    NdArray<T> imageArray = NdArrayConverter<T>.Image2NdArray(resultImage, false, true, bias);
 
                     Console.WriteLine("Start predict.");
                     Stopwatch sw = Stopwatch.StartNew();
-                    NdArray result = nn.Predict(imageArray)[0];
+                    NdArray<T> result = nn.Predict(imageArray)[0];
                     sw.Stop();
 
                     Console.WriteLine("Result Time : " +

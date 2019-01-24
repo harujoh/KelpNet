@@ -1,15 +1,9 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class Sigmoid : CompressibleActivation
+    public class Sigmoid<T> : CompressibleActivation<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Sigmoid";
 
@@ -17,12 +11,12 @@ namespace KelpNet
         {
         }
 
-        internal override Real ForwardActivate(Real x)
+        internal override Real<T> ForwardActivate(Real<T> x)
         {
-            return (Real)(1.0 / (1.0 + Math.Exp(-x)));
+            return (1.0 / (1.0 + Math.Exp(-x)));
         }
 
-        internal override Real BackwardActivate(Real gy, Real y)
+        internal override Real<T> BackwardActivate(Real<T> gy, Real<T> y)
         {
             return gy * y * (1.0f - y);
         }

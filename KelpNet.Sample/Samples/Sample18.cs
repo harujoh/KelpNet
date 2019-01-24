@@ -2,12 +2,9 @@
 using System.Diagnostics;
 using KelpNet.Sample.DataManager;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
-    class Sample18
+    class Sample18<T> where T : unmanaged, IComparable<T>
     {
         //ミニバッチの数
         const int BATCH_DATA_COUNT = 20;
@@ -24,26 +21,26 @@ namespace KelpNet.Sample.Samples
 
             //CIFARのデータを用意する
             Console.WriteLine("CIFAR Data Loading...");
-            CifarData cifarData = new CifarData(isCifar100, isFineLabel);
+            CifarData<T> cifarData = new CifarData<T>(isCifar100, isFineLabel);
 
             //ネットワークの構成を FunctionStack に書き連ねる
-            FunctionStack nn = new FunctionStack(
-                new Convolution2D(3, 32, 3, name: "l1 Conv2D"),
-                new ReLU(name: "l1 ReLU"),
-                new MaxPooling(2, name: "l1 MaxPooling"),
-                new Dropout(0.25f, name: "l1 DropOut"),
-                new Convolution2D(32, 64, 3, name: "l2 Conv2D"),
-                new ReLU(name: "l2 ReLU"),
-                new MaxPooling(2, stride: 2, name: "l2 MaxPooling"),
-                new Dropout(0.25f, name: "l2 DropOut"),
-                new Linear(13 * 13 * 64, 512, name: "l3 Linear"),
-                new ReLU(name: "l3 ReLU"),
-                new Dropout(name: "l3 DropOut"),
-                new Linear(512, cifarData.ClassCount, name: "l4 Linear")
+            FunctionStack<T> nn = new FunctionStack<T>(
+                new Convolution2D<T>(3, 32, 3, name: "l1 Conv2D"),
+                new ReLU<T>(name: "l1 ReLU"),
+                new MaxPooling<T>(2, name: "l1 MaxPooling"),
+                new Dropout<T>(0.25f, name: "l1 DropOut"),
+                new Convolution2D<T>(32, 64, 3, name: "l2 Conv2D"),
+                new ReLU<T>(name: "l2 ReLU"),
+                new MaxPooling<T>(2, stride: 2, name: "l2 MaxPooling"),
+                new Dropout<T>(0.25f, name: "l2 DropOut"),
+                new Linear<T>(13 * 13 * 64, 512, name: "l3 Linear"),
+                new ReLU<T>(name: "l3 ReLU"),
+                new Dropout<T>(name: "l3 DropOut"),
+                new Linear<T>(512, cifarData.ClassCount, name: "l4 Linear")
             );
 
             //optimizerを宣言
-            nn.SetOptimizer(new Adam());
+            nn.SetOptimizer(new Adam<T>());
 
             Console.WriteLine("Training Start...");
 
@@ -53,7 +50,7 @@ namespace KelpNet.Sample.Samples
                 Console.WriteLine("epoch " + epoch);
 
                 //全体での誤差を集計
-                Real totalLoss = 0;
+                Real<T> totalLoss = 0;
                 long totalLossCount = 0;
 
                 //何回バッチを実行するか
@@ -64,10 +61,10 @@ namespace KelpNet.Sample.Samples
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet<T> datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    Real<T> sumLoss = Trainer<T>.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy<T>());
                     totalLoss += sumLoss;
                     totalLossCount++;
 
@@ -84,10 +81,10 @@ namespace KelpNet.Sample.Samples
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
+                        TestDataSet<T> datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
 
                         //テストを実行
-                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real<T> accuracy = Trainer<T>.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

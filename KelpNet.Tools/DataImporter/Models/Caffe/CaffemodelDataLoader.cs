@@ -4,40 +4,37 @@ using System.Drawing;
 using System.IO;
 using ProtoBuf;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Tools.DataImporter.Models.Caffe
 {
-    public class CaffemodelDataLoader
+    public class CaffemodelDataLoader<T> where T : unmanaged, IComparable<T>
     {
         //binaryprotoを読み込む
-        public static NdArray ReadBinary(string path)
+        public static NdArray<T> ReadBinary(string path)
         {
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
                 BlobProto bp = Serializer.Deserialize<BlobProto>(stream);
 
-                NdArray result = new NdArray(new[] { bp.Channels, bp.Height, bp.Width }, bp.Num);
+                NdArray<T> result = new NdArray<T>(new[] { bp.Channels, bp.Height, bp.Width }, bp.Num);
 
                 if (bp.Datas != null)
                 {
-                    result.Data = NdArray.GetArray(bp.Datas);
+                    result.Data = Real<T>.GetArray(bp.Datas);
                 }
 
                 if (bp.DoubleDatas != null)
                 {
-                    result.Data = NdArray.GetArray(bp.DoubleDatas);
+                    result.Data = Real<T>.GetArray(bp.DoubleDatas);
                 }
 
                 if (bp.Diffs != null)
                 {
-                    result.Grad = NdArray.GetArray(bp.Diffs);
+                    result.Grad = Real<T>.GetArray(bp.Diffs);
                 }
 
                 if (bp.DoubleDiffs != null)
                 {
-                    result.Grad = NdArray.GetArray(bp.DoubleDiffs);
+                    result.Grad = Real<T>.GetArray(bp.DoubleDiffs);
                 }
 
                 return result;
@@ -45,9 +42,9 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
         }
 
         //分岐ありモデル用関数
-        public static FunctionDictionary LoadNetWork(string path)
+        public static FunctionDictionary<T> LoadNetWork(string path)
         {
-            FunctionDictionary functionDictionary = new FunctionDictionary();
+            FunctionDictionary<T> functionDictionary = new FunctionDictionary<T>();
 
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
@@ -55,7 +52,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
                 foreach (V1LayerParameter layer in netparam.Layers)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction(layer);
 
                     if (func != null)
                     {
@@ -65,7 +62,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
                 foreach (LayerParameter layer in netparam.Layer)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction(layer);
 
                     if (func != null)
                     {
@@ -78,9 +75,9 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
         }
 
         //分岐なしモデル用関数
-        public static List<Function> ModelLoad(string path)
+        public static List<Function<T>> ModelLoad(string path)
         {
-            List<Function> result = new List<Function>();
+            List<Function<T>> result = new List<Function<T>>();
 
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
@@ -88,7 +85,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
                 foreach (V1LayerParameter layer in netparam.Layers)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction(layer);
 
                     if (func != null)
                     {
@@ -98,7 +95,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
                 foreach (LayerParameter layer in netparam.Layer)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction(layer);
 
                     if (func != null)
                     {
@@ -110,7 +107,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             return result;
         }
 
-        static Function CreateFunction(LayerParameter layer)
+        static Function<T> CreateFunction(LayerParameter layer)
         {
             switch (layer.Type)
             {
@@ -118,7 +115,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                     return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Split":
-                    return new SplitFunction(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new SplitFunction<T>(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Slice":
                     return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
@@ -139,19 +136,19 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                     return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Dropout":
-                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Dropout<T>(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Pooling":
                     return SetupPooling(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "ReLU":
-                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "InnerProduct":
                     return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Softmax":
-                    return new Softmax(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Softmax<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Data":
                     return null; //読み飛ばし
@@ -165,12 +162,12 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             return null;
         }
 
-        static Function CreateFunction(V1LayerParameter layer)
+        static Function<T> CreateFunction(V1LayerParameter layer)
         {
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Split:
-                    return new SplitFunction(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new SplitFunction<T>(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Slice:
                     return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
@@ -188,19 +185,19 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                     return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Dropout:
-                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Dropout<T>(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Pooling:
                     return SetupPooling(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Relu:
-                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.InnerProduct:
                     return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Softmax:
-                    return new Softmax();
+                    return new Softmax<T>();
 
                 case V1LayerParameter.LayerType.Data:
                     return null; //読み飛ばし
@@ -214,7 +211,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             return null;
         }
 
-        static Function SetupScale(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name, string[] inputNames, string[] outputNames)
+        static Function<T> SetupScale(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name, string[] inputNames, string[] outputNames)
         {
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
             int axis = param.Axis - 1;
@@ -230,7 +227,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                     wShape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                return new MultiplyScale(axis, wShape, biasTerm, blobs[0].Datas, blobs[1].Datas, name, inputNames, outputNames);
+                return new MultiplyScale<T>(axis, wShape, biasTerm, blobs[0].Datas, blobs[1].Datas, name, inputNames, outputNames);
             }
             else
             {
@@ -242,11 +239,11 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                     shape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                return new AddBias(axis, shape, blobs[0].Datas, name);
+                return new AddBias<T>(axis, shape, blobs[0].Datas, name);
             }
         }
 
-        static Function SetupSlice(SliceParameter param, string name, string[] inputNames, string[] outputNames)
+        static Function<T> SetupSlice(SliceParameter param, string name, string[] inputNames, string[] outputNames)
         {
             int[] slicePoints = new int[param.SlicePoints.Length];
 
@@ -256,10 +253,10 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             }
 
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
-            return new SplitAxis(slicePoints, param.Axis - 1, name, inputNames, outputNames);
+            return new SplitAxis<T>(slicePoints, param.Axis - 1, name, inputNames, outputNames);
         }
 
-        static Function SetupPooling(PoolingParameter param, string name, string[] inputNames, string[] outputNames)
+        static Function<T> SetupPooling(PoolingParameter param, string name, string[] inputNames, string[] outputNames)
         {
             Size ksize = GetKernelSize(param);
             Size stride = GetKernelStride(param);
@@ -268,16 +265,16 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             switch (param.Pool)
             {
                 case PoolingParameter.PoolMethod.Max:
-                    return new MaxPooling(ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, name: name, inputNames: inputNames, outputNames: outputNames);
+                    return new MaxPooling<T>(ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, name: name, inputNames: inputNames, outputNames: outputNames);
 
                 case PoolingParameter.PoolMethod.Ave:
-                    return new AveragePooling(ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, name, inputNames, outputNames);
+                    return new AveragePooling<T>(ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, name, inputNames, outputNames);
             }
 
             return null;
         }
 
-        static BatchNormalization SetupBatchnorm(BatchNormParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
+        static BatchNormalization<T> SetupBatchnorm(BatchNormParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
             int size = (int)blobs[0].Shape.Dims[0];
 
@@ -299,10 +296,10 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                 }
             }
 
-            return new BatchNormalization(size, param.MovingAverageFraction, param.Eps, avgMean, avgVar, name: name, inputNames: inputNames, outputNames: outputNames);
+            return new BatchNormalization<T>(size, param.MovingAverageFraction, param.Eps, avgMean, avgVar, name: name, inputNames: inputNames, outputNames: outputNames);
         }
 
-        static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
+        static Convolution2D<T> SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
             Size ksize = GetKernelSize(param);
             Size stride = GetKernelStride(param);
@@ -316,13 +313,13 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             if (param.BiasTerm)
             {
                 float[] b = blobs[1].Datas;
-                return new Convolution2D(nIn, nOut, ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, !param.BiasTerm, w, b, name: name, inputNames: inputNames, outputNames: outputNames);
+                return new Convolution2D<T>(nIn, nOut, ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, !param.BiasTerm, w, b, name: name, inputNames: inputNames, outputNames: outputNames);
             }
 
-            return new Convolution2D(nIn, nOut, ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, !param.BiasTerm, w, name: name, inputNames: inputNames, outputNames: outputNames);
+            return new Convolution2D<T>(nIn, nOut, ksize.Width, ksize.Height, stride.Width, stride.Height, pad.Width, pad.Height, !param.BiasTerm, w, name: name, inputNames: inputNames, outputNames: outputNames);
         }
 
-        static Linear SetupInnerProduct(InnerProductParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
+        static Linear<T> SetupInnerProduct(InnerProductParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
             if (param.Axis != 1)
             {
@@ -335,30 +332,30 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
             if (param.BiasTerm)
             {
-                return new Linear(width, height, !param.BiasTerm, w, blobs[1].Datas, name: name, inputNames: inputNames, outputNames: outputNames);
+                return new Linear<T>(width, height, !param.BiasTerm, w, blobs[1].Datas, name: name, inputNames: inputNames, outputNames: outputNames);
             }
 
-            return new Linear(width, height, !param.BiasTerm, w, name: name);
+            return new Linear<T>(width, height, !param.BiasTerm, w, name: name);
         }
 
-        static LRN SetupLRN(LRNParameter param, string name, string[] inputNames, string[] outputNames)
+        static LRN<T> SetupLRN(LRNParameter param, string name, string[] inputNames, string[] outputNames)
         {
-            return new LRN((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name, inputNames, outputNames);
+            return new LRN<T>((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name, inputNames, outputNames);
         }
 
-        static Eltwise SetupEltwise(EltwiseParameter param, string name, string[] inputNames, string[] outputNames)
+        static Eltwise<T> SetupEltwise(EltwiseParameter param, string name, string[] inputNames, string[] outputNames)
         {
             if (param != null)
             {
-                return new Eltwise(param.Operation, param.Coeffs, name, inputNames, outputNames);
+                return new Eltwise<T>(param.Operation, param.Coeffs, name, inputNames, outputNames);
             }
             else
             {
-                return new Eltwise(EltwiseParameter.EltwiseOp.Sum, null, name, inputNames, outputNames);
+                return new Eltwise<T>(EltwiseParameter.EltwiseOp.Sum, null, name, inputNames, outputNames);
             }
         }
 
-        static Concat SetupConcat(ConcatParameter param, string name, string[] inputNames, string[] outputNames)
+        static Concat<T> SetupConcat(ConcatParameter param, string name, string[] inputNames, string[] outputNames)
         {
             int axis = param.Axis;
 
@@ -368,7 +365,7 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
             }
 
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
-            return new Concat(axis - 1, name, inputNames, outputNames);
+            return new Concat<T>(axis - 1, name, inputNames, outputNames);
         }
 
         static int GetHeight(BlobProto blob)

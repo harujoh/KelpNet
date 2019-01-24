@@ -1,39 +1,33 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class EmbedID : SingleInputFunction
+    public class EmbedID<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "EmbedID";
 
-        public NdArray Weight;
+        public NdArray<T> Weight;
 
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public EmbedID(int inputCount, int outputCount, Real<T>[,] initialW = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.InputCount = inputCount;
             this.OutputCount = outputCount;
 
-            this.Weight = new NdArray(inputCount, outputCount);
+            this.Weight = new NdArray<T>(inputCount, outputCount);
             this.Weight.Name = this.Name + " Weight";
 
             if (initialW == null)
             {
-                Initializer.InitWeight(this.Weight);
+                Initializer<T>.InitWeight(this.Weight);
             }
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                this.Weight.Data = NdArray.GetArray(initialW);
+                this.Weight.Data = Real<T>.GetArray(initialW);
             }
 
             this.Parameters = new[] { this.Weight };
@@ -42,9 +36,9 @@ namespace KelpNet
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray x)
+        protected NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real[] result = new Real[x.Data.Length * this.OutputCount];
+            Real<T>[] result = new Real<T>[x.Data.Length * this.OutputCount];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
@@ -57,10 +51,10 @@ namespace KelpNet
                 }
             }
 
-            return NdArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount, this);
+            return NdArray<T>.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             for (int b = 0; b < y.BatchCount; b++)
             {

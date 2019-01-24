@@ -1,22 +1,16 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class Adam : Optimizer
+    public class Adam<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
-        public Real Alpha;
-        public Real Beta1;
-        public Real Beta2;
-        public Real Epsilon;
+        public Real<T> Alpha;
+        public Real<T> Beta1;
+        public Real<T> Beta2;
+        public Real<T> Epsilon;
 
-        public Adam(Real alpha = 0.001f, Real beta1 = 0.9f, Real beta2 = 0.999f, Real epsilon = 1e-8f)
+        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8)
         {
             this.Alpha = alpha;
             this.Beta1 = beta1;
@@ -24,35 +18,35 @@ namespace KelpNet
             this.Epsilon = epsilon;
         }
 
-        internal override void AddFunctionParameters(NdArray[] functionParameters)
+        internal override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
-            foreach (NdArray functionParameter in functionParameters)
+            foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new AdamParameter<T>(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class AdamParameter : OptimizerParameter
+    class AdamParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        private readonly Adam _optimizer;
+        private readonly Adam<T> _optimizer;
 
-        private readonly Real[] m;
-        private readonly Real[] v;
+        private readonly Real<T>[] m;
+        private readonly Real<T>[] v;
 
-        public AdamParameter(NdArray parameter, Adam optimizer) : base(parameter)
+        public AdamParameter(NdArray<T> parameter, Adam<T> optimizer) : base(parameter)
         {
-            this.m = new Real[parameter.Data.Length];
-            this.v = new Real[parameter.Data.Length];
+            this.m = new Real<T>[parameter.Data.Length];
+            this.v = new Real<T>[parameter.Data.Length];
 
             this._optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
-            Real fix1 = this._optimizer.Beta1;
-            Real fix2 = this._optimizer.Beta2;
+            Real<T> fix1 = this._optimizer.Beta1;
+            Real<T> fix2 = this._optimizer.Beta2;
 
             for (int i = 1; i < this._optimizer.UpdateCount; i++)
             {
@@ -63,16 +57,16 @@ namespace KelpNet
             fix1 = 1 - fix1;
             fix2 = 1 - fix2;
 
-            Real learningRate = this._optimizer.Alpha * (Real)Math.Sqrt(fix2) / fix1;
+            Real<T> learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
             for (int i = 0; i < FunctionParameter.Data.Length; i++)
             {
-                Real grad = this.FunctionParameter.Grad[i];
+                Real<T> grad = this.FunctionParameter.Grad[i];
 
                 this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Data[i] -= learningRate * this.m[i] / ((Real)Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
             }
         }
     }

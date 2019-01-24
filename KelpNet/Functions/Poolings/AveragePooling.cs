@@ -1,15 +1,9 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class AveragePooling : SingleInputFunction
+    public class AveragePooling<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "AveragePooling";
 
@@ -46,12 +40,12 @@ namespace KelpNet
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray input)
+        protected NdArray<T> NeedPreviousForwardCpu(NdArray<T> input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
-            Real[] result = new Real[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
-            Real m = this._kHeight * this._kWidth;
+            Real<T>[] result = new Real<T>[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
+            Real<T> m = this._kHeight * this._kWidth;
 
             for (int b = 0; b < input.BatchCount; b++)
             {
@@ -86,12 +80,12 @@ namespace KelpNet
                 }
             }
 
-            return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
+            return NdArray<T>.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            Real m = this._kHeight * this._kWidth;
+            Real<T> m = this._kHeight * this._kWidth;
 
             for (int b = 0; b < y.BatchCount; b++)
             {
@@ -111,7 +105,7 @@ namespace KelpNet
                             int dxOffset = posX * this._strideX - this._padX < 0 ? 0 : posX * this._strideX - this._padX;
                             int dxLimit = this._kWidth + dxOffset < x.Shape[2] ? this._kWidth + dxOffset : x.Shape[2];
 
-                            Real gyData = y.Grad[gyIndex] / m;
+                            Real<T> gyData = y.Grad[gyIndex] / m;
 
                             for (int dy = dyOffset; dy < dyLimit; dy++)
                             {

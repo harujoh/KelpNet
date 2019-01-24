@@ -1,12 +1,8 @@
-﻿#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
+﻿using System;
+
 namespace KelpNet
-#endif
 {
-    public class Mul : DualInputFunction
+    public class Mul<T> : DualInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "Mul";
 
@@ -16,19 +12,19 @@ namespace KelpNet
             DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real[] resultData = new Real[a.Data.Length];
+            Real<T>[] resultData = new Real<T>[a.Data.Length];
 
             for (int i = 0; i < resultData.Length; i++)
             {
                 resultData[i] = a.Data[i] * b.Data[i];
             }
 
-            return new NdArray(resultData, a.Shape, a.BatchCount, this);
+            return new NdArray<T>(resultData, a.Shape, a.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> a, NdArray<T> b)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
@@ -38,7 +34,7 @@ namespace KelpNet
         }
     }
 
-    public class MulConst : DualInputFunction
+    public class MulConst<T> : DualInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "MulConst";
 
@@ -48,20 +44,20 @@ namespace KelpNet
             DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real[] resultData = new Real[a.Data.Length];
-            Real val = b.Data[0];
+            Real<T>[] resultData = new Real<T>[a.Data.Length];
+            Real<T> val = b.Data[0];
 
             for (int i = 0; i < resultData.Length; i++)
             {
                 resultData[i] = a.Data[i] * val;
             }
 
-            return new NdArray(resultData, a.Shape, a.BatchCount, this);
+            return new NdArray<T>(resultData, a.Shape, a.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> a, NdArray<T> b)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {

@@ -1,13 +1,10 @@
 ﻿using System;
 using KelpNet.Sample.DataManager;
 
-//using Real = System.Double;
-using Real = System.Single;
-
 namespace KelpNet.Sample.Samples
 {
     //MLPによるMNIST（手書き文字）の学習
-    class Sample04
+    class Sample04<T> where T : unmanaged, IComparable<T>
     {
         //ミニバッチの数
         const int BATCH_DATA_COUNT = 20;
@@ -23,20 +20,20 @@ namespace KelpNet.Sample.Samples
         {
             //MNISTのデータを用意する
             Console.WriteLine("MNIST Data Loading...");
-            MnistData mnistData = new MnistData();
+            MnistData<T> mnistData = new MnistData<T>();
 
 
             Console.WriteLine("Training Start...");
 
             //ネットワークの構成を FunctionStack に書き連ねる
-            FunctionStack nn = new FunctionStack(
-                new Linear(28 * 28, 1024, name: "l1 Linear"),
-                new Sigmoid(name: "l1 Sigmoid"),
-                new Linear(1024, 10, name: "l2 Linear")
+            FunctionStack<T> nn = new FunctionStack<T>(
+                new Linear<T>(28 * 28, 1024, name: "l1 Linear"),
+                new Sigmoid<T>(name: "l1 Sigmoid"),
+                new Linear<T>(1024, 10, name: "l2 Linear")
             );
 
             //optimizerを宣言
-            nn.SetOptimizer(new MomentumSGD());
+            nn.SetOptimizer(new MomentumSGD<T>());
 
             //三世代学習
             for (int epoch = 0; epoch < 3; epoch++)
@@ -44,7 +41,7 @@ namespace KelpNet.Sample.Samples
                 Console.WriteLine("epoch " + (epoch + 1));
 
                 //全体での誤差を集計
-                Real totalLoss = 0;
+                Real<T> totalLoss = 0;
                 long totalLossCount = 0;
 
                 //何回バッチを実行するか
@@ -52,10 +49,10 @@ namespace KelpNet.Sample.Samples
                 {
 
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet<T> datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    Real<T> sumLoss = Trainer<T>.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy<T>());
                     totalLoss = sumLoss;
                     totalLossCount++;
 
@@ -70,10 +67,10 @@ namespace KelpNet.Sample.Samples
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        TestDataSet<T> datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real<T> accuracy = Trainer<T>.Accuracy(nn, datasetY.Data, datasetY.Label);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

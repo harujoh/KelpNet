@@ -1,21 +1,15 @@
 ﻿using System;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class ELU : SingleInputFunction
+    public class ELU<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "ELU";
 
-        private readonly Real _alpha;
+        private readonly Real<T> _alpha;
 
-        public ELU(Real alpha = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public ELU(double alpha = 1.0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._alpha = alpha;
 
@@ -23,9 +17,9 @@ namespace KelpNet
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        private NdArray NeedPreviousForwardCpu(NdArray x)
+        private NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real[] result = new Real[x.Data.Length];
+            Real<T>[] result = new Real<T>[x.Data.Length];
 
             for (int i = 0; i < x.Data.Length; i++)
             {
@@ -35,14 +29,14 @@ namespace KelpNet
                 }
                 else
                 {
-                    result[i] = this._alpha * (Real)(Math.Exp(x.Data[i]) - 1.0);
+                    result[i] = this._alpha * (Math.Exp(x.Data[i]) - 1.0);
                 }
             }
 
-            return NdArray.Convert(result, x.Shape, x.BatchCount, this);
+            return NdArray<T>.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        private void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
@@ -52,7 +46,7 @@ namespace KelpNet
                 }
                 else
                 {
-                    x.Grad[i] += y.Grad[i] * this._alpha * (Real)Math.Exp(x.Data[i]);
+                    x.Grad[i] += y.Grad[i] * this._alpha * Math.Exp(x.Data[i]);
                 }
             }
         }

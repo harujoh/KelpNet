@@ -1,30 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if DOUBLE
-using Real = System.Double;
-namespace Double.KelpNet
-#else
-using Real = System.Single;
 namespace KelpNet
-#endif
 {
     [Serializable]
-    public class AddBias : SingleInputFunction
+    public class AddBias<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "AddBias";
 
         private int Axis;
-        private NdArray Bias;
+        private NdArray<T> Bias;
 
         public AddBias(int axis = 1, int[] biasShape = null, Array initialb = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Axis = axis;
-            this.Bias = new NdArray(biasShape);
+            this.Bias = new NdArray<T>(biasShape);
 
             if (initialb != null)
             {
-                Bias.Data = NdArray.GetArray(initialb);
+                Bias.Data = Real<T>.GetArray(initialb);
             }
 
             this.Parameters = new[] { Bias };
@@ -33,7 +27,7 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray x)
+        protected NdArray<T> ForwardCpu(NdArray<T> x)
         {
             int[] inputShape = x.Shape;
             int[] outputShape = this.Bias.Shape;
@@ -54,13 +48,13 @@ namespace KelpNet
 
             int[] y1Shape = shapeList.ToArray();
 
-            NdArray y1 = new Reshape(y1Shape).Forward(this.Bias)[0];
-            NdArray y2 = new Broadcast(inputShape).Forward(y1)[0];
+            NdArray<T> y1 = new Reshape<T>(y1Shape).Forward(this.Bias)[0];
+            NdArray<T> y2 = new Broadcast<T>(inputShape).Forward(y1)[0];
 
             return x + y2;
         }
 
-        protected void BackwardCpu(NdArray y, NdArray x)
+        protected void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
             //AddBiasとしては処理はない
         }
