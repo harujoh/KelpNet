@@ -8,7 +8,7 @@ namespace KelpNet
 {
     [Serializable]
     [DebuggerDisplay("{Name + ToString(\"Size\")}", Type = "{\"NdArray\" + ToString(\"Size\")}")]
-    public unsafe class NdArray<T> : IDisposable where T : unmanaged, IComparable<T>
+    public class NdArray<T> : IDisposable where T : unmanaged, IComparable<T>
     {
         public string Name;
         
@@ -129,23 +129,23 @@ namespace KelpNet
             return new NdArray<T>(shape, batchCount, parentFunc) { Data = data };
         }
 
-        public static NdArray<T> ZerosLike(NdArray<T> baseArray)
-        {
-            return new NdArray<T>(baseArray.Shape, baseArray.BatchCount);
-        }
+        //public static NdArray<T> ZerosLike(NdArray<T> baseArray)
+        //{
+        //    return new NdArray<T>(baseArray.Shape, baseArray.BatchCount);
+        //}
 
-        //インデクサはあまり早くないので頻繁にアクセスする場合は使用をオススメしません。デバッグ用途向けと割り切ってください。
-        public Real<T> this[int batchcount, params int[] indices]
-        {
-            get
-            {
-                return this.Data[this.GetLocalIndex(batchcount, indices)];
-            }
-            set
-            {
-                this.Data[this.GetLocalIndex(batchcount, indices)] = value;
-            }
-        }
+        ////インデクサはあまり早くないので頻繁にアクセスする場合は使用をオススメしません。デバッグ用途向けと割り切ってください。
+        //public Real<T> this[int batchcount, params int[] indices]
+        //{
+        //    get
+        //    {
+        //        return this.Data[this.GetLocalIndex(batchcount, indices)];
+        //    }
+        //    set
+        //    {
+        //        this.Data[this.GetLocalIndex(batchcount, indices)] = value;
+        //    }
+        //}
 
 
         public void Reshape(params int[] shape)
