@@ -17,22 +17,46 @@ namespace KelpNetTests
             //Make random value.
             float val = Mother.Dice.Next();
 
-            //Chainer
-            py["x"] = new Variable<float>(new[] { val });
-            py["y"] = py["x"] * py["x"] + py["x"] + 1.0f;
+            Real realTypeChecker = 1;
 
-            py["y"]["backward"].Call();
-            var pyGy = py["x"]["grad_var"]["data"].ToArray<float>();
+            if (realTypeChecker.GetType() == typeof(float))
+            {
+                //Chainer
+                py["x"] = new Variable<float>(new[] { val });
+                py["y"] = py["x"] * py["x"] + py["x"] + 1.0f;
 
-            //KelpNet
-            NdArray x = new NdArray(new[] { val });
-            NdArray y = x * x + x + 1.0f;
+                py["y"]["backward"].Call();
+                float[] pyGy = (float[])py["x"]["grad_var"]["data"].ToArray<float>();
 
-            y.Backward();
-            var gy = Real.ToBaseArray(x.Grad);
+                //KelpNet
+                NdArray x = new NdArray(new[] { val });
+                NdArray y = x * x + x + 1.0f;
 
-            //Check
-            CollectionAssert.AreEqual(pyGy, gy);
+                y.Backward();
+                float[] gy = (float[])Real.ToBaseArray<float>(x.Grad);
+
+                //Check
+                CollectionAssert.AreEqual(pyGy, gy);
+            }
+            else
+            {
+                //Chainer
+                py["x"] = new Variable<double>(new[] { val });
+                py["y"] = py["x"] * py["x"] + py["x"] + 1.0;
+
+                py["y"]["backward"].Call();
+                double[] pyGy = (double[])py["x"]["grad_var"]["data"].ToArray<double>();
+
+                //KelpNet
+                NdArray x = new NdArray(new[] { val });
+                NdArray y = x * x + x + 1.0f;
+
+                y.Backward();
+                double[] gy = (double[])Real.ToBaseArray<double>(x.Grad);
+
+                //Check
+                CollectionAssert.AreEqual(pyGy, gy);
+            }
         }
     }
 }

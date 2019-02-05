@@ -43,12 +43,12 @@ namespace KelpNet.Common
             return this.Value.ToString();
         }
 
-        public static RealType[] ToBaseArray(Real[] data)
+        public static Array ToBaseArray<T>(Real[] data)
         {
-            RealType[] resultData = new RealType[data.Length];
+            T[] resultData = new T[data.Length];
 
             //データを叩き込む
-            int size = sizeof(RealType) * data.Length;
+            int size = Marshal.SizeOf(typeof(T)) * data.Length;
             GCHandle source = GCHandle.Alloc(data, GCHandleType.Pinned);
             GCHandle dest = GCHandle.Alloc(resultData, GCHandleType.Pinned);
             RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), size);
