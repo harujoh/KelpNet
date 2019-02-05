@@ -1,0 +1,24 @@
+branches:
+  only:
+    - master
+
+skip_tags: true
+
+image: Visual Studio 2017
+
+configuration: Release
+
+before_build:
+    - nuget restore KelpNet.sln
+
+build: 
+  parallel: true
+  project: KelpNet.sln
+  verbosity: normal
+
+after_test:
+    - "SET PATH=C:\\Python37;C:\\Python37\\Scripts;%PATH%"
+    - pip install chainer
+    - .\packages\OpenCover.4.6.519\tools\OpenCover.Console.exe -register:user -target:"C:\Program Files (x86)\Microsoft Visual Studio\2017\Common7\IDE\MSTest.exe" -targetargs:"/noisolation /testcontainer:""KelpNetTests.dll" -targetdir:".\KelpNetTests\bin\Release" -excludebyattribute:*.ExcludeFromCodeCoverage* -hideskipped:All -output:Cover_result.xml
+    - pip install codecov
+    - codecov -f "Cover_result.xml"
