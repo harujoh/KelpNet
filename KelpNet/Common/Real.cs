@@ -43,6 +43,21 @@ namespace KelpNet.Common
             return this.Value.ToString();
         }
 
+        public static RealType[] ToBaseArray(Real[] data)
+        {
+            RealType[] resultData = new RealType[data.Length];
+
+            //データを叩き込む
+            int size = sizeof(RealType) * data.Length;
+            GCHandle source = GCHandle.Alloc(data, GCHandleType.Pinned);
+            GCHandle dest = GCHandle.Alloc(resultData, GCHandleType.Pinned);
+            RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), size);
+            source.Free();
+            dest.Free();
+
+            return resultData;
+        }
+
         public static Real[] GetArray(Array data)
         {
             Type arrayType = data.GetType().GetElementType();

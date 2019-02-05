@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6FC4693A-FE47-46E4-B5A0-7DB254DCBDB1}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KelpNetSample</RootNamespace>
+    <AssemblyName>KelpNetSample</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Benchmarker\BenchDataMaker.cs" />
+    <Compile Include="Benchmarker\SingleBenchmark.cs" />
+    <Compile Include="TestData\CifarData.cs" />
+    <Compile Include="TestData\MnistData.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestData\TestDataSet.cs" />
+    <Compile Include="Samples\Sample12.cs" />
+    <Compile Include="Samples\Sample10.cs" />
+    <Compile Include="Samples\Sample11.cs" />
+    <Compile Include="Samples\Sample13WinForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Samples\Sample13WinForm.Designer.cs">
+      <DependentUpon>Sample13WinForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Sample13.cs" />
+    <Compile Include="Samples\Sample14.cs" />
+    <Compile Include="Samples\Sample15.cs" />
+    <Compile Include="Samples\Sample16.cs" />
+    <Compile Include="Samples\Sample17.cs" />
+    <Compile Include="Samples\Sample18.cs" />
+    <Compile Include="Samples\Sample19.cs" />
+    <Compile Include="Samples\Sample3.cs" />
+    <Compile Include="Samples\Sample5.cs" />
+    <Compile Include="Samples\Sample6.cs" />
+    <Compile Include="Samples\Sample2.cs" />
+    <Compile Include="Samples\Sample4.cs" />
+    <Compile Include="Samples\Sample1.cs" />
+    <Compile Include="Samples\Sample7.cs" />
+    <Compile Include="Samples\Sample8.cs" />
+    <Compile Include="Samples\Sample9.cs" />
+    <Compile Include="Samples\SampleX.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CaffemodelLoader\CaffemodelLoader.csproj">
+      <Project>{722b0015-e108-4952-9f86-7cbfbe84a9ab}</Project>
+      <Name>CaffemodelLoader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ChainerModelLoader\ChainerModelLoader.csproj">
+      <Project>{6a966034-822e-4062-9d6b-23af3b10c89e}</Project>
+      <Name>ChainerModelLoader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CIFARLoader\CIFARLoader.csproj">
+      <Project>{9dc1c066-d522-416b-aeb3-bd4da0093ee8}</Project>
+      <Name>CIFARLoader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KelpNet\KelpNet.csproj">
+      <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
+      <Name>KelpNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MNISTLoader\MnistLoader.csproj">
+      <Project>{6782a5ff-52ad-4757-b7e4-2f661459e812}</Project>
+      <Name>MnistLoader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TestDataManager\TestDataManager.csproj">
+      <Project>{6d41064e-38db-4a3d-9336-bec27ed9f2db}</Project>
+      <Name>TestDataManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VocabularyMaker\VocabularyMaker.csproj">
+      <Project>{97349e4b-e378-40d2-a712-8922d5f80406}</Project>
+      <Name>VocabularyMaker</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Data\ChainerModel.npz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Samples\Sample13WinForm.resx">
+      <DependentUpon>Sample13WinForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\synset_words.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
