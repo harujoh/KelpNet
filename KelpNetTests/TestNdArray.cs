@@ -1,4 +1,5 @@
-﻿using ChainerCore;
+﻿using System.Runtime.InteropServices;
+using ChainerCore;
 using KelpNet.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NConstrictor;
@@ -17,9 +18,7 @@ namespace KelpNetTests
             //Make random value.
             float val = Mother.Dice.Next();
 
-            Real realTypeChecker = 1;
-
-            if (realTypeChecker.GetType() == typeof(float))
+            if (Marshal.SizeOf(typeof(Real)) == sizeof(float))
             {
                 //Chainer
                 py["x"] = new Variable<float>(new[] { val });
