@@ -1,8 +1,10 @@
-﻿using System.Runtime.InteropServices;
-using ChainerCore;
+﻿using ChainerCore;
 using KelpNet.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NConstrictor;
+
+using RealType = System.Single;
+//using RealType = System.Double;
 
 namespace KelpNetTests
 {
@@ -10,7 +12,7 @@ namespace KelpNetTests
     public class TestNdArray
     {
         [TestMethod]
-        public void TestBackward()
+        public void TestBasicMath()
         {
             PyMain py = Python.Main;
             Chainer.Initialize();
@@ -18,44 +20,67 @@ namespace KelpNetTests
             //Make random value.
             float val = Mother.Dice.Next();
 
-            if (Marshal.SizeOf(typeof(Real)) == sizeof(float))
-            {
-                //Chainer
-                py["x"] = new Variable<float>(new[] { val });
-                py["y"] = py["x"] * py["x"] + py["x"] + 1.0f;
+            //Chainer
+            py["x"] = new Variable<RealType>(new[] { val });
 
-                py["y"]["backward"].Call();
-                float[] pyGy = (float[])py["x"]["grad_var"]["data"].ToArray<float>();
+            //Add
+            py["add"] = 2 + py["x"] + py["x"] + 2;
 
-                //KelpNet
-                NdArray x = new NdArray(new[] { val });
-                NdArray y = x * x + x + 1.0f;
+            py["add"]["backward"].Call();
+            RealType[] pyGadd = (RealType[])py["x"]["grad_var"]["data"].ToArray<RealType>();
 
-                y.Backward();
-                float[] gy = (float[])Real.ToBaseArray<float>(x.Grad);
+            //Mul
+            py["mul"] = 2 * py["x"] * py["x"] * 3;
 
-                //Check
-                CollectionAssert.AreEqual(pyGy, gy);
-            }
-            else
-            {
-                //Chainer
-                py["x"] = new Variable<double>(new[] { val });
-                py["y"] = py["x"] * py["x"] + py["x"] + 1.0;
+            py["mul"]["backward"].Call();
+            RealType[] pyGmul = (RealType[])py["x"]["grad_var"]["data"].ToArray<RealType>();
 
-                py["y"]["backward"].Call();
-                double[] pyGy = (double[])py["x"]["grad_var"]["data"].ToArray<double>();
+            //Sub
+            py["sub"] = 30 - py["x"] - py["x"] - 2;
 
-                //KelpNet
-                NdArray x = new NdArray(new[] { val });
-                NdArray y = x * x + x + 1.0f;
+            py["sub"]["backward"].Call();
+            RealType[] pyGsub = (RealType[])py["x"]["grad_var"]["data"].ToArray<RealType>();
 
-                y.Backward();
-                double[] gy = (double[])Real.ToBaseArray<double>(x.Grad);
+            //Div
+            py["div"] = 50 / py["x"] / py["x"] / 2;
 
-                //Check
-                CollectionAssert.AreEqual(pyGy, gy);
-            }
+            py["div"]["backward"].Call();
+            RealType[] pyGdiv = (RealType[])py["x"]["grad_var"]["data"].ToArray<RealType>();
+
+
+            //KelpNet
+            NdArray x = new NdArray(new[] { val });
+
+            //Add
+            NdArray add = 2 + x + x + 2;
+
+            add.Backward();
+            RealType[] gadd = (RealType[])Real.ToBaseArray<RealType>(x.Grad);
+
+            //mul
+            NdArray mul = 2 * x * x * 3;
+
+            mul.Backward();
+            RealType[] gmul = (RealType[])Real.ToBaseArray<RealType>(x.Grad);
+
+            //sub
+            NdArray sub = 30 - x - x - 2;
+
+            sub.Backward();
+            RealType[] gsub = (RealType[])Real.ToBaseArray<RealType>(x.Grad);
+
+            //mul
+            NdArray div = 50 / x / x / 2;
+
+            div.Backward();
+            RealType[] gdiv = (RealType[])Real.ToBaseArray<RealType>(x.Grad);
+
+
+            //Check
+            CollectionAssert.AreEqual(pyGadd, gadd);
+            CollectionAssert.AreEqual(pyGmul, gmul);
+            CollectionAssert.AreEqual(pyGsub, gsub);
+            CollectionAssert.AreEqual(pyGdiv, gdiv);
         }
     }
 }
