@@ -46,10 +46,10 @@ CaffeモデルのVGGを読み込んで画像分類をさせるテスト
 ## Sample16
 ChainerモデルのTest5と同じ内容を読み込んで実行
 
-## Sample17.Run(任意のResnetモデルを選択してください)
+## Sample17(任意のResnetモデルを選択してください)
 CaffeモデルのRESNETを読み込んで画像分類をさせるテスト
 
-## Sample18.Run
+## Sample18
 CIFAR-10を5層CNNを使って学習する
 
 ## Sample19
