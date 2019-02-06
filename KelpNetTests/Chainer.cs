@@ -16,9 +16,6 @@ namespace ChainerCore
         {
             _chainer = PyImport.ImportModule("chainer");
 
-            //todo debug
-            Python.Run("import chainer");
-
             if (_chainer == IntPtr.Zero)
             {
                 throw new Exception("chainer failed to import");
@@ -46,17 +43,9 @@ namespace ChainerCore
     {
         private PyArray<T> _rawData;
 
-        //todo debug
         public Variable(PyObject array)
         {
-            Py.IncRef(Python.Main);
-            Python.Main["ax"] = array;
-
-            Python.Run("x = chainer.Variable(ax)");
-
-            Py.IncRef(Python.Main);
-            _rawData = Python.Main["x"];
-            //_rawData = Chainer.Variable.Call(array);
+            _rawData = Chainer.Variable.Call(array);
         }
 
         public static implicit operator PyArray<T>(Variable<T> i)
