@@ -14,12 +14,13 @@ namespace ChainerCore
 
         public static void Initialize()
         {
-            //PyObject* numpy = PyImport_ImportModule("numpy.core.multiarray");
             _chainer = PyImport.ImportModule("chainer");
+
+            //todo debug
+            Python.Run("import chainer");
 
             if (_chainer == IntPtr.Zero)
             {
-                //PyErr.SetString(PyExc.ImportError, "numpy.core.multiarray failed to import");
                 throw new Exception("chainer failed to import");
             }
 
@@ -45,9 +46,17 @@ namespace ChainerCore
     {
         private PyArray<T> _rawData;
 
+        //todo debug
         public Variable(PyObject array)
         {
-            _rawData = Chainer.Variable.Call(array);
+            Py.IncRef(Python.Main);
+            Python.Main["ax"] = array;
+
+            Python.Run("x = chainer.Variable(ax)");
+
+            Py.IncRef(Python.Main);
+            _rawData = Python.Main["x"];
+            //_rawData = Chainer.Variable.Call(array);
         }
 
         public static implicit operator PyArray<T>(Variable<T> i)
@@ -69,7 +78,5 @@ namespace ChainerCore
         {
             return Unsafe.As<PyObject, Variable<T>>(ref i);
         }
-
     }
-
 }
