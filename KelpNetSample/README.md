@@ -1,59 +1,59 @@
-## Test1
+## Sample1
 MLPによるXORの学習
 
-## Test2
+## Sample2
 MLPによるXORの学習【回帰版】
 
-## Test3
+## Sample3
 MLPによるSin関数の学習
 
-## Test4
+## Sample4
 MLPによるMNIST（手書き文字）の学習
 
-## Test5
+## Sample5
 エクセルCNNの再現
 
-## Test6
+## Sample6
 5層CNNによるMNISTの学習
 
-## Test7
+## Sample7
 BatchNormを使った15層MLPによるMNISTの学習
 
-## Test8
+## Sample8
 LSTMによるSin関数の学習
 
-## Test9
+## Sample9
 SimpleなRNNによるRNNLM
 
-## Test10
+## Sample10
 LSTMによるRNNLM
 
-## Test11
+## Sample11
 Decoupled Neural Interfaces using Synthetic GradientsによるMNISTの学習
 
-## Test12
+## Sample12
 Test11のDNIをcDNIとした
 
-## Test13
+## Sample13
 Deconvolution2Dのテスト(Winform)
 
-## Test14
+## Sample14
 Test6を連結して実行
 
-## Test15.Run(VGG16またはVGG19を選択してください)
+## Sample15
 CaffeモデルのVGGを読み込んで画像分類をさせるテスト
 
-## Test16
+## Sample16
 ChainerモデルのTest5と同じ内容を読み込んで実行
 
-## Test17.Run(任意のResnetモデルを選択してください)
+## Sample17
 CaffeモデルのRESNETを読み込んで画像分類をさせるテスト
 
-## Test18.Run
+## Sample18
 CIFAR-10を5層CNNを使って学習する
 
-## Test19
+## Sample19
 CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
 
-## TestX
+## SampleX
 Linearの分割実行
