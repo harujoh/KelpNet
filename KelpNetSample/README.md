@@ -40,13 +40,13 @@ Deconvolution2Dのテスト(Winform)
 ## Sample14
 Test6を連結して実行
 
-## Sample15.Run(VGG16またはVGG19を選択してください)
+## Sample15
 CaffeモデルのVGGを読み込んで画像分類をさせるテスト
 
 ## Sample16
 ChainerモデルのTest5と同じ内容を読み込んで実行
 
-## Sample17(任意のResnetモデルを選択してください)
+## Sample17
 CaffeモデルのRESNETを読み込んで画像分類をさせるテスト
 
 ## Sample18
