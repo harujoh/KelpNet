@@ -80,8 +80,7 @@ namespace KelpNet.Sample.Samples
                 //未学習のフィルタで画像を出力
                 NdArray<T>[] img_y = this.model.Forward(img_p);
 
-                //img_yを暗黙的にNdArrayとして使用
-                this.BackgroundImage = NdArrayConverter<T>.NdArray2Image(img_y[0].GetSingleArray(0));
+                this.BackgroundImage = NdArrayConverter<T>.NdArray2Image(img_y[0]);
 
                 Real<T> loss = this.meanSquaredError.Evaluate(img_y, img_core);
 
@@ -96,7 +95,6 @@ namespace KelpNet.Sample.Samples
             {
                 this.timer1.Enabled = false;
             }
-
         }
     }
 }
