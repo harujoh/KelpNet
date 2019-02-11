@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace KelpNet
 {
+    [Serializable]
     public struct Real<T> : IComparable<Real<T>> where T : unmanaged, IComparable<T>
     {
         private T _value;
@@ -249,11 +250,6 @@ namespace KelpNet
             return Unsafe.As<T, Real<T>>(ref real);
         }
 
-        public static implicit operator T(Real<T> real)
-        {
-            return Unsafe.As<Real<T>, T>(ref real);
-        }
-
         public static implicit operator double(Real<T> real)
         {
             if (typeof(T) == typeof(double))
@@ -294,7 +290,7 @@ namespace KelpNet
 
             //型の不一致をここで吸収
             if (arrayType != typeof(T) && arrayType != typeof(Real<T>))
-            {                
+            {
                 //一次元の長さの配列を用意
                 Array array = Array.CreateInstance(arrayType, data.Length);
                 //一次元化して
@@ -319,7 +315,7 @@ namespace KelpNet
 
         public int CompareTo(Real<T> other)
         {
-            return this._value.CompareTo(other);
+            return this._value.CompareTo(other._value);
         }
 
         public override string ToString()
