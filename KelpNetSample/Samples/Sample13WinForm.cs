@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using KelpNet.Common;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
+using KelpNet;
 
 namespace KelpNetSample.Samples
 {

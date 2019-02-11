@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KelpNet.Common.Functions.Type
+namespace KelpNet
 {
     [Serializable]
     public abstract class MultiOutputFunction : Function

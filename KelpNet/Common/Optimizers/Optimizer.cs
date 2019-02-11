@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace KelpNet.Common.Optimizers
+namespace KelpNet
 {
     //Optimizerの素となるクラスでパラメータを持つ
     [Serializable]

@@ -1,8 +1,6 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+namespace KelpNet
 {
     //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
     [Serializable]

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Drawing;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Poolings
+namespace KelpNet
 {
     [Serializable]
     public class AveragePooling : SingleInputFunction

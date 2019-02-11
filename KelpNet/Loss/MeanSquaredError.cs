@@ -1,8 +1,6 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Loss;
 
-namespace KelpNet.Loss
+namespace KelpNet
 {
     public class MeanSquaredError : LossFunction
     {

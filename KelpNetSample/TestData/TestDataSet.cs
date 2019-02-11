@@ -1,6 +1,6 @@
-﻿using KelpNet.Common;
+﻿using KelpNet;
 
-namespace KelpNetTester.TestData
+namespace KelpNetSample.TestData
 {
     public class TestDataSet
     {

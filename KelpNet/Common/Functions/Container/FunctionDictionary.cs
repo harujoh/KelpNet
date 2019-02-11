@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet.Common.Functions.Type;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Common.Functions.Container
+namespace KelpNet
 {
     [Serializable]
     public class FunctionDictionary : Function

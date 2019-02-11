@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Normalization
+namespace KelpNet
 {
     //Chainerより移植　finetuningは未実装
     [Serializable]
@@ -60,12 +58,12 @@ namespace KelpNet.Functions.Normalization
 
             if (initialAvgMean != null)
             {
-                this.AvgMean.Data = Real.GetArray(initialAvgMean);
+                this.AvgMean.Data = Real.ToRealArray(initialAvgMean);
             }
 
             if (initialAvgVar != null)
             {
-                this.AvgVar.Data = Real.GetArray(initialAvgVar);
+                this.AvgVar.Data = Real.ToRealArray(initialAvgVar);
             }
 
             if (!this.IsTrain)

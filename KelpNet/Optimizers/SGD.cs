@@ -1,8 +1,6 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Optimizers;
 
-namespace KelpNet.Optimizers
+namespace KelpNet
 {
     [Serializable]
     public class SGD : Optimizer

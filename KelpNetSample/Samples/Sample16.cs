@@ -1,13 +1,6 @@
 ﻿using System;
 using ChainerModelLoader;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Poolings;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
+using KelpNet;
 
 namespace KelpNetSample.Samples
 {

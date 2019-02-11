@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KelpNet.Common
+namespace KelpNet
 {
     //乱数の素
     //C#ではRandomを複数同時にインスタンスすると似たような値しか吐かないため

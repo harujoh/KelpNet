@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using Cloo;
 using KelpNet.Properties;
 
-namespace KelpNet.Common
+namespace KelpNet
 {
     /// <summary>
     /// The types of devices.

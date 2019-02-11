@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 //using RealType = System.Double;
 using RealType = System.Single;
 
-namespace KelpNet.Common
+namespace KelpNet
 {
-    class RealTool
+    public class RealTool
     {
-        [DllImport("kernel32.dll")]
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
         public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
     }
 
@@ -16,14 +18,20 @@ namespace KelpNet.Common
     {
         public readonly RealType Value;
 
-        public static Int32 Size => sizeof(RealType);
+        public static int Size => sizeof(RealType);
+        public static Type Type => typeof(RealType);
 
-        private Real(double value)
+        private Real(RealType value)
         {
-            this.Value = (RealType)value;
+            this.Value = value;
         }
 
         public static implicit operator Real(double value)
+        {
+            return new Real((RealType)value);
+        }
+
+        public static implicit operator Real(float value)
         {
             return new Real(value);
         }
@@ -43,22 +51,28 @@ namespace KelpNet.Common
             return this.Value.ToString();
         }
 
-        public static Array ToBaseArray<T>(Real[] data)
+        public static Array ToBaseArray(Array data)
         {
-            T[] resultData = new T[data.Length];
+            int[] shape = new int[data.Rank];
+
+            for (int i = 0; i < shape.Length; i++)
+            {
+                shape[i] = data.GetLength(i);
+            }
+
+            Array result = Array.CreateInstance(typeof(RealType), shape);
 
             //データを叩き込む
-            int size = Marshal.SizeOf(typeof(T)) * data.Length;
             GCHandle source = GCHandle.Alloc(data, GCHandleType.Pinned);
-            GCHandle dest = GCHandle.Alloc(resultData, GCHandleType.Pinned);
-            RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), size);
+            GCHandle dest = GCHandle.Alloc(result, GCHandleType.Pinned);
+            RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), sizeof(RealType) * data.Length);
             source.Free();
             dest.Free();
 
-            return resultData;
+            return result;
         }
 
-        public static Real[] GetArray(Array data)
+        public static Real[] ToRealArray(Array data)
         {
             Type arrayType = data.GetType().GetElementType();
             Real[] resultData = new Real[data.Length];
@@ -78,12 +92,11 @@ namespace KelpNet.Common
             }
 
             //データを叩き込む
-            int size = sizeof(RealType) * data.Length;
-            GCHandle gchObj = GCHandle.Alloc(data, GCHandleType.Pinned);
-            GCHandle gchBytes = GCHandle.Alloc(resultData, GCHandleType.Pinned);
-            RealTool.CopyMemory(gchBytes.AddrOfPinnedObject(), gchObj.AddrOfPinnedObject(), size);
-            gchObj.Free();
-            gchBytes.Free();
+            GCHandle source = GCHandle.Alloc(data, GCHandleType.Pinned);
+            GCHandle dest = GCHandle.Alloc(resultData, GCHandleType.Pinned);
+            RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), sizeof(RealType) * data.Length);
+            source.Free();
+            dest.Free();
 
             return resultData;
         }

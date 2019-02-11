@@ -2,16 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Arrays;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Mathmetrics;
-using KelpNet.Functions.Noise;
-using KelpNet.Functions.Normalization;
-using KelpNet.Functions.Poolings;
+using KelpNet;
 using ProtoBuf;
 
 namespace CaffemodelLoader
@@ -29,22 +20,22 @@ namespace CaffemodelLoader
 
                 if (bp.Datas != null)
                 {
-                    result.Data = Real.GetArray(bp.Datas);
+                    result.Data = Real.ToRealArray(bp.Datas);
                 }
 
                 if (bp.DoubleDatas != null)
                 {
-                    result.Data = Real.GetArray(bp.DoubleDatas);
+                    result.Data = Real.ToRealArray(bp.DoubleDatas);
                 }
 
                 if (bp.Diffs != null)
                 {
-                    result.Grad = Real.GetArray(bp.Diffs);
+                    result.Grad = Real.ToRealArray(bp.Diffs);
                 }
 
                 if (bp.DoubleDiffs != null)
                 {
-                    result.Grad = Real.GetArray(bp.DoubleDiffs);
+                    result.Grad = Real.ToRealArray(bp.DoubleDiffs);
                 }
 
                 return result;

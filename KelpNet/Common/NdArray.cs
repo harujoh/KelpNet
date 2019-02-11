@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using KelpNet.Common.Functions;
-using KelpNet.Functions.Mathmetrics.BasicMath;
 
-namespace KelpNet.Common
+namespace KelpNet
 {
     [Serializable]
     [DebuggerDisplay("{Name + ToString(\"Size\")}", Type = "{\"NdArray\" + ToString(\"Size\")}")]
@@ -42,7 +40,7 @@ namespace KelpNet.Common
 
         public NdArray(Array data, Function parentFunc = null)
         {
-            Real[] resultData = Real.GetArray(data);
+            Real[] resultData = Real.ToRealArray(data);
 
             int[] resultShape = new int[data.Rank];
 
@@ -107,7 +105,7 @@ namespace KelpNet.Common
 
             for (int i = 0; i < arrays.Length; i++)
             {
-                Array.Copy(Real.GetArray(arrays[i]), 0, result, length * i, length);
+                Array.Copy(Real.ToRealArray(arrays[i]), 0, result, length * i, length);
             }
 
             return new NdArray(result, resultShape, arrays.Length, parentFunc);

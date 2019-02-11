@@ -3,7 +3,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace KelpNet.Common.Tools
+namespace KelpNet
 {
     public class NdArrayConverter
     {

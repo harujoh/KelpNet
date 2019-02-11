@@ -1,15 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Noise;
-using KelpNet.Functions.Poolings;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
-using KelpNetTester.TestData;
+using KelpNet;
+using KelpNetSample.TestData;
 
 namespace KelpNetSample.Samples
 {
@@ -91,7 +83,7 @@ namespace KelpNetSample.Samples
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        KelpNetTester.TestData.TestDataSet datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
+                        TestDataSet datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
 
                         //テストを実行
                         Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);

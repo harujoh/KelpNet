@@ -1,4 +1,4 @@
-﻿namespace KelpNet.Common.Loss
+﻿namespace KelpNet
 {
     public abstract class LossFunction
     {

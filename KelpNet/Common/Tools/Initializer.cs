@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
-namespace KelpNet.Common.Tools
+namespace KelpNet
 {
-    class Initializer
+    public class Initializer
     {
         //初期値が入力されなかった場合、この関数で初期化を行う
         public static void InitWeight(NdArray array, double masterScale = 1)
@@ -34,5 +35,42 @@ namespace KelpNet.Common.Tools
 
             return result;
         }
+
+        //適当な値の配列を作る
+        public static Real[] GetRealArray(int count, int max = 1, int min = 0)
+        {
+            Real[] result = new Real[count];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = (max - min) * Mother.Dice.NextDouble() - min;
+            }
+
+            return result;
+        }
+
+        //多次元配列を作る
+        public static Array GetRealNdArray(int[] shape, int max = 1, int min = 0)
+        {
+            Array result = Array.CreateInstance(typeof(Real), shape);
+
+            Real[] tmp = new Real[result.Length];
+
+            for (int i = 0; i < tmp.Length; i++)
+            {
+                tmp[i] = (max - min) * Mother.Dice.NextDouble() - min;
+            }
+
+            GCHandle hResult = GCHandle.Alloc(result, GCHandleType.Pinned);
+            GCHandle hTmp = GCHandle.Alloc(tmp, GCHandleType.Pinned);
+
+            RealTool.CopyMemory(hTmp.AddrOfPinnedObject(), hTmp.AddrOfPinnedObject(), result.Length);
+
+            hTmp.Free();
+            hResult.Free();
+
+            return result;
+        }
+
     }
 }

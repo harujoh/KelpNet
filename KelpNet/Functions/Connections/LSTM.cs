@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Connections
+namespace KelpNet
 {
     [Serializable]
     public class LSTM : SingleInputFunction

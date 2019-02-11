@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
+using KelpNet;
 using TestDataManager;
 using VocabularyMaker;
 
@@ -45,7 +40,7 @@ namespace KelpNetSample.Samples
             FunctionStack model = new FunctionStack(
                 new EmbedID(nVocab, N_UNITS, name: "l1 EmbedID"),
                 new Linear(N_UNITS, N_UNITS, name: "l2 Linear"),
-                new Tanh("l2 Tanh"),
+                new TanhActivation("l2 Tanh"),
                 new Linear(N_UNITS, nVocab, name: "l3 Linear"),
                 new Softmax("l3 Sonftmax")
             );

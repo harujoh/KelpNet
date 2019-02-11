@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Linq;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Normalization;
-using KelpNet.Loss;
-using KelpNet.Optimizers;
-using KelpNetTester.TestData;
+using KelpNet;
+using KelpNetSample.TestData;
 
 namespace KelpNetSample.Samples
 {

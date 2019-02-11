@@ -6,12 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
+using KelpNet;
 
 namespace KelpNetWaifu2x
 {

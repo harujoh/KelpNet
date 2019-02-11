@@ -1,7 +1,5 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Functions.Connections;
-using KelpNet.Optimizers;
+using KelpNet;
 
 namespace KelpNetSample.Samples
 {

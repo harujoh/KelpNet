@@ -1,8 +1,6 @@
 ﻿using System;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Loss;
 
-namespace KelpNet.Common.Tools
+namespace KelpNet
 {
     //ネットワークの訓練を実行するクラス
     //主にArray->NdArrayの型変換を担う

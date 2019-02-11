@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
-using KelpNet.Functions.Arrays;
 
-namespace KelpNet.Functions.Mathmetrics
+namespace KelpNet
 {
     [Serializable]
     public class AddBias : SingleInputFunction
@@ -21,7 +18,7 @@ namespace KelpNet.Functions.Mathmetrics
 
             if (initialb != null)
             {
-                Bias.Data = Real.GetArray(initialb);
+                Bias.Data = Real.ToRealArray(initialb);
             }
 
             this.Parameters = new[] { Bias };

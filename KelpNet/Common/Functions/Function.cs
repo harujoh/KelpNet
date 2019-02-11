@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet.Common.Optimizers;
-using KelpNet.Common.Tools;
 
-namespace KelpNet.Common.Functions
+namespace KelpNet
 {
     //FunctionStackに積み上げるFunctionの基底クラス
     [Serializable]

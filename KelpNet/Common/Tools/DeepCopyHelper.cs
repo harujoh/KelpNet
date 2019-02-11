@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.Serialization;
 
-namespace KelpNet.Common.Tools
+namespace KelpNet
 {
     //コチラを参考にしています
     //http://d.hatena.ne.jp/tekk/20100131/1264913887

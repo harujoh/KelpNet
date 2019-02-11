@@ -1,8 +1,6 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Mathmetrics.Trigonometric
+namespace KelpNet
 {
     public class ArcCos : SingleInputFunction
     {

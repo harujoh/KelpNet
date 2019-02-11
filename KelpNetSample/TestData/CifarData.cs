@@ -1,8 +1,8 @@
 ﻿using System;
 using CIFARLoader;
-using KelpNet.Common;
+using KelpNet;
 
-namespace KelpNetTester.TestData
+namespace KelpNetSample.TestData
 {
     class CifarData
     {

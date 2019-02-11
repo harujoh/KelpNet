@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using Cloo;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Tools;
 
-namespace KelpNet.Functions.Connections
+namespace KelpNet
 {
     [Serializable]
     public class Deconvolution2D : CompressibleFunction
@@ -84,7 +81,7 @@ namespace KelpNet.Functions.Connections
             }
             else
             {
-                this.Weight.Data = Real.GetArray(initialW);
+                this.Weight.Data = Real.ToRealArray(initialW);
             }
 
             this.Parameters[0] = this.Weight;
@@ -97,7 +94,7 @@ namespace KelpNet.Functions.Connections
 
                 if (initialb != null)
                 {
-                    this.Bias.Data = Real.GetArray(initialb);
+                    this.Bias.Data = Real.ToRealArray(initialb);
                 }
 
                 this.Parameters[1] = this.Bias;

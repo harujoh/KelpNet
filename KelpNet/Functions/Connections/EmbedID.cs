@@ -1,9 +1,6 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
-using KelpNet.Common.Tools;
 
-namespace KelpNet.Functions.Connections
+namespace KelpNet
 {
     [Serializable]
     public class EmbedID : SingleInputFunction
@@ -30,7 +27,7 @@ namespace KelpNet.Functions.Connections
             else
             {
                 //単純に代入しないのはサイズのチェックを兼ねるため
-                this.Weight.Data = Real.GetArray(initialW);
+                this.Weight.Data = Real.ToRealArray(initialW);
             }
 
             this.Parameters = new[] { this.Weight };

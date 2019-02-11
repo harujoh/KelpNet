@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions.Noise
+namespace KelpNet
 {
     [Serializable]
     public class StochasticDepth : Function //SplitFunctionと置き換えるように使用する

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Common;
-using KelpNet.Common.Functions.Type;
+using KelpNet;
 
 namespace CaffemodelLoader
 {

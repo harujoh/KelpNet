@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using Cloo;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Functions.Type;
 
-namespace KelpNet.Functions.Poolings
+namespace KelpNet
 {
     [Serializable]
     public class MaxPooling : SingleInputFunction, IParallelizable

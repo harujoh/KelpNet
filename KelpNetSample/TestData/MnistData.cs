@@ -1,8 +1,8 @@
 ﻿using System;
-using KelpNet.Common;
+using KelpNet;
 using MNISTLoader;
 
-namespace KelpNetTester.TestData
+namespace KelpNetSample.TestData
 {
     class MnistData
     {

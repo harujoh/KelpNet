@@ -7,12 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using CaffemodelLoader;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
-using KelpNet.Common.Functions.Container;
-using KelpNet.Common.Tools;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Poolings;
+using KelpNet;
 using TestDataManager;
 
 namespace KelpNetSample.Samples

@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using KelpNet.Common;
-using KelpNet.Functions.Activations;
-using KelpNet.Functions.Connections;
-using KelpNet.Functions.Noise;
-using KelpNet.Functions.Poolings;
+using KelpNet;
 
 namespace KelpNetSample.Benchmarker
 {
@@ -18,8 +14,8 @@ namespace KelpNetSample.Benchmarker
         {
             Stopwatch sw = new Stopwatch();
 
-            NdArray inputArrayCpu = new NdArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
-            NdArray inputArrayGpu = new NdArray(BenchDataMaker.GetRealArray(INPUT_SIZE));
+            NdArray inputArrayCpu = new NdArray(Initializer.GetRealArray(INPUT_SIZE));
+            NdArray inputArrayGpu = new NdArray(Initializer.GetRealArray(INPUT_SIZE));
 
             //Linear
             Linear linear = new Linear(INPUT_SIZE, OUTPUT_SIZE);
@@ -54,7 +50,7 @@ namespace KelpNetSample.Benchmarker
 
 
             //Tanh
-            Tanh tanh = new Tanh();
+            TanhActivation tanh = new TanhActivation();
             Console.WriteLine("\n◆" + tanh.Name);
 
             sw.Restart();
@@ -182,8 +178,8 @@ namespace KelpNetSample.Benchmarker
             }
 
 
-            NdArray inputImageArrayGpu = new NdArray(BenchDataMaker.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
-            NdArray inputImageArrayCpu = new NdArray(BenchDataMaker.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
+            NdArray inputImageArrayGpu = new NdArray(Initializer.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
+            NdArray inputImageArrayCpu = new NdArray(Initializer.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
 
 
             //MaxPooling

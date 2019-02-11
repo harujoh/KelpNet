@@ -1,15 +1,13 @@
 ﻿using System;
-using KelpNet.Common;
-using KelpNet.Common.Functions;
 
-namespace KelpNet.Functions.Activations
+namespace KelpNet
 {
     [Serializable]
-    public class Tanh : CompressibleActivation
+    public class TanhActivation : CompressibleActivation
     {
         const string FUNCTION_NAME = "Tanh";
 
-        public Tanh(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
+        public TanhActivation(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
         {
         }
 
