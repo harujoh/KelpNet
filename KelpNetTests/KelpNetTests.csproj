@@ -46,6 +46,9 @@
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.1.4.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="NConstrictor, Version=0.9.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NConstrictor.0.9.8\lib\net46\NConstrictor.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -64,10 +67,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NConstrictor\NConstrictor\NConstrictor.csproj">
-      <Project>{39043a01-e169-4bd8-aa76-0bba699ccaa9}</Project>
-      <Name>NConstrictor</Name>
-    </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
       <Name>KelpNet</Name>
