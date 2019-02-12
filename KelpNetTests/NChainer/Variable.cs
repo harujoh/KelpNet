@@ -1,16 +1,27 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using NConstrictor;
 
 namespace NChainer
 {
-    public struct Variable
+    public struct Variable<T>
     {
         private PyObject _rawData;
-        public PyObject Grad => _rawData["grad_var"];
-
-        public Variable(PyObject array)
+        public PyArray<T> Grad
         {
-            _rawData = Python.GetNamelessObject(Chainer.Variable.Call(array));
+            get { return _rawData["grad"]; }
+            set { _rawData["grad"] = value; }
+        }
+
+        public PyArray<T> Data
+        {
+            get { return _rawData["data"]; }
+            set { _rawData["data"] = value; }
+        }
+
+        public Variable(Array array)
+        {
+            _rawData = Python.GetNamelessObject(Chainer.Variable.Call((PyArray<T>)array));
         }
 
         public void Backward()
@@ -18,77 +29,78 @@ namespace NChainer
             _rawData["backward"].Call();
         }
 
-        public static Variable operator +(Variable x, Variable y)
+        public static PyObject operator +(Variable<T> x, Variable<T> y)
         {
             return PyNumber.Add(x, y);
         }
 
-        public static Variable operator -(Variable x, Variable y)
+        public static PyObject operator -(Variable<T> x, Variable<T> y)
         {
             return PyNumber.Subtract(x, y);
         }
 
-        public static Variable operator *(Variable x, Variable y)
+        public static PyObject operator *(Variable<T> x, Variable<T> y)
         {
             return PyNumber.Multiply(x, y);
         }
 
-        public static Variable operator /(Variable x, Variable y)
+        public static PyObject operator /(Variable<T> x, Variable<T> y)
         {
             return PyNumber.TrueDivide(x, y);
         }
 
 
         //
-        public static Variable operator +(PyObject x, Variable y)
+        public static PyObject operator +(PyObject x, Variable<T> y)
         {
             return PyNumber.Add(x, y);
         }
 
-        public static Variable operator -(PyObject x, Variable y)
+        public static PyObject operator -(PyObject x, Variable<T> y)
         {
             return PyNumber.Subtract(x, y);
         }
 
-        public static Variable operator *(PyObject x, Variable y)
+        public static PyObject operator *(PyObject x, Variable<T> y)
         {
             return PyNumber.Multiply(x, y);
         }
 
-        public static Variable operator /(PyObject x, Variable y)
+        public static PyObject operator /(PyObject x, Variable<T> y)
         {
             return PyNumber.TrueDivide(x, y);
         }
 
         //
-        public static Variable operator +(Variable x, PyObject y)
+        public static PyObject operator +(Variable<T> x, PyObject y)
         {
             return PyNumber.Add(x, y);
         }
 
-        public static Variable operator -(Variable x, PyObject y)
+        public static PyObject operator -(Variable<T> x, PyObject y)
         {
             return PyNumber.Subtract(x, y);
         }
 
-        public static Variable operator *(Variable x, PyObject y)
+        public static PyObject operator *(Variable<T> x, PyObject y)
         {
             return PyNumber.Multiply(x, y);
         }
 
-        public static Variable operator /(Variable x, PyObject y)
+        public static PyObject operator /(Variable<T> x, PyObject y)
         {
             return PyNumber.TrueDivide(x, y);
         }
 
-        public static implicit operator PyObject(Variable variable)
+        public static implicit operator PyObject(Variable<T> variable)
         {
-            return Unsafe.As<Variable, PyObject>(ref variable);
+            return Unsafe.As<Variable<T>, PyObject>(ref variable);
         }
 
-        public static implicit operator Variable(PyObject pyObject)
+        public static implicit operator Variable<T>(PyObject pyObject)
         {
-            return Unsafe.As<PyObject, Variable>(ref pyObject);
+            PyObject result = Python.GetNamelessObject(pyObject);
+            return Unsafe.As<PyObject, Variable<T>>(ref result);
         }
     }
 }
