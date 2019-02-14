@@ -87,11 +87,5 @@ namespace KelpNet
         {
             return this.Name;
         }
-
-        //コピーを作成するメソッド
-        public Function Clone()
-        {
-            return DeepCopyHelper.DeepCopy(this);
-        }
     }
 }
