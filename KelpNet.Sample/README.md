@@ -1,28 +1,28 @@
-## Sample1
+## Sample01
 MLPによるXORの学習
 
-## Sample2
+## Sample02
 MLPによるXORの学習【回帰版】
 
-## Sample3
+## Sample03
 MLPによるSin関数の学習
 
-## Sample4
+## Sample04
 MLPによるMNIST（手書き文字）の学習
 
-## Sample5
+## Sample05
 エクセルCNNの再現
 
-## Sample6
+## Sample06
 5層CNNによるMNISTの学習
 
-## Sample7
+## Sample07
 BatchNormを使った15層MLPによるMNISTの学習
 
-## Sample8
+## Sample08
 LSTMによるSin関数の学習
 
-## Sample9
+## Sample09
 SimpleなRNNによるRNNLM
 
 ## Sample10
