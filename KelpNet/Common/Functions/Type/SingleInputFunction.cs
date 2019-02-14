@@ -28,9 +28,12 @@ namespace KelpNet
 #if DEBUG
             if (xs == null || xs.Length != 1) throw new Exception("引数が正しくありません");
 #endif
+            InitGrad();
             BackwardCountUp();
 
             xs[0].UseCount--;
+            if(xs[0].Grad == null)xs[0].ClearGrad();
+
             SingleOutputBackward(ys[0], xs[0]);
         }
 

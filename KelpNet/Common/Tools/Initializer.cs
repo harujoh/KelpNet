@@ -61,13 +61,13 @@ namespace KelpNet
                 tmp[i] = (max - min) * Mother.Dice.NextDouble() - min;
             }
 
-            GCHandle hResult = GCHandle.Alloc(result, GCHandleType.Pinned);
-            GCHandle hTmp = GCHandle.Alloc(tmp, GCHandleType.Pinned);
+            GCHandle source = GCHandle.Alloc(tmp, GCHandleType.Pinned);
+            GCHandle dest = GCHandle.Alloc(result, GCHandleType.Pinned);
 
-            RealTool.CopyMemory(hTmp.AddrOfPinnedObject(), hTmp.AddrOfPinnedObject(), result.Length);
+            RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), result.Length * Real.Size);
 
-            hTmp.Free();
-            hResult.Free();
+            dest.Free();
+            source.Free();
 
             return result;
         }

@@ -24,6 +24,8 @@ namespace KelpNet
                     this.OptimizerParameters[i].UpdateFunctionParameters();
 
                     this.OptimizerParameters[i].FunctionParameter.ClearGrad();
+                    //カウンタをリセット
+                    this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
 
                     isUpdated = true;
                 }
@@ -40,6 +42,8 @@ namespace KelpNet
             for (int i = 0; i < this.OptimizerParameters.Count; i++)
             {
                 this.OptimizerParameters[i].FunctionParameter.ClearGrad();
+                //カウンタをリセット
+                this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
             }
 
             this.UpdateCount = 0;

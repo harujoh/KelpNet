@@ -51,7 +51,21 @@ namespace KelpNet
             return this.Value.ToString();
         }
 
-        public static Array ToBaseArray(Array data)
+        public static RealType[] ToBaseArray(Array array)
+        {
+            RealType[] result = new RealType[array.Length];
+
+            //データを叩き込む
+            GCHandle source = GCHandle.Alloc(array, GCHandleType.Pinned);
+
+            Marshal.Copy(source.AddrOfPinnedObject(), result, 0, array.Length);            
+
+            source.Free();
+
+            return result;
+        }
+
+        public static Array ToBaseNdArray(Array data)
         {
             int[] shape = new int[data.Rank];
 
@@ -70,6 +84,53 @@ namespace KelpNet
             dest.Free();
 
             return result;
+        }
+
+        public static Array ToRealNdArray(Array data)
+        {
+            Type arrayType = data.GetType().GetElementType();
+
+#if DEBUG
+            //そもそもRealTypeなら必要ない
+            if (arrayType == typeof(Real)) throw new Exception();
+#endif
+
+            int[] shape = new int[data.Rank];
+
+            for (int i = 0; i < shape.Length; i++)
+            {
+                shape[i] = data.GetLength(i);
+            }
+
+            Array resultData = Array.CreateInstance(typeof(Real), shape);
+
+            //型の不一致をここで吸収
+            if (arrayType != typeof(RealType))
+            {
+                //入力と同じ次元の配列を用意
+                Array array = Array.CreateInstance(typeof(RealType), shape);
+
+                //型変換しつつコピー
+                Array.Copy(data, array, array.Length);
+
+                //データを叩き込む
+                GCHandle source = GCHandle.Alloc(array, GCHandleType.Pinned);
+                GCHandle dest = GCHandle.Alloc(resultData, GCHandleType.Pinned);
+                RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), sizeof(RealType) * data.Length);
+                source.Free();
+                dest.Free();
+            }
+            else
+            {
+                //データを叩き込む
+                GCHandle source = GCHandle.Alloc(data, GCHandleType.Pinned);
+                GCHandle dest = GCHandle.Alloc(resultData, GCHandleType.Pinned);
+                RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), sizeof(RealType) * data.Length);
+                source.Free();
+                dest.Free();
+            }
+
+            return resultData;
         }
 
         public static Real[] ToRealArray(Array data)

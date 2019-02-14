@@ -29,11 +29,13 @@ namespace KelpNet
             NdArray[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);
 
+            InitGrad();
             BackwardCountUp();
 
             foreach (NdArray x in xs)
             {
                 x.UseCount--;
+                if (x.Grad == null) x.ClearGrad();
             }
 
             MultiOutputBackward(ys[0], xs);

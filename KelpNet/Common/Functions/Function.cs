@@ -60,6 +60,14 @@ namespace KelpNet
             }
         }
 
+        public void InitGrad()
+        {
+            foreach (NdArray parameter in this.Parameters)
+            {
+                if(parameter.Grad == null) parameter.ClearGrad();
+            }
+        }
+
         public virtual void Update()
         {
             foreach (Optimizer optimizer in this.Optimizers)

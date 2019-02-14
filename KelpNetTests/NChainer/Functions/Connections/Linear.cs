@@ -1,19 +1,21 @@
-﻿using System;
-using KelpNet;
-using NConstrictor;
+﻿using NConstrictor;
 
 namespace NChainer
 {
-    struct Linear
+    struct Linear<T>
     {
         private PyObject _linear;
 
-        public Linear(int inSize, int outSize, bool noBias, Array initialW, Array initialBias)
+        public Variable<T> W => _linear["W"];
+        public Variable<T> b => _linear["b"];
+
+        public Linear(int inSize, int outSize, bool noBias, PyArray<T> initialW, PyArray<T> initialBias)
         {
-            _linear = Chainer.Links["Linear"].Call(inSize, outSize, noBias, (PyArray<Real>)Real.ToBaseArray(initialW), (PyArray<Real>)Real.ToBaseArray(initialBias));
+            _linear = Chainer.Links["Linear"].Call(inSize, outSize, noBias, initialW, initialBias);
+            _linear["cleargrads"].Call();
         }
 
-        public PyObject Forward<T>(Variable<T> x, int nBatchAxes = 1)
+        public PyObject Forward(Variable<T> x, int nBatchAxes = 1)
         {
             return Python.GetNamelessObject(_linear["forward"].Call(x, nBatchAxes));
         }

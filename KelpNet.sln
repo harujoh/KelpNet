@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNetSample", "KelpNetSample\KelpNetSample.csproj", "{6FC4693A-FE47-46E4-B5A0-7DB254DCBDB1}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNet", "KelpNet\KelpNet.csproj", "{750BB541-BF90-471D-A93F-54230B6FB07D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MnistLoader", "MNISTLoader\MnistLoader.csproj", "{6782A5FF-52AD-4757-B7E4-2F661459E812}"
@@ -22,8 +24,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIFARLoader", "CIFARLoader\CIFARLoader.csproj", "{9DC1C066-D522-416B-AEB3-BD4DA0093EE8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNetTests", "KelpNetTests\KelpNetTests.csproj", "{6ED9037E-440F-4C84-A551-938D65071D35}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KelpNetSample", "KelpNetSample\KelpNetSample.csproj", "{6FC4693A-FE47-46E4-B5A0-7DB254DCBDB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

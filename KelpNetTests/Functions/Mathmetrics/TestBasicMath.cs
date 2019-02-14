@@ -10,7 +10,7 @@ namespace KelpNetTests
     public class TestBasicMath
     {
         [TestMethod]
-        public void Run()
+        public void RandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
@@ -53,7 +53,7 @@ namespace KelpNetTests
             NdArray add = 2 + x + x + 2;
 
             add.Backward();
-            Real[] gadd = x.Grad.ToArray();
+            Real[] gadd = x.Grad.ToArray(); //このToArrayはコピーのため
 
             //mul
             NdArray mul = 2 * x * x * 3;

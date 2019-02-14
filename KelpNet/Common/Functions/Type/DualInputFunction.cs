@@ -30,10 +30,14 @@ namespace KelpNet
 #if DEBUG
             if (xs == null || xs.Length != 2) throw new Exception("引数が正しくありません");
 #endif
+            InitGrad();
             BackwardCountUp();
 
             xs[0].UseCount--;
             xs[1].UseCount--;
+
+            if (xs[0].Grad == null) xs[0].ClearGrad();
+            if (xs[1].Grad == null) xs[1].ClearGrad();
 
             DualOutputBackward(ys[0], xs[0], xs[1]);
         }

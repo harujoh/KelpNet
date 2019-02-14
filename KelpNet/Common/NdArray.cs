@@ -52,7 +52,6 @@ namespace KelpNet
             this.Data = resultData;
             this.Shape = resultShape;
             this.Length = Data.Length;
-            this.Grad = new Real[this.Length];
             this.BatchCount = 1;
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
@@ -64,7 +63,6 @@ namespace KelpNet
             this.Shape = shape.ToArray();
             this.Length = Data.Length;
             this.BatchCount = 1;
-            this.Grad = new Real[this.Length];
             this.TrainCount = 0;
         }
 
@@ -74,7 +72,6 @@ namespace KelpNet
             this.Length = data.Length / batchCount;
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
-            this.Grad = new Real[this.Length * batchCount];
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
@@ -85,7 +82,6 @@ namespace KelpNet
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = new Real[this.Length * batchCount];
-            this.Grad = new Real[this.Length * batchCount];
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
@@ -216,11 +212,16 @@ namespace KelpNet
 
         public void Backward()
         {
-            if (ParentFunc != null)
+            if (this.ParentFunc != null)
             {
-                for (int i = 0; i < Grad.Length; i++)
+                if (this.Grad == null)
                 {
-                    Grad[i] = 1;
+                    this.Grad = new Real[this.Length * this.BatchCount];
+
+                    for (int i = 0; i < this.Grad.Length; i++)
+                    {
+                        Grad[i] = 1;
+                    }
                 }
 
                 NdArray.Backward(this);
@@ -271,9 +272,6 @@ namespace KelpNet
         public void ClearGrad()
         {
             this.Grad = new Real[this.Data.Length];
-
-            //カウンタをリセット
-            this.TrainCount = 0;
         }
 
         public override string ToString()

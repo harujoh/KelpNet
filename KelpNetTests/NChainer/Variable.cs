@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using NConstrictor;
 
 namespace NChainer
@@ -7,6 +6,7 @@ namespace NChainer
     public struct Variable<T>
     {
         private PyObject _rawData;
+
         public PyArray<T> Grad
         {
             get { return _rawData["grad"]; }
@@ -19,9 +19,9 @@ namespace NChainer
             set { _rawData["data"] = value; }
         }
 
-        public Variable(Array array)
+        public Variable(PyArray<T> array)
         {
-            _rawData = Python.GetNamelessObject(Chainer.Variable.Call((PyArray<T>)array));
+            _rawData = Chainer.Variable.Call(array);
         }
 
         public void Backward()
