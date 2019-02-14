@@ -32,7 +32,7 @@ namespace KelpNet
         public Function ParentFunc;
 
         //各関数内でまとめて実行されるバッチの数を示し、Loss関数内の割引で使用される
-        public int BatchCount;
+        public int BatchCount = 1;
 
         //Updateを行わずに実行されたBackwardの回数をカウントし、Optimizer実行時に使用する
         [NonSerialized]
@@ -52,8 +52,6 @@ namespace KelpNet
             this.Data = resultData;
             this.Shape = resultShape;
             this.Length = Data.Length;
-            this.BatchCount = 1;
-            this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
 
@@ -62,8 +60,6 @@ namespace KelpNet
             this.Data = new Real[ShapeToArrayLength(shape)];
             this.Shape = shape.ToArray();
             this.Length = Data.Length;
-            this.BatchCount = 1;
-            this.TrainCount = 0;
         }
 
         public NdArray(Real[] data, int[] shape, int batchCount = 1, Function parentFunc = null)
@@ -72,7 +68,6 @@ namespace KelpNet
             this.Length = data.Length / batchCount;
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
-            this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
 
@@ -82,7 +77,6 @@ namespace KelpNet
             this.Length = ShapeToArrayLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = new Real[this.Length * batchCount];
-            this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
 

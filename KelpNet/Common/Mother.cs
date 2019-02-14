@@ -13,29 +13,29 @@ namespace KelpNet
 #else
         public static Random Dice = new Random();
 #endif
-        static double Alpha, Beta, BoxMuller1, BoxMuller2;
-        static bool Flip;
-        public static double Mu = 0;
-        public static double Sigma = 1;
+        static bool _flip;
+        static double _beta;
+        static double _boxMuller1;
 
         // 平均mu, 標準偏差sigmaの正規分布乱数を得る。Box-Muller法による。
-        public static double RandomNormal()
+        public static double RandomNormal(double sigma = 1.0, double mu = 0.0)
         {
-            if (!Flip)
+            double boxMuller2;
+
+            if (!_flip)
             {
-                Alpha = Dice.NextDouble();
-                Beta = Dice.NextDouble() * Math.PI * 2;
-                BoxMuller1 = Math.Sqrt(-2 * Math.Log(Alpha));
-                BoxMuller2 = Math.Sin(Beta);
+                _beta = Dice.NextDouble() * Math.PI * 2;
+                _boxMuller1 = Math.Sqrt(-2 * Math.Log(Dice.NextDouble()));
+                boxMuller2 = Math.Sin(_beta);
             }
             else
             {
-                BoxMuller2 = Math.Cos(Beta);
+                boxMuller2 = Math.Cos(_beta);
             }
 
-            Flip = !Flip;
+            _flip = !_flip;
 
-            return Sigma * (BoxMuller1 * BoxMuller2) + Mu;
+            return sigma * (_boxMuller1 * boxMuller2) + mu;
         }
     }
 }
