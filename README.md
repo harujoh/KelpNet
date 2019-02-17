@@ -17,6 +17,21 @@ FunctionStack nn = new FunctionStack(
 );
 ```
 
+- Samples:
+・[**XOR**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample1.cs)
+・[**CNN**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample5.cs)
+・[**AlexNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample19.cs)
+・[**VGG**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample15.cs)
+・[**ResNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample17.cs)
+・[**Others**](https://github.com/harujoh/KelpNet/tree/master/KelpNet.Sample)
+- SampleData:
+・MNIST
+・CIFAR 10/100
+- Importable:
+・CaffeModel
+・ChainerModel
+
+
 ## 特徴
 - 行列演算をライブラリに頼らないため全ソースが可読になっており、どこで何をしているかを全て観測できます
 - KerasやChainerが採用している、関数を積み重ねるように記述するコーディングスタイルを採用しています
