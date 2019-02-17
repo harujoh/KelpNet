@@ -1,6 +1,5 @@
-# KelpNet [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)[![Build status](https://ci.appveyor.com/api/projects/status/a51hnuaat3ldsdmo?svg=true)](https://ci.appveyor.com/project/harujoh/kelpnet)[![codecov](https://codecov.io/gh/harujoh/KelpNet/branch/master/graph/badge.svg)](https://codecov.io/gh/harujoh/KelpNet)
-
-KelpNetはC#で実装された深層学習のライブラリです
+# KelpNet : Pure C# deep learning framework
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Build status](https://ci.appveyor.com/api/projects/status/a51hnuaat3ldsdmo?svg=true)](https://ci.appveyor.com/project/harujoh/kelpnet) [![codecov](https://codecov.io/gh/harujoh/KelpNet/branch/master/graph/badge.svg)](https://codecov.io/gh/harujoh/KelpNet)
 
 ```java
 /* SampleCode */
@@ -17,6 +16,21 @@ FunctionStack nn = new FunctionStack(
     new Linear(1024, 10, name: "l4 Linear")
 );
 ```
+
+- Samples:
+・[**XOR**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample1.cs)
+・[**CNN**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample5.cs)
+・[**AlexNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample19.cs)
+・[**VGG**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample15.cs)
+・[**ResNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample17.cs)
+・[**Others**](https://github.com/harujoh/KelpNet/tree/master/KelpNet.Sample)
+- SampleData:
+・MNIST
+・CIFAR 10/100
+- Importable:
+・CaffeModel
+・ChainerModel
+
 
 ## 特徴
 - 行列演算をライブラリに頼らないため全ソースが可読になっており、どこで何をしているかを全て観測できます
