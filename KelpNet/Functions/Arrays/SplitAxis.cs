@@ -28,14 +28,14 @@ namespace KelpNet
 
         private NdArray[] ForwardCpu(NdArray x)
         {
-            NdArray[] resultArays = NdArray.Split(x, Indices, Axis);
+            NdArray[] resultArrays = NdArray.Split(x, Indices, Axis);
 
-            foreach (var resultArray in resultArays)
+            for (int i = 0; i < resultArrays.Length; i++)
             {
-                resultArray.ParentFunc = this;
+                resultArrays[i].ParentFunc = this;
             }
 
-            return resultArays;
+            return resultArrays;
         }
 
         private void BackwardCpu(NdArray[] ys, NdArray x)

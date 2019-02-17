@@ -5,7 +5,7 @@ namespace KelpNet
     [Serializable]
     public class TanhActivation : CompressibleActivation
     {
-        const string FUNCTION_NAME = "Tanh";
+        const string FUNCTION_NAME = "TanhActivation";
 
         public TanhActivation(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
         {

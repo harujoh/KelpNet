@@ -101,6 +101,7 @@ namespace KelpNet
 
         protected void BackwardCpu(NdArray y, NdArray x)
         {
+            //MultiplyScaleとして必要な処理はない
         }
     }
 }

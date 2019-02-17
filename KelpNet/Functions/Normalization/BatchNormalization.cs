@@ -78,24 +78,16 @@ namespace KelpNet
 
         private NdArray ForwardCpu(NdArray x)
         {
-            int dataSize = 1;
-            for (int i = 1; i < x.Shape.Length; i++)
-            {
-                dataSize *= x.Shape[i];
-            }
+            int dataSize = x.Length / ChannelSize;
 
             //計算用パラメータの取得
             if (this.IsTrain)
             {
                 //メンバのMeanとVarianceを設定する
                 this.Variance = new Real[this.ChannelSize];
-                for (int i = 0; i < this.Variance.Length; i++)
-                {
-                    this.Variance[i] = 0;
-                }
-
                 this.Mean = new Real[this.ChannelSize];
-                for (int i = 0; i < this.Mean.Length; i++)
+
+                for (int i = 0; i < this.ChannelSize; i++)
                 {
                     for (int b = 0; b < x.BatchCount; b++)
                     {
@@ -105,12 +97,8 @@ namespace KelpNet
                         }
                     }
 
-                    this.Mean[i] /= x.BatchCount;
-                    this.Mean[i] /= dataSize;
-                }
+                    this.Mean[i] /= x.BatchCount * dataSize;
 
-                for (int i = 0; i < this.Mean.Length; i++)
-                {
                     for (int b = 0; b < x.BatchCount; b++)
                     {
                         for (int location = 0; location < dataSize; location++)
@@ -119,13 +107,7 @@ namespace KelpNet
                         }
                     }
 
-                    this.Variance [i] /= x.BatchCount;
-                    this.Variance [i] /= dataSize;
-                }
-
-                for (int i = 0; i < this.Variance.Length; i++)
-                {
-                    this.Variance[i] += this.Eps;
+                    this.Variance[i] = this.Variance[i] / (x.BatchCount * dataSize) + this.Eps;
                 }
             }
             else
@@ -134,8 +116,8 @@ namespace KelpNet
                 this.Variance = this.AvgVar.Data;
             }
 
-            this.Std = new Real[this.Variance.Length];
-            for (int i = 0; i < this.Variance.Length; i++)
+            this.Std = new Real[this.ChannelSize];
+            for (int i = 0; i < this.Std.Length; i++)
             {
                 this.Std[i] = Math.Sqrt(this.Variance[i]);
             }
@@ -145,13 +127,13 @@ namespace KelpNet
 
             Real[] y = new Real[x.Data.Length];
 
-            for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
+            for (int i = 0; i < this.ChannelSize; i++)
             {
-                for (int i = 0; i < this.ChannelSize; i++)
+                for (int b = 0; b < x.BatchCount; b++)
                 {
                     for (int location = 0; location < dataSize; location++)
                     {
-                        int index = batchCount * x.Length + i * dataSize + location;
+                        int index = b * x.Length + i * dataSize + location;
                         this.Xhat[index] = (x.Data[index] - this.Mean[i]) / this.Std[i];
                         y[index] = this.Gamma.Data[i] * this.Xhat[index] + this.Beta.Data[i];
                     }
@@ -184,11 +166,7 @@ namespace KelpNet
             this.Beta.ClearGrad();
             this.Gamma.ClearGrad();
 
-            int dataSize = 1;
-            for (int i = 1; i < x.Shape.Length; i++)
-            {
-                dataSize *= x.Shape[i];
-            }
+            int dataSize = x.Length / ChannelSize;
 
             for (int i = 0; i < this.ChannelSize; i++)
             {
@@ -196,8 +174,9 @@ namespace KelpNet
                 {
                     for (int location = 0; location < dataSize; location++)
                     {
-                        this.Beta.Grad[i] += y.Grad[b * y.Length + i * dataSize + location];
-                        this.Gamma.Grad[i] += y.Grad[b * y.Length + i * dataSize + location] * this.Xhat[b * x.Length + i * dataSize + location];
+                        int index = b * y.Length + i * dataSize + location;
+                        this.Beta.Grad[i] += y.Grad[index];
+                        this.Gamma.Grad[i] += y.Grad[index] * this.Xhat[index];
                     }
                 }
             }
@@ -215,8 +194,9 @@ namespace KelpNet
                     {
                         for (int location = 0; location < dataSize; location++)
                         {
-                            Real val = (this.Xhat[b * y.Length + i * dataSize + location] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / (m * dataSize);
-                            x.Grad[b * y.Length + i * dataSize + location] += gs * (y.Grad[b * y.Length + i * dataSize + location] - val);
+                            int index = b * y.Length + i * dataSize + location;
+                            Real val = (this.Xhat[index] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / (m * dataSize);
+                            x.Grad[index] += gs * (y.Grad[index] - val);
                         }
                     }
                 }
