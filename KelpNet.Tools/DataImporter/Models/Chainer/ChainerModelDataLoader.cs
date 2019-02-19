@@ -62,7 +62,7 @@ namespace KelpNet.Tools
                 Array.Copy(Real.ToRealArray(modelData[func.Name + "/beta.npy"]), bn.Beta.Data, bn.Beta.Data.Length);
                 Array.Copy(Real.ToRealArray(modelData[func.Name + "/gamma.npy"]), bn.Gamma.Data, bn.Gamma.Data.Length);
 
-                if (bn.IsTrain)
+                if (bn.Train)
                 {
                     if (modelData.ContainsKey(func.Name + "/avg_mean.npy")) Array.Copy(Real.ToRealArray(modelData[func.Name + "/avg_mean.npy"]), bn.AvgMean.Data, bn.AvgMean.Data.Length);
                     if (modelData.ContainsKey(func.Name + "/avg_var.npy")) Array.Copy(Real.ToRealArray(modelData[func.Name + "/avg_var.npy"]), bn.AvgVar.Data, bn.AvgVar.Data.Length);

@@ -10,6 +10,13 @@ namespace KelpNet.Tests
         [TestMethod]
         public void RandomTest()
         {
+            TrainTest(false, false);
+            TrainTest(true, false);
+            TrainTest(true, true);
+        }
+
+        public void TrainTest(bool isTtrain, bool finetune)
+        {
             Python.Initialize();
             Chainer.Initialize();
 
@@ -27,6 +34,8 @@ namespace KelpNet.Tests
             Real[] avgVar = Initializer.GetRealArray(ioCount);
 
             //Chainer
+            Chainer.Config["train"] = isTtrain;
+
             NChainer.BatchNormalization<Real> cBatchNormalization = new NChainer.BatchNormalization<Real>(ioCount, dtype: Real.Type);
 
             cBatchNormalization.gamma = new Variable<Real>(Real.ToBaseNdArray(gamma));
@@ -37,13 +46,13 @@ namespace KelpNet.Tests
 
             Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
 
-            Variable<Real> cY = cBatchNormalization.Forward(cX);
+            Variable<Real> cY = cBatchNormalization.Forward(cX, finetune);
             cY.Grad = Real.ToBaseNdArray(dummyGy);
 
             cY.Backward();
 
             //KelpNet
-            KelpNet.BatchNormalization batchNormalization = new BatchNormalization(ioCount);
+            KelpNet.BatchNormalization batchNormalization = new BatchNormalization(ioCount, train: isTtrain, finetune: finetune);
 
             batchNormalization.Gamma.Data = Real.ToRealArray(gamma);
             batchNormalization.Beta.Data = Real.ToRealArray(beta);

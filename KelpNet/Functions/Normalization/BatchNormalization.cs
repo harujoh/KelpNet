@@ -8,7 +8,7 @@ namespace KelpNet
     {
         const string FUNCTION_NAME = "BatchNormalization";
 
-        public bool IsTrain;
+        public bool Train;
 
         public NdArray Gamma;
 
@@ -18,9 +18,11 @@ namespace KelpNet
 
         public NdArray AvgVar;
 
+        private int N = 0;
+        private bool Finetune;
 
-        private readonly Real Decay;
-        private readonly Real Eps;
+        private Real Decay;
+        private Real Eps;
 
         private Real[] Std;
         private Real[] Xhat;
@@ -30,12 +32,14 @@ namespace KelpNet
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 2e-5, bool useGamma = true, bool useBeta = true, int initialGamma = 1, int initialBeta = 0, int? axis = null, int initialAvgMean = 0, int initialAvgVar = 1, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 2e-5, bool useGamma = true, bool useBeta = true, int initialGamma = 1, int initialBeta = 0, int? axis = null, int initialAvgMean = 0, int initialAvgVar = 1, bool train = true, bool finetune = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;
             this.Eps = eps;
-            this.IsTrain = isTrain;
+            this.Train = train;
+
+            this.Finetune = finetune;
 
             this.Gamma = new NdArray(channelSize);
             this.Gamma.Name = this.Name + " Gamma";
@@ -48,7 +52,7 @@ namespace KelpNet
 
             if (useGamma) paramCount++;
             if (useBeta) paramCount++;
-            if (!isTrain) paramCount += 2;
+            if (!train) paramCount += 2;
 
             this.Parameters = new NdArray[paramCount];
 
@@ -62,13 +66,13 @@ namespace KelpNet
             this.AvgVar = new NdArray(channelSize);
             this.AvgVar.Name = this.Name + " Variance";
 
-            this.Gamma.Data = Enumerable.Repeat((Real)initialGamma, this.Gamma.Data.Length).ToArray();                
+            this.Gamma.Data = Enumerable.Repeat((Real)initialGamma, this.Gamma.Data.Length).ToArray();
             this.Beta.Data = Enumerable.Repeat((Real)initialBeta, this.Beta.Data.Length).ToArray();
 
             this.AvgMean.Data = Enumerable.Repeat((Real)initialAvgMean, this.AvgMean.Data.Length).ToArray();
             this.AvgVar.Data = Enumerable.Repeat((Real)initialAvgVar, this.AvgVar.Data.Length).ToArray();
 
-            if (!this.IsTrain)
+            if (!this.Train)
             {
                 this.Parameters[paramIndex++] = this.AvgMean;
                 this.Parameters[paramIndex] = this.AvgVar;
@@ -80,10 +84,16 @@ namespace KelpNet
 
         private NdArray ForwardCpu(NdArray x)
         {
+            if (Finetune)
+            {
+                N++;
+                Decay = 1 - 1 / N;
+            }
+
             int dataSize = x.Length / ChannelSize;
 
             //計算用パラメータの取得
-            if (this.IsTrain)
+            if (this.Train)
             {
                 //メンバのMeanとVarianceを設定する
                 this.Variance = new Real[this.ChannelSize];
@@ -143,10 +153,9 @@ namespace KelpNet
             }
 
             //パラメータを更新
-            if (this.IsTrain)
+            if (this.Train)
             {
-                int m = x.BatchCount;
-                Real adjust = m / Math.Max(m - 1.0, 1.0); // unbiased estimation
+                Real adjust = x.BatchCount / Math.Max(x.BatchCount - 1.0, 1.0); // unbiased estimation
 
                 for (int i = 0; i < this.AvgMean.Data.Length; i++)
                 {
@@ -183,7 +192,7 @@ namespace KelpNet
                 }
             }
 
-            if (this.IsTrain)
+            if (this.Train)
             {
                 // 学習あり
                 for (int i = 0; i < this.ChannelSize; i++)
@@ -225,15 +234,15 @@ namespace KelpNet
         {
             NdArray result;
 
-            if (this.IsTrain)
+            if (this.Train)
             {
                 //Predictはトレーニングしない
-                this.IsTrain = false;
+                this.Train = false;
 
                 result = this.SingleInputForward(input[0]);
 
                 //フラグをリセット
-                this.IsTrain = true;
+                this.Train = true;
             }
             else
             {

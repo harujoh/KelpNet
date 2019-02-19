@@ -10,6 +10,7 @@ namespace NChainer
         public static PyObject Functions;
         public static PyObject Links;
         public static PyObject Optimizers;
+        public static PyObject Config;
 
         public static void Initialize()
         {
@@ -24,6 +25,7 @@ namespace NChainer
             Links = _chainer["links"];
             Functions = _chainer["functions"];
             Optimizers = _chainer["optimizers"];
+            Config = _chainer["config"]; 
         }
     }
 }
