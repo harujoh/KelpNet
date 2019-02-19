@@ -1,8 +1,7 @@
 ﻿using System;
-using KelpNet;
 using KelpNet.Tools;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     class Sample16
     {

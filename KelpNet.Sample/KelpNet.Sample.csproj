@@ -7,8 +7,8 @@
     <ProjectGuid>{6FC4693A-FE47-46E4-B5A0-7DB254DCBDB1}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KelpNetSample</RootNamespace>
-    <AssemblyName>KelpNetSample</AssemblyName>
+    <RootNamespace>KelpNet.Sample</RootNamespace>
+    <AssemblyName>KelpNet.Sample</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

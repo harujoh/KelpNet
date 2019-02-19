@@ -1,4 +1,4 @@
-﻿namespace KelpNetSample
+﻿namespace KelpNet.Sample
 {
     partial class Sample13WinForm
     {

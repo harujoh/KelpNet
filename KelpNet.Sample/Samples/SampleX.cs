@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //Linearの分割テスト
     class SampleX

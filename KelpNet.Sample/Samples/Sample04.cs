@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //MLPによるMNIST（手書き文字）の学習
     class Sample04

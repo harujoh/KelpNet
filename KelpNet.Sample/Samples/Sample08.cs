@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //LSTMによるSin関数の学習（t の値から t+1 の値を予測する）
     //参考： http://seiya-kumada.blogspot.jp/2016/07/lstm-chainer.html

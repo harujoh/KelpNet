@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //5層CNNによるMNIST（手書き文字）の学習 の連結宣言版
     class Sample14

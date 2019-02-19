@@ -1,9 +1,8 @@
-﻿using KelpNet;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
 
-namespace KelpNetTests
+namespace KelpNet.Tests
 {
     [TestClass]
     public class TestBatchNormalization

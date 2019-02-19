@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //MLPによるSin関数の学習
 

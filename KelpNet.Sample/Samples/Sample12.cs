@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //Decoupled Neural Interfaces using Synthetic GradientsによるMNIST（手書き文字）の学習
     // 教師信号にラベル情報を混ぜ込むcDNI

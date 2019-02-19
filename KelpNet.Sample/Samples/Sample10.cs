@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet;
 using KelpNet.Tools;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //ChainerのRNNサンプルを再現
     //https://github.com/pfnet/chainer/tree/master/examples/ptb

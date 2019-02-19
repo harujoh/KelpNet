@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //5層CNNによるMNIST（手書き文字）の学習
     //Test4と違うのはネットワークの構成とOptimizerだけです

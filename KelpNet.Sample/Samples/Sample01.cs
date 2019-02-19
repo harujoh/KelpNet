@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //MLPによるXORの学習
     class Sample01

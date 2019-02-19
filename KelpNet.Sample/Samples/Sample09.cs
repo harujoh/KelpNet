@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet;
 using KelpNet.Tools;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //SimpleなRNNによるRNNLM
     //『Chainerによる実践深層学習』より（ISBN 978-4-274-21934-4）

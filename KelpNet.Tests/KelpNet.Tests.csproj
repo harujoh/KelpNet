@@ -8,8 +8,8 @@
     <ProjectGuid>{6ED9037E-440F-4C84-A551-938D65071D35}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KelpNetTests</RootNamespace>
-    <AssemblyName>KelpNetTests</AssemblyName>
+    <RootNamespace>KelpNet.Tests</RootNamespace>
+    <AssemblyName>KelpNet.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //MLPによるXORの学習【回帰版】 ※精度が悪く何度か実行しないと望んだ結果を得られない
     class Sample02

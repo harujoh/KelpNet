@@ -6,10 +6,9 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using KelpNet;
 using KelpNet.Tools;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
     class Sample19

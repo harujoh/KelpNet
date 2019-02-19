@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //エクセルCNNの再現
     class Sample05

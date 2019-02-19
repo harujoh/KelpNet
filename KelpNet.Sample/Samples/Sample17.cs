@@ -6,10 +6,9 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using KelpNet;
 using KelpNet.Tools;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //ResNetを読み込んで実行する
     class Sample17

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     class SingleBenchmark
     {

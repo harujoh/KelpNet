@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet;
 
-namespace KelpNetSample 
+namespace KelpNet.Sample 
 {
     //実行したいテストのコメントを外して下さい
     class Program

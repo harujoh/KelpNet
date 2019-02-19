@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using KelpNet;
 using KelpNet.Tools;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     public partial class Sample13WinForm : Form
     {

@@ -1,7 +1,6 @@
 ﻿using System;
-using KelpNet;
 
-namespace KelpNetSample
+namespace KelpNet.Sample
 {
     //ある学習済みフィルタで出力された画像を元に、そのフィルタと同等のフィルタを獲得する
     //コンソール版
