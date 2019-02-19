@@ -14,8 +14,8 @@ namespace KelpNetTests
             Python.Initialize();
             Chainer.Initialize();
 
-            int inputCount = 1 + Mother.Dice.Next() % 49;
-            int outputCount = 1 + Mother.Dice.Next() % 49;
+            int inputCount = Mother.Dice.Next(2, 50);
+            int outputCount = Mother.Dice.Next(2, 50);
 
             Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { 1, inputCount });
 

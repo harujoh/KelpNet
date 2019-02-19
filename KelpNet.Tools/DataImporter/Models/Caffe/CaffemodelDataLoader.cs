@@ -298,7 +298,11 @@ namespace KelpNet.Tools
                 }
             }
 
-            return new BatchNormalization(size, decay, eps, avgMean, avgVar, name: name, inputNames: inputNames, outputNames: outputNames);
+            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, name: name, inputNames: inputNames, outputNames: outputNames);
+            batchNormalization.AvgMean.Data = Real.ToRealArray(avgMean);
+            batchNormalization.AvgVar.Data = Real.ToRealArray(avgVar);
+
+            return batchNormalization;
         }
 
         static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)

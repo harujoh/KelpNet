@@ -9,7 +9,7 @@ namespace NChainer
         public Variable<T> W => _linear["W"];
         public Variable<T> b => _linear["b"];
 
-        public Linear(int inSize, int outSize, bool noBias, PyArray<T> initialW, PyArray<T> initialBias)
+        public Linear(int inSize, int outSize, bool noBias = false, PyArray<T> initialW = default(PyArray<T>), PyArray<T> initialBias = default(PyArray<T>))
         {
             _linear = Chainer.Links["Linear"].Call(inSize, outSize, noBias, initialW, initialBias);
             _linear["cleargrads"].Call();
@@ -17,7 +17,7 @@ namespace NChainer
 
         public PyObject Forward(Variable<T> x, int nBatchAxes = 1)
         {
-            return Python.GetNamelessObject(_linear["forward"].Call(x, nBatchAxes));
+            return _linear["forward"].Call(x, nBatchAxes);
         }
     }
 }

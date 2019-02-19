@@ -3,7 +3,6 @@ using System.Linq;
 
 namespace KelpNet
 {
-    //Chainerより移植　finetuningは未実装
     [Serializable]
     public class BatchNormalization : SingleInputFunction
     {
@@ -31,7 +30,7 @@ namespace KelpNet
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 1e-5, Array initialAvgMean = null, Array initialAvgVar = null, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 2e-5, bool useGamma = true, bool useBeta = true, int initialGamma = 1, int initialBeta = 0, int? axis = null, int initialAvgMean = 0, int initialAvgVar = 1, bool isTrain = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Decay = decay;
@@ -39,37 +38,40 @@ namespace KelpNet
             this.IsTrain = isTrain;
 
             this.Gamma = new NdArray(channelSize);
-            this.Gamma.Data = Enumerable.Repeat((Real)1, channelSize).ToArray();
             this.Gamma.Name = this.Name + " Gamma";
 
             this.Beta = new NdArray(channelSize);
             this.Beta.Name = this.Name + " Beta";
 
-            this.Parameters = new NdArray[this.IsTrain ? 2 : 4];
+            int paramIndex = 0;
+            int paramCount = 0;
+
+            if (useGamma) paramCount++;
+            if (useBeta) paramCount++;
+            if (!isTrain) paramCount += 2;
+
+            this.Parameters = new NdArray[paramCount];
 
             //学習対象のParameterを登録
-            this.Parameters[0] = this.Gamma;
-            this.Parameters[1] = this.Beta;
+            if (useGamma) this.Parameters[paramIndex++] = this.Gamma;
+            if (useBeta) this.Parameters[paramIndex++] = this.Beta;
 
             this.AvgMean = new NdArray(channelSize);
             this.AvgMean.Name = this.Name + " Mean";
+
             this.AvgVar = new NdArray(channelSize);
             this.AvgVar.Name = this.Name + " Variance";
 
-            if (initialAvgMean != null)
-            {
-                this.AvgMean.Data = Real.ToRealArray(initialAvgMean);
-            }
+            this.Gamma.Data = Enumerable.Repeat((Real)initialGamma, this.Gamma.Data.Length).ToArray();                
+            this.Beta.Data = Enumerable.Repeat((Real)initialBeta, this.Beta.Data.Length).ToArray();
 
-            if (initialAvgVar != null)
-            {
-                this.AvgVar.Data = Real.ToRealArray(initialAvgVar);
-            }
+            this.AvgMean.Data = Enumerable.Repeat((Real)initialAvgMean, this.AvgMean.Data.Length).ToArray();
+            this.AvgVar.Data = Enumerable.Repeat((Real)initialAvgVar, this.AvgVar.Data.Length).ToArray();
 
             if (!this.IsTrain)
             {
-                this.Parameters[2] = this.AvgMean;
-                this.Parameters[3] = this.AvgVar;
+                this.Parameters[paramIndex++] = this.AvgMean;
+                this.Parameters[paramIndex] = this.AvgVar;
             }
 
             SingleInputForward = ForwardCpu;
@@ -107,7 +109,7 @@ namespace KelpNet
                         }
                     }
 
-                    this.Variance[i] = this.Variance[i] / (x.BatchCount * dataSize) + this.Eps;
+                    this.Variance[i] /= x.BatchCount * dataSize;
                 }
             }
             else
@@ -119,7 +121,7 @@ namespace KelpNet
             this.Std = new Real[this.ChannelSize];
             for (int i = 0; i < this.Std.Length; i++)
             {
-                this.Std[i] = Math.Sqrt(this.Variance[i]);
+                this.Std[i] = Math.Sqrt(this.Variance[i] + this.Eps);
             }
 
             //結果を計算
@@ -184,8 +186,6 @@ namespace KelpNet
             if (this.IsTrain)
             {
                 // 学習あり
-                int m = y.BatchCount;
-
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
                     Real gs = this.Gamma.Data[i] / this.Std[i];
@@ -195,7 +195,7 @@ namespace KelpNet
                         for (int location = 0; location < dataSize; location++)
                         {
                             int index = b * y.Length + i * dataSize + location;
-                            Real val = (this.Xhat[index] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / (m * dataSize);
+                            Real val = (this.Xhat[index] * this.Gamma.Grad[i] + this.Beta.Grad[i]) / (y.BatchCount * dataSize);
                             x.Grad[index] += gs * (y.Grad[index] - val);
                         }
                     }
@@ -240,7 +240,7 @@ namespace KelpNet
                 result = this.SingleInputForward(input[0]);
             }
 
-            return new[] { result};
+            return new[] { result };
         }
     }
 }

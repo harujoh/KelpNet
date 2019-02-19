@@ -46,8 +46,8 @@
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.1.4.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="NConstrictor, Version=0.9.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NConstrictor.0.9.10\lib\net46\NConstrictor.dll</HintPath>
+    <Reference Include="NConstrictor, Version=0.9.13.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NConstrictor.0.9.13\lib\net46\NConstrictor.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,9 +56,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Functions\Normalization\TestBatchNormalization.cs" />
     <Compile Include="NChainer\Chainer.cs" />
     <Compile Include="Functions\Connections\TestLinear.cs" />
     <Compile Include="NChainer\Functions\Connections\Linear.cs" />
+    <Compile Include="NChainer\Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="NChainer\Variable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Functions\Mathmetrics\TestBasicMath.cs" />

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace KelpNet
 {
-    public class Initializer
+    public static class Initializer
     {
         //初期値が入力されなかった場合、この関数で初期化を行う
         public static void InitWeight(NdArray array, double masterScale = 1.0)
@@ -52,5 +55,28 @@ namespace KelpNet
             return result;
         }
 
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
+        
+        public static Array ToNdArray<T>(this IEnumerable<T> iEnum, params int[] shape)
+        {
+            Array array = iEnum.ToArray();
+            Array result = Array.CreateInstance(array.GetType().GetElementType(), shape);
+
+#if DEBUG
+            if (array.Length != result.Length) throw new Exception();
+#endif
+
+            GCHandle source = GCHandle.Alloc(array, GCHandleType.Pinned);
+            GCHandle dest = GCHandle.Alloc(result, GCHandleType.Pinned);
+
+            CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), Marshal.SizeOf(array.GetType().GetElementType()) * array.Length);
+
+            dest.Free();
+            source.Free();
+
+            return result;
+        }
     }
 }
