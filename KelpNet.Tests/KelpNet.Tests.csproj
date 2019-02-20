@@ -57,10 +57,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Functions\Normalization\TestBatchNormalization.cs" />
+    <Compile Include="Functions\Normalization\TestLRN.cs" />
     <Compile Include="NChainer\Chainer.cs" />
     <Compile Include="Functions\Connections\TestLinear.cs" />
     <Compile Include="NChainer\Functions\Connections\Linear.cs" />
     <Compile Include="NChainer\Functions\Normalization\BatchNormalization.cs" />
+    <Compile Include="NChainer\Functions\Normalization\LocalResponseNormalization.cs" />
     <Compile Include="NChainer\Variable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Functions\Mathmetrics\TestBasicMath.cs" />

@@ -37,30 +37,23 @@ namespace KelpNet
             {
                 x2[i] = input.Data[i] * input.Data[i];
             }
+
             Array.Copy(x2, sumPart, x2.Length);
 
-
-            for (int b = 0; b < input.BatchCount; b++)
+            for (int offsetCh = 1; offsetCh < nHalf + 1; offsetCh++)
             {
-                for (int ich = 0; ich < input.Shape[0]; ich++)
+                int offset = offsetCh * input.Shape[1] * input.Shape[2];
+
+                for (int b = 0; b < input.BatchCount; b++)
                 {
-                    for (int location = 0; location < input.Shape[1] * input.Shape[2]; location++)
+                    for (int i = offsetCh; i < input.Shape[0]; i++)
                     {
-                        int baseIndex = b * input.Length + ich * input.Shape[1] * input.Shape[2] + location;
+                        int baseIndex = b * input.Length + i * input.Shape[1] * input.Shape[2];
 
-                        for (int offsetCh = 1; offsetCh < nHalf; offsetCh++)
+                        for (int j = 0; j < input.Shape[1] * input.Shape[2]; j++)
                         {
-                            if (ich - offsetCh > 0)
-                            {
-                                int offsetIndex = b * input.Length + (ich - offsetCh) * input.Shape[1] * input.Shape[2] + location;
-                                sumPart[baseIndex] += x2[offsetIndex];
-                            }
-
-                            if (ich + offsetCh < input.Shape[0])
-                            {
-                                int offsetIndex = b * input.Length + (ich + offsetCh) * input.Shape[1] * input.Shape[2] + location;
-                                sumPart[baseIndex] += x2[offsetIndex];
-                            }
+                            sumPart[baseIndex + j] += x2[baseIndex - offset + j];
+                            sumPart[baseIndex - offset + j] += x2[baseIndex + j];
                         }
                     }
                 }
@@ -71,7 +64,7 @@ namespace KelpNet
             {
                 this.unitScale[i] = this.k + this.alpha * sumPart[i];
                 this.scale[i] = Math.Pow(this.unitScale[i], -this.beta);
-                result[i] *= this.scale[i];
+                result[i] = input.Data[i] * this.scale[i];
             }
 
             return NdArray.Convert(result, input.Shape, input.BatchCount, this);
@@ -90,27 +83,20 @@ namespace KelpNet
 
             Array.Copy(summand, sumPart, summand.Length);
 
-            for (int b = 0; b < y.BatchCount; b++)
+            for (int offsetCh = 1; offsetCh < nHalf + 1; offsetCh++)
             {
-                for (int ich = 0; ich < y.Shape[0]; ich++)
+                int offset = offsetCh * y.Shape[1] * y.Shape[2];
+
+                for (int b = 0; b < y.BatchCount; b++)
                 {
-                    for (int location = 0; location < y.Shape[1] * y.Shape[2]; location++)
+                    for (int i = offsetCh; i < y.Shape[0]; i++)
                     {
-                        int baseIndex = b * y.Length + ich * y.Shape[1] * y.Shape[2] + location;
+                        int baseIndex = b * y.Length + i * y.Shape[1] * y.Shape[2];
 
-                        for (int offsetCh = 1; offsetCh < nHalf; offsetCh++)
+                        for (int j = 0; j < y.Shape[1] * y.Shape[2]; j++)
                         {
-                            if (ich - offsetCh > 0)
-                            {
-                                int offsetIndex = b * y.Length + (ich - offsetCh) * y.Shape[1] * y.Shape[2] + location;
-                                sumPart[baseIndex] += summand[offsetIndex];
-                            }
-
-                            if (ich + offsetCh < y.Shape[0])
-                            {
-                                int offsetIndex = b * y.Length + (ich + offsetCh) * y.Shape[1] * y.Shape[2] + location;
-                                sumPart[baseIndex] += summand[offsetIndex];
-                            }
+                            sumPart[baseIndex + j] += summand[baseIndex - offset + j];
+                            sumPart[baseIndex - offset + j] += summand[baseIndex + j];
                         }
                     }
                 }
@@ -118,7 +104,7 @@ namespace KelpNet
 
             for (int i = 0; i < x.Grad.Length; i++)
             {
-                x.Grad[i] += y.Grad[i] * this.scale[i] - 2 * this.alpha * this.beta * y.Data[i] * sumPart[i];
+                x.Grad[i] += y.Grad[i] * this.scale[i] - 2 * this.alpha * this.beta * x.Data[i] * sumPart[i];
             }
         }
     }
