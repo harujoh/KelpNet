@@ -14,9 +14,9 @@ namespace NChainer
             _concat = Chainer.Functions["concat"];
         }
 
-        public PyObject Forward(PyObject x)
+        public PyObject Forward(params PyObject[] x)
         {
-            return _concat.Call(x, axis);
+            return _concat.Call(PyTuple.Pack(x), axis);
         }
     }
 }

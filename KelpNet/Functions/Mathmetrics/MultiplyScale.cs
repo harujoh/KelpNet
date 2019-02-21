@@ -14,7 +14,7 @@ namespace KelpNet
         public NdArray Bias;
         public bool BiasTerm = false;
 
-        public MultiplyScale(int axis = 1, int[] wShape = null, bool biasTerm = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MultiplyScale(int axis = 0, int[] wShape = null, bool biasTerm = false, Array initialW = null, Array initialb = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Axis = axis;
             this.BiasTerm = biasTerm;

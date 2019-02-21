@@ -11,7 +11,7 @@ namespace KelpNet
         private int Axis;
         private NdArray Bias;
 
-        public AddBias(int axis = 1, int[] biasShape = null, Array initialb = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public AddBias(int axis = 0, int[] biasShape = null, Array initialb = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Axis = axis;
             this.Bias = new NdArray(biasShape);

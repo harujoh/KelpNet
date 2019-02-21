@@ -622,12 +622,12 @@ namespace KelpNet
             return result;
         }
 
-        public static NdArray[] Split(NdArray array, int indices, int axis = 1)
+        public static NdArray[] Split(NdArray array, int indices, int axis)
         {
             return Split(array, new[] { indices }, axis);
         }
 
-        public static NdArray[] Split(NdArray array, int[] indices, int axis = 1)
+        public static NdArray[] Split(NdArray array, int[] indices, int axis)
         {
             int[] shapeOffets = new int[indices.Length + 1];        //入力されたindicesの先頭0を追加した配列
             int[] resultAxisShapes = new int[indices.Length + 1];   //分割後の指定軸のShape
@@ -646,7 +646,7 @@ namespace KelpNet
                 int[] resultShape = array.Shape.ToArray();
                 resultShape[axis] = resultAxisShapes[i];
                 resultArrays[i] = new NdArray(resultShape, array.BatchCount);
-                if (array.Grad != null) resultArrays[i].ClearGrad();
+                resultArrays[i].ClearGrad();
             }
 
             for (int batchCount = 0; batchCount < array.BatchCount; batchCount++)
@@ -689,6 +689,7 @@ namespace KelpNet
 #endif
 
             NdArray result = new NdArray(shapeList, a.BatchCount);
+            result.ClearGrad();
 
             for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
             {

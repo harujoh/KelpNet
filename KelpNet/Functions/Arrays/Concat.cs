@@ -9,9 +9,9 @@ namespace KelpNet
 
         private readonly List<int[]> _prevInputSections = new List<int[]>();
 
-        public Concat(int axis = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public Concat(int axis, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this.Axis = axis-1;
+            this.Axis = axis;
 
             MultiInputForward = ForwardCpu;
             MultiOutputBackward = BackwardCpu;

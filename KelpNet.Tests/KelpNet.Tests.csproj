@@ -57,11 +57,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Functions\Arrays\TestConcat.cs" />
+    <Compile Include="Functions\Arrays\TestSplitAxis.cs" />
     <Compile Include="Functions\Normalization\TestBatchNormalization.cs" />
     <Compile Include="Functions\Normalization\TestLRN.cs" />
     <Compile Include="NChainer\Chainer.cs" />
     <Compile Include="Functions\Connections\TestLinear.cs" />
     <Compile Include="NChainer\Functions\Array\Concat.cs" />
+    <Compile Include="NChainer\Functions\Array\SplitAxis.cs" />
     <Compile Include="NChainer\Functions\Connections\Linear.cs" />
     <Compile Include="NChainer\Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="NChainer\Functions\Normalization\LocalResponseNormalization.cs" />

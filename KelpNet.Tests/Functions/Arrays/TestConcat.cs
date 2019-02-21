@@ -18,18 +18,19 @@ namespace KelpNet.Tests
             int widthA = Mother.Dice.Next(8, 16);
             int widthB = Mother.Dice.Next(8, 16);
             int height = Mother.Dice.Next(8, 16);
+            int axis = 3;
 
             Real[,,,] inputA = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthA });
             Real[,,,] inputB = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthB });
             Real[,,,] dummyGy = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthA + widthB });
 
             //chainer
-            NChainer.Concat<Real> cConcat = new NChainer.Concat<Real>(3);
+            NChainer.Concat<Real> cConcat = new NChainer.Concat<Real>(axis);
 
             Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(inputA));
             Variable<Real> cY = new Variable<Real>(Real.ToBaseNdArray(inputB));
 
-            Variable<Real> cZ = cConcat.Forward(PyTuple.Pack(cX, cY));
+            Variable<Real> cZ = cConcat.Forward(cX, cY);
 
             cZ.Grad = Real.ToBaseNdArray(dummyGy);
 
@@ -37,7 +38,7 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.Concat concat = new Concat(3);
+            KelpNet.Concat concat = new Concat(axis - 1);//Chainerと異なり1次元目を暗黙的にBatchとみなさないため
 
             NdArray x = new NdArray(Real.ToRealArray(inputA), new[] { ch, height, widthA }, batchCount);
             NdArray y = new NdArray(Real.ToRealArray(inputB), new[] { ch, height, widthB }, batchCount);
