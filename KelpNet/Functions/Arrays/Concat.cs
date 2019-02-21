@@ -11,7 +11,7 @@ namespace KelpNet
 
         public Concat(int axis = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this.Axis = axis;
+            this.Axis = axis-1;
 
             MultiInputForward = ForwardCpu;
             MultiOutputBackward = BackwardCpu;
@@ -23,7 +23,6 @@ namespace KelpNet
             int sizeOffset = xs[0].Shape[Axis];
 
             NdArray resultNdArray = xs[0].Clone();
-            resultNdArray.ParentFunc = this;
 
             for (int i = 1; i < xs.Length; i++)
             {
@@ -33,6 +32,8 @@ namespace KelpNet
 
                 resultNdArray = NdArray.Concatenate(resultNdArray, xs[i], Axis);
             }
+
+            resultNdArray.ParentFunc = this;
 
             _prevInputSections.Add(sections);
 

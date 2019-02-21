@@ -540,7 +540,7 @@ namespace KelpNet
         {
             return new NdArray(Data, Shape, BatchCount, ParentFunc)
             {
-                Grad = Grad.ToArray(),
+                Grad = Grad?.ToArray(),
                 Name = Name,
                 Length = Length,
                 UseCount = UseCount,
@@ -615,7 +615,7 @@ namespace KelpNet
                 for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
                 {
                     result.Data[batchCount * result.Length + localIndex] += a.Data[batchCount * a.Length + i];
-                    result.Grad[batchCount * result.Length + localIndex] += a.Grad[batchCount * a.Length + i];
+                    if (a.Grad != null) result.Grad[batchCount * result.Length + localIndex] += a.Grad[batchCount * a.Length + i];
                 }
             }
 
@@ -646,6 +646,7 @@ namespace KelpNet
                 int[] resultShape = array.Shape.ToArray();
                 resultShape[axis] = resultAxisShapes[i];
                 resultArrays[i] = new NdArray(resultShape, array.BatchCount);
+                if (array.Grad != null) resultArrays[i].ClearGrad();
             }
 
             for (int batchCount = 0; batchCount < array.BatchCount; batchCount++)
@@ -659,7 +660,7 @@ namespace KelpNet
                         int localIndex = array.GetLocalIndex(batchCount, resultIndex);
 
                         resultArrays[i].Data[batchCount * resultArrays[i].Length + j] = array.Data[localIndex];
-                        resultArrays[i].Grad[batchCount * resultArrays[i].Length + j] = array.Grad[localIndex];
+                        if (array.Grad != null) resultArrays[i].Grad[batchCount * resultArrays[i].Length + j] = array.Grad[localIndex];
                     }
                 }
             }
@@ -699,7 +700,7 @@ namespace KelpNet
                     int resultindex = result.GetLocalIndex(batchCount, a.GetDimensionsIndex(i));
 
                     result.Data[resultindex] = a.Data[i + aInputBatchoffset];
-                    result.Grad[resultindex] = a.Grad[i + aInputBatchoffset];
+                    if (a.Grad != null) result.Grad[resultindex] = a.Grad[i + aInputBatchoffset];
                 }
 
                 for (int i = 0; i < b.Length; i++)
@@ -710,7 +711,7 @@ namespace KelpNet
                     int resultIndex = result.GetLocalIndex(batchCount, tmpIndex);
 
                     result.Data[resultIndex] = b.Data[i + bInputBatchoffset];
-                    result.Grad[resultIndex] = b.Grad[i + bInputBatchoffset];
+                    if (b.Grad != null) result.Grad[resultIndex] = b.Grad[i + bInputBatchoffset];
                 }
             }
 
@@ -745,7 +746,7 @@ namespace KelpNet
                 rankOffset *= Shape[i];
             }
 
-            return result;
+            return result + batchIndex * Length;
         }
     }
 }

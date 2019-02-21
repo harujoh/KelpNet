@@ -19,6 +19,11 @@ namespace NChainer
             set { _rawData["data"] = value; }
         }
 
+        public PyArray<T> Shape
+        {
+            get { return _rawData["shape"]; }
+        }
+
         public Variable(PyArray<T> array)
         {
             _rawData = Chainer.Variable.Call(array);

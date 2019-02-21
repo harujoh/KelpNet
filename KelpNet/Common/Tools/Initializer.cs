@@ -55,10 +55,26 @@ namespace KelpNet
             return result;
         }
 
+        //範囲指定の配列を作る
+        public static Array Range(int[] shape, int count = 0, int start = 0)
+        {
+            if (count == 0)
+            {
+                count = shape[0];
+
+                for (int i = 1; i < shape.Length; i++)
+                {
+                    count *= shape[i];
+                }
+            }
+
+            return Real.ToRealNdArray(Enumerable.Range(start, count).ToNdArray(shape));
+        }
+
         [SuppressUnmanagedCodeSecurity]
         [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
         public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
-        
+
         public static Array ToNdArray<T>(this IEnumerable<T> iEnum, params int[] shape)
         {
             Array array = iEnum.ToArray();
