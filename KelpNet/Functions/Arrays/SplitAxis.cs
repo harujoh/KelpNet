@@ -8,15 +8,6 @@ namespace KelpNet
         public int Axis;
         public int[] Indices;
 
-        public SplitAxis(int indices, int axis, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
-        {
-            this.Indices = new[] { indices };
-            this.Axis = axis;
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
-        }
-
         public SplitAxis(int[] indices, int axis, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Indices = indices.ToArray();
