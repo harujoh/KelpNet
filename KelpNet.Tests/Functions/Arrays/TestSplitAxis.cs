@@ -37,6 +37,7 @@ namespace KelpNet.Tests
             cY0.Grad = Real.ToBaseNdArray(dummyGyA);
             cY1.Grad = Real.ToBaseNdArray(dummyGyB);
 
+            //Chainerはどちらか一方で両方分のBackwardが走る
             cY0.Backward();
             //cY1.Backward();
 
@@ -54,7 +55,7 @@ namespace KelpNet.Tests
             y[0].Backward();
             y[1].Backward();
 
-
+            //Copyが必要
             Real[] cY0data = Real.ToRealArray((Real[,,,])cY0.Data.Copy());
             Real[] cY1data = Real.ToRealArray((Real[,,,])cY1.Data.Copy());
 
