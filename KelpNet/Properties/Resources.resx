@@ -145,7 +145,7 @@
   <data name="Sigmoid" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\OpenCL\Activations\Sigmoid.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Tanh" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\OpenCL\Activations\Tanh.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="TanhActivation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\opencl\activations\tanhactivation.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>
