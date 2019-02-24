@@ -124,7 +124,7 @@
     <None Include="OpenCL\Activations\LeakyReLU.cl" />
     <None Include="OpenCL\Activations\ReLU.cl" />
     <None Include="OpenCL\Activations\Sigmoid.cl" />
-    <None Include="OpenCL\Activations\Tanh.cl" />
+    <None Include="OpenCL\Activations\TanhActivation.cl" />
     <None Include="OpenCL\Connections\Deconvolution2D.cl" />
     <None Include="OpenCL\Connections\Linear.cl" />
     <None Include="OpenCL\Noise\Dropout.cl" />
