@@ -2,7 +2,7 @@
 
 namespace NChainer
 {
-    class LocalResponseNormalization<T>
+    public class LocalResponseNormalization<T>
     {
         private PyObject _localResponseNormalization;
         private int n;

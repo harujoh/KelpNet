@@ -2,7 +2,7 @@
 
 namespace NChainer
 {
-    class SplitAxis<T>
+    public class SplitAxis<T>
     {
         private PyObject _splitAxis;
 

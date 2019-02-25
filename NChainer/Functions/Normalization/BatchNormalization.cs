@@ -3,7 +3,7 @@ using NConstrictor;
 
 namespace NChainer
 {
-    struct BatchNormalization<T>
+    public struct BatchNormalization<T>
     {
         private PyObject _batchNormalization;
 

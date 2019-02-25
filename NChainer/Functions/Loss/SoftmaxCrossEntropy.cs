@@ -2,7 +2,7 @@
 
 namespace NChainer
 {
-    class SoftmaxCrossEntropy<T>
+    public class SoftmaxCrossEntropy<T>
     {
         private PyObject _softmaxCrossEntropy;
 

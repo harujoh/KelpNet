@@ -2,7 +2,7 @@
 
 namespace NChainer
 {
-    struct Linear<T>
+    public struct Linear<T>
     {
         private PyObject _linear;
 

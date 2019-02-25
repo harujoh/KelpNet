@@ -2,7 +2,7 @@
 
 namespace NChainer
 {
-    class Concat<T>
+    public class Concat<T>
     {
         private PyObject _concat;
 

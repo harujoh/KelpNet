@@ -3,7 +3,7 @@ using NConstrictor;
 
 namespace NChainer
 {
-    class Chainer
+    public class Chainer
     {
         private static PyObject _chainer;
         public static PyObject Variable;

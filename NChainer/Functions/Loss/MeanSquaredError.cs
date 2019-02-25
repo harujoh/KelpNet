@@ -2,7 +2,7 @@
 
 namespace NChainer
 {
-    class MeanSquaredError<T>
+    public class MeanSquaredError<T>
     {
         private PyObject _meanSquaredError;
 
