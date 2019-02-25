@@ -153,9 +153,9 @@ namespace KelpNet.Properties {
         /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
-        internal static byte[] Tanh {
+        internal static byte[] TanhActivation {
             get {
-                object obj = ResourceManager.GetObject("Tanh", resourceCulture);
+                object obj = ResourceManager.GetObject("TanhActivation", resourceCulture);
                 return ((byte[])(obj));
             }
         }
