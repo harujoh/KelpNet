@@ -307,7 +307,7 @@ namespace KelpNet
             if (Shape.Length == 0 && datas.Length == 1)
             {
                 return datas[0].ToString();
-            } 
+            }
 
             StringBuilder sb = new StringBuilder();
 
@@ -557,7 +557,23 @@ namespace KelpNet
             };
         }
 
-        public static NdArray Sum(NdArray input, int[] axis = null, bool keepDims = false)
+        public void Fill(Real val)
+        {
+            for (int i = 0; i < Data.Length; i++)
+            {
+                Data[i] = val;
+            }
+        }
+
+        public void FillGrad(Real val)
+        {
+            for (int i = 0; i < Grad.Length; i++)
+            {
+                Grad[i] = val;
+            }
+        }
+
+        private static NdArray ArrayFunc(NdArray input, Func<NdArray, int, NdArray> calcFunc, int[] axis = null, bool keepDims = false)
         {
 #if DEBUG
             if (axis != null && axis.Length != axis.Distinct().ToArray().Length)
@@ -577,11 +593,11 @@ namespace KelpNet
 
             Array.Sort(axis);
 
-            NdArray result = Sum(input, axis[0]);
+            NdArray result = calcFunc(input, axis[0]);
 
             for (int i = 1; i < axis.Length; i++)
             {
-                result = Sum(result, axis[i] - i);
+                result = calcFunc(result, axis[i] - i);
             }
 
             if (keepDims)
@@ -599,7 +615,12 @@ namespace KelpNet
             return result;
         }
 
-        private static NdArray Sum(NdArray input, int axis)
+        public static NdArray Sum(NdArray input, int[] axis = null, bool keepDims = false)
+        {
+            return ArrayFunc(input, LocalSum, axis, keepDims);
+        }
+
+        private static NdArray LocalSum(NdArray input, int axis)
         {
             int[] resultShape = new int[input.Shape.Length - 1];
 
@@ -623,6 +644,89 @@ namespace KelpNet
                 {
                     result.Data[batchCount * result.Length + localIndex] += input.Data[batchCount * input.Length + i];
                     if (input.Grad != null) result.Grad[batchCount * result.Length + localIndex] += input.Grad[batchCount * input.Length + i];
+                }
+            }
+
+            return result;
+        }
+
+        public static NdArray Max(NdArray input, int[] axis = null, bool keepDims = false)
+        {
+            return ArrayFunc(input, LocalMax, axis, keepDims);
+        }
+
+        private static NdArray LocalMax(NdArray input, int axis)
+        {
+            int[] resultShape = new int[input.Shape.Length - 1];
+
+            for (int i = 0, j = 0; i < input.Shape.Length; i++)
+            {
+                if (i != axis)
+                {
+                    resultShape[j++] = input.Shape[i];
+                }
+            }
+
+            NdArray result = new NdArray(resultShape, input.BatchCount);
+            result.Fill(input.Data.Min());
+            if (input.Grad != null) result.FillGrad(input.Grad.Min());
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                List<int> index = new List<int>(input.GetDimensionsIndex(i));
+                index.RemoveAt(axis);
+                int localIndex = result.GetLocalIndex(0, index.ToArray());
+
+                for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
+                {
+                    if(result.Data[batchCount * result.Length + localIndex] < input.Data[batchCount * input.Length + i]) result.Data[batchCount * result.Length + localIndex] = input.Data[batchCount * input.Length + i];
+                    if (input.Grad != null)
+                    {
+                        if(result.Grad[batchCount * result.Length + localIndex] < input.Grad[batchCount * input.Length + i])
+                            result.Grad[batchCount * result.Length + localIndex] = input.Grad[batchCount * input.Length + i];
+                    }
+                }
+            }
+
+            return result;
+        }
+
+
+        public static NdArray Min(NdArray input, int[] axis = null, bool keepDims = false)
+        {
+            return ArrayFunc(input, LocalMin, axis, keepDims);
+        }
+
+        private static NdArray LocalMin(NdArray input, int axis)
+        {
+            int[] resultShape = new int[input.Shape.Length - 1];
+
+            for (int i = 0, j = 0; i < input.Shape.Length; i++)
+            {
+                if (i != axis)
+                {
+                    resultShape[j++] = input.Shape[i];
+                }
+            }
+
+            NdArray result = new NdArray(resultShape, input.BatchCount);
+            result.Fill(input.Data.Min());
+            if (input.Grad != null) result.FillGrad(input.Grad.Min());
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                List<int> index = new List<int>(input.GetDimensionsIndex(i));
+                index.RemoveAt(axis);
+                int localIndex = result.GetLocalIndex(0, index.ToArray());
+
+                for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
+                {
+                    if (result.Data[batchCount * result.Length + localIndex] > input.Data[batchCount * input.Length + i]) result.Data[batchCount * result.Length + localIndex] = input.Data[batchCount * input.Length + i];
+                    if (input.Grad != null)
+                    {
+                        if (result.Grad[batchCount * result.Length + localIndex] > input.Grad[batchCount * input.Length + i])
+                            result.Grad[batchCount * result.Length + localIndex] = input.Grad[batchCount * input.Length + i];
+                    }
                 }
             }
 
@@ -673,6 +777,74 @@ namespace KelpNet
             }
 
             return resultArrays;
+        }
+
+        public static NdArray Rollaxis(NdArray input, int axis, int start = 0)
+        {
+            int n = input.Shape.Length;
+            if (axis < 0) axis += n;
+            if (start < 0) start += n;
+
+#if DEBUG
+            string msg = "rollaxis: {0} ({1}) must be >=0 and < {2}";
+
+            if (!(0 <= axis && axis < n)) throw new Exception(string.Format(msg, "axis", axis, n));
+            if (!(0 <= start && start < n + 1)) throw new Exception(string.Format(msg, "start", start, n + 1));
+#endif
+            if (axis == start) return input;
+
+            List<int> axes = new List<int>(Enumerable.Range(0, n).ToArray());
+            axes.RemoveAt(axis);
+            axes.Insert(start, axis);
+
+            return Transpose(input, axes.ToArray());
+        }
+
+        public static NdArray Transpose(NdArray input, params int[] dimensions)
+        {
+#if DEBUG
+            if (input.Shape.Length != dimensions.Length)
+            {
+                throw new Exception("次元数がマッチしていません");
+            }
+
+            for (int i = 0; i < dimensions.Length; i++)
+            {
+                //自身の中にダブりがないか
+                for (int j = i + 1; j < dimensions.Length; j++)
+                {
+                    if (dimensions[i] == dimensions[j]) throw new Exception("指定された要素がダブっています");
+                }
+                //範囲チェック
+                if (dimensions[i] >= input.Shape.Length || dimensions[i] < 0) throw new Exception("指定された要素が範囲を超えています");
+            }
+#endif
+            int[] transposedDimensions = new int[input.Shape.Length];
+
+            for (int j = 0; j < input.Shape.Length; j++)
+            {
+                transposedDimensions[j] = input.Shape[dimensions[j]];
+            }
+
+            NdArray resultMatrix = new NdArray(transposedDimensions);
+
+            for (int b = 0; b < input.BatchCount; b++)
+            {
+                for (int i = 0; i < input.Length; i++)
+                {
+                    int[] indecies = input.GetDimensionsIndex(i);
+                    int[] transposedIndex = new int[input.Shape.Length];
+
+                    for (int j = 0; j < input.Shape.Length; j++)
+                    {
+                        transposedIndex[j] = indecies[dimensions[j]];
+                    }
+
+                    resultMatrix.Data[resultMatrix.GetLocalIndex(b, transposedIndex)] = input.Data[input.GetLocalIndex(b, indecies)];
+                }
+            }
+
+            return resultMatrix;
         }
 
         public static NdArray Concatenate(NdArray a, NdArray b, int axis)

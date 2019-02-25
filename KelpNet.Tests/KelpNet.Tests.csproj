@@ -61,6 +61,7 @@
     <Compile Include="Functions\Normalization\TestBatchNormalization.cs" />
     <Compile Include="Functions\Normalization\TestLRN.cs" />
     <Compile Include="Loss\TestMeanSquaredError.cs" />
+    <Compile Include="Loss\TestSoftmaxCrossEntropy.cs" />
     <Compile Include="NChainer\Chainer.cs" />
     <Compile Include="Functions\Connections\TestLinear.cs" />
     <Compile Include="NChainer\Functions\Array\Concat.cs" />

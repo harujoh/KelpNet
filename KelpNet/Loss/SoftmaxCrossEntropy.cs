@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace KelpNet
 {
@@ -11,60 +12,88 @@ namespace KelpNet
 #if DEBUG
             if (input.Length != teachSignal.Length) throw new Exception("入力と教師信号のサイズが異なります");
 #endif
-
             for (int k = 0; k < input.Length; k++)
             {
-                Real localloss = 0;
-                Real[] gx = new Real[input[k].Data.Length];
+                Real localLoss = 0;
+
+                int chLen = input[k].Shape[0];
+                int dataLen = input[k].Shape[1];
+                for (int i = 2; i < input[k].Shape.Length; i++)
+                {
+                    dataLen *= input[k].Shape[i];
+                }
+
+                NdArray m = NdArray.Max(input[k], new[] { 0 }, true);
+                NdArray y = new NdArray(input[k].Shape, input[k].BatchCount);
 
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {
-                    Real maxIndex = 0;
-
-                    for (int i = 0; i < teachSignal[k].Length; i++)
+                    for (int i = 0; i < chLen; i++)
                     {
-                        if (maxIndex < teachSignal[k].Data[i + b * teachSignal[k].Length])
+                        for (int j = 0; j < dataLen; j++)
                         {
-                            maxIndex = teachSignal[k].Data[i + b * teachSignal[k].Length];
+                            int dataIndex = b * input[k].Length + i * dataLen + j;
+                            y.Data[dataIndex] = Math.Exp(input[k].Data[dataIndex] - m.Data[b * m.Length + j]);
                         }
                     }
-
-                    Real[] logY = new Real[input[k].Length];
-                    Real y = 0;
-                    Real m = input[k].Data[b * input[k].Length];
-
-                    for (int i = 1; i < input[k].Length; i++)
-                    {
-                        if (m < input[k].Data[i + b * input[k].Length])
-                        {
-                            m = input[k].Data[i + b * input[k].Length];
-                        }
-                    }
-
-                    for (int i = 0; i < input[k].Length; i++)
-                    {
-                        y += Math.Exp(input[k].Data[i + b * input[k].Length] - m);
-                    }
-
-                    m += Math.Log(y);
-
-                    for (int i = 0; i < input[k].Length; i++)
-                    {
-                        logY[i] = input[k].Data[i + b * input[k].Length] - m;
-                    }
-
-                    localloss += -logY[(int)maxIndex];
-
-
-                    for (int i = 0; i < logY.Length; i++)
-                    {
-                        gx[i + b * input[k].Length] = Math.Exp(logY[i]);
-                    }
-
-                    gx[(int)maxIndex + b * input[k].Length] -= 1;
                 }
 
-                resultLoss += localloss / input[k].BatchCount;
+                NdArray s = NdArray.Sum(y, new[] { 0 }, true);
+
+                for (int i = 0; i < s.Data.Length; i++)
+                {
+                    m.Data[i] += Math.Log(s.Data[i]);
+                }
+
+                //y = x - log_z
+                for (int b = 0; b < input[k].BatchCount; b++)
+                {
+                    for (int i = 0; i < chLen; i++)
+                    {
+                        for (int j = 0; j < dataLen; j++)
+                        {
+                            int dataIndex = b * input[k].Length + i * dataLen + j;
+                            y.Data[dataIndex] = input[k].Data[dataIndex] - m.Data[b * m.Length + j];
+                        }
+                    }
+                }
+
+                Real[] log_p = new Real[teachSignal[k].Data.Length];
+                for (int b = 0; b < teachSignal[k].BatchCount; b++)
+                {
+                    for (int j = 0; j < teachSignal[k].Length; j++)
+                    {
+                        int index = b * teachSignal[k].Length + j;
+                        int tb = (int)teachSignal[k].Data[index];
+                        log_p[index] = y.Data[b * y.Length + tb * dataLen + j];
+                    }
+                }
+
+                Real coef = 1.0 / teachSignal[k].Data.Length;
+
+                for (int i = 0; i < log_p.Length; i++)
+                {
+                    localLoss += log_p[i];
+                }
+                resultLoss += localLoss * -coef;
+
+
+                Real[] gx = new Real[input[k].Data.Length];
+                for (int i = 0; i < gx.Length; i++)
+                {
+                    gx[i] = Math.Exp(y.Data[i]) * coef;
+                }
+
+                for (int b = 0; b < teachSignal[k].BatchCount; b++)
+                {
+                    for (int j = 0; j < teachSignal[k].Length; j++)
+                    {
+                        int index = b * teachSignal[k].Length + j;
+                        int tb = (int)teachSignal[k].Data[index];
+                        gx[b * y.Length + tb * dataLen + j] -= coef;
+                    }
+                }
+
                 input[k].Grad = gx;
             }
 
