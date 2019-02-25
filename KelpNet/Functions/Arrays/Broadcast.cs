@@ -99,7 +99,7 @@ namespace KelpNet
 
             if (y.Shape.Length != ndim)
             {
-                NdArray.Sum(y, false, Enumerable.Range(0, y.Shape.Length - ndim).ToArray());
+                NdArray.Sum(y, Enumerable.Range(0, y.Shape.Length - ndim).ToArray(), false);
             }
 
             List<int> axis = new List<int>();
@@ -113,7 +113,7 @@ namespace KelpNet
 
             if (axis.Count > 0)
             {
-                NdArray result = NdArray.Sum(y, true, axis.ToArray());
+                NdArray result = NdArray.Sum(y, axis.ToArray(), true);
                 for (int i = 0; i < x.Grad.Length; i++)
                 {
                     x.Grad[i] += result.Grad[i];

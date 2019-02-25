@@ -300,6 +300,15 @@ namespace KelpNet
 
         public string ToString(Real[] datas)
         {
+#if DEBUG
+            if (Shape.Length == 0 && datas.Length != 1) throw new Exception();
+#endif
+            //単品データ
+            if (Shape.Length == 0 && datas.Length == 1)
+            {
+                return datas[0].ToString();
+            } 
+
             StringBuilder sb = new StringBuilder();
 
             int intMaxLength = 0; //整数部の最大値
@@ -548,27 +557,27 @@ namespace KelpNet
             };
         }
 
-        public static NdArray Sum(NdArray a, bool keepDims = false, params int[] axis)
+        public static NdArray Sum(NdArray input, int[] axis = null, bool keepDims = false)
         {
 #if DEBUG
-            if (axis.Length != axis.Distinct().ToArray().Length)
+            if (axis != null && axis.Length != axis.Distinct().ToArray().Length)
             {
                 throw new Exception("指定された要素が重複しています");
             }
 
-            if (axis.Length != 0 && a.Shape.Length < axis.Max())
+            if (axis != null && axis.Length != 0 && input.Shape.Length < axis.Max())
             {
                 throw new Exception("指定された要素が範囲を超えています");
             }
 #endif
-            if (axis.Length == 0)
+            if (axis == null || axis.Length == 0)
             {
-                axis = Enumerable.Range(0, a.Shape.Length).ToArray();
+                axis = Enumerable.Range(0, input.Shape.Length).ToArray();
             }
 
             Array.Sort(axis);
 
-            NdArray result = Sum(a, axis[0]);
+            NdArray result = Sum(input, axis[0]);
 
             for (int i = 1; i < axis.Length; i++)
             {
@@ -577,45 +586,43 @@ namespace KelpNet
 
             if (keepDims)
             {
-                List<int> resultKeepDimShape = new List<int>();
-                int count = a.Shape.Length - result.Shape.Length;
+                int[] resultKeepDimShape = input.Shape.ToArray();
 
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < axis.Length; i++)
                 {
-                    resultKeepDimShape.Add(1);
+                    resultKeepDimShape[axis[i]] = 1;
                 }
 
-                resultKeepDimShape.AddRange(result.Shape);
-                result.Shape = resultKeepDimShape.ToArray();
+                result.Shape = resultKeepDimShape;
             }
 
             return result;
         }
 
-        private static NdArray Sum(NdArray a, int axis)
+        private static NdArray Sum(NdArray input, int axis)
         {
-            int[] resultShape = new int[a.Shape.Length - 1];
+            int[] resultShape = new int[input.Shape.Length - 1];
 
-            for (int i = 0, j = 0; i < a.Shape.Length; i++)
+            for (int i = 0, j = 0; i < input.Shape.Length; i++)
             {
                 if (i != axis)
                 {
-                    resultShape[j++] = a.Shape[i];
+                    resultShape[j++] = input.Shape[i];
                 }
             }
 
-            NdArray result = new NdArray(resultShape, a.BatchCount);
+            NdArray result = new NdArray(resultShape, input.BatchCount);
 
-            for (int i = 0; i < a.Length; i++)
+            for (int i = 0; i < input.Length; i++)
             {
-                List<int> index = new List<int>(a.GetDimensionsIndex(i));
+                List<int> index = new List<int>(input.GetDimensionsIndex(i));
                 index.RemoveAt(axis);
                 int localIndex = result.GetLocalIndex(0, index.ToArray());
 
-                for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
+                for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
                 {
-                    result.Data[batchCount * result.Length + localIndex] += a.Data[batchCount * a.Length + i];
-                    if (a.Grad != null) result.Grad[batchCount * result.Length + localIndex] += a.Grad[batchCount * a.Length + i];
+                    result.Data[batchCount * result.Length + localIndex] += input.Data[batchCount * input.Length + i];
+                    if (input.Grad != null) result.Grad[batchCount * result.Length + localIndex] += input.Grad[batchCount * input.Length + i];
                 }
             }
 

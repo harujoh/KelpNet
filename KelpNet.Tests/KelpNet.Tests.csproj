@@ -67,6 +67,7 @@
     <Compile Include="NChainer\Functions\Array\SplitAxis.cs" />
     <Compile Include="NChainer\Functions\Connections\Linear.cs" />
     <Compile Include="NChainer\Functions\Loss\MeanSquaredError.cs" />
+    <Compile Include="NChainer\Functions\Loss\SoftmaxCrossEntropy.cs" />
     <Compile Include="NChainer\Functions\Normalization\BatchNormalization.cs" />
     <Compile Include="NChainer\Functions\Normalization\LocalResponseNormalization.cs" />
     <Compile Include="NChainer\Variable.cs" />
