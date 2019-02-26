@@ -6,6 +6,10 @@ skip_tags: true
 
 image: Visual Studio 2017
 
+cache:
+  - C:\Intel\OpenCL
+  - C:\Program Files (x86)\Common Files\Intel\OpenCL
+
 configuration: Release
 
 before_build:
