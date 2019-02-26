@@ -20,7 +20,7 @@ build:
   verbosity: normal
 
 before_test:
-  - IF NOT EXIST "C:\Program Files (x86)\Common Files\Intel\OpenCL\" ( appveyor DownloadFile "http://registrationcenter-download.intel.com/akdlm/irc_nas/vcp/12512/opencl_runtime_16.1.2_x64_setup" )
+  - IF NOT EXIST "C:\Program Files (x86)\Common Files\Intel\OpenCL\" ( appveyor DownloadFile "http://registrationcenter-download.intel.com/akdlm/irc_nas/12512/opencl_runtime_16.1.2_x64_setup.msi" )
   - IF NOT EXIST "C:\Program Files (x86)\Common Files\Intel\OpenCL\" ( start /wait msiexec /i opencl_runtime_16.1.2_x64_setup.msi /qn  /l*v clruntime.log )
   - "SET PATH=C:\\Python37-x64;C:\\Python37-x64\\Scripts;%PATH%"
   - pip install chainer
