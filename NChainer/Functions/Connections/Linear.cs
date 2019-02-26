@@ -19,5 +19,10 @@ namespace NChainer
         {
             return _linear["forward"].Call(x, nBatchAxes);
         }
+
+        public static implicit operator PyObject(Linear<T> linear)
+        {
+            return linear._linear;
+        }
     }
 }

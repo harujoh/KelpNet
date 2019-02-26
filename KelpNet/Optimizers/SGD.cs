@@ -7,7 +7,7 @@ namespace KelpNet
     {
         public Real LearningRate;
 
-        public SGD(double learningRate = 0.1)
+        public SGD(double learningRate = 0.01)
         {
             this.LearningRate = learningRate;
         }

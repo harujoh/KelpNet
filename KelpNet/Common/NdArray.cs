@@ -247,7 +247,7 @@ namespace KelpNet
         }
 
         //傾きの補正
-        public bool Reduce()
+        public void Reduce()
         {
             if (this.TrainCount > 0)
             {
@@ -255,11 +255,7 @@ namespace KelpNet
                 {
                     this.Grad[i] /= this.TrainCount;
                 }
-
-                return true;
             }
-
-            return false;
         }
 
         //傾きの初期化

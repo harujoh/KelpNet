@@ -12,23 +12,28 @@ namespace KelpNet
 
         internal abstract void AddFunctionParameters(NdArray[] functionParameters);
 
+        public void SetUp(Function function)
+        {
+            AddFunctionParameters(function.Parameters);
+        }
+
         public void Update()
         {
             bool isUpdated = false;
 
             for (int i = 0; i < this.OptimizerParameters.Count; i++)
             {
-                //傾きの割引を実行して更新があったかチェックをする
-                if (this.OptimizerParameters[i].FunctionParameter.Reduce())
-                {
-                    this.OptimizerParameters[i].UpdateFunctionParameters();
+                if (this.OptimizerParameters[i].FunctionParameter.TrainCount != 0) isUpdated = true;
 
-                    this.OptimizerParameters[i].FunctionParameter.ClearGrad();
-                    //カウンタをリセット
-                    this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
+                //傾きの割引を実行
+                this.OptimizerParameters[i].FunctionParameter.Reduce();
 
-                    isUpdated = true;
-                }
+                this.OptimizerParameters[i].UpdateFunctionParameters();
+
+                this.OptimizerParameters[i].FunctionParameter.ClearGrad();
+
+                //カウンタをリセット
+                this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
             }
 
             if (isUpdated)
