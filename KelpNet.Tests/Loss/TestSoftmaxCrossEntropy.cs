@@ -24,7 +24,7 @@ namespace KelpNet.Tests
 
             for (int b = 0; b < batchCount; b++)
             {
-                inputB[b, Mother.Dice.Next(width), Mother.Dice.Next(height)] = 1;
+                inputB[b, Mother.Dice.Next(height), Mother.Dice.Next(width)] = 1;
             }
 
             //chainer
@@ -50,7 +50,7 @@ namespace KelpNet.Tests
 
 
             //許容範囲を算出(内部の割引順が違うため誤差が大きい)
-            double delta = 0.0001;
+            double delta = 0.00001;
 
             //Loss
             Assert.AreEqual(cZ.Data[0], z.Data[0], delta);
