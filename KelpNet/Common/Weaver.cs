@@ -42,12 +42,14 @@ typedef REAL Real;
 ";
 
         public static ComputeContext Context;
-        private static ComputeDevice[] Devices;
         public static ComputeCommandQueue CommandQueue;
+        public static int PlatformId;
         public static int DeviceIndex;
         public static bool Enable;
-        public static ComputePlatform Platform;
         public static Dictionary<string, string> KernelSources = new Dictionary<string, string>();
+        public static string DeviceType;
+        public static string DeviceName;
+        public static string InfoString;
 
         public static string GetKernelSource(string functionName)
         {
@@ -65,33 +67,57 @@ typedef REAL Real;
             return KernelSources[functionName];
         }
 
-        public static void Initialize(ComputeDeviceTypes selectedComputeDeviceTypes, int platformId = 0, int deviceIndex = 0)
+        public static void Initialize(int deviceIndex = 0)
         {
-            Platform = ComputePlatform.Platforms[platformId];
-
-            Devices = Platform
-                .Devices
-                .Where(d => (long)d.Type == (long)selectedComputeDeviceTypes)
-                .ToArray();
-
-            DeviceIndex = deviceIndex;
-
-            if (Devices.Length > 0)
+            //最初に見つかったプラットフォームを取得する
+            for (int i = 0; i < ComputePlatform.Platforms.Count; i++)
             {
+                if (ComputePlatform.Platforms[i].Devices.Count > 0)
+                {
+                    Initialize(i, deviceIndex);
+                }
+            }
+        }
+
+        public static void Initialize(ComputeDeviceTypes selectedComputeDeviceTypes, int deviceIndex = 0)
+        {
+            //最初に見つかったプラットフォームを採用する
+            for (int i = 0; i < ComputePlatform.Platforms.Count; i++)
+            {
+                var checklist = ComputePlatform.Platforms[i].Devices.Where(d => (long)d.Type == (long)selectedComputeDeviceTypes).ToArray();
+
+                if (checklist.Length > 0)
+                {
+                    Initialize(i, deviceIndex);
+                }
+            }
+        }
+
+        public static void Initialize(int platformId, int deviceIndex)
+        {
+            if (ComputePlatform.Platforms[platformId].Devices.Count > 0)
+            {
+                PlatformId = platformId;
+                DeviceIndex = deviceIndex;
+
+                DeviceType = ComputePlatform.Platforms[platformId].Devices[DeviceIndex].Type.ToString();
+                DeviceName = ComputePlatform.Platforms[platformId].Devices[DeviceIndex].Name;
+
                 Context = new ComputeContext(
-                    Devices,
-                    new ComputeContextPropertyList(Platform),
+                    ComputePlatform.Platforms[platformId].Devices,
+                    new ComputeContextPropertyList(ComputePlatform.Platforms[platformId]),
                     null,
                     IntPtr.Zero
                     );
 
                 CommandQueue = new ComputeCommandQueue(
                     Context,
-                    Devices[DeviceIndex],
+                    ComputePlatform.Platforms[platformId].Devices[DeviceIndex],
                     ComputeCommandQueueFlags.None
                     );
 
                 Enable = true;
+                InfoString = GetInfo();
             }
         }
 
@@ -112,14 +138,26 @@ typedef REAL Real;
 
             try
             {
-                program.Build(Devices, string.Format("-D REAL={0} -Werror", realType), null, IntPtr.Zero);
+                program.Build(ComputePlatform.Platforms[PlatformId].Devices, string.Format("-D REAL={0} -Werror", realType), null, IntPtr.Zero);
             }
             catch
             {
-                MessageBox.Show(program.GetBuildLog(Devices[DeviceIndex]));
+                MessageBox.Show(program.GetBuildLog(ComputePlatform.Platforms[PlatformId].Devices[DeviceIndex]));
             }
 
             return program;
+        }
+
+        private static string GetInfo()
+        {
+            if (Weaver.Enable)
+            {
+                return "OpenCL[" + Weaver.DeviceType + "]: " + Weaver.DeviceName;
+            }
+            else
+            {
+                return ".Net Framework";
+            }
         }
     }
 }

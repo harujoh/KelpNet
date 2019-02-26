@@ -16,11 +16,15 @@ namespace KelpNet.Tests
         [TestMethod]
         public void LinearGPURandomTest()
         {
-            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+            Weaver.Initialize();
 
             if (Weaver.Enable)
             {
                 RandomTest(true);
+            }
+            else
+            {
+                Assert.Inconclusive();
             }
         }
 

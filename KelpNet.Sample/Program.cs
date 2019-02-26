@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KelpNet.Sample 
+namespace KelpNet.Sample
 {
     //実行したいテストのコメントを外して下さい
     class Program
@@ -9,8 +9,11 @@ namespace KelpNet.Sample
         static void Main(string[] args)
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
-            Weaver.Initialize(ComputeDeviceTypes.Gpu);
-            //Weaver.Initialize(ComputeDeviceTypes.Cpu, 1); //複数デバイスがある場合は添字が必要
+            Weaver.Initialize();
+            //Weaver.Initialize(ComputeDeviceTypes.Cpu); //複数の種類のデバイスがある場合はデバイスタイプを指定
+            //Weaver.Initialize(ComputeDeviceTypes.Gpu, 1); //同じ種類のGPUやCPUが複数ある場合は添字を使用
+
+            Console.WriteLine("Running on " + Weaver.InfoString);
 
             //MLPによるXORの学習
             //Sample1.Run();
