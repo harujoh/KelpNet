@@ -8,7 +8,23 @@ namespace KelpNet.Tests
     public class TestLinear
     {
         [TestMethod]
-        public void RandomTest()
+        public void LinearCPURandomTest()
+        {
+            RandomTest(false);
+        }
+
+        [TestMethod]
+        public void LinearGPURandomTest()
+        {
+            Weaver.Initialize(ComputeDeviceTypes.Gpu);
+
+            if (Weaver.Enable)
+            {
+                RandomTest(true);
+            }
+        }
+
+        public void RandomTest(bool gpuEnable)
         {
             Python.Initialize();
             Chainer.Initialize();
@@ -35,7 +51,7 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b);
+            KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b,gpuEnable: gpuEnable);
 
             NdArray x = new NdArray(input);
 

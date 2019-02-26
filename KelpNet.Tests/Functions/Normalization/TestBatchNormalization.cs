@@ -8,7 +8,7 @@ namespace KelpNet.Tests
     public class TestBatchNormalization
     {
         [TestMethod]
-        public void RandomTest()
+        public void BatchNormRandomTest()
         {
             TrainTest(false, false);
             TrainTest(true, false);

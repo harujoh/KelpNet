@@ -8,7 +8,7 @@ namespace KelpNet.Tests
     public class TestSplitAxis
     {
         [TestMethod]
-        public void RandomTest()
+        public void SplitAxisRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();

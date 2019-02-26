@@ -9,7 +9,7 @@ namespace KelpNet.Tests
     public class TestBasicMath
     {
         [TestMethod]
-        public void RandomTest()
+        public void BasicMathRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();

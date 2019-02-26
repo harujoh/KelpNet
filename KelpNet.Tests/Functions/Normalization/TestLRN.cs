@@ -8,7 +8,7 @@ namespace KelpNet.Tests
     public class TestLRN
     {
         [TestMethod]
-        public void RandomTest()
+        public void LRNRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();

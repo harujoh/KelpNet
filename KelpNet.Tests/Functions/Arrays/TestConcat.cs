@@ -8,7 +8,7 @@ namespace KelpNet.Tests
     public class TestConcat
     {
         [TestMethod]
-        public void RandomTest()
+        public void ConcatRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
