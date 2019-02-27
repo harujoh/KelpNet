@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.Properties;
 
 namespace KelpNet
 {
@@ -6,6 +7,11 @@ namespace KelpNet
     public class Sigmoid : CompressibleActivation
     {
         const string FUNCTION_NAME = "Sigmoid";
+
+        public override string ActivateFunctionString
+        {
+            get { return Weaver.GetKernelSource(Resources.Sigmoid); }
+        }
 
         public Sigmoid(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using Cloo;
+using KelpNet.Properties;
 
 namespace KelpNet
 {
@@ -87,7 +88,7 @@ namespace KelpNet
         public void CreateKernel()
         {
             if (GpuEnable)
-                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(FUNCTION_NAME)).CreateKernel("MaxPoolingForward");
+                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(Resources.MaxPooling)).CreateKernel("MaxPoolingForward");
         }
 
         private NdArray ForwardCpu(NdArray input)

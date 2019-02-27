@@ -18,9 +18,8 @@
 	{
 		gpuYSum += gpuX[j] * gpuW[j];
 	}
-
-	/*ForwardActivate*/
-	*gpuY = gpuYSum;
+	
+	*gpuY = /*ForwardActivate*/(gpuYSum);
 }
 
 __kernel void LineargWBackward(

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using Cloo;
+using KelpNet.Properties;
 
 namespace KelpNet
 {
@@ -9,8 +9,6 @@ namespace KelpNet
     public class Deconvolution2D : CompressibleFunction
     {
         const string FUNCTION_NAME = "Deconvolution2D";
-        private const string PARAM_NAME = "/*ForwardActivate*/";
-        private const string PARAM_VALUE = "result = ForwardActivate(result);";
 
         public NdArray Weight;
         public NdArray Bias;
@@ -27,7 +25,15 @@ namespace KelpNet
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, new []{new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE)}, name, inputNames, outputNames, gpuEnable)
+        protected override string KernelString
+        {
+            get
+            {
+                return Weaver.GetKernelSource(Resources.Deconvolution2D);
+            }
+        }
+
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int subSample = 1, int trim = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -45,7 +51,7 @@ namespace KelpNet
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, new []{new KeyValuePair<string, string>(PARAM_NAME, PARAM_VALUE)}, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
             if (subSample == Size.Empty)
                 subSample = new Size(1, 1);

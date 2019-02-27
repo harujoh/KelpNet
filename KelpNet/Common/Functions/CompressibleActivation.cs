@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Cloo;
+using KelpNet.Properties;
 
 namespace KelpNet
 {
@@ -19,7 +20,10 @@ namespace KelpNet
         public ComputeKernel BackwardKernel;
 
         //GPU向けのActivate関数の文字列
-        public string ActivateFunctionString;
+        public abstract string ActivateFunctionString { get; } //外部の関数に組み込まれる
+        protected string ActivateKernelString { get; } //単品で呼ぶ用
+
+        public readonly KeyValuePair<string, string>[] ActivationParameters;
 
         //.Netで使用するActivateの仮想関数
         internal abstract Real ForwardActivate(Real x);
@@ -28,24 +32,15 @@ namespace KelpNet
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
 
-        protected string ActivateKernelString;
-
         protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             string kernelNameBase = functionName.Replace(" ", "");
+            this.ActivateKernelString = Weaver.GetKernelSource(Resources.Activation).Replace("/*kernelNameBase*/", kernelNameBase);
+
+            ActivationParameters = parameters;
+
             this.ForwardKernelName = kernelNameBase + "Forward";
             this.BackwardKernelName = kernelNameBase + "Backward";
-
-            this.ActivateKernelString = Weaver.GetKernelSource(FUNCTION_NAME).Replace("/*kernelNameBase*/", kernelNameBase);
-            this.ActivateFunctionString = Weaver.GetKernelSource(functionName);
-
-            if (parameters != null)
-            {
-                foreach (var parameter in parameters)
-                {
-                    this.ActivateFunctionString = this.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
-                }
-            }
 
             this.SetGpuEnable(gpuEnable);
         }
@@ -54,10 +49,10 @@ namespace KelpNet
         {
             this.GpuEnable = enable & Weaver.Enable;
 
-            this.CreateKernel();
-
             if (this.GpuEnable)
             {
+                this.CreateKernel();
+
                 this.SingleInputForward = this.NeedPreviousForwardGpu;
                 this.SingleOutputBackward = this.NeedPreviousBackwardGpu;
             }
@@ -74,7 +69,17 @@ namespace KelpNet
         {
             if (this.GpuEnable)
             {
-                string kernelSource = this.ActivateFunctionString + this.ActivateKernelString;
+                string kernelSource = this.ActivateFunctionString;
+
+                if (this.ActivationParameters != null)
+                {
+                    foreach (var parameter in this.ActivationParameters)
+                    {
+                        kernelSource = this.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
+                    }
+                }
+
+                kernelSource += this.ActivateKernelString;
 
                 ComputeProgram program = Weaver.CreateProgram(kernelSource);
                 this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Cloo;
-using KelpNet.Properties;
 
 namespace KelpNet
 {
@@ -46,25 +44,20 @@ typedef REAL Real;
         public static int PlatformId;
         public static int DeviceIndex;
         public static bool Enable;
-        public static Dictionary<string, string> KernelSources = new Dictionary<string, string>();
         public static string DeviceType;
         public static string DeviceName;
         public static string InfoString;
 
-        public static string GetKernelSource(string functionName)
+        public static string GetKernelSource(byte[] binary)
         {
-            if (!KernelSources.ContainsKey(functionName))
-            {
-                byte[] binary = (byte[])Resources.ResourceManager.GetObject(functionName);
-                if (binary == null) throw new Exception("リソースファイルの取得に失敗しました\nリソース名:" + functionName);
+            string result;
 
-                using (StreamReader reader = new StreamReader(new MemoryStream(binary)))
-                {
-                    KernelSources.Add(functionName, reader.ReadToEnd());
-                }
+            using (StreamReader reader = new StreamReader(new MemoryStream(binary)))
+            {
+                result = reader.ReadToEnd();
             }
 
-            return KernelSources[functionName];
+            return result;
         }
 
         public static void Initialize(int deviceIndex = 0)

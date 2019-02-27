@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KelpNet.Properties;
 
 namespace KelpNet
 {
@@ -8,6 +9,11 @@ namespace KelpNet
     {
         const string FUNCTION_NAME = "LeakyReLU";
         private const string PARAM_NAME = "/*slope*/";
+
+        public override string ActivateFunctionString
+        {
+            get { return Weaver.GetKernelSource(Resources.LeakyReLU); }
+        }
 
         private readonly Real _slope;
 

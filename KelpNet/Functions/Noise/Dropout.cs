@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Cloo;
+using KelpNet.Properties;
 
 namespace KelpNet
 {
@@ -53,7 +54,7 @@ namespace KelpNet
         {
             if (GpuEnable)
             {
-                string kernelSource = Weaver.GetKernelSource(FUNCTION_NAME);
+                string kernelSource = Weaver.GetKernelSource(Resources.Dropout);
                 ComputeProgram program = Weaver.CreateProgram(kernelSource);
 
                 ForwardKernel = program.CreateKernel("DropoutForward");

@@ -48,11 +48,9 @@
 	}
 
 	int outputIndex = batchCounter * OutputCount * outputWidth * outputHeight + och * outputWidth * outputHeight + (oy - trimY) * outputWidth + ox - trimX;
-	result += gpub[och];
+	result += gpub[och];	
 
-	/*ForwardActivate*/
-
-	gpuY[outputIndex] = result;
+	gpuY[outputIndex] = /*ForwardActivate*/(result);
 }
 
 __kernel void Deconvolution2DgWBackward(
