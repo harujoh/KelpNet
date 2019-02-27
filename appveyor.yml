@@ -25,8 +25,8 @@ build:
   verbosity: normal
 
 before_test:
-  - IF NOT EXIST OPENCL_INSTALLER_PATH ( appveyor DownloadFile %OPENCL_DOWNLOAD_URL% -FileName %OPENCL_INSTALLER_PATH% )
-  - IF EXIST OPENCL_INSTALLER_PATH ( start /wait msiexec /i %OPENCL_INSTALLER_PATH% /qn  /l*v clruntime.log )
+  - IF NOT EXIST %OPENCL_INSTALLER_PATH% ( appveyor DownloadFile %OPENCL_DOWNLOAD_URL% -FileName %OPENCL_INSTALLER_PATH% )
+  - IF EXIST %OPENCL_INSTALLER_PATH% ( start /wait msiexec /i %OPENCL_INSTALLER_PATH% /qn  /l*v clruntime.log )
   - "SET PATH=C:\\Python37-x64;C:\\Python37-x64\\Scripts;%PATH%"
   - pip install chainer
 
