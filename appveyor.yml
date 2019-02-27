@@ -8,11 +8,11 @@ image: Visual Studio 2017
 
 environment:
   global:
-    OPENCL_INSTALLER_DIR: %USERPROFILE%\Downloads
-    OPENCL_INSTALLER_PATH: %USERPROFILE%\Downloads\opencl_runtime_16.1.2_x64_setup.msi
+    OPENCL_INSTALLER_DIR: C:\Users\appveyor\Downloads
+    OPENCL_INSTALLER_PATH: C:\Users\appveyor\Downloads\opencl_runtime_16.1.2_x64_setup.msi
 
 cache:
-  - %OPENCL_INSTALLER_DIR%
+  - OPENCL_INSTALLER_DIR
 
 configuration: Release
 
