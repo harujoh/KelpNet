@@ -1,6 +1,6 @@
-﻿Real ForwardActivate(Real gpuY)
+﻿Real ForwardActivate(Real gpuX)
 {
-	return 1 / (1 + exp(-gpuY));
+	return tanh(gpuX * 0.5) * 0.5 + 0.5;
 }
 
 Real BackwardActivate(Real gpuY, Real gpugX)

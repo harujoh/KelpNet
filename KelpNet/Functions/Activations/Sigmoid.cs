@@ -19,12 +19,12 @@ namespace KelpNet
 
         internal override Real ForwardActivate(Real x)
         {
-            return 1 / (1 + Math.Exp(-x));
+            return Math.Tanh(x * 0.5) * 0.5 + 0.5;
         }
 
         internal override Real BackwardActivate(Real gy, Real y)
         {
-            return gy * y * (1 - y);
+            return gy * y * (1.0 - y);
         }
     }
 }

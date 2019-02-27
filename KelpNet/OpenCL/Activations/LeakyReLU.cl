@@ -1,6 +1,6 @@
-﻿Real ForwardActivate(Real gpuY)
+﻿Real ForwardActivate(Real gpuX)
 {
-	return gpuY < 0.0 ? gpuY * /*slope*/ + 0 : gpuY;
+	return gpuX < 0.0 ? gpuX * /*slope*/ + 0 : gpuX;
 }
 
 Real BackwardActivate(Real gpuY, Real gpugX)
