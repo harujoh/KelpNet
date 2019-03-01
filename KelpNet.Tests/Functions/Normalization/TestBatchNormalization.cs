@@ -20,8 +20,8 @@ namespace KelpNet.Tests
             Python.Initialize();
             Chainer.Initialize();
 
-            int batchCount = Mother.Dice.Next(2, 50);
-            int ioCount = Mother.Dice.Next(2, 50);
+            int batchCount = Mother.Dice.Next(1, 50);
+            int ioCount = Mother.Dice.Next(1, 50);
 
             Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, ioCount });
 

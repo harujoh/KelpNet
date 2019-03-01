@@ -13,11 +13,11 @@ namespace KelpNet.Tests
             Python.Initialize();
             Chainer.Initialize();
 
-            int batchCount = Mother.Dice.Next(2, 5);
-            int ch = Mother.Dice.Next(2, 5);
-            int widthA = Mother.Dice.Next(8, 16);
-            int widthB = Mother.Dice.Next(8, 16);
-            int height = Mother.Dice.Next(8, 16);
+            int batchCount = Mother.Dice.Next(1, 5);
+            int ch = Mother.Dice.Next(1, 5);
+            int widthA = Mother.Dice.Next(1, 16);
+            int widthB = Mother.Dice.Next(1, 16);
+            int height = Mother.Dice.Next(1, 16);
             int axis = 3;
 
             Real[,,,] input = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthA + widthB });

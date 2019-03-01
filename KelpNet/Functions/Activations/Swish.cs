@@ -7,20 +7,30 @@ namespace KelpNet
     {
         const string FUNCTION_NAME = "Swish";
 
-        private Real _beta;
+        public NdArray beta;
 
-        public Swish(double beta = 1.0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public Swish(int[] betaShape, double beta = 1.0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            _beta = beta;
+            this.beta = new NdArray(betaShape);
+            this.beta.Fill(beta);
+
+            this.Parameters = new[] { this.beta };
+
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         protected NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] result = new Real[x.Data.Length];
 
-            for (int i = 0; i < x.Data.Length; i++)
-            {                
-                result[i] = x.Data[i] * (Math.Tanh(x.Data[i] * _beta * 0.5) * 0.5 + 0.5);
+            for (int b = 0; b < x.BatchCount; b++)
+            {
+                for (int i = 0; i < x.Length; i++)
+                {
+                    int offsetedIndex = b * x.Length + i;
+                    result[offsetedIndex] = x.Data[offsetedIndex] * (Math.Tanh(x.Data[offsetedIndex] * beta.Data[i] * 0.5) * 0.5 + 0.5);
+                }
             }
 
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);
@@ -28,12 +38,17 @@ namespace KelpNet
 
         protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            for (int i = 0; i < y.Grad.Length; i++)
+            for (int b = 0; b < y.BatchCount; b++)
             {
-                Real sig = Math.Tanh(_beta * x.Data[i] * 0.5) * 0.5 + 0.5;
-                Real by = _beta * x.Data[i] * sig;
+                for (int i = 0; i < y.Length; i++)
+                {
+                    int offsetedIndex = b * x.Length + i;
+                    Real sig = Math.Tanh(beta.Data[i] * x.Data[offsetedIndex] * 0.5) * 0.5 + 0.5;
+                    Real by = beta.Data[i] * x.Data[offsetedIndex] * sig;
 
-                x.Grad[i] += y.Grad[i] * (by + sig * (1 - by));
+                    x.Grad[offsetedIndex] += y.Grad[offsetedIndex] * (by + sig * (1 - by));
+                    beta.Grad[i] += y.Grad[offsetedIndex] * y.Data[offsetedIndex] * (x.Data[offsetedIndex] - y.Data[offsetedIndex]);
+                }
             }
         }
     }

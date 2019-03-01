@@ -56,6 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Functions\Activation\TestSwish.cs" />
     <Compile Include="Functions\Arrays\TestConcat.cs" />
     <Compile Include="Functions\Arrays\TestSplitAxis.cs" />
     <Compile Include="Functions\Normalization\TestBatchNormalization.cs" />

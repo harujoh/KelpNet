@@ -33,12 +33,13 @@ namespace KelpNet.Tests
             Python.Initialize();
             Chainer.Initialize();
 
-            int inputCount = Mother.Dice.Next(2, 50);
-            int outputCount = Mother.Dice.Next(2, 50);
+            int inputCount = Mother.Dice.Next(1, 50);
+            int outputCount = Mother.Dice.Next(1, 50);
+            int batchCount = Mother.Dice.Next(1, 5);
 
-            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { 1, inputCount });
+            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
 
-            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { 1, outputCount });
+            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
             Real[,] w = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
 
             Real[] b = Initializer.GetRealArray(outputCount);
@@ -55,9 +56,9 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b,gpuEnable: gpuEnable);
+            KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b, gpuEnable: gpuEnable);
 
-            NdArray x = new NdArray(input);
+            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
 
             NdArray y = linear.Forward(x)[0];
             y.Grad = Real.ToRealArray(dummyGy);
