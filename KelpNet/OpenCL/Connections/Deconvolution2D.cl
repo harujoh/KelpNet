@@ -14,11 +14,11 @@
 	const int trimY,
 	const int kHeight,
 	const int kWidth,
-	const int OutputCount,
-	const int InputCount)
+	const int outputCount,
+	const int inputCount)
 {
-	int batchCounter = get_global_id(0) / OutputCount;
-	int och = get_global_id(0) % OutputCount;
+	int batchCounter = get_global_id(0) / outputCount;
+	int och = get_global_id(0) % outputCount;
 	int oy = get_global_id(1) + trimY;
 	int ox = get_global_id(2) + trimX;
 
@@ -30,10 +30,10 @@
 
 	Real result = 0;
 
-	for (int ich = 0; ich < InputCount; ich++)
+	for (int ich = 0; ich < inputCount; ich++)
 	{
 		int inputIndexOffset = batchCounter * inputLength + ich * inputShape1 * inputShape2;
-		int kernelIndexOffset = och * InputCount * kHeight * kWidth + ich * kHeight * kWidth;
+		int kernelIndexOffset = ich * outputCount * kHeight * kWidth + och * kHeight * kWidth;
 
 		for (int iy = iyStart; iy < iyLimit; iy++)
 		{
@@ -47,7 +47,7 @@
 		}
 	}
 
-	int outputIndex = batchCounter * OutputCount * outputWidth * outputHeight + och * outputWidth * outputHeight + (oy - trimY) * outputWidth + ox - trimX;
+	int outputIndex = batchCounter * outputCount * outputWidth * outputHeight + och * outputWidth * outputHeight + (oy - trimY) * outputWidth + ox - trimX;
 	result += gpub[och];	
 
 	gpuY[outputIndex] = /*ForwardActivate*/(result);
@@ -58,7 +58,7 @@ __kernel void Deconvolution2DgWBackward(
 	const __global __read_only	Real* gpuX,
 	__global __read_write Real* gpugW,
 	const int batchCounter,
-	const int inputCount,
+	const int outputCount,
 	const int gyLength,
 	const int gyShape1,
 	const int gyShape2,
@@ -72,8 +72,8 @@ __kernel void Deconvolution2DgWBackward(
 	const int kHeight,
 	const int kWidth)
 {
-	int och = get_global_id(0) / inputCount;
-	int ich = get_global_id(0) % inputCount;
+	int ich = get_global_id(0) / outputCount;
+	int och = get_global_id(0) % outputCount;
 	int ky = get_global_id(1);
 	int kx = get_global_id(2);
 
@@ -89,7 +89,7 @@ __kernel void Deconvolution2DgWBackward(
 	int ixStart = ixOffset < 0 ? 0 : ixOffset;
 	int ixLimit = gyShape2 < xShape2 * subSampleX + ixOffset ? gyShape2 : xShape2 * subSampleX + ixOffset;
 
-	int gwIndex = och * inputCount * kHeight * kWidth + ich * kHeight * kWidth + ky * kWidth + kx;
+	int gwIndex = ich * outputCount * kHeight * kWidth + och * kHeight * kWidth + ky * kWidth + kx;
 
 	Real localgW = gpugW[gwIndex];
 
@@ -150,7 +150,7 @@ __kernel void Deconvolution2DgXBackward(
 	for (int och = 0; och < outputCount; och++)
 	{
 		int gyIndexOffset = batchCounter * gyLength + och * gyShape1 * gyShape2;
-		int wIndexOffset = ich * kHeight * kWidth + och * inputCount * kHeight * kWidth;
+		int wIndexOffset = ich * outputCount * kHeight * kWidth + och * kHeight * kWidth;
 
 		for (int ky = kyStart; ky < kyLimit; ky++)
 		{

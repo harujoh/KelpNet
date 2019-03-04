@@ -301,11 +301,9 @@ namespace KelpNet
 
         protected override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            //Real[] gx = new Real[x.Data.Length];
             Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
-            //本来のロジック
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
             {
                 for (int och = 0; och < OutputCount; och++)
