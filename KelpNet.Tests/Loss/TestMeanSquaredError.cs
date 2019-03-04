@@ -8,7 +8,7 @@ namespace KelpNet.Tests
     public class TestMeanSquaredError
     {
         [TestMethod]
-        public void RandomTest()
+        public void MeanSquaredRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();

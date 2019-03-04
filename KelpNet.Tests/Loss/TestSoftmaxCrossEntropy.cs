@@ -9,7 +9,7 @@ namespace KelpNet.Tests
     public class TestSoftmaxCrossEntropy
     {
         [TestMethod]
-        public void RandomTest()
+        public void SoftmaxCrossEntropyRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
