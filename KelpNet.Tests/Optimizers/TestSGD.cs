@@ -8,7 +8,7 @@ namespace KelpNet.Tests
     public class TestSGD
     {
         [TestMethod]
-        public void RandomTest()
+        public void SGDRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
