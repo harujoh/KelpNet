@@ -57,6 +57,8 @@
     <Compile Include="Functions\Activation\Swish.cs" />
     <Compile Include="Functions\Array\Concat.cs" />
     <Compile Include="Functions\Array\SplitAxis.cs" />
+    <Compile Include="Functions\Connections\Convolution2D.cs" />
+    <Compile Include="Functions\Connections\Deconvolution2D.cs" />
     <Compile Include="Functions\Connections\Linear.cs" />
     <Compile Include="Functions\Loss\MeanSquaredError.cs" />
     <Compile Include="Functions\Loss\SoftmaxCrossEntropy.cs" />

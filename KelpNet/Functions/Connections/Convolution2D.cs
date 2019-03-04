@@ -320,6 +320,8 @@ namespace KelpNet
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
             {
+                int gyIndex = batchCounter * y.Length;
+
                 for (int och = 0; och < y.Shape[0]; och++)
                 {
                     //gWインデックス用
@@ -327,17 +329,13 @@ namespace KelpNet
 
                     for (int oy = 0; oy < y.Shape[1] * this._strideY; oy += this._strideY)
                     {
-                        //計算省略のためにジャンプ
-                        int kyStartIndex = this._padY - oy < 0 ? 0 : this._padY - oy;
-                        int kyLimit = this._kHeight < x.Shape[1] - oy + this._padY ? this._kHeight : x.Shape[1] - oy + this._padY;
+                        int kyStartIndex = oy - this._padY < 0 ? 0 : oy - this._padY;
+                        int kyLimit = this._kHeight + oy - this._padY < x.Shape[1] ? this._kHeight + oy - this._padY : x.Shape[1];
 
                         for (int ox = 0; ox < y.Shape[2] * this._strideX; ox += this._strideX)
                         {
-                            //計算省略のためにジャンプ
-                            int kxStartIndex = this._padX - ox < 0 ? 0 : this._padX - ox;
-                            int kxLimit = this._kWidth < x.Shape[2] - ox + this._padX ? this._kWidth : x.Shape[2] - ox + this._padX;
-
-                            int gyIndex = batchCounter * y.Length + och * y.Shape[1] * y.Shape[2] + oy * y.Shape[2] + ox;
+                            int kxStartIndex = ox - this._padX < 0 ? 0 : ox - this._padX;
+                            int kxLimit = this._kWidth + ox - this._padX < x.Shape[2] ? this._kWidth + ox - this._padX : x.Shape[2];
 
                             Real gyData = activatedgy[gyIndex];
 
@@ -347,17 +345,14 @@ namespace KelpNet
                                 int inChOffset = ich * this._kHeight * this._kWidth;
 
                                 //inputインデックス用
-                                int inputOffset = ich * x.Shape[1] * x.Shape[2] + batchCounter * x.Length;
+                                int inputOffset = batchCounter * x.Length + ich * x.Shape[1] * x.Shape[2];
 
                                 for (int ky = kyStartIndex; ky < kyLimit; ky++)
                                 {
                                     for (int kx = kxStartIndex; kx < kxLimit; kx++)
                                     {
-                                        //WとgWのshapeは等しい
-                                        int wIndex = outChOffset + inChOffset + ky * this._kWidth + kx;
-
-                                        //xとgxのshapeは等しい
-                                        int inputIndex = inputOffset + (ky + oy - this._padY) * x.Shape[2] + kx + ox - this._padX;
+                                        int wIndex = outChOffset + inChOffset + (ky - oy + this._padY) * this._kWidth + kx - ox + this._padX;
+                                        int inputIndex = inputOffset + ky * x.Shape[2] + kx;
 
                                         this.Weight.Grad[wIndex] += x.Data[inputIndex] * gyData;
 
@@ -365,6 +360,8 @@ namespace KelpNet
                                     }
                                 }
                             }
+
+                            gyIndex++;
                         }
                     }
                 }

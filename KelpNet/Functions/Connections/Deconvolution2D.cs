@@ -78,7 +78,7 @@ namespace KelpNet
 
         void Initialize(Array initialW = null, Array initialb = null)
         {
-            this.Weight = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
+            this.Weight = new NdArray(InputCount, OutputCount, this._kHeight, this._kWidth);
             this.Weight.Name = this.Name + " Weight";
 
             if (initialW == null)
@@ -137,7 +137,7 @@ namespace KelpNet
                             for (int ich = 0; ich < input.Shape[0]; ich++)
                             {
                                 int inputIndexOffset = batchCount * input.Length + ich * inputSizeOffset;
-                                int kernelIndexOffset = och * this.Weight.Shape[1] * kSizeOffset + ich * kSizeOffset;
+                                int kernelIndexOffset = ich * this.Weight.Shape[1] * kSizeOffset + och * kSizeOffset;
 
                                 for (int iy = iyStart; iy < iyLimit; iy++)
                                 {
@@ -293,7 +293,6 @@ namespace KelpNet
                     for (int olocation = 0; olocation < gyShape[1] * gyShape[2]; olocation++)
                     {
                         this.Bias.Grad[och] += gy[gyIndex];
-
                         gyIndex++;
                     }
                 }
@@ -311,7 +310,7 @@ namespace KelpNet
             {
                 for (int och = 0; och < OutputCount; och++)
                 {
-                    int outChOffset = och * this.Weight.Shape[1] * this.Weight.Shape[2] * this.Weight.Shape[3];
+                    int outChOffset = och * this.Weight.Shape[2] * this.Weight.Shape[3];
                     int inputOffset = och * y.Shape[1] * y.Shape[2];
 
                     for (int oy = this._trimY; oy < y.Shape[1] + this._trimY; oy++)
@@ -329,7 +328,7 @@ namespace KelpNet
 
                             for (int ich = 0; ich < InputCount; ich++)
                             {
-                                int inChOffset = outChOffset + ich * this.Weight.Shape[2] * this.Weight.Shape[3];
+                                int inChOffset = ich * this.Weight.Shape[1] * this.Weight.Shape[2] * this.Weight.Shape[3] + outChOffset;
                                 int pinputOffset = batchCount * x.Length + ich * x.Shape[1] * x.Shape[2];
 
                                 for (int iy = iyStart; iy < iyLimit; iy++)
@@ -366,7 +365,7 @@ namespace KelpNet
                     this.BackwardgWKernel.SetMemoryArgument(1, gpuX);
                     this.BackwardgWKernel.SetMemoryArgument(2, gpugW);
                     this.BackwardgWKernel.SetValueArgument(3, y.BatchCount);
-                    this.BackwardgWKernel.SetValueArgument(4, this.InputCount);
+                    this.BackwardgWKernel.SetValueArgument(4, this.OutputCount);
                     this.BackwardgWKernel.SetValueArgument(5, y.Length);
                     this.BackwardgWKernel.SetValueArgument(6, y.Shape[1]);
                     this.BackwardgWKernel.SetValueArgument(7, y.Shape[2]);
@@ -384,7 +383,7 @@ namespace KelpNet
                     (
                         this.BackwardgWKernel,
                         null,
-                        new long[] { OutputCount * InputCount, this._kHeight, this._kWidth },
+                        new long[] { this.InputCount * this.OutputCount, this._kHeight, this._kWidth },
                         null,
                         null
                     );

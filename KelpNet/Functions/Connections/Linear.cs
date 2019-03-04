@@ -170,8 +170,8 @@ namespace KelpNet
 
                     for (int j = 0; j < this.InputCount; j++)
                     {
-                        this.Weight.Grad[i * this.InputCount + j] += x.Data[j + batchCount * this.InputCount] * gyData;
-                        x.Grad[j + batchCount * this.InputCount] += this.Weight.Data[i * this.InputCount + j] * gyData;
+                        this.Weight.Grad[i * this.InputCount + j] += x.Data[batchCount * this.InputCount + j] * gyData;
+                        x.Grad[batchCount * this.InputCount + j] += this.Weight.Data[i * this.InputCount + j] * gyData;
                     }
                 }
             }
