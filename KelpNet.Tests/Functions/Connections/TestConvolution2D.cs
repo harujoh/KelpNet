@@ -120,7 +120,7 @@ namespace KelpNet.Tests
                 Assert.AreEqual(cXgrad[i], x.Grad[i], delta);
             }
 
-            delta = 0.001;
+            delta = 0.05;
             //W.grad
             for (int i = 0; i < convolution2D.Weight.Grad.Length; i++)
             {
