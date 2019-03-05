@@ -35,10 +35,10 @@ namespace KelpNet.Tests
             Chainer.Initialize();
 
             int batchCount = Mother.Dice.Next(1, 5);
-            int inChCount = Mother.Dice.Next(1, 10);
-            int outChCount = Mother.Dice.Next(1, 10);
-            int wideSize = Mother.Dice.Next(8, 64);
-            int heightSize = Mother.Dice.Next(8, 64);
+            int inChCount = Mother.Dice.Next(1, 5);
+            int outChCount = Mother.Dice.Next(1, 5);
+            int wideSize = Mother.Dice.Next(8, 32);
+            int heightSize = Mother.Dice.Next(8, 32);
 
             int kWidth = Mother.Dice.Next(1, 5);
             int kHeight = Mother.Dice.Next(1, 5);
