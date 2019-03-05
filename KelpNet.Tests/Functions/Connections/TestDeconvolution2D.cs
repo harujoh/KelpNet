@@ -14,20 +14,20 @@ namespace KelpNet.Tests
             RandomTest(false);
         }
 
-        //[TestMethod]
-        //public void Deconv2DGPURandomTest()
-        //{
-        //    Weaver.Initialize();
+        [TestMethod]
+        public void Deconv2DGPURandomTest()
+        {
+            Weaver.Initialize();
 
-        //    if (Weaver.Enable)
-        //    {
-        //        RandomTest(true);
-        //    }
-        //    else
-        //    {
-        //        Assert.Inconclusive();
-        //    }
-        //}
+            if (Weaver.Enable)
+            {
+                RandomTest(true);
+            }
+            else
+            {
+                Assert.Inconclusive();
+            }
+        }
 
         public void RandomTest(bool gpuEnable)
         {
@@ -101,7 +101,7 @@ namespace KelpNet.Tests
             Real[] cbgrad = (Real[])cDeconvolotion2D.b.Grad;
 
             //許容範囲を算出
-            double delta = 0.05;
+            double delta = 0.00001;
 
             Assert.AreEqual(cYdata.Length, y.Data.Length);
             Assert.AreEqual(cXgrad.Length, x.Grad.Length);
@@ -120,12 +120,14 @@ namespace KelpNet.Tests
                 Assert.AreEqual(cXgrad[i], x.Grad[i], delta);
             }
 
+            delta = 0.001;
             //W.grad
             for (int i = 0; i < deconvolution2D.Weight.Grad.Length; i++)
             {
                 Assert.AreEqual(cWgrad[i], deconvolution2D.Weight.Grad[i], delta);
             }
 
+            delta = 0.05;
             //b.grad
             for (int i = 0; i < deconvolution2D.Bias.Grad.Length; i++)
             {

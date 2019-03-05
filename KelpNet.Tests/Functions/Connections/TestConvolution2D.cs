@@ -101,7 +101,7 @@ namespace KelpNet.Tests
             Real[] cbgrad = (Real[])cConvolotion2D.b.Grad;
 
             //許容範囲を算出
-            double delta = 0.001;
+            double delta = 0.00001;
 
             Assert.AreEqual(cYdata.Length, y.Data.Length);
             Assert.AreEqual(cXgrad.Length, x.Grad.Length);
@@ -120,6 +120,7 @@ namespace KelpNet.Tests
                 Assert.AreEqual(cXgrad[i], x.Grad[i], delta);
             }
 
+            delta = 0.001;
             //W.grad
             for (int i = 0; i < convolution2D.Weight.Grad.Length; i++)
             {

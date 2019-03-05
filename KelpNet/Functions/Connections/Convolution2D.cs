@@ -127,7 +127,7 @@ namespace KelpNet
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
 
-            Real[] result = new Real[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
+            Real[] result = new Real[input.BatchCount * this.OutputCount * outputHeight * outputWidth];
 
             for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
             {
