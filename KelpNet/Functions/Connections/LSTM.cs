@@ -22,30 +22,30 @@ namespace KelpNet
         private List<Real[]> iParam;
         private List<Real[]> fParam;
         private List<Real[]> oParam;
-        private List<Real[]> cParam;
 
-        private NdArray hParam;
+        public List<Real[]> cParam;
+        public NdArray hParam;
 
-        NdArray gxPrev0;
-        NdArray gxPrev1;
-        NdArray gxPrev2;
-        NdArray gxPrev3;
-        Real[] gcPrev;
+        private NdArray gxPrev0;
+        private NdArray gxPrev1;
+        private NdArray gxPrev2;
+        private NdArray gxPrev3;
+        private Real[] gcPrev;
 
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public LSTM(int inSize, int outSize, Real[,] initialUpwardW = null, Real[] initialUpwardb = null, Real[,] initialLateralW = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        public LSTM(int inSize, int outSize, Real[,] upwardInit = null, Real[,] lateralInit = null, Real[] biasInit = null, Real[] forgetBiasInit = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             this.InputCount = inSize;
             this.OutputCount = outSize;
 
             List<NdArray> functionParameters = new List<NdArray>();
 
-            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward0", gpuEnable: gpuEnable);
-            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward1", gpuEnable: gpuEnable);
-            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward2", gpuEnable: gpuEnable);
-            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: initialUpwardW, initialb: initialUpwardb, name: "upward3", gpuEnable: gpuEnable);
+            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: biasInit, name: "upward0", gpuEnable: gpuEnable);
+            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: biasInit, name: "upward1", gpuEnable: gpuEnable);
+            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: forgetBiasInit, name: "upward2", gpuEnable: gpuEnable);
+            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: biasInit, name: "upward3", gpuEnable: gpuEnable);
 
             functionParameters.AddRange(this.upward0.Parameters);
             functionParameters.AddRange(this.upward1.Parameters);
@@ -53,10 +53,10 @@ namespace KelpNet
             functionParameters.AddRange(this.upward3.Parameters);
 
             //lateralはBiasは無し
-            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral0", gpuEnable: gpuEnable);
-            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral1", gpuEnable: gpuEnable);
-            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral2", gpuEnable: gpuEnable);
-            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: initialLateralW, name: "lateral3", gpuEnable: gpuEnable);
+            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral0", gpuEnable: gpuEnable);
+            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral1", gpuEnable: gpuEnable);
+            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral2", gpuEnable: gpuEnable);
+            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral3", gpuEnable: gpuEnable);
 
             functionParameters.AddRange(this.lateral0.Parameters);
             functionParameters.AddRange(this.lateral1.Parameters);
@@ -94,7 +94,7 @@ namespace KelpNet
                 Real[] laterals1 = this.lateral1.Forward(hParam)[0].Data;
                 Real[] laterals2 = this.lateral2.Forward(hParam)[0].Data;
                 Real[] laterals3 = this.lateral3.Forward(hParam)[0].Data;
-                hParam.UseCount -= 4; //回数を補正 RFI
+                hParam.UseCount -= 4; //回数を補正
 
                 for (int i = 0; i < outputDataSize; i++)
                 {
