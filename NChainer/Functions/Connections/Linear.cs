@@ -1,4 +1,5 @@
-﻿using NConstrictor;
+﻿using System.Runtime.CompilerServices;
+using NConstrictor;
 
 namespace NChainer
 {
@@ -23,6 +24,11 @@ namespace NChainer
         public static implicit operator PyObject(Linear<T> linear)
         {
             return linear._linear;
+        }
+
+        public static implicit operator Linear<T>(PyObject linear)
+        {
+            return Unsafe.As<PyObject, Linear<T>>(ref linear);
         }
     }
 }

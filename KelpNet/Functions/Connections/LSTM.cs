@@ -157,6 +157,10 @@ namespace KelpNet
                 this.gxPrev1 = new NdArray(new[] { OutputCount }, y.BatchCount);
                 this.gxPrev2 = new NdArray(new[] { OutputCount }, y.BatchCount);
                 this.gxPrev3 = new NdArray(new[] { OutputCount }, y.BatchCount);
+                this.gxPrev0.ClearGrad();
+                this.gxPrev1.ClearGrad();
+                this.gxPrev2.ClearGrad();
+                this.gxPrev3.ClearGrad();
                 this.gcPrev = new Real[x.BatchCount * this.OutputCount];
             }
             else

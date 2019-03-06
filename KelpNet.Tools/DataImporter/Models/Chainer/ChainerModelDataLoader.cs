@@ -78,7 +78,31 @@ namespace KelpNet.Tools
                 {
                     Array.Copy(Real.ToRealArray(modelData[func.Name + "/bias/b.npy"]), scale.Bias.Data, scale.Bias.Data.Length);
                 }
+            }
+            else if (func is LSTM)
+            {
+                LSTM lstm = (LSTM)func;
 
+                Real[] lateral = Real.ToRealArray(modelData[func.Name + "/lateral/W.npy"]);
+                Real[] upwardW = Real.ToRealArray(modelData[func.Name + "/upward/W.npy"]);
+                Real[] upwardb = Real.ToRealArray(modelData[func.Name + "/upward/b.npy"]);
+
+                int wLen = lstm.lateral0.Weight.Data.Length;
+                Array.Copy(lateral, wLen*0, lstm.lateral0.Weight.Data, 0, wLen);
+                Array.Copy(lateral, wLen*1, lstm.lateral1.Weight.Data, 0, wLen);
+                Array.Copy(lateral, wLen*2, lstm.lateral2.Weight.Data, 0, wLen);
+                Array.Copy(lateral, wLen*3, lstm.lateral3.Weight.Data, 0, wLen);
+
+                Array.Copy(upwardW, wLen*0, lstm.upward0.Weight.Data, 0, wLen);
+                Array.Copy(upwardW, wLen*1, lstm.upward1.Weight.Data, 0, wLen);
+                Array.Copy(upwardW, wLen*2, lstm.upward2.Weight.Data, 0, wLen);
+                Array.Copy(upwardW, wLen*3, lstm.upward3.Weight.Data, 0, wLen);
+
+                int bLen = lstm.upward0.Bias.Data.Length;
+                Array.Copy(upwardb, bLen*0, lstm.upward0.Bias.Data, 0, lstm.upward0.Bias.Data.Length);
+                Array.Copy(upwardb, bLen*1, lstm.upward1.Bias.Data, 0, lstm.upward1.Bias.Data.Length);
+                Array.Copy(upwardb, bLen*2, lstm.upward2.Bias.Data, 0, lstm.upward2.Bias.Data.Length);
+                Array.Copy(upwardb, bLen*3, lstm.upward3.Bias.Data, 0, lstm.upward3.Bias.Data.Length);
             }
         }
     }
