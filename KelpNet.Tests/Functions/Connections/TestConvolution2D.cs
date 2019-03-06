@@ -15,20 +15,20 @@ namespace KelpNet.Tests
             RandomTest(false);
         }
 
-        //[TestMethod]
-        //public void Conv2DGPURandomTest()
-        //{
-        //    Weaver.Initialize();
+        [TestMethod]
+        public void Conv2DGPURandomTest()
+        {
+            Weaver.Initialize();
 
-        //    if (Weaver.Enable)
-        //    {
-        //        RandomTest(true);
-        //    }
-        //    else
-        //    {
-        //        Assert.Inconclusive();
-        //    }
-        //}
+            if (Weaver.Enable)
+            {
+                RandomTest(true);
+            }
+            else
+            {
+                Assert.Inconclusive();
+            }
+        }
 
         public void RandomTest(bool gpuEnable)
         {

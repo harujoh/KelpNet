@@ -365,9 +365,9 @@ namespace KelpNet
                     this.BackwardgWKernel.SetMemoryArgument(2, gpugW);
                     this.BackwardgWKernel.SetValueArgument(3, y.BatchCount);
                     this.BackwardgWKernel.SetValueArgument(4, this.InputCount);
-                    this.BackwardgWKernel.SetValueArgument(5, y.Shape[0]);
-                    this.BackwardgWKernel.SetValueArgument(6, y.Shape[1]);
-                    this.BackwardgWKernel.SetValueArgument(7, y.Shape[2]);
+                    this.BackwardgWKernel.SetValueArgument(5, y.Shape[1]);
+                    this.BackwardgWKernel.SetValueArgument(6, y.Shape[2]);
+                    this.BackwardgWKernel.SetValueArgument(7, y.Length);
                     this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
                     this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
                     this.BackwardgWKernel.SetValueArgument(10, x.Length);
@@ -397,11 +397,11 @@ namespace KelpNet
                     this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
                     this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
                     this.BackwardgXKernel.SetMemoryArgument(2, gpugX);
-                    this.BackwardgXKernel.SetValueArgument(3, this.OutputCount);
-                    this.BackwardgXKernel.SetValueArgument(4, this.InputCount);
-                    this.BackwardgXKernel.SetValueArgument(5, y.Shape[0]);
-                    this.BackwardgXKernel.SetValueArgument(6, y.Shape[1]);
-                    this.BackwardgXKernel.SetValueArgument(7, y.Shape[2]);
+                    this.BackwardgXKernel.SetValueArgument(3, this.InputCount);
+                    this.BackwardgXKernel.SetValueArgument(4, y.Shape[0]);
+                    this.BackwardgXKernel.SetValueArgument(5, y.Shape[1]);
+                    this.BackwardgXKernel.SetValueArgument(6, y.Shape[2]);
+                    this.BackwardgXKernel.SetValueArgument(7, y.Length);
                     this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
                     this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
                     this.BackwardgXKernel.SetValueArgument(10, x.Length);
@@ -416,7 +416,7 @@ namespace KelpNet
                     (
                         this.BackwardgXKernel,
                         null,
-                        new long[] { y.BatchCount * x.Shape[0], x.Shape[1], x.Shape[2] },
+                        new long[] { x.BatchCount * x.Shape[0], x.Shape[1], x.Shape[2] },
                         null,
                         null
                     );
