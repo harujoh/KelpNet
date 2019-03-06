@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace KelpNet
 {
@@ -17,8 +16,8 @@ namespace KelpNet
                 Real localLoss = 0;
 
                 int chLen = input[k].Shape[0];
-                int dataLen = input[k].Shape[1];
-                for (int i = 2; i < input[k].Shape.Length; i++)
+                int dataLen = 1;
+                for (int i = 1; i < input[k].Shape.Length; i++)
                 {
                     dataLen *= input[k].Shape[i];
                 }
