@@ -122,53 +122,53 @@ namespace KelpNet
             }
         }
 
-        protected override NdArray NeedPreviousForwardCpu(NdArray input)
+        protected override NdArray NeedPreviousForwardCpu(NdArray x)
         {
-            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
-            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
+            int outputHeight = (int)Math.Floor((x.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
+            int outputWidth = (int)Math.Floor((x.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
 
-            Real[] result = new Real[input.BatchCount * this.OutputCount * outputHeight * outputWidth];
+            Real[] y = new Real[x.BatchCount * this.OutputCount * outputHeight * outputWidth];
 
-            for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
+            for (int batchCounter = 0; batchCounter < x.BatchCount; batchCounter++)
             {
-                int resultIndex = batchCounter * this.OutputCount * outputHeight * outputWidth;
+                int yBatchOffset = batchCounter * this.OutputCount * outputHeight * outputWidth;
+                int xBatchOffset = batchCounter * x.Length;
 
                 for (int och = 0; och < this.OutputCount; och++)
                 {
-                    //Wインデックス用
-                    int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+                    int kOchOffset = och * this.InputCount * this._kHeight * this._kWidth;
+
+                    int yChOffset = yBatchOffset + och * outputHeight * outputWidth;
 
                     for (int oy = 0; oy < outputHeight * this._strideY; oy += this._strideY)
                     {
-                        int kyStartIndex = oy - this._padY < 0 ? 0 : oy - this._padY;
-                        int kyLimit = this._kHeight + oy - this._padY < input.Shape[1] ? this._kHeight + oy - this._padY : input.Shape[1];
+                        int iyStart = oy - this._padY < 0 ? 0 : oy - this._padY;
+                        int iyLimit = this._kHeight + oy - this._padY < x.Shape[1] ? this._kHeight + oy - this._padY : x.Shape[1];
 
                         for (int ox = 0; ox < outputWidth * this._strideX; ox += this._strideX)
                         {
-                            int kxStartIndex = ox - this._padX < 0 ? 0 : ox - this._padX;
-                            int kxLimit = this._kWidth + ox - this._padX < input.Shape[2] ? this._kWidth + ox - this._padX : input.Shape[2];
+                            int ixStart = ox - this._padX < 0 ? 0 : ox - this._padX;
+                            int ixLimit = this._kWidth + ox - this._padX < x.Shape[2] ? this._kWidth + ox - this._padX : x.Shape[2];
+
+                            int yIndex = yChOffset + oy / this._strideY * outputWidth + ox / this._strideX;
 
                             for (int ich = 0; ich < this.InputCount; ich++)
                             {
-                                //Wインデックス用
-                                int inChOffset = ich * this._kHeight * this._kWidth;
+                                int kIchOffset = kOchOffset + ich * this._kHeight * this._kWidth;
 
-                                //inputインデックス用
-                                int inputOffset = ich * input.Shape[1] * input.Shape[2];
+                                int xChOffset = xBatchOffset + ich * x.Shape[1] * x.Shape[2];
 
-                                for (int ky = kyStartIndex; ky < kyLimit; ky++)
+                                for (int iy = iyStart; iy < iyLimit; iy++)
                                 {
-                                    for (int kx = kxStartIndex; kx < kxLimit; kx++)
+                                    for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
-                                        int wIndex = outChOffset + inChOffset + (ky - oy + this._padY) * this._kWidth + kx - ox + this._padX;
-                                        int inputIndex = inputOffset + ky * input.Shape[2] + kx + batchCounter * input.Length;
+                                        int wIndex = kIchOffset + (iy - oy + this._padY) * this._kWidth + ix - ox + this._padX;
+                                        int xIndex = xChOffset + iy * x.Shape[2] + ix;
 
-                                        result[resultIndex] += input.Data[inputIndex] * this.Weight.Data[wIndex];
+                                        y[yIndex] += x.Data[xIndex] * this.Weight.Data[wIndex];
                                     }
                                 }
                             }
-
-                            resultIndex++;
                         }
                     }
                 }
@@ -176,7 +176,7 @@ namespace KelpNet
 
             if (this.Activator != null && !NoBias)
             {
-                for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
+                for (int batchCounter = 0; batchCounter < x.BatchCount; batchCounter++)
                 {
                     int resultIndex = batchCounter * this.OutputCount * outputHeight * outputWidth;
 
@@ -184,8 +184,8 @@ namespace KelpNet
                     {
                         for (int location = 0; location < outputHeight * outputWidth; location++)
                         {
-                            result[resultIndex] += this.Bias.Data[och];
-                            result[resultIndex] = this.Activator.ForwardActivate(result[resultIndex]);
+                            y[resultIndex] += this.Bias.Data[och];
+                            y[resultIndex] = this.Activator.ForwardActivate(y[resultIndex]);
 
                             resultIndex++;
                         }
@@ -194,7 +194,7 @@ namespace KelpNet
             }
             else if (!NoBias)
             {
-                for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
+                for (int batchCounter = 0; batchCounter < x.BatchCount; batchCounter++)
                 {
                     int resultIndex = batchCounter * this.OutputCount * outputHeight * outputWidth;
 
@@ -202,7 +202,7 @@ namespace KelpNet
                     {
                         for (int location = 0; location < outputHeight * outputWidth; location++)
                         {
-                            result[resultIndex] += this.Bias.Data[och];
+                            y[resultIndex] += this.Bias.Data[och];
                             resultIndex++;
                         }
                     }
@@ -210,22 +210,13 @@ namespace KelpNet
             }
             else if (this.Activator != null)
             {
-                for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
+                for (int i = 0; i < y.Length; i++)
                 {
-                    int resultIndex = batchCounter * this.OutputCount * outputHeight * outputWidth;
-
-                    for (int och = 0; och < this.OutputCount; och++)
-                    {
-                        for (int location = 0; location < outputHeight * outputWidth; location++)
-                        {
-                            result[resultIndex] = this.Activator.ForwardActivate(result[resultIndex]);
-                            resultIndex++;
-                        }
-                    }
+                    y[i] = this.Activator.ForwardActivate(y[i]);
                 }
             }
 
-            return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
+            return NdArray.Convert(y, new[] { this.OutputCount, outputHeight, outputWidth }, x.BatchCount, this);
         }
 
         protected override NdArray NeedPreviousForwardGpu(NdArray input)
@@ -276,20 +267,11 @@ namespace KelpNet
 
         Real[] GetActivatedgy(NdArray y)
         {
-            int gyIndex = 0;
-
             Real[] activatedgy = new Real[y.Grad.Length];
 
-            for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
+            for (int i = 0; i < activatedgy.Length; i++)
             {
-                for (int och = 0; och < y.Shape[0]; och++)
-                {
-                    for (int olocation = 0; olocation < y.Shape[1] * y.Shape[2]; olocation++)
-                    {
-                        activatedgy[gyIndex] = this.Activator.BackwardActivate(y.Grad[gyIndex], y.Data[gyIndex]);
-                        gyIndex++;
-                    }
-                }
+                activatedgy[i] = this.Activator.BackwardActivate(y.Grad[i], y.Data[i]);
             }
 
             return activatedgy;
@@ -320,48 +302,46 @@ namespace KelpNet
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
             {
-                int gyIndex = batchCounter * y.Length;
+                int yBatchOffset = batchCounter * y.Length;
+                int xBatchOffset = batchCounter * x.Length;
 
                 for (int och = 0; och < y.Shape[0]; och++)
                 {
-                    //gWインデックス用
-                    int outChOffset = och * this.InputCount * this._kHeight * this._kWidth;
+                    int wOchOffset = och * this.InputCount * this._kHeight * this._kWidth;
+
+                    int yChOffset = och * y.Shape[1] * y.Shape[2];
 
                     for (int oy = 0; oy < y.Shape[1] * this._strideY; oy += this._strideY)
                     {
-                        int kyStartIndex = oy - this._padY < 0 ? 0 : oy - this._padY;
-                        int kyLimit = this._kHeight + oy - this._padY < x.Shape[1] ? this._kHeight + oy - this._padY : x.Shape[1];
+                        int iyStart = oy - this._padY < 0 ? 0 : oy - this._padY;
+                        int iyLimit = this._kHeight + oy - this._padY < x.Shape[1] ? this._kHeight + oy - this._padY : x.Shape[1];
 
                         for (int ox = 0; ox < y.Shape[2] * this._strideX; ox += this._strideX)
                         {
-                            int kxStartIndex = ox - this._padX < 0 ? 0 : ox - this._padX;
-                            int kxLimit = this._kWidth + ox - this._padX < x.Shape[2] ? this._kWidth + ox - this._padX : x.Shape[2];
+                            int ixStart = ox - this._padX < 0 ? 0 : ox - this._padX;
+                            int ixLimit = this._kWidth + ox - this._padX < x.Shape[2] ? this._kWidth + ox - this._padX : x.Shape[2];
 
-                            Real gyData = activatedgy[gyIndex];
+                            int gyIndex = yBatchOffset + yChOffset + oy / this._strideY * y.Shape[2] + ox / this._strideX;
 
                             for (int ich = 0; ich < x.Shape[0]; ich++)
                             {
-                                //gWインデックス用
-                                int inChOffset = ich * this._kHeight * this._kWidth;
+                                int wIchOffset = wOchOffset + ich * this._kHeight * this._kWidth;
 
-                                //inputインデックス用
-                                int inputOffset = batchCounter * x.Length + ich * x.Shape[1] * x.Shape[2];
+                                int xChOffset = xBatchOffset + ich * x.Shape[1] * x.Shape[2];
 
-                                for (int ky = kyStartIndex; ky < kyLimit; ky++)
+                                for (int iy = iyStart; iy < iyLimit; iy++)
                                 {
-                                    for (int kx = kxStartIndex; kx < kxLimit; kx++)
+                                    for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
-                                        int wIndex = outChOffset + inChOffset + (ky - oy + this._padY) * this._kWidth + kx - ox + this._padX;
-                                        int inputIndex = inputOffset + ky * x.Shape[2] + kx;
+                                        int wIndex = wIchOffset + (iy - oy + this._padY) * this._kWidth + ix - ox + this._padX;
+                                        int xIndex = xChOffset + iy * x.Shape[2] + ix;
 
-                                        this.Weight.Grad[wIndex] += x.Data[inputIndex] * gyData;
+                                        this.Weight.Grad[wIndex] += x.Data[xIndex] * activatedgy[gyIndex];
 
-                                        x.Grad[inputIndex] += this.Weight.Data[wIndex] * gyData;
+                                        x.Grad[xIndex] += this.Weight.Data[wIndex] * activatedgy[gyIndex];
                                     }
                                 }
                             }
-
-                            gyIndex++;
                         }
                     }
                 }
