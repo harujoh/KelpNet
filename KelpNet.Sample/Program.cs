@@ -16,31 +16,31 @@ namespace KelpNet.Sample
             Console.WriteLine("Running on " + Weaver.InfoString);
 
             //MLPによるXORの学習
-            //Sample1.Run();
+            //Sample01.Run();
 
             //MLPによるXORの学習【回帰版】
-            //Sample2.Run();
+            //Sample02.Run();
 
             //MLPによるSin関数の学習
-            //Sample3.Run();
+            //Sample03.Run();
 
             //MLPによるMNIST（手書き文字）の学習
-            //Sample4.Run();
+            //Sample04.Run();
 
             //エクセルCNNの再現
-            //Sample5.Run();
+            //Sample05.Run();
 
             //5層CNNによるMNISTの学習
-            //Sample6.Run();
+            //Sample06.Run();
 
             //BatchNormを使った15層MLPによるMNISTの学習
-            //Sample7.Run();
+            //Sample07.Run();
 
             //LSTMによるSin関数の学習
-            //Sample8.Run();
+            //Sample08.Run();
 
             //SimpleなRNNによるRNNLM
-            //Sample9.Run();
+            //Sample09.Run();
 
             //LSTMによるRNNLM
             //Sample10.Run();
