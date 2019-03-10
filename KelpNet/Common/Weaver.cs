@@ -46,7 +46,7 @@ typedef REAL Real;
         public static bool Enable;
         public static string DeviceType;
         public static string DeviceName;
-        public static string InfoString;
+        public static string InfoString = ".Net Framework";
 
         public static string GetKernelSource(byte[] binary)
         {

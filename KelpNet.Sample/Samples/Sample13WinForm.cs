@@ -27,7 +27,7 @@ namespace KelpNet.Sample
 
             this.model = new Deconvolution2D(1, 1, 15, 1, 7, gpuEnable: true);
 
-            this.optimizer = new SGD(learningRate: 0.01); //大きいと発散する
+            this.optimizer = new SGD(learningRate: 0.01);
             this.model.SetOptimizer(this.optimizer);
         }
 

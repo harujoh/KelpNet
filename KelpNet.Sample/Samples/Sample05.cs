@@ -71,8 +71,7 @@ namespace KelpNet.Sample
                 new Linear(2, 2, initialW: initial_W4, initialb: initial_b4, name: "l5 Linear")
             );
 
-            //optimizerの宣言を省略するとデフォルトのSGD(0.1)が使用される
-            nn.SetOptimizer(new SGD());
+            nn.SetOptimizer(new SGD(0.1));
 
             //訓練を実施
             Trainer.Train(nn, x, t, new MeanSquaredError(), false);

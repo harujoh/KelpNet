@@ -17,7 +17,7 @@ namespace KelpNet.Sample
 
             Deconvolution2D model = new Deconvolution2D(1, 1, 15, 1, 7, gpuEnable: true);
 
-            SGD optimizer = new SGD(learningRate: 0.00005); //大きいと発散する
+            SGD optimizer = new SGD(learningRate: 0.01);
             model.SetOptimizer(optimizer);
             MeanSquaredError meanSquaredError = new MeanSquaredError();
 

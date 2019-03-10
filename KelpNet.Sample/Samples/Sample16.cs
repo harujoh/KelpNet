@@ -49,7 +49,7 @@ namespace KelpNet.Sample
             ChainerModelDataLoader.ModelLoad(MODEL_FILE_PATH, nn);
 
             //あとは通常通り使用する
-            nn.SetOptimizer(new SGD());
+            nn.SetOptimizer(new SGD(0.1));
 
             //入力データ
             NdArray x = new NdArray(new Real[,,]{{

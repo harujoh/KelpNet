@@ -53,7 +53,7 @@ namespace KelpNet.Sample
 
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
             GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);
-            SGD sgd = new SGD(learningRate: 1);
+            SGD sgd = new SGD(learningRate: 0.1);
             model.SetOptimizer(gradientClipping, sgd);
 
             Real wholeLen = trainData.Length;

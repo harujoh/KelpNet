@@ -35,7 +35,7 @@ namespace KelpNet.Sample
             );
 
             //optimizerの宣言
-            nn.SetOptimizer(new SGD());
+            nn.SetOptimizer(new SGD(0.1));
 
             //訓練ループ
             for (int i = 0; i < EPOCH; i++)
