@@ -9,13 +9,17 @@ namespace KelpNet
         public Real Beta1;
         public Real Beta2;
         public Real Epsilon;
+        public Real Eta;
+        public Real WeightDecayRate;
 
-        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8)
+        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0, double weightDecayRate = 0)
         {
             this.Alpha = alpha;
             this.Beta1 = beta1;
             this.Beta2 = beta2;
             this.Epsilon = epsilon;
+            this.Eta = eta;
+            this.WeightDecayRate = weightDecayRate;
         }
 
         internal override void AddFunctionParameters(NdArray[] functionParameters)
@@ -66,7 +70,7 @@ namespace KelpNet
                 this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Data[i] -= learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
+                this.FunctionParameter.Data[i] -= this._optimizer.Eta * (learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon)) + this._optimizer.WeightDecayRate * this.FunctionParameter.Data[i];
             }
         }
     }
