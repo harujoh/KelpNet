@@ -68,6 +68,7 @@ typedef REAL Real;
                 if (ComputePlatform.Platforms[i].Devices.Count > 0)
                 {
                     Initialize(i, deviceIndex);
+                    return;
                 }
             }
         }
@@ -82,6 +83,7 @@ typedef REAL Real;
                 if (checklist.Length > 0)
                 {
                     Initialize(i, deviceIndex);
+                    return;
                 }
             }
         }
