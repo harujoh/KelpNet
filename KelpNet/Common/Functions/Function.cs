@@ -17,6 +17,7 @@ namespace KelpNet
 
         [NonSerialized]
         public List<NdArray[]> PrevInputs = new List<NdArray[]>();
+        public List<NdArray[]> UsedPrevInputs = new List<NdArray[]>();
 
         public abstract NdArray[] Forward(params NdArray[] xs);
         public abstract NdArray[] Predict(params NdArray[] xs);

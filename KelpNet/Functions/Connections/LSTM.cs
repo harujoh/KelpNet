@@ -8,60 +8,69 @@ namespace KelpNet
     {
         const string FUNCTION_NAME = "LSTM";
 
-        public Linear upward0;
-        public Linear upward1;
-        public Linear upward2;
-        public Linear upward3;
+        public Linear upward;
 
-        public Linear lateral0;
-        public Linear lateral1;
-        public Linear lateral2;
-        public Linear lateral3;
+        public Linear lateral;
 
         private List<Real[]> aParam;
         private List<Real[]> iParam;
         private List<Real[]> fParam;
         private List<Real[]> oParam;
+        public List<Real[]> cNextParam;
+        private List<Real[]> cPrevParam;
+        private List<NdArray> hPrevParams;
 
-        public List<Real[]> cParam;
+        private List<Real[]> aUsedParam;
+        private List<Real[]> iUsedParam;
+        private List<Real[]> fUsedParam;
+        private List<Real[]> oUsedParam;
+        public List<Real[]> cUsedNextParam;
+        private List<Real[]> cUsedPrevParam;
+        private List<NdArray> hUsedPrevParams;
+
+        private List<Real[]> gxPrevGrads;
+
         public NdArray hParam;
-
-        private NdArray gxPrev0;
-        private NdArray gxPrev1;
-        private NdArray gxPrev2;
-        private NdArray gxPrev3;
-        private Real[] gcPrev;
+        private Real[] cPrev;
 
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public LSTM(int inSize, int outSize, Real[,] upwardInit = null, Real[,] lateralInit = null, Real[] biasInit = null, Real[] forgetBiasInit = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        public LSTM(int inSize, int outSize, Array lateralInit = null, Array upwardInit = null, Array biasInit = null, Real[] forgetBiasInit = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             this.InputCount = inSize;
             this.OutputCount = outSize;
 
             List<NdArray> functionParameters = new List<NdArray>();
 
-            this.upward0 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: biasInit, name: "upward0", gpuEnable: gpuEnable);
-            this.upward1 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: biasInit, name: "upward1", gpuEnable: gpuEnable);
-            this.upward2 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: forgetBiasInit, name: "upward2", gpuEnable: gpuEnable);
-            this.upward3 = new Linear(inSize, outSize, noBias: false, initialW: upwardInit, initialb: biasInit, name: "upward3", gpuEnable: gpuEnable);
+            Real[] lateralW = new Real[lateralInit.Length * 4];
+            Real[] upwardW = new Real[upwardInit.Length * 4];
 
-            functionParameters.AddRange(this.upward0.Parameters);
-            functionParameters.AddRange(this.upward1.Parameters);
-            functionParameters.AddRange(this.upward2.Parameters);
-            functionParameters.AddRange(this.upward3.Parameters);
+            Real[] tmpLateralInit = Real.ToRealArray(lateralInit);
+            Real[] tmpUpwardInit = Real.ToRealArray(upwardInit);
+
+            for (int i = 0; i < 4; i++)
+            {
+                Array.Copy(tmpLateralInit, 0, lateralW, i * tmpLateralInit.Length, tmpLateralInit.Length);
+                Array.Copy(tmpUpwardInit, 0, upwardW, i * tmpUpwardInit.Length, tmpUpwardInit.Length);
+            }
+
+            Real[] upwardb = new Real[biasInit.Length * 4];
+            Real[] tmpBiasInit = Real.ToRealArray(biasInit);
+            Real[] tmpforgetBiasInit = Real.ToRealArray(forgetBiasInit);
+
+            //tmpforgetBiasInitがあるためループ展開
+            Array.Copy(tmpBiasInit, 0, upwardb, 0 * tmpBiasInit.Length, tmpBiasInit.Length);
+            Array.Copy(tmpBiasInit, 0, upwardb, 1 * tmpBiasInit.Length, tmpBiasInit.Length);
+            Array.Copy(tmpforgetBiasInit, 0, upwardb, 2 * tmpBiasInit.Length, tmpforgetBiasInit.Length);
+            Array.Copy(tmpBiasInit, 0, upwardb, 3 * tmpBiasInit.Length, tmpBiasInit.Length);
+
+            this.upward = new Linear(inSize, outSize * 4, noBias: false, initialW: upwardW, initialb: upwardb, name: "upward", gpuEnable: gpuEnable);
+            functionParameters.AddRange(this.upward.Parameters);
 
             //lateralはBiasは無し
-            this.lateral0 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral0", gpuEnable: gpuEnable);
-            this.lateral1 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral1", gpuEnable: gpuEnable);
-            this.lateral2 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral2", gpuEnable: gpuEnable);
-            this.lateral3 = new Linear(outSize, outSize, noBias: true, initialW: lateralInit, name: "lateral3", gpuEnable: gpuEnable);
-
-            functionParameters.AddRange(this.lateral0.Parameters);
-            functionParameters.AddRange(this.lateral1.Parameters);
-            functionParameters.AddRange(this.lateral2.Parameters);
-            functionParameters.AddRange(this.lateral3.Parameters);
+            this.lateral = new Linear(outSize, outSize * 4, noBias: true, initialW: lateralW, name: "lateral", gpuEnable: gpuEnable);
+            functionParameters.AddRange(this.lateral.Parameters);
 
             this.Parameters = functionParameters.ToArray();
 
@@ -71,11 +80,7 @@ namespace KelpNet
 
         public NdArray ForwardCpu(NdArray x)
         {
-            Real[][] upwards = new Real[4][];
-            upwards[0] = this.upward0.Forward(x)[0].Data;
-            upwards[1] = this.upward1.Forward(x)[0].Data;
-            upwards[2] = this.upward2.Forward(x)[0].Data;
-            upwards[3] = this.upward3.Forward(x)[0].Data;
+            NdArray lstmIn = this.upward.Forward(x)[0]; //a
 
             int outputDataSize = x.BatchCount * this.OutputCount;
 
@@ -86,63 +91,64 @@ namespace KelpNet
                 this.iParam = new List<Real[]>();
                 this.fParam = new List<Real[]>();
                 this.oParam = new List<Real[]>();
-                this.cParam = new List<Real[]>();
+                this.cNextParam = new List<Real[]>();
+                this.cPrevParam = new List<Real[]>();
+                this.hPrevParams = new List<NdArray>();
+
+                this.aUsedParam = new List<Real[]>();
+                this.iUsedParam = new List<Real[]>();
+                this.fUsedParam = new List<Real[]>();
+                this.oUsedParam = new List<Real[]>();
+                this.cUsedNextParam = new List<Real[]>();
+                this.cUsedPrevParam = new List<Real[]>();
+                this.hUsedPrevParams = new List<NdArray>();
+
+                gxPrevGrads = new List<Real[]>();
+
+                cPrev = new Real[outputDataSize];
             }
             else
             {
-                Real[] laterals0 = this.lateral0.Forward(hParam)[0].Data;
-                Real[] laterals1 = this.lateral1.Forward(hParam)[0].Data;
-                Real[] laterals2 = this.lateral2.Forward(hParam)[0].Data;
-                Real[] laterals3 = this.lateral3.Forward(hParam)[0].Data;
-                hParam.UseCount -= 4; //回数を補正
-
-                for (int i = 0; i < outputDataSize; i++)
-                {
-                    upwards[0][i] += laterals0[i];
-                    upwards[1][i] += laterals1[i];
-                    upwards[2][i] += laterals2[i];
-                    upwards[3][i] += laterals3[i];
-                }
-            }
-
-            if (this.cParam.Count == 0)
-            {
-                this.cParam.Add(new Real[outputDataSize]);
+                NdArray hPrevParam = this.hParam.Clone();
+                hPrevParam.ClearGrad();
+                lstmIn += this.lateral.Forward(hPrevParam)[0];
+                hPrevParams.Add(hPrevParam);
             }
 
             Real[] la = new Real[outputDataSize];
             Real[] li = new Real[outputDataSize];
             Real[] lf = new Real[outputDataSize];
             Real[] lo = new Real[outputDataSize];
-            Real[] cPrev = this.cParam[this.cParam.Count - 1];
-            Real[] cResult = new Real[cPrev.Length];
+            Real[] cNext = new Real[outputDataSize];
             Real[] lhParam = new Real[outputDataSize];
 
+            int index = 0;
             for (int b = 0; b < x.BatchCount; b++)
             {
-                //再配置
-                for (int j = 0; j < this.OutputCount; j++)
+                for (int i = 0; i < this.OutputCount; i++)
                 {
-                    int index = j * 4;
-                    int batchIndex = b * OutputCount + j;
+                    int outIndex = b * this.OutputCount + i;
 
-                    la[batchIndex] = Math.Tanh(upwards[index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
-                    li[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
-                    lf[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
-                    lo[batchIndex] = Sigmoid(upwards[++index / this.OutputCount][index % this.OutputCount + b * OutputCount]);
+                    la[outIndex] = Math.Tanh(lstmIn.Data[index++]);
+                    li[outIndex] = Sigmoid(lstmIn.Data[index++]);
+                    lf[outIndex] = Sigmoid(lstmIn.Data[index++]);
+                    lo[outIndex] = Sigmoid(lstmIn.Data[index++]);
 
-                    cResult[batchIndex] = la[batchIndex] * li[batchIndex] + lf[batchIndex] * cPrev[batchIndex];
+                    cNext[outIndex] = la[outIndex] * li[outIndex] + lf[outIndex] * cPrev[outIndex];
 
-                    lhParam[batchIndex] = lo[batchIndex] * Math.Tanh(cResult[batchIndex]);
+                    lhParam[outIndex] = lo[outIndex] * Math.Tanh(cNext[outIndex]);
                 }
             }
 
-            //Backward用
-            this.cParam.Add(cResult);
+            this.cPrevParam.Add(cPrev);
+            this.cNextParam.Add(cNext);
             this.aParam.Add(la);
             this.iParam.Add(li);
             this.fParam.Add(lf);
             this.oParam.Add(lo);
+
+            //Backwardで消えないように別で保管
+            cPrev = cNext;
 
             this.hParam = new NdArray(lhParam, new[] { OutputCount }, x.BatchCount, this);
             return this.hParam;
@@ -150,93 +156,105 @@ namespace KelpNet
 
         public void BackwardCpu(NdArray y, NdArray x)
         {
-            if (gcPrev == null)
-            {
-                //値がなければ初期化
-                this.gxPrev0 = new NdArray(new[] { OutputCount }, y.BatchCount);
-                this.gxPrev1 = new NdArray(new[] { OutputCount }, y.BatchCount);
-                this.gxPrev2 = new NdArray(new[] { OutputCount }, y.BatchCount);
-                this.gxPrev3 = new NdArray(new[] { OutputCount }, y.BatchCount);
-                this.gxPrev0.ClearGrad();
-                this.gxPrev1.ClearGrad();
-                this.gxPrev2.ClearGrad();
-                this.gxPrev3.ClearGrad();
-                this.gcPrev = new Real[x.BatchCount * this.OutputCount];
-            }
-            else
-            {
-                this.lateral0.Backward(this.gxPrev0);
-                this.lateral1.Backward(this.gxPrev1);
-                this.lateral2.Backward(this.gxPrev2);
-                this.lateral3.Backward(this.gxPrev3);
-            }
+            Real[] gxPrevGrad = new Real[y.BatchCount * OutputCount * 4];
 
-            Real[] lcParam = this.cParam[this.cParam.Count - 1];
-            this.cParam.RemoveAt(this.cParam.Count - 1);
+            Real[] gcPrev = new Real[y.BatchCount * this.OutputCount];
 
-            Real[] laParam = this.aParam[this.aParam.Count - 1];
+            Real[] lcNextParam = this.cNextParam[this.cPrevParam.Count - 1];
+            this.cNextParam.RemoveAt(this.cNextParam.Count - 1);
+
+            Real[] tanh_a = this.aParam[this.aParam.Count - 1];
             this.aParam.RemoveAt(this.aParam.Count - 1);
 
-            Real[] liParam = this.iParam[this.iParam.Count - 1];
+            Real[] sig_i = this.iParam[this.iParam.Count - 1];
             this.iParam.RemoveAt(this.iParam.Count - 1);
 
-            Real[] lfParam = this.fParam[this.fParam.Count - 1];
+            Real[] sig_f = this.fParam[this.fParam.Count - 1];
             this.fParam.RemoveAt(this.fParam.Count - 1);
 
-            Real[] loParam = this.oParam[this.oParam.Count - 1];
+            Real[] sig_o = this.oParam[this.oParam.Count - 1];
             this.oParam.RemoveAt(this.oParam.Count - 1);
 
-            Real[] cPrev = this.cParam[this.cParam.Count - 1];
+            Real[] lcPrev = this.cPrevParam[this.cPrevParam.Count - 1];
+            this.cPrevParam.RemoveAt(this.cPrevParam.Count - 1);
 
-            for (int i = 0; i < y.BatchCount; i++)
+            int index = 0;
+            for (int b = 0; b < y.BatchCount; b++)
             {
-                Real[] gParam = new Real[this.InputCount * 4];
-
-                for (int j = 0; j < this.InputCount; j++)
+                for (int i = 0; i < this.OutputCount; i++)
                 {
-                    int prevOutputIndex = j + i * this.OutputCount;
-                    int prevInputIndex = j + i * this.InputCount;
+                    int prevOutputIndex = b * this.OutputCount + i;
 
-                    double co = Math.Tanh(lcParam[prevOutputIndex]);
+                    double co = Math.Tanh(lcNextParam[prevOutputIndex]);
 
-                    this.gcPrev[prevInputIndex] += y.Grad[prevOutputIndex] * loParam[prevOutputIndex] * GradTanh(co);
-                    gParam[j + InputCount * 0] = this.gcPrev[prevInputIndex] * liParam[prevOutputIndex] * GradTanh(laParam[prevOutputIndex]);
-                    gParam[j + InputCount * 1] = this.gcPrev[prevInputIndex] * laParam[prevOutputIndex] * GradSigmoid(liParam[prevOutputIndex]);
-                    gParam[j + InputCount * 2] = this.gcPrev[prevInputIndex] * cPrev[prevOutputIndex] * GradSigmoid(lfParam[prevOutputIndex]);
-                    gParam[j + InputCount * 3] = y.Grad[prevOutputIndex] * co * GradSigmoid(loParam[prevOutputIndex]);
+                    gcPrev[prevOutputIndex] += y.Grad[prevOutputIndex] * sig_o[prevOutputIndex] * GradTanh(co);
 
-                    this.gcPrev[prevInputIndex] *= lfParam[prevOutputIndex];
-                }
-
-                Real[] resultParam = new Real[this.OutputCount * 4];
-
-                //配置換え
-                for (int j = 0; j < this.OutputCount * 4; j++)
-                {
-                    //暗黙的に切り捨て
-                    int index = j / this.OutputCount;
-                    resultParam[j % this.OutputCount + index * OutputCount] = gParam[j / 4 + j % 4 * InputCount];
-                }
-
-                for (int j = 0; j < OutputCount; j++)
-                {
-                    this.gxPrev0.Grad[i * this.OutputCount + j] = resultParam[0 * this.OutputCount + j];
-                    this.gxPrev1.Grad[i * this.OutputCount + j] = resultParam[1 * this.OutputCount + j];
-                    this.gxPrev2.Grad[i * this.OutputCount + j] = resultParam[2 * this.OutputCount + j];
-                    this.gxPrev3.Grad[i * this.OutputCount + j] = resultParam[3 * this.OutputCount + j];
+                    gxPrevGrad[index++] = gcPrev[prevOutputIndex] * sig_i[prevOutputIndex] * GradTanh(tanh_a[prevOutputIndex]);
+                    gxPrevGrad[index++] = gcPrev[prevOutputIndex] * tanh_a[prevOutputIndex] * GradSigmoid(sig_i[prevOutputIndex]);
+                    gxPrevGrad[index++] = gcPrev[prevOutputIndex] * lcPrev[prevOutputIndex] * GradSigmoid(sig_f[prevOutputIndex]);
+                    gxPrevGrad[index++] = y.Grad[prevOutputIndex] * co * GradSigmoid(sig_o[prevOutputIndex]);
+                    
+                    gcPrev[prevOutputIndex] *= sig_f[prevOutputIndex];
                 }
             }
 
-            this.upward0.Backward(this.gxPrev0);
-            this.upward1.Backward(this.gxPrev1);
-            this.upward2.Backward(this.gxPrev2);
-            this.upward3.Backward(this.gxPrev3);
+            gxPrevGrads.Add(gxPrevGrad);
+
+            //gxPrevをlateralとupwardに渡すことでaddのBackwardを兼ねる
+            if (hPrevParams.Count > 0)
+            {
+                NdArray gxPrev = new NdArray(new[] { OutputCount * 4 }, y.BatchCount);
+                gxPrev.Grad = gxPrevGrad;
+                this.lateral.Backward(gxPrev);
+
+                NdArray hPrevParam = hPrevParams[hPrevParams.Count - 1];
+                hPrevParams.RemoveAt(hPrevParams.Count - 1);
+
+                //hのBakckward
+                this.Backward(hPrevParam);
+
+                //使い切ったら戻す
+                hUsedPrevParams.Add(hPrevParam);
+                if (hPrevParams.Count == 0)
+                {
+                    hPrevParams.AddRange(hUsedPrevParams);
+                    hUsedPrevParams.Clear();
+                }
+            }
+
+            NdArray gy = new NdArray(new[] { OutputCount * 4 }, y.BatchCount);
+            gy.Grad = gxPrevGrads[0];
+            gxPrevGrads.RemoveAt(0);
+            this.upward.Backward(gy);
+
+            //linearのBackwardはgxPrev.Gradしか使わないのでgxPrev.Dataは空
+            this.cUsedNextParam.Add(lcNextParam);
+            this.aUsedParam.Add(tanh_a);
+            this.iUsedParam.Add(sig_i);
+            this.fUsedParam.Add(sig_f);
+            this.oUsedParam.Add(sig_o);
+            this.cUsedPrevParam.Add(lcPrev);
+            //使い切ったら戻す
+            if (cNextParam.Count == 0)
+            {
+                this.cNextParam.AddRange(cUsedNextParam);
+                this.aParam.AddRange(aUsedParam);
+                this.iParam.AddRange(iUsedParam);
+                this.fParam.AddRange(fUsedParam);
+                this.oParam.AddRange(oUsedParam);
+                this.cPrevParam.AddRange(cUsedPrevParam);
+                this.cUsedNextParam.Clear();
+                this.aUsedParam.Clear();
+                this.iUsedParam.Clear();
+                this.fUsedParam.Clear();
+                this.oUsedParam.Clear();
+                this.cUsedPrevParam.Clear();
+            }
         }
 
         public override void ResetState()
         {
             base.ResetState();
-            this.gcPrev = null;
             this.hParam = null;
         }
 

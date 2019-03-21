@@ -13,8 +13,7 @@ namespace NChainer
 
         public LSTM(int inSize, int outSize, PyArray<T> lateralInit = default(PyArray<T>), PyArray<T> upwardInit = default(PyArray<T>), PyArray<T> biasInit = default(PyArray<T>), PyArray<T> forgetBiasInit = default(PyArray<T>))
         {
-            _lstm = Chainer.Links["LSTM"].Call(inSize, outSize, lateralInit);
-            //_lstm = Chainer.Links["LSTM"].Call(inSize, outSize, lateralInit, upwardInit, biasInit, forgetBiasInit);
+            _lstm = Chainer.Links["LSTM"].Call(inSize, outSize, lateralInit, upwardInit, biasInit, forgetBiasInit);
             _lstm["cleargrads"].Call();
         }
 

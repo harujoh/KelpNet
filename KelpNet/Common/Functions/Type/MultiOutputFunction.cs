@@ -10,6 +10,7 @@ namespace KelpNet
         protected Action<NdArray[], NdArray> SingleOutputBackward;
 
         List<NdArray[]> PrevOutputs = new List<NdArray[]>();
+        List<NdArray[]> UsedPrevOutputs = new List<NdArray[]>();
 
         protected MultiOutputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
@@ -36,6 +37,7 @@ namespace KelpNet
             if (xs == null || xs.Length != 1) throw new Exception("引数が正しくありません");
 #endif
             xs[0].UseCount--;
+            //出力した両方で使用が終わったら
             if (xs[0].UseCount <= 0)
             {
                 if (xs[0].Grad == null) xs[0].ClearGrad();
@@ -48,6 +50,20 @@ namespace KelpNet
                 PrevOutputs.RemoveAt(PrevOutputs.Count - 1);
 
                 SingleOutputBackward(prevys, xs[0]);
+
+                UsedPrevInputs.Add(xs);
+                if (PrevInputs.Count == 0)
+                {
+                    PrevInputs.AddRange(UsedPrevInputs);
+                    UsedPrevInputs.Clear();
+                }
+
+                UsedPrevOutputs.Add(prevys);
+                if (PrevOutputs.Count == 0)
+                {
+                    PrevOutputs.AddRange(UsedPrevOutputs);
+                    UsedPrevOutputs.Clear();
+                }
             }
         }
 

@@ -40,6 +40,13 @@ namespace KelpNet
             if (xs[1].Grad == null) xs[1].ClearGrad();
 
             DualOutputBackward(ys[0], xs[0], xs[1]);
+
+            UsedPrevInputs.Add(xs);
+            if (PrevInputs.Count == 0)
+            {
+                PrevInputs.AddRange(UsedPrevInputs);
+                UsedPrevInputs.Clear();
+            }
         }
 
         public override NdArray[] Predict(params NdArray[] xs)

@@ -13,6 +13,11 @@ namespace NChainer
         public Linear(int inSize, int outSize, bool noBias = false, PyArray<T> initialW = default(PyArray<T>), PyArray<T> initialBias = default(PyArray<T>))
         {
             _linear = Chainer.Links["Linear"].Call(inSize, outSize, noBias, initialW, initialBias);
+            ClearGrads();
+        }
+
+        public void ClearGrads()
+        {
             _linear["cleargrads"].Call();
         }
 
