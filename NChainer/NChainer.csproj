@@ -59,6 +59,7 @@
     <Compile Include="Functions\Array\SplitAxis.cs" />
     <Compile Include="Functions\Connections\Convolution2D.cs" />
     <Compile Include="Functions\Connections\Deconvolution2D.cs" />
+    <Compile Include="Functions\Connections\EmbedID.cs" />
     <Compile Include="Functions\Connections\Linear.cs" />
     <Compile Include="Functions\Connections\LSTM.cs" />
     <Compile Include="Functions\Loss\MeanSquaredError.cs" />

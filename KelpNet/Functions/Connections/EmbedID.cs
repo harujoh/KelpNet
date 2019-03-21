@@ -46,7 +46,7 @@ namespace KelpNet
                 {
                     for (int j = 0; j < this.OutputCount; j++)
                     {
-                        result[i * this.OutputCount + j + b * x.Length * this.OutputCount] = this.Weight.Data[(int)x.Data[i + b * x.Length] * this.OutputCount + j];
+                        result[i * this.OutputCount + j + b * x.Length * this.OutputCount] = this.Weight.Data[(int)x.Data[b * x.Length + i] * this.OutputCount + j];
                     }
                 }
             }
@@ -62,7 +62,7 @@ namespace KelpNet
                 {
                     for (int j = 0; j < this.OutputCount; j++)
                     {
-                        this.Weight.Grad[(int)x.Data[i + b * x.Length] * this.OutputCount + j] += y.Grad[i + j + b * y.Length];
+                        this.Weight.Grad[(int)x.Data[b * x.Length + i] * this.OutputCount + j] += y.Grad[i * this.OutputCount + j + b * x.Length * this.OutputCount];
                     }
                 }
             }

@@ -62,6 +62,7 @@
     <Compile Include="Functions\Arrays\TestSplitAxis.cs" />
     <Compile Include="Functions\Connections\TestConvolution2D.cs" />
     <Compile Include="Functions\Connections\TestDeconvolution2D.cs" />
+    <Compile Include="Functions\Connections\TestEmbedID.cs" />
     <Compile Include="Functions\Connections\TestLSTM.cs" />
     <Compile Include="Functions\Normalization\TestBatchNormalization.cs" />
     <Compile Include="Functions\Normalization\TestLRN.cs" />

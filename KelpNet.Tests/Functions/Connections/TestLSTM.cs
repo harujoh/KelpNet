@@ -154,7 +154,7 @@ namespace KelpNet.Tests
             }
 
             //経由が多くかなり誤差が大きい為
-            delta = 0.1;
+            delta = 0.5;
             for (int i = 0; i < wLen; i++)
             {
                 Assert.AreEqual(cupwardWGrad2[i + wLen * 0], lstm.upward.Weight.Grad[i], delta);

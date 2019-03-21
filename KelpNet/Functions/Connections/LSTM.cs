@@ -43,27 +43,46 @@ namespace KelpNet
 
             List<NdArray> functionParameters = new List<NdArray>();
 
-            Real[] lateralW = new Real[lateralInit.Length * 4];
-            Real[] upwardW = new Real[upwardInit.Length * 4];
+            Real[] lateralW = new Real[inSize * outSize * 4];
+            Real[] upwardW = new Real[inSize * outSize * 4];
+            Real[] upwardb = new Real[outSize * 4];
 
-            Real[] tmpLateralInit = Real.ToRealArray(lateralInit);
-            Real[] tmpUpwardInit = Real.ToRealArray(upwardInit);
-
-            for (int i = 0; i < 4; i++)
+            if (upwardInit != null)
             {
-                Array.Copy(tmpLateralInit, 0, lateralW, i * tmpLateralInit.Length, tmpLateralInit.Length);
-                Array.Copy(tmpUpwardInit, 0, upwardW, i * tmpUpwardInit.Length, tmpUpwardInit.Length);
+                Real[] tmpUpwardInit = Real.ToRealArray(upwardInit);
+
+                for (int i = 0; i < 4; i++)
+                {
+                    Array.Copy(tmpUpwardInit, 0, upwardW, i * tmpUpwardInit.Length, tmpUpwardInit.Length);
+                }
             }
 
-            Real[] upwardb = new Real[biasInit.Length * 4];
-            Real[] tmpBiasInit = Real.ToRealArray(biasInit);
-            Real[] tmpforgetBiasInit = Real.ToRealArray(forgetBiasInit);
+            if (lateralInit != null)
+            {
+                Real[] tmpLateralInit = Real.ToRealArray(lateralInit);
 
-            //tmpforgetBiasInitがあるためループ展開
-            Array.Copy(tmpBiasInit, 0, upwardb, 0 * tmpBiasInit.Length, tmpBiasInit.Length);
-            Array.Copy(tmpBiasInit, 0, upwardb, 1 * tmpBiasInit.Length, tmpBiasInit.Length);
-            Array.Copy(tmpforgetBiasInit, 0, upwardb, 2 * tmpBiasInit.Length, tmpforgetBiasInit.Length);
-            Array.Copy(tmpBiasInit, 0, upwardb, 3 * tmpBiasInit.Length, tmpBiasInit.Length);
+                for (int i = 0; i < 4; i++)
+                {
+                    Array.Copy(tmpLateralInit, 0, lateralW, i * tmpLateralInit.Length, tmpLateralInit.Length);
+                }
+            }
+
+            if (biasInit != null)
+            {
+                Real[] tmpBiasInit = Real.ToRealArray(biasInit);
+
+                //tmpforgetBiasInitがあるためループ展開
+                Array.Copy(tmpBiasInit, 0, upwardb, 0 * tmpBiasInit.Length, tmpBiasInit.Length);
+                Array.Copy(tmpBiasInit, 0, upwardb, 1 * tmpBiasInit.Length, tmpBiasInit.Length);
+                //Array.Copy(tmpforgetBiasInit, 0, upwardb, 2 * tmpforgetBiasInit.Length, tmpforgetBiasInit.Length);
+                Array.Copy(tmpBiasInit, 0, upwardb, 3 * tmpBiasInit.Length, tmpBiasInit.Length);
+            }
+
+            if (forgetBiasInit != null)
+            {
+                Real[] tmpforgetBiasInit = Real.ToRealArray(forgetBiasInit);
+                Array.Copy(tmpforgetBiasInit, 0, upwardb, 2 * tmpforgetBiasInit.Length, tmpforgetBiasInit.Length);
+            }
 
             this.upward = new Linear(inSize, outSize * 4, noBias: false, initialW: upwardW, initialb: upwardb, name: "upward", gpuEnable: gpuEnable);
             functionParameters.AddRange(this.upward.Parameters);
