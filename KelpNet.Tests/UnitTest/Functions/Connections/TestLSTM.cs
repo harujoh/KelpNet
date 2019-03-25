@@ -13,36 +13,36 @@ namespace KelpNet.Tests
             Python.Initialize();
             Chainer.Initialize();
 
-            Real[,] input = { { 1.0 }, { 3.0 }, { 5.0 }, { 7.0 }, { 9.0 } };
-            Real[,] teach = { { 3.0 }, { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 } };
+            int batchCount = 5;
+            int inputCount = 1;
+            int outputCount = 1;
 
-            Real[,] input2 = { { 3.0 }, { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 } };
-            Real[,] teach2 = { { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 }, { 13.0 } };
+            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
+            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
 
-            Real[,] upwardInit = (Real[,])Initializer.GetRealNdArray(new[] { 1, 1 });
-            Real[,] lateralInit = (Real[,])Initializer.GetRealNdArray(new[] { 1, 1 });
+            Real[,] upwardInit = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
+            Real[,] lateralInit = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
             Real[] biasInit = { Mother.Dice.NextDouble() };
             Real[] forgetBiasInit = { Mother.Dice.NextDouble() };
 
             //Chainer
-            NChainer.LSTM<Real> clstm = new NChainer.LSTM<Real>(1, 1, Real.ToBaseNdArray(lateralInit), Real.ToBaseNdArray(upwardInit), Real.ToBaseArray(biasInit), Real.ToBaseArray(forgetBiasInit));
+            NChainer.LSTM<Real> clstm = new NChainer.LSTM<Real>(inputCount, outputCount, Real.ToBaseNdArray(lateralInit), Real.ToBaseNdArray(upwardInit), Real.ToBaseArray(biasInit), Real.ToBaseArray(forgetBiasInit));
 
             Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
             Variable<Real> cY = clstm.Forward(cX);
-            Variable<Real> cT = new Variable<Real>(Real.ToBaseNdArray(teach));
 
-            Variable<Real> cLoss = new NChainer.MeanSquaredError<Real>().Forward(cY, cT);
-            cLoss.Backward();
+            cY.Grad = Real.ToBaseNdArray(dummyGy);
 
+            cY.Backward();
 
             //KelpNet
-            KelpNet.LSTM lstm = new KelpNet.LSTM(1, 1, lateralInit, upwardInit, biasInit, forgetBiasInit);
+            KelpNet.LSTM lstm = new KelpNet.LSTM(inputCount, outputCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { 1 }, 5);
+            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
             NdArray y = lstm.Forward(x)[0];
-            NdArray t = new NdArray(Real.ToRealArray(teach), new[] { 1 }, 5);
 
-            NdArray loss = new KelpNet.MeanSquaredError().Evaluate(y, t);
+            y.Grad = Real.ToRealArray(dummyGy);
+
             y.Backward();
 
             //許容範囲を算出
@@ -61,9 +61,6 @@ namespace KelpNet.Tests
             {
                 Assert.AreEqual(cYdata[i], y.Data[i], delta);
             }
-
-            //loss
-            Assert.AreEqual(cLoss.Data[0], loss.Data[0], delta);
 
             //x.Grad
             Assert.AreEqual(cXgrad.Length, x.Grad.Length);
@@ -104,25 +101,23 @@ namespace KelpNet.Tests
             ///////////
             //２周目 //
             ///////////
+            Real[,] input2 = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
+            Real[,] dummyGy2 = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
 
             //Chainer
             Variable<Real> cX2 = new Variable<Real>(Real.ToBaseNdArray(input2));
             Variable<Real> cY2 = clstm.Forward(cX2);
-            Variable<Real> cT2 = new Variable<Real>(Real.ToBaseNdArray(teach2));
 
-            Variable<Real> cLoss2 = new NChainer.MeanSquaredError<Real>().Forward(cY2, cT2);
+            cY2.Grad = Real.ToBaseNdArray(dummyGy2);
+
+            cY2.Backward();
 
             //KelpNet
-            NdArray x2 = new NdArray(Real.ToRealArray(input2), new[] { 1 }, 5);
+            NdArray x2 = new NdArray(Real.ToRealArray(input2), new[] { inputCount }, batchCount);
             NdArray y2 = lstm.Forward(x2)[0];
-            NdArray t2 = new NdArray(Real.ToRealArray(teach2), new[] { 1 }, 5);
 
-            NdArray loss2 = new KelpNet.MeanSquaredError().Evaluate(y2, t2);
+            y2.Grad = Real.ToRealArray(dummyGy2);
 
-            Assert.AreEqual(cLoss2.Data[0], loss2.Data[0], delta);
-
-            //Backwardを実行
-            cLoss2.Backward();
             y2.Backward();
 
             Real[] cYdata2 = Real.ToRealArray((Real[,])cY2.Data);
@@ -154,7 +149,7 @@ namespace KelpNet.Tests
             }
 
             //経由が多くかなり誤差が大きい為
-            delta = 1.0;
+            delta = 0.5;
             for (int i = 0; i < wLen; i++)
             {
                 Assert.AreEqual(cupwardWGrad2[i + wLen * 0], lstm.upward.Weight.Grad[i], delta);

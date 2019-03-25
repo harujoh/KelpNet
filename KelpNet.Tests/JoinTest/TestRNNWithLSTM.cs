@@ -229,26 +229,8 @@ namespace KelpNet.Tests.JoinTest
             //経由が多くかなり誤差が大きい為
             delta = 1.0;
 
-            Real[] cWgrad21 = Real.ToRealArray((Real[,])cLinear1.W.Grad);
-            Real[] cbgrad21 = (Real[])cLinear1.b.Grad;
-
-            //W.grad
-            Assert.AreEqual(cWgrad21.Length, linear1.Weight.Grad.Length);
-            for (int i = 0; i < linear1.Weight.Grad.Length; i++)
-            {
-                Assert.AreEqual(cWgrad21[i], linear1.Weight.Grad[i], delta);
-            }
-
-            //b.grad
-            Assert.AreEqual(cbgrad21.Length, linear1.Bias.Grad.Length);
-            for (int i = 0; i < linear1.Bias.Grad.Length; i++)
-            {
-                Assert.AreEqual(cbgrad21[i], linear1.Bias.Grad[i], delta);
-            }
-
             Real[] cWgrad22 = Real.ToRealArray((Real[,])cLinear2.W.Grad);
             Real[] cbgrad22 = (Real[])cLinear2.b.Grad;
-
 
             //W.grad
             Assert.AreEqual(cWgrad22.Length, linear2.Weight.Grad.Length);
@@ -263,6 +245,9 @@ namespace KelpNet.Tests.JoinTest
             {
                 Assert.AreEqual(cbgrad22[i], linear2.Bias.Grad[i], delta);
             }
+
+
+            delta = 2.0;
 
             //W.grad
             Assert.AreEqual(clateralWGrad.Length, lstm.lateral.Weight.Grad.Length);
@@ -280,6 +265,26 @@ namespace KelpNet.Tests.JoinTest
             for (int i = 0; i < bLen; i++)
             {
                 Assert.AreEqual(cupwardbGrad2[i + wLen * 0], lstm.upward.Bias.Grad[i], delta);
+            }
+
+
+            delta = 20.0;
+
+            Real[] cWgrad21 = Real.ToRealArray((Real[,])cLinear1.W.Grad);
+            Real[] cbgrad21 = (Real[])cLinear1.b.Grad;
+
+            //W.grad
+            Assert.AreEqual(cWgrad21.Length, linear1.Weight.Grad.Length);
+            for (int i = 0; i < linear1.Weight.Grad.Length; i++)
+            {
+                Assert.AreEqual(cWgrad21[i], linear1.Weight.Grad[i], delta);
+            }
+
+            //b.grad
+            Assert.AreEqual(cbgrad21.Length, linear1.Bias.Grad.Length);
+            for (int i = 0; i < linear1.Bias.Grad.Length; i++)
+            {
+                Assert.AreEqual(cbgrad21[i], linear1.Bias.Grad[i], delta);
             }
         }
     }
