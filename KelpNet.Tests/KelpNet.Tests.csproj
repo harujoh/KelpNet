@@ -57,21 +57,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Functions\Activation\TestSwish.cs" />
-    <Compile Include="Functions\Arrays\TestConcat.cs" />
-    <Compile Include="Functions\Arrays\TestSplitAxis.cs" />
-    <Compile Include="Functions\Connections\TestConvolution2D.cs" />
-    <Compile Include="Functions\Connections\TestDeconvolution2D.cs" />
-    <Compile Include="Functions\Connections\TestEmbedID.cs" />
-    <Compile Include="Functions\Connections\TestLSTM.cs" />
-    <Compile Include="Functions\Normalization\TestBatchNormalization.cs" />
-    <Compile Include="Functions\Normalization\TestLRN.cs" />
-    <Compile Include="Loss\TestMeanSquaredError.cs" />
-    <Compile Include="Loss\TestSoftmaxCrossEntropy.cs" />
-    <Compile Include="Functions\Connections\TestLinear.cs" />
-    <Compile Include="Optimizers\TestSGD.cs" />
+    <Compile Include="UnitTest\Functions\Activation\TestSwish.cs" />
+    <Compile Include="UnitTest\Functions\Arrays\TestConcat.cs" />
+    <Compile Include="UnitTest\Functions\Arrays\TestSplitAxis.cs" />
+    <Compile Include="UnitTest\Functions\Connections\TestConvolution2D.cs" />
+    <Compile Include="UnitTest\Functions\Connections\TestDeconvolution2D.cs" />
+    <Compile Include="UnitTest\Functions\Connections\TestEmbedID.cs" />
+    <Compile Include="UnitTest\Functions\Connections\TestLSTM.cs" />
+    <Compile Include="UnitTest\Functions\Normalization\TestBatchNormalization.cs" />
+    <Compile Include="UnitTest\Functions\Normalization\TestLRN.cs" />
+    <Compile Include="UnitTest\Loss\TestMeanSquaredError.cs" />
+    <Compile Include="UnitTest\Loss\TestSoftmaxCrossEntropy.cs" />
+    <Compile Include="UnitTest\Functions\Connections\TestLinear.cs" />
+    <Compile Include="UnitTest\Optimizers\TestSGD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Functions\Mathmetrics\TestBasicMath.cs" />
+    <Compile Include="UnitTest\Functions\Mathmetrics\TestBasicMath.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
