@@ -9,7 +9,7 @@ namespace KelpNet.Tests
     public class TestEmbedID
     {
         [TestMethod]
-        public void RandomTest()
+        public void EmbedIDRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
