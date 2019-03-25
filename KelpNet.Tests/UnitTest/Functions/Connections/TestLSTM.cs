@@ -57,9 +57,9 @@ namespace KelpNet.Tests
 
             //y
             Assert.AreEqual(cYdata.Length, y.Data.Length);
-            for (int j = 0; j < 5; j++)
+            for (int i = 0; i < cYdata.Length; i++)
             {
-                Assert.AreEqual(cYdata[j], y.Data[j], delta);
+                Assert.AreEqual(cYdata[i], y.Data[i], delta);
             }
 
             //loss
@@ -67,9 +67,9 @@ namespace KelpNet.Tests
 
             //x.Grad
             Assert.AreEqual(cXgrad.Length, x.Grad.Length);
-            for (int j = 0; j < 5; j++)
+            for (int i = 0; i < cXgrad.Length; i++)
             {
-                Assert.AreEqual(cXgrad[j], x.Grad[j], delta);
+                Assert.AreEqual(cXgrad[i], x.Grad[i], delta);
             }
 
             //W.grad
@@ -134,16 +134,16 @@ namespace KelpNet.Tests
 
             //y
             Assert.AreEqual(cYdata2.Length, y2.Data.Length);
-            for (int j = 0; j < 5; j++)
+            for (int i = 0; i < cYdata2.Length; i++)
             {
-                Assert.AreEqual(cYdata2[j], y2.Data[j], delta);
+                Assert.AreEqual(cYdata2[i], y2.Data[i], delta);
             }
 
             //x.Grad
             Assert.AreEqual(cXgrad2.Length, x2.Grad.Length);
-            for (int j = 0; j < 5; j++)
+            for (int i = 0; i < cXgrad2.Length; i++)
             {
-                Assert.AreEqual(cXgrad2[j], x2.Grad[j], delta);
+                Assert.AreEqual(cXgrad2[i], x2.Grad[i], delta);
             }
 
             //W.grad

@@ -36,7 +36,7 @@ namespace KelpNet
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        public LSTM(int inSize, int outSize, Array lateralInit = null, Array upwardInit = null, Array biasInit = null, Real[] forgetBiasInit = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        public LSTM(int inSize, int outSize, Array lateralInit = null, Array upwardInit = null, Array biasInit = null, Array forgetBiasInit = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             this.InputCount = inSize;
             this.OutputCount = outSize;
@@ -71,17 +71,21 @@ namespace KelpNet
             {
                 Real[] tmpBiasInit = Real.ToRealArray(biasInit);
 
-                //tmpforgetBiasInitがあるためループ展開
-                Array.Copy(tmpBiasInit, 0, upwardb, 0 * tmpBiasInit.Length, tmpBiasInit.Length);
-                Array.Copy(tmpBiasInit, 0, upwardb, 1 * tmpBiasInit.Length, tmpBiasInit.Length);
-                //Array.Copy(tmpforgetBiasInit, 0, upwardb, 2 * tmpforgetBiasInit.Length, tmpforgetBiasInit.Length);
-                Array.Copy(tmpBiasInit, 0, upwardb, 3 * tmpBiasInit.Length, tmpBiasInit.Length);
+                for (int i = 0; i < biasInit.Length; i++)
+                {
+                    upwardb[i * 4 + 0] = tmpBiasInit[i];
+                    upwardb[i * 4 + 1] = tmpBiasInit[i];
+                    upwardb[i * 4 + 3] = tmpBiasInit[i];
+                }
             }
 
             if (forgetBiasInit != null)
             {
                 Real[] tmpforgetBiasInit = Real.ToRealArray(forgetBiasInit);
-                Array.Copy(tmpforgetBiasInit, 0, upwardb, 2 * tmpforgetBiasInit.Length, tmpforgetBiasInit.Length);
+                for (int i = 0; i < tmpforgetBiasInit.Length; i++)
+                {
+                    upwardb[i * 4 + 2] = tmpforgetBiasInit[i];
+                }
             }
 
             this.upward = new Linear(inSize, outSize * 4, noBias: false, initialW: upwardW, initialb: upwardb, name: "upward", gpuEnable: gpuEnable);
@@ -141,9 +145,10 @@ namespace KelpNet
             Real[] cNext = new Real[outputDataSize];
             Real[] lhParam = new Real[outputDataSize];
 
-            int index = 0;
             for (int b = 0; b < x.BatchCount; b++)
             {
+                int index = b * lstmIn.Length;
+
                 for (int i = 0; i < this.OutputCount; i++)
                 {
                     int outIndex = b * this.OutputCount + i;
@@ -212,7 +217,7 @@ namespace KelpNet
                     gxPrevGrad[index++] = gcPrev[prevOutputIndex] * tanh_a[prevOutputIndex] * GradSigmoid(sig_i[prevOutputIndex]);
                     gxPrevGrad[index++] = gcPrev[prevOutputIndex] * lcPrev[prevOutputIndex] * GradSigmoid(sig_f[prevOutputIndex]);
                     gxPrevGrad[index++] = y.Grad[prevOutputIndex] * co * GradSigmoid(sig_o[prevOutputIndex]);
-                    
+
                     gcPrev[prevOutputIndex] *= sig_f[prevOutputIndex];
                 }
             }

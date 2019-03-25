@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JoinTest\TestRnnWithLSTM.cs" />
     <Compile Include="UnitTest\Functions\Activation\TestSwish.cs" />
     <Compile Include="UnitTest\Functions\Arrays\TestConcat.cs" />
     <Compile Include="UnitTest\Functions\Arrays\TestSplitAxis.cs" />
