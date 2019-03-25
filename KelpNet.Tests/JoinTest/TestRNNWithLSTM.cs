@@ -227,7 +227,7 @@ namespace KelpNet.Tests.JoinTest
             }
 
             //経由が多くかなり誤差が大きい為
-            delta = 0.5;
+            delta = 1.0;
 
             Real[] cWgrad21 = Real.ToRealArray((Real[,])cLinear1.W.Grad);
             Real[] cbgrad21 = (Real[])cLinear1.b.Grad;
