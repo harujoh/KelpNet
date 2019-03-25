@@ -8,7 +8,7 @@ namespace KelpNet.Tests.JoinTest
     public class TestRnnWithLSTM
     {
         [TestMethod]
-        public void RnnWithLSTMRandomTest()
+        public void RnnLSTMRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
