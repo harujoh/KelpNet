@@ -19,25 +19,25 @@ namespace KelpNet.Tests.JoinTest
             Real[,] input2 = { { 3.0 }, { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 } };
             Real[,] teach2 = { { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 }, { 13.0 } };
 
-            Real[,] lateralInit = { { 3.0, -3.0 }, { 4.0, -4.0 } };
-            Real[,] upwardInit = { { 2.0, -2.0 }, { 5.0, -5.0 } };
-            Real[,,] biasInit = { { { 1.5 }, { 2.5 } } };
-            Real[,,] forgetBiasInit = { { { 3.2 }, { 4.2 } } };
-
             int outputCount = 1;
             int inputCount = 1;
             int hiddenCount = 2;
 
+            Real[,] upwardInit = (Real[,])Initializer.GetRealNdArray(new[] { hiddenCount, hiddenCount });
+            Real[,] lateralInit = (Real[,])Initializer.GetRealNdArray(new[] { hiddenCount, hiddenCount });
+            Real[,,] biasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, hiddenCount, 1 });
+            Real[,,] forgetBiasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, hiddenCount, 1 });
+
             //Chainer
-            Real[,] w1 = new Real[,] { { 1 }, { 2 } };
-            Real[] b1 = new Real[] { -1, -2 };
+            Real[,] w1 = (Real[,])Initializer.GetRealNdArray(new[] { hiddenCount, inputCount });
+            Real[] b1 = Initializer.GetRealArray(hiddenCount);
 
             //Chainer
             NChainer.Linear<Real> cLinear1 = new NChainer.Linear<Real>(inputCount, hiddenCount, false, Real.ToBaseNdArray(w1), Real.ToBaseArray(b1));
             NChainer.LSTM<Real> cLstm = new NChainer.LSTM<Real>(hiddenCount, hiddenCount, Real.ToBaseNdArray(lateralInit), Real.ToBaseNdArray(upwardInit), Real.ToBaseNdArray(biasInit), Real.ToBaseNdArray(forgetBiasInit));
 
-            Real[,] w2 = new Real[,] { { 5, 6 } };
-            Real[] b2 = new Real[] { -5 };
+            Real[,] w2 = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, hiddenCount });
+            Real[] b2 = Initializer.GetRealArray(outputCount);
             NChainer.Linear<Real> cLinear2 = new NChainer.Linear<Real>(hiddenCount, outputCount, false, Real.ToBaseNdArray(w2), Real.ToBaseArray(b2));
 
             Variable<Real> cX1 = new Variable<Real>(Real.ToBaseNdArray(input));
@@ -108,6 +108,42 @@ namespace KelpNet.Tests.JoinTest
             for (int i = 0; i < cXgrad.Length; i++)
             {
                 Assert.AreEqual(cXgrad[i], x1.Grad[i], delta);
+            }
+
+            Real[] cWgrad11 = Real.ToRealArray((Real[,])cLinear1.W.Grad);
+            Real[] cbgrad11 = (Real[])cLinear1.b.Grad;
+
+            //W.grad
+            Assert.AreEqual(cWgrad11.Length, linear1.Weight.Grad.Length);
+            for (int i = 0; i < linear1.Weight.Grad.Length; i++)
+            {
+                Assert.AreEqual(cWgrad11[i], linear1.Weight.Grad[i], delta);
+            }
+
+            //b.grad
+            Assert.AreEqual(cbgrad11.Length, linear1.Bias.Grad.Length);
+            for (int i = 0; i < linear1.Bias.Grad.Length; i++)
+            {
+                Assert.AreEqual(cbgrad11[i], linear1.Bias.Grad[i], delta);
+            }
+
+
+            Real[] cWgrad12 = Real.ToRealArray((Real[,])cLinear2.W.Grad);
+            Real[] cbgrad12 = (Real[])cLinear2.b.Grad;
+
+
+            //W.grad
+            Assert.AreEqual(cWgrad12.Length, linear2.Weight.Grad.Length);
+            for (int i = 0; i < linear2.Weight.Grad.Length; i++)
+            {
+                Assert.AreEqual(cWgrad12[i], linear2.Weight.Grad[i], delta);
+            }
+
+            //b.grad
+            Assert.AreEqual(cbgrad12.Length, linear2.Bias.Grad.Length);
+            for (int i = 0; i < linear2.Bias.Grad.Length; i++)
+            {
+                Assert.AreEqual(cbgrad12[i], linear2.Bias.Grad[i], delta);
             }
 
             //W.grad
@@ -190,6 +226,44 @@ namespace KelpNet.Tests.JoinTest
                 Assert.AreEqual(cXgrad2[i], x2.Grad[i], delta);
             }
 
+            //経由が多くかなり誤差が大きい為
+            delta = 0.5;
+
+            Real[] cWgrad21 = Real.ToRealArray((Real[,])cLinear1.W.Grad);
+            Real[] cbgrad21 = (Real[])cLinear1.b.Grad;
+
+            //W.grad
+            Assert.AreEqual(cWgrad21.Length, linear1.Weight.Grad.Length);
+            for (int i = 0; i < linear1.Weight.Grad.Length; i++)
+            {
+                Assert.AreEqual(cWgrad21[i], linear1.Weight.Grad[i], delta);
+            }
+
+            //b.grad
+            Assert.AreEqual(cbgrad21.Length, linear1.Bias.Grad.Length);
+            for (int i = 0; i < linear1.Bias.Grad.Length; i++)
+            {
+                Assert.AreEqual(cbgrad21[i], linear1.Bias.Grad[i], delta);
+            }
+
+            Real[] cWgrad22 = Real.ToRealArray((Real[,])cLinear2.W.Grad);
+            Real[] cbgrad22 = (Real[])cLinear2.b.Grad;
+
+
+            //W.grad
+            Assert.AreEqual(cWgrad22.Length, linear2.Weight.Grad.Length);
+            for (int i = 0; i < linear2.Weight.Grad.Length; i++)
+            {
+                Assert.AreEqual(cWgrad22[i], linear2.Weight.Grad[i], delta);
+            }
+
+            //b.grad
+            Assert.AreEqual(cbgrad22.Length, linear2.Bias.Grad.Length);
+            for (int i = 0; i < linear2.Bias.Grad.Length; i++)
+            {
+                Assert.AreEqual(cbgrad22[i], linear2.Bias.Grad[i], delta);
+            }
+
             //W.grad
             Assert.AreEqual(clateralWGrad.Length, lstm.lateral.Weight.Grad.Length);
             for (int i = 0; i < wLen; i++)
@@ -197,8 +271,6 @@ namespace KelpNet.Tests.JoinTest
                 Assert.AreEqual(clateralWGrad[i + wLen * 0], lstm.lateral.Weight.Grad[i], delta);
             }
 
-            //経由が多くかなり誤差が大きい為
-            delta = 0.5;
             for (int i = 0; i < wLen; i++)
             {
                 Assert.AreEqual(cupwardWGrad2[i + wLen * 0], lstm.upward.Weight.Grad[i], delta);
