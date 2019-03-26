@@ -56,8 +56,10 @@ namespace KelpNet
         }
 
         //範囲指定の配列を作る
-        public static Array Range(int[] shape, int count = 0, int start = 0)
+        public static Array Range(int[] shape, int start = 0)
         {
+            int count = 0;
+
             if (count == 0)
             {
                 count = shape[0];

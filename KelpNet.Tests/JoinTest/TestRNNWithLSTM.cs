@@ -251,7 +251,7 @@ namespace KelpNet.Tests.JoinTest
 
             //W.grad
             Assert.AreEqual(clateralWGrad.Length, lstm.lateral.Weight.Grad.Length);
-            for (int i = 0; i < wLen; i++)
+            for (int i = 0; i < clateralWGrad.Length; i++)
             {
                 Assert.AreEqual(clateralWGrad[i + wLen * 0], lstm.lateral.Weight.Grad[i], delta);
             }

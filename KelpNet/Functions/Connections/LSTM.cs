@@ -43,7 +43,7 @@ namespace KelpNet
 
             List<NdArray> functionParameters = new List<NdArray>();
 
-            Real[] lateralW = new Real[inSize * outSize * 4];
+            Real[] lateralW = new Real[outSize * outSize * 4];
             Real[] upwardW = new Real[inSize * outSize * 4];
             Real[] upwardb = new Real[outSize * 4];
 
@@ -202,9 +202,10 @@ namespace KelpNet
             Real[] lcPrev = this.cPrevParam[this.cPrevParam.Count - 1];
             this.cPrevParam.RemoveAt(this.cPrevParam.Count - 1);
 
-            int index = 0;
             for (int b = 0; b < y.BatchCount; b++)
             {
+                int index = b * OutputCount * 4;
+
                 for (int i = 0; i < this.OutputCount; i++)
                 {
                     int prevOutputIndex = b * this.OutputCount + i;

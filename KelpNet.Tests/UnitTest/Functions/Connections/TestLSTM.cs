@@ -13,20 +13,20 @@ namespace KelpNet.Tests
             Python.Initialize();
             Chainer.Initialize();
 
-            int batchCount = 5;
-            int inputCount = 1;
-            int outputCount = 1;
+            int batchCount = Mother.Dice.Next(1,5);
+            int inputCount = Mother.Dice.Next(1, 5);
+            int outputCount = Mother.Dice.Next(1, 5);
 
             Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
             Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
 
             Real[,] upwardInit = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
-            Real[,] lateralInit = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
-            Real[] biasInit = { Mother.Dice.NextDouble() };
-            Real[] forgetBiasInit = { Mother.Dice.NextDouble() };
+            Real[,] lateralInit = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, outputCount });
+            Real[,,] biasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, outputCount, 1 });
+            Real[,,] forgetBiasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, outputCount, 1 });
 
             //Chainer
-            NChainer.LSTM<Real> clstm = new NChainer.LSTM<Real>(inputCount, outputCount, Real.ToBaseNdArray(lateralInit), Real.ToBaseNdArray(upwardInit), Real.ToBaseArray(biasInit), Real.ToBaseArray(forgetBiasInit));
+            NChainer.LSTM<Real> clstm = new NChainer.LSTM<Real>(inputCount, outputCount, Real.ToBaseNdArray(lateralInit), Real.ToBaseNdArray(upwardInit), Real.ToBaseNdArray(biasInit), Real.ToBaseNdArray(forgetBiasInit));
 
             Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
             Variable<Real> cY = clstm.Forward(cX);
@@ -143,12 +143,12 @@ namespace KelpNet.Tests
 
             //W.grad
             Assert.AreEqual(clateralWGrad.Length, lstm.lateral.Weight.Grad.Length);
-            for (int i = 0; i < wLen; i++)
+            for (int i = 0; i < clateralWGrad.Length; i++)
             {
                 Assert.AreEqual(clateralWGrad[i + wLen * 0], lstm.lateral.Weight.Grad[i], delta);
             }
 
-            //経由が多くかなり誤差が大きい為
+            //経由が多いため誤差が大きい
             delta = 1.0;
             for (int i = 0; i < wLen; i++)
             {
