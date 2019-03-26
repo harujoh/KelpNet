@@ -182,25 +182,25 @@ namespace KelpNet.Sample
 
 
             //MaxPooling
-            MaxPooling maxPooling = new MaxPooling(3);
-            Console.WriteLine("\n◆" + maxPooling.Name);
+            MaxPooling2D maxPooling2D = new MaxPooling2D(3);
+            Console.WriteLine("\n◆" + maxPooling2D.Name);
 
             sw.Restart();
-            NdArray[] gradImageArrayCpu = maxPooling.Forward(inputImageArrayCpu);
+            NdArray[] gradImageArrayCpu = maxPooling2D.Forward(inputImageArrayCpu);
             sw.Stop();
             Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
             gradImageArrayCpu[0].Grad = gradImageArrayCpu[0].Data;
 
             sw.Restart();
-            maxPooling.Backward(gradImageArrayCpu);
+            maxPooling2D.Backward(gradImageArrayCpu);
             sw.Stop();
             Console.WriteLine("Backward[Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
-            if (maxPooling.SetGpuEnable(true))
+            if (maxPooling2D.SetGpuEnable(true))
             {
                 sw.Restart();
-                maxPooling.Forward(inputImageArrayGpu);
+                maxPooling2D.Forward(inputImageArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 

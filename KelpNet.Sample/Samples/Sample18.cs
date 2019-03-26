@@ -26,11 +26,11 @@ namespace KelpNet.Sample
             FunctionStack nn = new FunctionStack(
                 new Convolution2D(3, 32, 3, name: "l1 Conv2D", gpuEnable: true),
                 new ReLU(name: "l1 ReLU"),
-                new MaxPooling(2, name: "l1 MaxPooling", gpuEnable: true),
+                new MaxPooling2D(2, name: "l1 MaxPooling", gpuEnable: true),
                 new Dropout(0.25, name: "l1 DropOut"),
                 new Convolution2D(32, 64, 3, name: "l2 Conv2D", gpuEnable: true),
                 new ReLU(name: "l2 ReLU"),
-                new MaxPooling(2, 2, name: "l2 MaxPooling", gpuEnable: true),
+                new MaxPooling2D(2, 2, name: "l2 MaxPooling", gpuEnable: true),
                 new Dropout(0.25, name: "l2 DropOut"),
                 new Linear(13 * 13 * 64, 512, name: "l3 Linear", gpuEnable: true),
                 new ReLU(name: "l3 ReLU"),

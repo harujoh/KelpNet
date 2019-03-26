@@ -47,7 +47,7 @@ namespace KelpNet.Sample
                 //GPUを初期化
                 for (int i = 0; i < vggNet.Count - 1; i++)
                 {
-                    if (vggNet[i] is Convolution2D || vggNet[i] is Linear || vggNet[i] is MaxPooling)
+                    if (vggNet[i] is Convolution2D || vggNet[i] is Linear || vggNet[i] is MaxPooling2D)
                     {
                         ((IParallelizable)vggNet[i]).SetGpuEnable(true);
                     }

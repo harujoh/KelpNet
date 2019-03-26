@@ -15,10 +15,10 @@ namespace KelpNet.Sample
             FunctionStack nn = new FunctionStack(
                 new Convolution2D(1, 2, 3, name: "conv1", gpuEnable: true),//必要であればGPUフラグも忘れずに
                 new ReLU(),
-                new MaxPooling(2, 2),
+                new MaxPooling2D(2, 2),
                 new Convolution2D(2, 2, 2, name: "conv2", gpuEnable: true),
                 new ReLU(),
-                new MaxPooling(2, 2),
+                new MaxPooling2D(2, 2),
                 new Linear(8, 2, name: "fl3"),
                 new ReLU(),
                 new Linear(2, 2, name: "fl4")

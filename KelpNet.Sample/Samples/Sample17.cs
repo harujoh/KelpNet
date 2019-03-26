@@ -99,7 +99,7 @@ namespace KelpNet.Sample
         {
             foreach (Function function in functionStack.Functions)
             {
-                if (function is Convolution2D || function is Linear || function is MaxPooling)
+                if (function is Convolution2D || function is Linear || function is MaxPooling2D)
                 {
                     ((IParallelizable)function).SetGpuEnable(true);
                 }

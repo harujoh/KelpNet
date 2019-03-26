@@ -61,11 +61,11 @@ namespace KelpNet.Sample
                 l2, //new Convolution2D(1, 2, 3, initialW: initial_W1, initialb: initial_b1),
                 new ReLU(name: "l2 ReLU"),
                 //new AveragePooling(2, 2, name: "l2 AVGPooling"),
-                new MaxPooling(2, 2, name: "l2 MaxPooling"),
+                new MaxPooling2D(2, 2, name: "l2 MaxPooling"),
                 new Convolution2D(2, 2, 2, initialW: initial_W2, initialb: initial_b2, name: "l3 Conv2D"),
                 new ReLU(name: "l3 ReLU"),
                 //new AveragePooling(2, 2, name: "l3 AVGPooling"),
-                new MaxPooling(2, 2, name: "l3 MaxPooling"),
+                new MaxPooling2D(2, 2, name: "l3 MaxPooling"),
                 new Linear(8, 2, initialW: initial_W3, initialb: initial_b3, name: "l4 Linear"),
                 new ReLU(name: "l4 ReLU"),
                 new Linear(2, 2, initialW: initial_W4, initialb: initial_b4, name: "l5 Linear")

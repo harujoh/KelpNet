@@ -8,7 +8,7 @@ using KelpNet.Properties;
 namespace KelpNet
 {
     [Serializable]
-    public class MaxPooling : SingleInputFunction, IParallelizable
+    public class MaxPooling2D : SingleInputFunction, IParallelizable
     {
         const string FUNCTION_NAME = "MaxPooling";
 
@@ -25,7 +25,7 @@ namespace KelpNet
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
-        public MaxPooling(int ksize, int stride = 1, int pad = 0, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling2D(int ksize, int stride = 1, int pad = 0, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -57,7 +57,7 @@ namespace KelpNet
             return GpuEnable;
         }
 
-        public MaxPooling(Size ksize, Size stride = new Size(), Size pad = new Size(), bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling2D(Size ksize, Size stride = new Size(), Size pad = new Size(), bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);

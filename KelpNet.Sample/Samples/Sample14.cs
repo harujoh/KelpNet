@@ -26,9 +26,9 @@ namespace KelpNet.Sample
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(
                 new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D", activation: new ReLU(name: "l1 ReLU"), gpuEnable: true),
-                new MaxPooling(2, 2, name: "l1 MaxPooling", gpuEnable: true),
+                new MaxPooling2D(2, 2, name: "l1 MaxPooling", gpuEnable: true),
                 new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D", activation: new ReLU(name: "l2 ReLU"), gpuEnable: true),
-                new MaxPooling(2, 2, name: "l2 MaxPooling", gpuEnable: true),
+                new MaxPooling2D(2, 2, name: "l2 MaxPooling", gpuEnable: true),
                 new Linear(7 * 7 * 64, 1024, name: "l3 Linear", activation: new ReLU(name: "l3 ReLU"), gpuEnable: true),
                 new Dropout(name: "l3 DropOut"),
                 new Linear(1024, 10, name: "l4 Linear", gpuEnable: true)

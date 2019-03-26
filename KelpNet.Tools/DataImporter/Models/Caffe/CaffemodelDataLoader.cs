@@ -265,10 +265,10 @@ namespace KelpNet.Tools
             switch (param.Pool)
             {
                 case PoolingParameter.PoolMethod.Max:
-                    return new MaxPooling(ksize, stride, pad, name: name, inputNames: inputNames, outputNames: outputNames);
+                    return new MaxPooling2D(ksize, stride, pad, name: name, inputNames: inputNames, outputNames: outputNames);
 
                 case PoolingParameter.PoolMethod.Ave:
-                    return new AveragePooling(ksize, stride, pad, name, inputNames, outputNames);
+                    return new AveragePooling2D(ksize, stride, pad, name, inputNames, outputNames);
             }
 
             return null;

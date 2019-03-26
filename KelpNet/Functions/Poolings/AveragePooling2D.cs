@@ -4,7 +4,7 @@ using System.Drawing;
 namespace KelpNet
 {
     [Serializable]
-    public class AveragePooling : SingleInputFunction
+    public class AveragePooling2D : SingleInputFunction
     {
         const string FUNCTION_NAME = "AveragePooling";
 
@@ -15,7 +15,7 @@ namespace KelpNet
         private int _strideX;
         private int _strideY;
 
-        public AveragePooling(int ksize, int stride = 1, int pad = 0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public AveragePooling2D(int ksize, int stride = 1, int pad = 0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._kWidth = ksize;
             this._kHeight = ksize;
@@ -28,7 +28,7 @@ namespace KelpNet
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        public AveragePooling(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public AveragePooling2D(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
