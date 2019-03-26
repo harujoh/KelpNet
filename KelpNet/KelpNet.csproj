@@ -100,8 +100,8 @@
     <Compile Include="Functions\Normalization\LRN.cs" />
     <Compile Include="Loss\MeanSquaredError.cs" />
     <Compile Include="Loss\SoftmaxCrossEntropy.cs" />
-    <Compile Include="Functions\Poolings\AveragePooling.cs" />
-    <Compile Include="Functions\Poolings\MaxPooling.cs" />
+    <Compile Include="Functions\Poolings\AveragePooling2D.cs" />
+    <Compile Include="Functions\Poolings\MaxPooling2D.cs" />
     <Compile Include="Common\Mother.cs" />
     <Compile Include="Common\Optimizers\Optimizer.cs" />
     <Compile Include="Optimizers\AdaDelta.cs" />
