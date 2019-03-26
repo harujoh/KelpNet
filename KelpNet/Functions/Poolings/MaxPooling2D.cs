@@ -18,6 +18,7 @@ namespace KelpNet
         private int _padY;
         private int _strideX;
         private int _strideY;
+        private bool _coverAll;
 
         private readonly List<int[]> _outputIndicesList = new List<int[]>();
 
@@ -25,7 +26,7 @@ namespace KelpNet
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
-        public MaxPooling2D(int ksize, int stride = 1, int pad = 0, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling2D(int ksize, int stride = 1, int pad = 0, bool coverAll = true, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -33,6 +34,7 @@ namespace KelpNet
             this._padX = pad;
             this._strideX = stride;
             this._strideY = stride;
+            this._coverAll = coverAll;
 
             this.SetGpuEnable(gpuEnable);
 
@@ -57,7 +59,7 @@ namespace KelpNet
             return GpuEnable;
         }
 
-        public MaxPooling2D(Size ksize, Size stride = new Size(), Size pad = new Size(), bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling2D(Size ksize, Size stride = new Size(), Size pad = new Size(), bool coverAll = true, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             if (pad == Size.Empty)
                 pad = new Size(0, 0);
@@ -71,6 +73,7 @@ namespace KelpNet
             this._padX = pad.Width;
             this._strideX = stride.Width;
             this._strideY = stride.Height;
+            this._coverAll = coverAll;
 
             if (this.SetGpuEnable(gpuEnable))
             {
@@ -93,8 +96,12 @@ namespace KelpNet
 
         private NdArray ForwardCpu(NdArray input)
         {
-            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
-            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
+            int outputHeight = _coverAll ?
+                (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0 + this._strideY - 1.0) / this._strideY) + 1 :
+                (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
+            int outputWidth = _coverAll ?
+                (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0 + this._strideX - 1.0) / this._strideX) + 1 :
+                (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
 
             for (int b = 0; b < input.BatchCount; b++)
@@ -107,7 +114,7 @@ namespace KelpNet
 
                     for (int y = 0; y < outputHeight; y++)
                     {
-                        int dyOffset = y * this._strideY + -this._padY < 0 ? 0 : y * this._strideY + -this._padY;
+                        int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
                         int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
 
                         for (int x = 0; x < outputWidth; x++)
@@ -115,19 +122,24 @@ namespace KelpNet
                             int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
                             int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
 
-                            outputIndices[resultIndex] = inputIndexOffset + dyOffset * input.Shape[2] + dxOffset;
-                            Real maxVal = input.Data[outputIndices[resultIndex]];
-
-                            for (int dy = dyOffset; dy < dyLimit; dy++)
+                            if (dyOffset < dyLimit && dxOffset < dxLimit)
                             {
-                                for (int dx = dxOffset; dx < dxLimit; dx++)
-                                {
-                                    int inputIndex = inputIndexOffset + dy * input.Shape[2] + dx;
+                                int inputIndex = inputIndexOffset + dyOffset * input.Shape[2] + dxOffset;
 
-                                    if (maxVal < input.Data[inputIndex])
+                                Real maxVal = input.Data[inputIndex];
+                                outputIndices[resultIndex] = inputIndex;
+
+                                for (int dy = dyOffset; dy < dyLimit; dy++)
+                                {
+                                    for (int dx = dxOffset + 1; dx < dxLimit; dx++)
                                     {
-                                        maxVal = input.Data[inputIndex];
-                                        outputIndices[resultIndex] = inputIndex;
+                                        inputIndex = inputIndexOffset + dy * input.Shape[2] + dx;
+
+                                        if (maxVal < input.Data[inputIndex])
+                                        {
+                                            maxVal = input.Data[inputIndex];
+                                            outputIndices[resultIndex] = inputIndex;
+                                        }
                                     }
                                 }
                             }

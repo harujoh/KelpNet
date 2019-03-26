@@ -67,6 +67,7 @@
     <Compile Include="UnitTest\Functions\Connections\TestLSTM.cs" />
     <Compile Include="UnitTest\Functions\Normalization\TestBatchNormalization.cs" />
     <Compile Include="UnitTest\Functions\Normalization\TestLRN.cs" />
+    <Compile Include="UnitTest\Functions\Poolings\TestAveragePooling2D.cs" />
     <Compile Include="UnitTest\Functions\Poolings\TestMaxPooling2D.cs" />
     <Compile Include="UnitTest\Loss\TestMeanSquaredError.cs" />
     <Compile Include="UnitTest\Loss\TestSoftmaxCrossEntropy.cs" />

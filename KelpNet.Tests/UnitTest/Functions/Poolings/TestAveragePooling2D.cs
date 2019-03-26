@@ -7,30 +7,10 @@ using NConstrictor;
 namespace KelpNet.Tests
 {
     [TestClass]
-    public class TestMaxPooling2D
+    public class TestAveragePooling2D
     {
         [TestMethod]
-        public void MaxPoolingCPURandomTest()
-        {
-            RandomTest(false);
-        }
-
-        [TestMethod]
-        public void MaxPoolingGPURandomTest()
-        {
-            Weaver.Initialize();
-
-            if (Weaver.Enable)
-            {
-                RandomTest(true);
-            }
-            else
-            {
-                Assert.Inconclusive();
-            }
-        }
-
-        public void RandomTest(bool gpuEnable)
+        public void AVGPoolingRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
@@ -46,26 +26,21 @@ namespace KelpNet.Tests
             int strideX = 1;//Mother.Dice.Next(1, 5);
             int strideY = 1;//Mother.Dice.Next(1, 5);
 
-            //todo pad埋めがKelpNetは0固定だがChainerは-infinity
             int padX = 0;//Mother.Dice.Next(0, 5);
             int padY = 0;//Mother.Dice.Next(0, 5);
 
-            bool coverAll = Mother.Dice.Next(1) == 0;
 
-            int outputHeight = coverAll ?
-                (int)Math.Floor((heightSize - kHeight + padY * 2.0 + strideY - 1) / strideY) + 1 :
-                (int)Math.Floor((heightSize - kHeight + padY * 2.0) / strideY) + 1;
+            int outputHeight = (int)Math.Floor((heightSize - kHeight + padY * 2.0) / strideY) + 1;
 
-            int outputWidth = coverAll ?
-                (int)Math.Floor((wideSize - kWidth + padX * 2.0 + strideX - 1) / strideX) + 1 :
-                (int)Math.Floor((wideSize - kWidth + padX * 2.0) / strideX) + 1;
+            int outputWidth = (int)Math.Floor((wideSize - kWidth + padX * 2.0) / strideX) + 1;
 
             Real[,,,] input = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, heightSize, wideSize });
 
-            Real[,,,] dummyGy = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, outputHeight, outputWidth });
+            Real[,,,] dummyGy =
+                (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, outputHeight, outputWidth });
 
             //Chainer
-            NChainer.MaxPooling2D<Real> cMaxPooling2D = new NChainer.MaxPooling2D<Real>(
+            NChainer.AveragePooling2D<Real> cMaxPooling2D = new NChainer.AveragePooling2D<Real>(
                 new[] { kHeight, kWidth },
                 new[] { strideY, strideX },
                 new[] { padY, padX }
@@ -80,11 +55,10 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.MaxPooling2D maxPooling2D = new KelpNet.MaxPooling2D(
+            KelpNet.AveragePooling2D maxPooling2D = new KelpNet.AveragePooling2D(
                 new Size(kWidth, kHeight),
                 new Size(strideX, strideY),
-                new Size(padX, padY),
-                gpuEnable: gpuEnable);
+                new Size(padX, padY));
 
             NdArray x = new NdArray(Real.ToRealArray(input), new[] { chCount, heightSize, wideSize }, batchCount);
 
@@ -105,7 +79,7 @@ namespace KelpNet.Tests
             //y
             for (int i = 0; i < y.Data.Length; i++)
             {
-                if (!float.IsInfinity(cYdata[i]))
+                if (cYdata[i] < float.Epsilon && cYdata[i] > -float.Epsilon)
                 {
                     Assert.AreEqual(cYdata[i], y.Data[i], delta);
                 }
