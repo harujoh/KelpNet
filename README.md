@@ -81,8 +81,8 @@ Twitter: https://twitter.com/harujoh
 　・Linear
 　・LSTM
 - Poolings:
-　・AveragePooling
-　・MaxPooling
+　・AveragePooling2D
+　・MaxPooling2D
 - LossFunctions:
 　・MeanSquaredError
 　・SoftmaxCrossEntropy
