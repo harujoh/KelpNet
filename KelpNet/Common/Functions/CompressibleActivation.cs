@@ -37,7 +37,14 @@ namespace KelpNet
             string kernelNameBase = functionName.Replace(" ", "");
             this.ActivateKernelString = Weaver.GetKernelSource(Resources.Activation).Replace("/*kernelNameBase*/", kernelNameBase);
 
-            ActivationParameters = parameters;
+            if (parameters == null)
+            {
+                ActivationParameters = new KeyValuePair<string, string>[]{};
+            }
+            else
+            {
+                ActivationParameters = parameters;
+            }
 
             this.ForwardKernelName = kernelNameBase + "Forward";
             this.BackwardKernelName = kernelNameBase + "Backward";
@@ -71,12 +78,9 @@ namespace KelpNet
             {
                 string kernelSource = this.ActivateFunctionString;
 
-                if (this.ActivationParameters != null)
+                foreach (var parameter in this.ActivationParameters)
                 {
-                    foreach (var parameter in this.ActivationParameters)
-                    {
-                        kernelSource = this.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
-                    }
+                    kernelSource = this.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
                 }
 
                 kernelSource += this.ActivateKernelString;
