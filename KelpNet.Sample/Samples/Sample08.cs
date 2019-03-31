@@ -64,8 +64,6 @@ namespace KelpNet.Sample
             NdArray x = new NdArray(new[] { 1 }, MINI_BATCH_SIZE);
             NdArray t = new NdArray(new[] { 1 }, MINI_BATCH_SIZE);
 
-            Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
-
             for (int i = 0; i < LENGTH_OF_SEQUENCE - 1; i++)
             {
                 for (int j = 0; j < MINI_BATCH_SIZE; j++)
@@ -76,12 +74,7 @@ namespace KelpNet.Sample
 
                 NdArray[] result = model.Forward(x);
                 totalLoss += new MeanSquaredError().Evaluate(result, t);
-                backNdArrays.Push(result);
-            }
-
-            for (int i = 0; backNdArrays.Count > 0; i++)
-            {
-                model.Backward(backNdArrays.Pop());
+                model.Backward(result);
             }
 
             return totalLoss / (LENGTH_OF_SEQUENCE - 1);

@@ -38,10 +38,11 @@ namespace KelpNet
                 if (x.Grad == null) x.ClearGrad();
             }
 
+            UsedPrevInputs.Add(xs);
+
             MultiOutputBackward(ys[0], xs);
 
             //使い切ったら復活
-            UsedPrevInputs.Add(xs);
             if (PrevInputs.Count == 0)
             {
                 PrevInputs.AddRange(UsedPrevInputs);

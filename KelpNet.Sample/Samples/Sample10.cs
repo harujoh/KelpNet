@@ -60,8 +60,6 @@ namespace KelpNet.Sample
             int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
             int epoch = 0;
 
-            Stack<NdArray[]> backNdArrays = new Stack<NdArray[]>();
-
             Console.WriteLine("Train Start.");
 
             for (int i = 0; i < jump * N_EPOCH; i++)
@@ -77,18 +75,12 @@ namespace KelpNet.Sample
 
                 NdArray[] result = model.Forward(x);
                 Real sumLoss = new SoftmaxCrossEntropy().Evaluate(result, t);
-                backNdArrays.Push(result);
                 Console.WriteLine("[{0}/{1}] Loss: {2}", i + 1, jump, sumLoss);
+                model.Backward(result);
 
                 //Run truncated BPTT
                 if ((i + 1) % BPROP_LEN == 0)
                 {
-                    for (int j = 0; backNdArrays.Count > 0; j++)
-                    {
-                        Console.WriteLine("backward" + backNdArrays.Count);
-                        model.Backward(backNdArrays.Pop());
-                    }
-
                     model.Update();
                     model.ResetState();
                 }

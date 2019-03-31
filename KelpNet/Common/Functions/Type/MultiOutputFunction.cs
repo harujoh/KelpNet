@@ -49,16 +49,17 @@ namespace KelpNet
                 NdArray[] prevys = PrevOutputs[PrevOutputs.Count - 1];
                 PrevOutputs.RemoveAt(PrevOutputs.Count - 1);
 
+                UsedPrevInputs.Add(xs);
+                UsedPrevOutputs.Add(prevys);
+
                 SingleOutputBackward(prevys, xs[0]);
 
-                UsedPrevInputs.Add(xs);
                 if (PrevInputs.Count == 0)
                 {
                     PrevInputs.AddRange(UsedPrevInputs);
                     UsedPrevInputs.Clear();
                 }
 
-                UsedPrevOutputs.Add(prevys);
                 if (PrevOutputs.Count == 0)
                 {
                     PrevOutputs.AddRange(UsedPrevOutputs);

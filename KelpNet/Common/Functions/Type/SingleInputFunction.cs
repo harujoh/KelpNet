@@ -34,10 +34,11 @@ namespace KelpNet
             xs[0].UseCount--;
             if(xs[0].Grad == null)xs[0].ClearGrad();
 
+            UsedPrevInputs.Add(xs);
+
             SingleOutputBackward(ys[0], xs[0]);
 
             //使い切ったら復活
-            UsedPrevInputs.Add(xs);
             if (PrevInputs.Count == 0)
             {
                 PrevInputs.AddRange(UsedPrevInputs);

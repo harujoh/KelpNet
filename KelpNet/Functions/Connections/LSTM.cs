@@ -186,21 +186,27 @@ namespace KelpNet
 
             Real[] lcNextParam = this.cNextParam[this.cPrevParam.Count - 1];
             this.cNextParam.RemoveAt(this.cNextParam.Count - 1);
+            this.cUsedNextParam.Add(lcNextParam);
 
             Real[] tanh_a = this.aParam[this.aParam.Count - 1];
             this.aParam.RemoveAt(this.aParam.Count - 1);
+            this.aUsedParam.Add(tanh_a);
 
             Real[] sig_i = this.iParam[this.iParam.Count - 1];
             this.iParam.RemoveAt(this.iParam.Count - 1);
+            this.iUsedParam.Add(sig_i);
 
             Real[] sig_f = this.fParam[this.fParam.Count - 1];
             this.fParam.RemoveAt(this.fParam.Count - 1);
+            this.fUsedParam.Add(sig_f);
 
             Real[] sig_o = this.oParam[this.oParam.Count - 1];
             this.oParam.RemoveAt(this.oParam.Count - 1);
+            this.oUsedParam.Add(sig_o);
 
             Real[] lcPrev = this.cPrevParam[this.cPrevParam.Count - 1];
             this.cPrevParam.RemoveAt(this.cPrevParam.Count - 1);
+            this.cUsedPrevParam.Add(lcPrev);
 
             for (int b = 0; b < y.BatchCount; b++)
             {
@@ -234,12 +240,12 @@ namespace KelpNet
 
                 NdArray hPrevParam = hPrevParams[hPrevParams.Count - 1];
                 hPrevParams.RemoveAt(hPrevParams.Count - 1);
+                hUsedPrevParams.Add(hPrevParam);
 
                 //hのBakckward
                 this.Backward(hPrevParam);
 
                 //使い切ったら戻す
-                hUsedPrevParams.Add(hPrevParam);
                 if (hPrevParams.Count == 0)
                 {
                     hPrevParams.AddRange(hUsedPrevParams);
@@ -253,12 +259,6 @@ namespace KelpNet
             this.upward.Backward(gy);
 
             //linearのBackwardはgxPrev.Gradしか使わないのでgxPrev.Dataは空
-            this.cUsedNextParam.Add(lcNextParam);
-            this.aUsedParam.Add(tanh_a);
-            this.iUsedParam.Add(sig_i);
-            this.fUsedParam.Add(sig_f);
-            this.oUsedParam.Add(sig_o);
-            this.cUsedPrevParam.Add(lcPrev);
             //使い切ったら戻す
             if (cNextParam.Count == 0)
             {

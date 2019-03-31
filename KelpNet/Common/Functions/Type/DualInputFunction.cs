@@ -39,9 +39,10 @@ namespace KelpNet
             if (xs[0].Grad == null) xs[0].ClearGrad();
             if (xs[1].Grad == null) xs[1].ClearGrad();
 
+            UsedPrevInputs.Add(xs);
+
             DualOutputBackward(ys[0], xs[0], xs[1]);
 
-            UsedPrevInputs.Add(xs);
             if (PrevInputs.Count == 0)
             {
                 PrevInputs.AddRange(UsedPrevInputs);
