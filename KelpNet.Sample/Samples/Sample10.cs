@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using KelpNet.Tools;
 
 namespace KelpNet.Sample
@@ -50,6 +49,17 @@ namespace KelpNet.Sample
                 new Dropout(),
                 new Linear(N_UNITS, nVocab, name: "l4 Linear")
             );
+
+            for (int i = 0; i < model.Functions.Length; i++)
+            {
+                for (int j = 0; j < model.Functions[i].Parameters.Length; j++)
+                {
+                    for (int k = 0; k < model.Functions[i].Parameters[j].Data.Length; k++)
+                    {
+                        model.Functions[i].Parameters[j].Data[k] = (Mother.Dice.NextDouble() * 2.0 - 1.0) / 10.0;
+                    }
+                }
+            }
 
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
             GradientClipping gradientClipping = new GradientClipping(threshold: GRAD_CLIP);

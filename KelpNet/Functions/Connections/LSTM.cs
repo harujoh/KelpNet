@@ -43,12 +43,14 @@ namespace KelpNet
 
             List<NdArray> functionParameters = new List<NdArray>();
 
-            Real[] lateralW = new Real[outSize * outSize * 4];
-            Real[] upwardW = new Real[inSize * outSize * 4];
-            Real[] upwardb = new Real[outSize * 4];
+            Real[] lateralW = null;
+            Real[] upwardW = null;
+            Real[] upwardb = null;
 
             if (upwardInit != null)
             {
+                upwardW = new Real[inSize * outSize * 4];
+
                 Real[] tmpUpwardInit = Real.ToRealArray(upwardInit);
 
                 for (int i = 0; i < 4; i++)
@@ -59,6 +61,8 @@ namespace KelpNet
 
             if (lateralInit != null)
             {
+                lateralW = new Real[outSize * outSize * 4];
+
                 Real[] tmpLateralInit = Real.ToRealArray(lateralInit);
 
                 for (int i = 0; i < 4; i++)
@@ -67,8 +71,10 @@ namespace KelpNet
                 }
             }
 
-            if (biasInit != null)
+            if (biasInit != null && forgetBiasInit != null)
             {
+                upwardb = new Real[outSize * 4];
+
                 Real[] tmpBiasInit = Real.ToRealArray(biasInit);
 
                 for (int i = 0; i < biasInit.Length; i++)
@@ -77,11 +83,9 @@ namespace KelpNet
                     upwardb[i * 4 + 1] = tmpBiasInit[i];
                     upwardb[i * 4 + 3] = tmpBiasInit[i];
                 }
-            }
 
-            if (forgetBiasInit != null)
-            {
                 Real[] tmpforgetBiasInit = Real.ToRealArray(forgetBiasInit);
+
                 for (int i = 0; i < tmpforgetBiasInit.Length; i++)
                 {
                     upwardb[i * 4 + 2] = tmpforgetBiasInit[i];

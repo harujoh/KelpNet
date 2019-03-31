@@ -11,11 +11,11 @@ namespace KelpNet
         //初期値が入力されなかった場合、この関数で初期化を行う
         public static void InitWeight(NdArray array, double masterScale = 1.0)
         {
-            double s = 1.0 / Math.Sqrt(2) * Math.Sqrt(2.0 / array.Length);
+            double s = masterScale * Math.Sqrt(2.0 / array.Length);
 
             for (int i = 0; i < array.Data.Length; i++)
             {
-                array.Data[i] = Mother.RandomNormal(s) * masterScale;
+                array.Data[i] = Mother.RandomNormal(s);
             }
         }
 
