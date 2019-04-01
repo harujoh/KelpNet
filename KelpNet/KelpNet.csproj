@@ -128,7 +128,7 @@
     <None Include="OpenCL\Connections\Deconvolution2D.cl" />
     <None Include="OpenCL\Connections\Linear.cl" />
     <None Include="OpenCL\Noise\Dropout.cl" />
-    <None Include="OpenCL\Poolings\MaxPooling.cl" />
+    <None Include="OpenCL\Poolings\MaxPooling2D.cl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenCL\Connections\Convolution2D.cl" />

@@ -136,8 +136,8 @@
   <data name="Linear" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\OpenCL\Connections\Linear.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="MaxPooling" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\OpenCL\Poolings\MaxPooling.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="MaxPooling2D" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\OpenCL\Poolings\MaxPooling2D.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="ReLU" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\OpenCL\Activations\ReLU.cl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

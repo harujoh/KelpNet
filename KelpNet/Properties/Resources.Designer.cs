@@ -123,9 +123,9 @@ namespace KelpNet.Properties {
         /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
-        internal static byte[] MaxPooling {
+        internal static byte[] MaxPooling2D {
             get {
-                object obj = ResourceManager.GetObject("MaxPooling", resourceCulture);
+                object obj = ResourceManager.GetObject("MaxPooling2D", resourceCulture);
                 return ((byte[])(obj));
             }
         }

@@ -10,7 +10,7 @@ namespace KelpNet
     [Serializable]
     public class MaxPooling2D : SingleInputFunction, IParallelizable
     {
-        const string FUNCTION_NAME = "MaxPooling";
+        const string FUNCTION_NAME = "MaxPooling2D";
 
         private int _kWidth;
         private int _kHeight;
@@ -91,7 +91,7 @@ namespace KelpNet
         public void CreateKernel()
         {
             if (GpuEnable)
-                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(Resources.MaxPooling)).CreateKernel("MaxPoolingForward");
+                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(Resources.MaxPooling2D)).CreateKernel("MaxPoolingForward");
         }
 
         private NdArray ForwardCpu(NdArray input)
@@ -156,8 +156,12 @@ namespace KelpNet
 
         private NdArray ForwardGpu(NdArray input)
         {
-            int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
-            int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
+            int outputHeight = _coverAll ?
+                (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0 + this._strideY - 1.0) / this._strideY) + 1 :
+                (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
+            int outputWidth = _coverAll ?
+                (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0 + this._strideX - 1.0) / this._strideX) + 1 :
+                (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, input.Data))
