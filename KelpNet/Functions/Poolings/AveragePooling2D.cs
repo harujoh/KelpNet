@@ -51,41 +51,80 @@ namespace KelpNet
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
-            Real[] result = new Real[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
+            Real[] result = new Real[input.BatchCount * input.Shape[0] * outputHeight * outputWidth];
             Real m = this._kHeight * this._kWidth;
 
             for (int b = 0; b < input.BatchCount; b++)
             {
-                int resultIndex = b * input.Shape[0] * outputHeight * outputWidth;
+                int outBatchOffset = b * input.Shape[0] * outputHeight * outputWidth;
+                int inBatchOffset = b * input.Length;
 
                 for (int i = 0; i < input.Shape[0]; i++)
                 {
-                    int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
+                    int outChOffset = outBatchOffset + i * outputHeight * outputWidth;
+                    int inChOffset = inBatchOffset + i * input.Shape[1] * input.Shape[2];
 
                     for (int y = 0; y < outputHeight; y++)
                     {
-                        int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
-                        int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
+                        int inIndexY = y * _strideY - _padY;
+                        int dyLimit = this._kHeight < input.Shape[1] - inIndexY ? this._kHeight : input.Shape[1] - inIndexY;
+                        int dyStart = inIndexY < 0 ? -inIndexY : 0;
 
                         for (int x = 0; x < outputWidth; x++)
                         {
-                            int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
-                            int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
+                            int inIndexX = x * _strideX - _padX;
+                            int dxLimit = this._kWidth < input.Shape[2] - inIndexX ? this._kWidth : input.Shape[2] - inIndexX;
+                            int dxStart = inIndexX < 0 ? -inIndexX : 0;
 
-                            for (int dy = dyOffset; dy < dyLimit; dy++)
+                            int inBaseIndex = inChOffset + inIndexY * input.Shape[2] + inIndexX;
+                            int outIndex = outChOffset + y * outputWidth + x;
+
+                            for (int dy = dyStart; dy < dyLimit; dy++)
                             {
-                                for (int dx = dxOffset; dx < dxLimit; dx++)
+                                for (int dx = dxStart; dx < dxLimit; dx++)
                                 {
-                                    int inputindex = inputIndexOffset + dy * input.Shape[2] + dx;
-                                    result[resultIndex] += input.Data[inputindex + input.Length * b] / m;
+                                    int inputIndex = inBaseIndex + dy * input.Shape[2] + dx;
+
+                                    result[outIndex] += input.Data[inputIndex] / m;
                                 }
                             }
-
-                            resultIndex++;
                         }
                     }
                 }
             }
+
+            //for (int b = 0; b < input.BatchCount; b++)
+            //{
+            //    int resultIndex = b * input.Shape[0] * outputHeight * outputWidth;
+
+            //    for (int i = 0; i < input.Shape[0]; i++)
+            //    {
+            //        int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
+
+            //        for (int y = 0; y < outputHeight; y++)
+            //        {
+            //            int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
+            //            int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
+
+            //            for (int x = 0; x < outputWidth; x++)
+            //            {
+            //                int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
+            //                int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
+
+            //                for (int dy = dyOffset; dy < dyLimit; dy++)
+            //                {
+            //                    for (int dx = dxOffset; dx < dxLimit; dx++)
+            //                    {
+            //                        int inputindex = inputIndexOffset + dy * input.Shape[2] + dx;
+            //                        result[resultIndex] += input.Data[inputindex + input.Length * b] / m;
+            //                    }
+            //                }
+
+            //                resultIndex++;
+            //            }
+            //        }
+            //    }
+            //}
 
             return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
@@ -94,40 +133,81 @@ namespace KelpNet
         {
             Real m = this._kHeight * this._kWidth;
 
-            for (int b = 0; b < y.BatchCount; b++)
+            for (int b = 0; b < x.BatchCount; b++)
             {
-                int gyIndex = b * y.Length;
+                int outBatchOffset = b * y.Shape[0] * y.Shape[1] * y.Shape[2];
+                int inBatchOffset = b * x.Length;
 
                 for (int i = 0; i < x.Shape[0]; i++)
                 {
-                    int resultIndexOffset = b * x.Length + i * x.Shape[1] * x.Shape[2];
+                    int outChOffset = outBatchOffset + i * y.Shape[1] * y.Shape[2];
+                    int inChOffset = inBatchOffset + i * x.Shape[1] * x.Shape[2];
 
-                    for (int posY = 0; posY < y.Shape[1]; posY++)
+                    for (int outY = 0; outY < y.Shape[1]; outY++)
                     {
-                        int dyOffset = posY * this._strideY - this._padY < 0 ? 0 : posY * this._strideY - this._padY;
-                        int dyLimit = this._kHeight + dyOffset < x.Shape[1] ? this._kHeight + dyOffset : x.Shape[1];
+                        int inIndexY = outY * _strideY - _padY;
+                        int dyLimit = this._kHeight < x.Shape[1] - inIndexY ? this._kHeight : x.Shape[1] - inIndexY;
+                        int dyStart = inIndexY < 0 ? -inIndexY : 0;
 
-                        for (int posX = 0; posX < y.Shape[2]; posX++)
+                        for (int outX = 0; outX < y.Shape[2]; outX++)
                         {
-                            int dxOffset = posX * this._strideX - this._padX < 0 ? 0 : posX * this._strideX - this._padX;
-                            int dxLimit = this._kWidth + dxOffset < x.Shape[2] ? this._kWidth + dxOffset : x.Shape[2];
+                            int inIndexX = outX * _strideX - _padX;
+                            int dxLimit = this._kWidth < x.Shape[2] - inIndexX ? this._kWidth : x.Shape[2] - inIndexX;
+                            int dxStart = inIndexX < 0 ? -inIndexX : 0;
 
-                            Real gyData = y.Grad[gyIndex] / m;
+                            int inBaseIndex = inChOffset + inIndexY * x.Shape[2] + inIndexX;
+                            int outIndex = outChOffset + outY * y.Shape[2] + outX;
 
-                            for (int dy = dyOffset; dy < dyLimit; dy++)
+                            Real gyData = y.Grad[outIndex] / m;
+
+                            for (int dy = dyStart; dy < dyLimit; dy++)
                             {
-                                for (int dx = dxOffset; dx < dxLimit; dx++)
+                                for (int dx = dxStart; dx < dxLimit; dx++)
                                 {
-                                    int resultIndex = resultIndexOffset + dy * x.Shape[2] + dx;
-                                    x.Grad[resultIndex] += gyData;
+                                    int inputIndex = inBaseIndex + dy * x.Shape[2] + dx;
+
+                                    x.Grad[inputIndex] += gyData;
                                 }
                             }
-
-                            gyIndex++;
                         }
                     }
                 }
             }
+
+            //for (int b = 0; b < y.BatchCount; b++)
+            //{
+            //    int gyIndex = b * y.Length;
+
+            //    for (int i = 0; i < x.Shape[0]; i++)
+            //    {
+            //        int resultIndexOffset = b * x.Length + i * x.Shape[1] * x.Shape[2];
+
+            //        for (int posY = 0; posY < y.Shape[1]; posY++)
+            //        {
+            //            int dyOffset = posY * this._strideY - this._padY < 0 ? 0 : posY * this._strideY - this._padY;
+            //            int dyLimit = this._kHeight + dyOffset < x.Shape[1] ? this._kHeight + dyOffset : x.Shape[1];
+
+            //            for (int posX = 0; posX < y.Shape[2]; posX++)
+            //            {
+            //                int dxOffset = posX * this._strideX - this._padX < 0 ? 0 : posX * this._strideX - this._padX;
+            //                int dxLimit = this._kWidth + dxOffset < x.Shape[2] ? this._kWidth + dxOffset : x.Shape[2];
+
+            //                Real gyData = y.Grad[gyIndex] / m;
+
+            //                for (int dy = dyOffset; dy < dyLimit; dy++)
+            //                {
+            //                    for (int dx = dxOffset; dx < dxLimit; dx++)
+            //                    {
+            //                        int resultIndex = resultIndexOffset + dy * x.Shape[2] + dx;
+            //                        x.Grad[resultIndex] += gyData;
+            //                    }
+            //                }
+
+            //                gyIndex++;
+            //            }
+            //        }
+            //    }
+            //}
         }
     }
 }

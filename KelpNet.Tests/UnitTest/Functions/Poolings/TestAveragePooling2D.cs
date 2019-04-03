@@ -23,11 +23,11 @@ namespace KelpNet.Tests
             int kWidth = Mother.Dice.Next(1, 5);
             int kHeight = Mother.Dice.Next(1, 5);
 
-            int strideX = 1;//Mother.Dice.Next(1, 5);
-            int strideY = 1;//Mother.Dice.Next(1, 5);
+            int strideX = Mother.Dice.Next(1, 5);
+            int strideY = Mother.Dice.Next(1, 5);
 
-            int padX = 0;//Mother.Dice.Next(0, 5);
-            int padY = 0;//Mother.Dice.Next(0, 5);
+            int padX = Mother.Dice.Next(0, 5);
+            int padY = Mother.Dice.Next(0, 5);
 
 
             int outputHeight = (int)Math.Floor((heightSize - kHeight + padY * 2.0) / strideY) + 1;
@@ -36,8 +36,7 @@ namespace KelpNet.Tests
 
             Real[,,,] input = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, heightSize, wideSize });
 
-            Real[,,,] dummyGy =
-                (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, outputHeight, outputWidth });
+            Real[,,,] dummyGy = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, outputHeight, outputWidth });
 
             //Chainer
             NChainer.AveragePooling2D<Real> cMaxPooling2D = new NChainer.AveragePooling2D<Real>(
@@ -71,7 +70,7 @@ namespace KelpNet.Tests
             Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad.Copy());
 
             //許容範囲を算出
-            double delta = 1;//0.00001;
+            double delta = 0.00001;
 
             Assert.AreEqual(cYdata.Length, y.Data.Length);
             Assert.AreEqual(cXgrad.Length, x.Grad.Length);

@@ -104,51 +104,55 @@ namespace KelpNet
                 (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
 
+            for (int i = 0; i < outputIndices.Length; i++)
+            {
+                outputIndices[i] = -1;
+            }
+
             for (int b = 0; b < input.BatchCount; b++)
             {
-                int resultIndex = b * input.Shape[0] * outputHeight * outputWidth;
+                int outBatchOffset = b * input.Shape[0] * outputHeight * outputWidth;
+                int inBatchOffset = b * input.Length;
 
                 for (int i = 0; i < input.Shape[0]; i++)
                 {
-                    int inputIndexOffset = b * input.Length + i * input.Shape[1] * input.Shape[2];
+                    int outChOffset = outBatchOffset + i * outputHeight * outputWidth;
+                    int inChOffset = inBatchOffset + i * input.Shape[1] * input.Shape[2];
 
                     for (int y = 0; y < outputHeight; y++)
                     {
-                        int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
-                        int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
+                        int inIndexY = y * _strideY - _padY;
+                        int dyLimit = this._kHeight < input.Shape[1] - inIndexY ? this._kHeight : input.Shape[1] - inIndexY;
+                        int dyStart = inIndexY < 0 ? -inIndexY : 0;
 
                         for (int x = 0; x < outputWidth; x++)
                         {
-                            int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
-                            int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
+                            int inIndexX = x * _strideX - _padX;
+                            int dxLimit = this._kWidth < input.Shape[2] - inIndexX ? this._kWidth : input.Shape[2] - inIndexX;
+                            int dxStart = inIndexX < 0 ? -inIndexX : 0;
 
-                            if (dyOffset < dyLimit && dxOffset < dxLimit)
+                            int inBaseIndex = inChOffset + inIndexY * input.Shape[2] + inIndexX;
+                            int outIndex = outChOffset + y * outputWidth + x;
+
+                            Real maxVal = float.NegativeInfinity;
+                            outputIndices[outIndex] = -1;
+
+                            for (int dy = dyStart; dy < dyLimit; dy++)
                             {
-                                int inputIndex = inputIndexOffset + dyOffset * input.Shape[2] + dxOffset;
-
-                                Real maxVal = input.Data[inputIndex];
-                                outputIndices[resultIndex] = inputIndex;
-
-                                for (int dy = dyOffset; dy < dyLimit; dy++)
+                                for (int dx = dxStart; dx < dxLimit; dx++)
                                 {
-                                    for (int dx = dxOffset + 1; dx < dxLimit; dx++)
-                                    {
-                                        inputIndex = inputIndexOffset + dy * input.Shape[2] + dx;
+                                    int inputIndex = inBaseIndex + dy * input.Shape[2] + dx;
 
-                                        if (maxVal < input.Data[inputIndex])
-                                        {
-                                            maxVal = input.Data[inputIndex];
-                                            outputIndices[resultIndex] = inputIndex;
-                                        }
+                                    if (maxVal < input.Data[inputIndex])
+                                    {
+                                        maxVal = input.Data[inputIndex];
+                                        outputIndices[outIndex] = inputIndex;
                                     }
                                 }
                             }
-
-                            resultIndex++;
                         }
                     }
                 }
-
             }
 
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);
@@ -203,7 +207,14 @@ namespace KelpNet
 
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = input.Data[outputIndices[i]];
+                if (outputIndices[i] == -1)
+                {
+                    result[i] = float.NegativeInfinity;
+                }
+                else
+                {
+                    result[i] = input.Data[outputIndices[i]];
+                }
             }
 
             this._outputIndicesList.Add(outputIndices);
@@ -218,7 +229,10 @@ namespace KelpNet
 
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                x.Grad[outputIndices[i]] += y.Grad[i];
+                if (outputIndices[i] != -1)
+                {
+                    x.Grad[outputIndices[i]] += y.Grad[i];
+                }
             }
         }
     }

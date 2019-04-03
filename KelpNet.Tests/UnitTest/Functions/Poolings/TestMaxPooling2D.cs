@@ -43,12 +43,11 @@ namespace KelpNet.Tests
             int kWidth = Mother.Dice.Next(1, 5);
             int kHeight = Mother.Dice.Next(1, 5);
 
-            int strideX = 1;//Mother.Dice.Next(1, 5);
-            int strideY = 1;//Mother.Dice.Next(1, 5);
+            int strideX = Mother.Dice.Next(1, 5);
+            int strideY = Mother.Dice.Next(1, 5);
 
-            //todo pad埋めがKelpNetは0固定だがChainerは-infinity
-            int padX = 0;//Mother.Dice.Next(0, 5);
-            int padY = 0;//Mother.Dice.Next(0, 5);
+            int padX = Mother.Dice.Next(0, 5);
+            int padY = Mother.Dice.Next(0, 5);
 
             bool coverAll = Mother.Dice.Next(1) == 0;
 
@@ -97,7 +96,7 @@ namespace KelpNet.Tests
             Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad.Copy());
 
             //許容範囲を算出
-            double delta = 1;//0.00001;
+            double delta = 0.00001;
 
             Assert.AreEqual(cYdata.Length, y.Data.Length);
             Assert.AreEqual(cXgrad.Length, x.Grad.Length);
@@ -105,10 +104,7 @@ namespace KelpNet.Tests
             //y
             for (int i = 0; i < y.Data.Length; i++)
             {
-                if (!float.IsInfinity(cYdata[i]))
-                {
-                    Assert.AreEqual(cYdata[i], y.Data[i], delta);
-                }
+                Assert.AreEqual(cYdata[i], y.Data[i], delta);
             }
 
             //x.grad
