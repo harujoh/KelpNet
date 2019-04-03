@@ -68,6 +68,7 @@
     <Compile Include="Functions\Normalization\LocalResponseNormalization.cs" />
     <Compile Include="Functions\Pooling\AveragePooling2D.cs" />
     <Compile Include="Functions\Pooling\MaxPooling2D.cs" />
+    <Compile Include="Optimizers\Adam.cs" />
     <Compile Include="Optimizers\SGD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Variable.cs" />

@@ -72,6 +72,7 @@
     <Compile Include="UnitTest\Loss\TestMeanSquaredError.cs" />
     <Compile Include="UnitTest\Loss\TestSoftmaxCrossEntropy.cs" />
     <Compile Include="UnitTest\Functions\Connections\TestLinear.cs" />
+    <Compile Include="UnitTest\Optimizers\TestAdam.cs" />
     <Compile Include="UnitTest\Optimizers\TestSGD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTest\Functions\Mathmetrics\TestBasicMath.cs" />

@@ -7,7 +7,7 @@ namespace KelpNet
     [Serializable]
     public abstract class Optimizer
     {
-        public long UpdateCount = 1;
+        public long UpdateCount = 0;
         protected List<OptimizerParameter> OptimizerParameters = new List<OptimizerParameter>();
 
         internal abstract void AddFunctionParameters(NdArray[] functionParameters);
@@ -19,12 +19,13 @@ namespace KelpNet
 
         public void Update()
         {
-            bool isUpdated = false;
+            if (this.OptimizerParameters[0].FunctionParameter.TrainCount != 0)
+            {
+                this.UpdateCount++;
+            }
 
             for (int i = 0; i < this.OptimizerParameters.Count; i++)
             {
-                if (this.OptimizerParameters[i].FunctionParameter.TrainCount != 0) isUpdated = true;
-
                 //傾きの割引を実行
                 this.OptimizerParameters[i].FunctionParameter.Reduce();
 
@@ -34,11 +35,6 @@ namespace KelpNet
 
                 //カウンタをリセット
                 this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
-            }
-
-            if (isUpdated)
-            {
-                this.UpdateCount++;
             }
         }
 

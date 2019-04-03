@@ -11,8 +11,9 @@ namespace KelpNet
         public Real Epsilon;
         public Real Eta;
         public Real WeightDecayRate;
+        public bool IsAmsGrad;
 
-        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0, double weightDecayRate = 0)
+        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0, double weightDecayRate = 0, bool isAmsGrad = false)
         {
             this.Alpha = alpha;
             this.Beta1 = beta1;
@@ -20,13 +21,66 @@ namespace KelpNet
             this.Epsilon = epsilon;
             this.Eta = eta;
             this.WeightDecayRate = weightDecayRate;
+            this.IsAmsGrad = isAmsGrad;
         }
 
         internal override void AddFunctionParameters(NdArray[] functionParameters)
         {
-            foreach (NdArray functionParameter in functionParameters)
+            if (this.IsAmsGrad)
             {
-                this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
+                foreach (NdArray functionParameter in functionParameters)
+                {
+                    this.OptimizerParameters.Add(new AmsGradParameter(functionParameter, this));
+                }
+            }
+            else
+            {
+                foreach (NdArray functionParameter in functionParameters)
+                {
+                    this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
+                }
+            }
+        }
+    }
+
+    [Serializable]
+    class AmsGradParameter : OptimizerParameter
+    {
+        private readonly Adam _optimizer;
+
+        private readonly Real[] m;
+        private readonly Real[] v;
+        private readonly Real[] vhat;
+
+        public AmsGradParameter(NdArray parameter, Adam optimizer) : base(parameter)
+        {
+            this.m = new Real[parameter.Data.Length];
+            this.v = new Real[parameter.Data.Length];
+            this.vhat = new Real[parameter.Data.Length];
+
+            this._optimizer = optimizer;
+        }
+
+        public override void UpdateFunctionParameters()
+        {
+            Real fix1 = 1 - Math.Pow(this._optimizer.Beta1, this._optimizer.UpdateCount);
+            Real fix2 = 1 - Math.Pow(this._optimizer.Beta2, this._optimizer.UpdateCount);
+
+            Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
+
+            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            {
+                Real grad = this.FunctionParameter.Grad[i];
+
+                this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
+                this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
+
+                if (this.vhat[i] < this.v[i])
+                {
+                    this.vhat[i] = this.v[i];
+                }
+
+                this.FunctionParameter.Data[i] -= this._optimizer.Eta * (learningRate * this.m[i] / (Math.Sqrt(this.vhat[i]) + this._optimizer.Epsilon) + this._optimizer.WeightDecayRate * this.FunctionParameter.Data[i]);
             }
         }
     }
@@ -49,17 +103,8 @@ namespace KelpNet
 
         public override void UpdateFunctionParameters()
         {
-            Real fix1 = this._optimizer.Beta1;
-            Real fix2 = this._optimizer.Beta2;
-
-            for (int i = 1; i < this._optimizer.UpdateCount; i++)
-            {
-                fix1 *= this._optimizer.Beta1;
-                fix2 *= this._optimizer.Beta2;
-            }
-
-            fix1 = 1 - fix1;
-            fix2 = 1 - fix2;
+            Real fix1 = 1 - Math.Pow(this._optimizer.Beta1, this._optimizer.UpdateCount);
+            Real fix2 = 1 - Math.Pow(this._optimizer.Beta2, this._optimizer.UpdateCount);
 
             Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
@@ -70,7 +115,7 @@ namespace KelpNet
                 this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                this.FunctionParameter.Data[i] -= this._optimizer.Eta * (learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon)) + this._optimizer.WeightDecayRate * this.FunctionParameter.Data[i];
+                this.FunctionParameter.Data[i] -= this._optimizer.Eta * (learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon) + this._optimizer.WeightDecayRate * this.FunctionParameter.Data[i]);
             }
         }
     }
