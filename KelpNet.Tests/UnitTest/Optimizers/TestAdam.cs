@@ -8,13 +8,13 @@ namespace KelpNet.Tests
     public class TestAdam
     {
         [TestMethod]
-        public void AdamTest()
+        public void AdamRandomTest()
         {
             RandomTest(false);
         }
 
         [TestMethod]
-        public void AMSGradTest()
+        public void AMSGradRandomTest()
         {
             RandomTest(true);
         }

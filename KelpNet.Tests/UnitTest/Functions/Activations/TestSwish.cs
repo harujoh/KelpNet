@@ -8,7 +8,7 @@ namespace KelpNet.Tests
     public class TestSwish
     {
         [TestMethod]
-        public void ConcatRandomTest()
+        public void SwishRandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
