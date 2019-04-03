@@ -90,6 +90,7 @@ Twitter: https://twitter.com/harujoh
 　・AdaDelta
 　・AdaGrad
 　・Adam
+　・AMSGrad
 　・MomentumSGD
 　・RMSprop
 　・SGD
