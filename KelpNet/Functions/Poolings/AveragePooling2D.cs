@@ -93,39 +93,6 @@ namespace KelpNet
                 }
             }
 
-            //for (int b = 0; b < input.BatchCount; b++)
-            //{
-            //    int resultIndex = b * input.Shape[0] * outputHeight * outputWidth;
-
-            //    for (int i = 0; i < input.Shape[0]; i++)
-            //    {
-            //        int inputIndexOffset = i * input.Shape[1] * input.Shape[2];
-
-            //        for (int y = 0; y < outputHeight; y++)
-            //        {
-            //            int dyOffset = y * this._strideY - this._padY < 0 ? 0 : y * this._strideY - this._padY;
-            //            int dyLimit = this._kHeight + dyOffset < input.Shape[1] ? this._kHeight + dyOffset : input.Shape[1];
-
-            //            for (int x = 0; x < outputWidth; x++)
-            //            {
-            //                int dxOffset = x * this._strideX - this._padX < 0 ? 0 : x * this._strideX - this._padX;
-            //                int dxLimit = this._kWidth + dxOffset < input.Shape[2] ? this._kWidth + dxOffset : input.Shape[2];
-
-            //                for (int dy = dyOffset; dy < dyLimit; dy++)
-            //                {
-            //                    for (int dx = dxOffset; dx < dxLimit; dx++)
-            //                    {
-            //                        int inputindex = inputIndexOffset + dy * input.Shape[2] + dx;
-            //                        result[resultIndex] += input.Data[inputindex + input.Length * b] / m;
-            //                    }
-            //                }
-
-            //                resultIndex++;
-            //            }
-            //        }
-            //    }
-            //}
-
             return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
@@ -173,41 +140,6 @@ namespace KelpNet
                     }
                 }
             }
-
-            //for (int b = 0; b < y.BatchCount; b++)
-            //{
-            //    int gyIndex = b * y.Length;
-
-            //    for (int i = 0; i < x.Shape[0]; i++)
-            //    {
-            //        int resultIndexOffset = b * x.Length + i * x.Shape[1] * x.Shape[2];
-
-            //        for (int posY = 0; posY < y.Shape[1]; posY++)
-            //        {
-            //            int dyOffset = posY * this._strideY - this._padY < 0 ? 0 : posY * this._strideY - this._padY;
-            //            int dyLimit = this._kHeight + dyOffset < x.Shape[1] ? this._kHeight + dyOffset : x.Shape[1];
-
-            //            for (int posX = 0; posX < y.Shape[2]; posX++)
-            //            {
-            //                int dxOffset = posX * this._strideX - this._padX < 0 ? 0 : posX * this._strideX - this._padX;
-            //                int dxLimit = this._kWidth + dxOffset < x.Shape[2] ? this._kWidth + dxOffset : x.Shape[2];
-
-            //                Real gyData = y.Grad[gyIndex] / m;
-
-            //                for (int dy = dyOffset; dy < dyLimit; dy++)
-            //                {
-            //                    for (int dx = dxOffset; dx < dxLimit; dx++)
-            //                    {
-            //                        int resultIndex = resultIndexOffset + dy * x.Shape[2] + dx;
-            //                        x.Grad[resultIndex] += gyData;
-            //                    }
-            //                }
-
-            //                gyIndex++;
-            //            }
-            //        }
-            //    }
-            //}
         }
     }
 }
