@@ -14,7 +14,7 @@ namespace KelpNet.Tests
             Python.Initialize();
             Chainer.Initialize();
 
-            int inputCount = Mother.Dice.Next(1, 30);
+            int inputCount = Mother.Dice.Next(2, 30);
             int outputCount = Mother.Dice.Next(1, 30);
             int batchCount = Mother.Dice.Next(1, 5);
 
