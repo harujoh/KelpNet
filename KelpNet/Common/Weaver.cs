@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using Cloo;
 
 namespace KelpNet
@@ -135,9 +134,10 @@ typedef REAL Real;
             {
                 program.Build(ComputePlatform.Platforms[PlatformId].Devices, string.Format("-D REAL={0} -Werror", realType), null, IntPtr.Zero);
             }
-            catch
+            catch (ComputeException e)
             {
-                MessageBox.Show(program.GetBuildLog(ComputePlatform.Platforms[PlatformId].Devices[DeviceIndex]));
+                Exception ex = new Exception(program.GetBuildLog(ComputePlatform.Platforms[PlatformId].Devices[DeviceIndex]), e);
+                throw ex;
             }
 
             return program;
