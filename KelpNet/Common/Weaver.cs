@@ -136,8 +136,7 @@ typedef REAL Real;
             }
             catch (ComputeException e)
             {
-                Exception ex = new Exception(program.GetBuildLog(ComputePlatform.Platforms[PlatformId].Devices[DeviceIndex]), e);
-                throw ex;
+                throw new Exception(program.GetBuildLog(ComputePlatform.Platforms[PlatformId].Devices[DeviceIndex]), e);
             }
 
             return program;
