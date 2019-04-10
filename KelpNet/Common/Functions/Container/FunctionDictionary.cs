@@ -157,6 +157,8 @@ namespace KelpNet
             {
                 functionBlock.Update();
             }
+
+            ResetState();
         }
 
         //ある処理実行後に特定のデータを初期値に戻す処理

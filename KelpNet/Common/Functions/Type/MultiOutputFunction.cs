@@ -72,5 +72,13 @@ namespace KelpNet
         {
             return SingleInputForward(xs[0]);
         }
+
+        public override void ResetState()
+        {
+            base.ResetState();
+
+            this.PrevOutputs = new List<NdArray[]>();
+            this.UsedPrevOutputs = new List<NdArray[]>();
+        }
     }
 }

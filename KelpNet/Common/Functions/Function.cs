@@ -81,6 +81,7 @@ namespace KelpNet
         public virtual void ResetState()
         {
             this.PrevInputs = new List<NdArray[]>();
+            this.UsedPrevInputs = new List<NdArray[]>();
         }
 
         //名前を返す

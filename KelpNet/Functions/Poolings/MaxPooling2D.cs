@@ -20,7 +20,7 @@ namespace KelpNet
         private int _strideY;
         private bool _coverAll;
 
-        private readonly List<int[]> _outputIndicesList = new List<int[]>();
+        private List<int[]> _outputIndicesList = new List<int[]>();
 
         [NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -234,6 +234,12 @@ namespace KelpNet
                     x.Grad[outputIndices[i]] += y.Grad[i];
                 }
             }
+        }
+
+        public override void ResetState()
+        {
+            base.ResetState();
+            this._outputIndicesList = new List<int[]>();
         }
     }
 }
