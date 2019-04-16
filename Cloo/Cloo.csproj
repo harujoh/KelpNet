@@ -44,7 +44,6 @@
   <ItemGroup>
     <Compile Include="Bindings\CL10.cs" />
     <Compile Include="Bindings\CL11.cs" />
-    <Compile Include="Bindings\CL12.cs" />
     <Compile Include="Bindings\CLCommandQueueHandle.cs" />
     <Compile Include="Bindings\CLContextHandle.cs" />
     <Compile Include="Bindings\CLDeviceHandle.cs" />
@@ -53,40 +52,28 @@
     <Compile Include="Bindings\CLMemoryHandle.cs" />
     <Compile Include="Bindings\CLPlatformHandle.cs" />
     <Compile Include="Bindings\CLProgramHandle.cs" />
-    <Compile Include="Bindings\CLSamplerHandle.cs" />
-    <Compile Include="Bindings\Clx.cs" />
     <Compile Include="Bindings\Enums.cs" />
     <Compile Include="ComputeBuffer.cs" />
     <Compile Include="ComputeBufferBase.cs" />
     <Compile Include="ComputeCommandQueue.Added.cs" />
     <Compile Include="ComputeCommandQueue.cs" />
-    <Compile Include="ComputeCompiler.cs" />
     <Compile Include="ComputeContext.cs" />
     <Compile Include="ComputeContextProperty.cs" />
     <Compile Include="ComputeContextPropertyList.cs" />
     <Compile Include="ComputeDevice.cs" />
     <Compile Include="ComputeEvent.cs" />
     <Compile Include="ComputeEventBase.cs" />
-    <Compile Include="ComputeEventList.cs" />
     <Compile Include="ComputeException.cs" />
-    <Compile Include="ComputeImage.cs" />
-    <Compile Include="ComputeImage2D.cs" />
-    <Compile Include="ComputeImage3D.cs" />
-    <Compile Include="ComputeImageFormat.cs" />
     <Compile Include="ComputeKernel.cs" />
     <Compile Include="ComputeMemory.cs" />
     <Compile Include="ComputeObject.cs" />
     <Compile Include="ComputePlatform.cs" />
     <Compile Include="ComputeProgram.cs" />
     <Compile Include="ComputeResource.cs" />
-    <Compile Include="ComputeSampler.cs" />
-    <Compile Include="ComputeSubBuffer.cs" />
     <Compile Include="ComputeTools.cs" />
-    <Compile Include="ComputeUserEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SysIntX2.cs" />
-    <Compile Include="SysIntX3.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

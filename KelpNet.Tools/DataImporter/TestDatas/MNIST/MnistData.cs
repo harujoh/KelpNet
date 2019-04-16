@@ -1,9 +1,8 @@
 ﻿using System;
-using KelpNet.Tools;
 
-namespace KelpNet.Sample
+namespace KelpNet.Tools
 {
-    class MnistData
+    public class MnistData
     {
         readonly MnistDataLoader mnistDataLoader = new MnistDataLoader();
 

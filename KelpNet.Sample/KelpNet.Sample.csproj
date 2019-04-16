@@ -48,11 +48,8 @@
   <ItemGroup>
     <Compile Include="Benchmarker\SingleBenchmark.cs" />
     <Compile Include="DataManager\Vocabulary.cs" />
-    <Compile Include="DataManager\CifarData.cs" />
-    <Compile Include="DataManager\MnistData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DataManager\TestDataSet.cs" />
     <Compile Include="Samples\Sample12.cs" />
     <Compile Include="Samples\Sample10.cs" />
     <Compile Include="Samples\Sample11.cs" />

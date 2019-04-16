@@ -1,90 +1,25 @@
-﻿#region License
-
-/*
-
-Copyright (c) 2009 - 2013 Fatjon Sakiqi
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-*/
-
-#endregion
+﻿using System;
+using System.Diagnostics;
 
 namespace Cloo
 {
-    using System;
-    using System.Diagnostics;
-
-    /// <summary>
-    /// Represents an error state that occurred while executing an OpenCL API call.
-    /// </summary>
-    /// <seealso cref="ComputeErrorCode"/>
     public class ComputeException : ApplicationException
     {
-        #region Fields
-
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly ComputeErrorCode code;
 
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the <see cref="ComputeErrorCode"/> of the <see cref="ComputeException"/>.
-        /// </summary>
         public ComputeErrorCode ComputeErrorCode { get { return code; } }
 
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Creates a new <see cref="ComputeException"/> with a specified <see cref="ComputeErrorCode"/>.
-        /// </summary>
-        /// <param name="code"> A <see cref="ComputeErrorCode"/>. </param>
-        public ComputeException(ComputeErrorCode code)
-            : base("OpenCL error code detected: " + code.ToString() + ".")
+        public ComputeException(ComputeErrorCode code) : base("OpenCL error code detected: " + code.ToString() + ".")
         {
             this.code = code;
         }
 
-        #endregion
-
-        #region Public methods
-
-        /// <summary>
-        /// Checks for an OpenCL error code and throws a <see cref="ComputeException"/> if such is encountered.
-        /// </summary>
-        /// <param name="errorCode"> The value to be checked for an OpenCL error. </param>
         public static void ThrowOnError(int errorCode)
         {
             ThrowOnError((ComputeErrorCode)errorCode);
         }
 
-        /// <summary>
-        /// Checks for an OpenCL error code and throws a <see cref="ComputeException"/> if such is encountered.
-        /// </summary>
-        /// <param name="errorCode"> The OpenCL error code. </param>
         public static void ThrowOnError(ComputeErrorCode errorCode)
         {
             switch (errorCode)
@@ -231,14 +166,7 @@ namespace Cloo
                     throw new ComputeException(errorCode);
             }
         }
-
-        #endregion
     }
-
-    #region Exception classes
-
-    // Disable CS1591 warnings (missing XML comment for publicly visible type or member).
-    #pragma warning disable 1591
 
     public class DeviceNotFoundComputeException : ComputeException
     { public DeviceNotFoundComputeException() : base(ComputeErrorCode.DeviceNotFound) { } }
@@ -374,6 +302,4 @@ namespace Cloo
 
     public class InvalidMipLevelComputeException : ComputeException
     { public InvalidMipLevelComputeException() : base(ComputeErrorCode.InvalidMipLevel) { } }
-
-    #endregion
 }

@@ -1,9 +1,8 @@
 ﻿using System;
-using KelpNet.Tools;
 
-namespace KelpNet.Sample
+namespace KelpNet.Tools
 {
-    class CifarData
+    public class CifarData
     {
         private NdArray[] X;
         private NdArray[] Tx;

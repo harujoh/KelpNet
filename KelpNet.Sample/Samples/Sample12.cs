@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using KelpNet.Tools;
 
 namespace KelpNet.Sample
 {

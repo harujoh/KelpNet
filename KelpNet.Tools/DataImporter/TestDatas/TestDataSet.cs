@@ -1,4 +1,4 @@
-﻿namespace KelpNet.Sample
+﻿namespace KelpNet.Tools
 {
     public class TestDataSet
     {

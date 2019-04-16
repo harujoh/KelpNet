@@ -56,6 +56,7 @@
     <Compile Include="DataImporter\Models\Chainer\NpyFormat.cs" />
     <Compile Include="DataImporter\Models\Chainer\NpzDictionary.cs" />
     <Compile Include="DataImporter\Models\Chainer\NpzFormat.cs" />
+    <Compile Include="DataImporter\TestDatas\CIFAR\CifarData.cs" />
     <Compile Include="DataImporter\TestDatas\CIFAR\CIFARDataLoader.cs" />
     <Compile Include="DataImporter\TestDatas\CIFAR\Common\HeaderBlock.cs" />
     <Compile Include="DataImporter\TestDatas\CIFAR\Common\TarEntryType.cs" />
@@ -63,9 +64,11 @@
     <Compile Include="DataImporter\TestDatas\CIFAR\RawSerializer.cs" />
     <Compile Include="DataImporter\TestDatas\CIFAR\Tar.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\BinaryReaderBE.cs" />
+    <Compile Include="DataImporter\TestDatas\MNIST\MnistData.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\MnistDataLoader.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\MnistImageLoader.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\MnistLabelLoader.cs" />
+    <Compile Include="DataImporter\TestDatas\TestDataSet.cs" />
     <Compile Include="DeepCopyHelper.cs" />
     <Compile Include="InternetFileDownloader.cs" />
     <Compile Include="NdArrayConverter.cs" />
