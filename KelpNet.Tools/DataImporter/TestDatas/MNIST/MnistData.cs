@@ -18,7 +18,7 @@
 
             for (int i = 0; i < mnistDataLoader.TrainData.Length; i++)
             {
-                x[i] = new Real[3 * 32 * 32];
+                x[i] = new Real[1 * 28 * 28];
 
                 for (int j = 0; j < mnistDataLoader.TrainData[i].Length; j++)
                 {
@@ -28,7 +28,7 @@
                 xLabel[i] = mnistDataLoader.TrainLabel[i];
             }
 
-            this.Train = new LabeledDataSet(x, new[] { 3, 32, 32 }, xLabel);
+            this.Train = new LabeledDataSet(x, new[] { 1, 28, 28 }, xLabel);
 
 
             //評価用データ
@@ -37,7 +37,7 @@
 
             for (int i = 0; i < mnistDataLoader.TeachData.Length; i++)
             {
-                y[i] = new Real[3 * 32 * 32];
+                y[i] = new Real[1 * 28 * 28];
 
                 for (int j = 0; j < mnistDataLoader.TeachData[i].Length; j++)
                 {
@@ -47,7 +47,7 @@
                 yLabel[i] = mnistDataLoader.TeachLabel[i];
             }
 
-            this.Eval = new LabeledDataSet(y, new[] { 3, 32, 32 }, yLabel);
+            this.Eval = new LabeledDataSet(y, new[] { 1, 28, 28 }, yLabel);
         }
     }
 }
