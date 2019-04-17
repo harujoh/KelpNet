@@ -72,7 +72,7 @@ namespace KelpNet.Sample
                     t.Data[j] = sequences[j].Data[i + 1];
                 }
 
-                NdArray[] result = model.Forward(x);
+                NdArray result = model.Forward(x)[0];
                 totalLoss += new MeanSquaredError().Evaluate(result, t);
                 model.Backward(result);
             }

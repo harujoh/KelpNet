@@ -12,11 +12,15 @@ namespace KelpNet
             return Train(functionStack, NdArray.FromArrays(input), NdArray.FromArrays(teach), lossFunction, isUpdate);
         }
 
-        //バッチで学習処理を行う
+        public static Real Train(FunctionStack functionStack, TestDataSet dataSet, LossFunction lossFunction, bool isUpdate = true)
+        {
+            return Train(functionStack, dataSet.Data, dataSet.Label, lossFunction, isUpdate);
+        }
+
         public static Real Train(FunctionStack functionStack, NdArray input, NdArray teach, LossFunction lossFunction, bool isUpdate = true)
         {
             //結果の誤差保存用
-            NdArray[] result = functionStack.Forward(input);
+            NdArray result = functionStack.Forward(input)[0];
             Real sumLoss = lossFunction.Evaluate(result, teach);
 
             //Backwardのバッチを実行
@@ -35,6 +39,11 @@ namespace KelpNet
         public static double Accuracy(FunctionStack functionStack, Array[] x, Array[] y)
         {
             return Accuracy(functionStack, NdArray.FromArrays(x), NdArray.FromArrays(y));
+        }
+
+        public static double Accuracy(FunctionStack functionStack, TestDataSet dataSet)
+        {
+            return Accuracy(functionStack, dataSet.Data, dataSet.Label);
         }
 
         public static double Accuracy(FunctionStack functionStack, NdArray x, NdArray y)

@@ -68,10 +68,9 @@
     <Compile Include="DataImporter\TestDatas\MNIST\MnistDataLoader.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\MnistImageLoader.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\MnistLabelLoader.cs" />
-    <Compile Include="DataImporter\TestDatas\TestDataSet.cs" />
     <Compile Include="DeepCopyHelper.cs" />
     <Compile Include="InternetFileDownloader.cs" />
-    <Compile Include="NdArrayConverter.cs" />
+    <Compile Include="ImageDataConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

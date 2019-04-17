@@ -114,7 +114,6 @@ namespace Cloo
         MaxParameterSize = 0x1017,
         MaxSamplers = 0x1018,
         MemoryBaseAddressAlignment = 0x1019,
-        [Obsolete("Deprecated in OpenCL 1.2.")]
         MinDataTypeAlignmentSize = 0x101A,
         SingleFPConfig = 0x101B,
         GlobalMemoryCacheType = 0x101C,

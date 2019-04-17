@@ -62,10 +62,10 @@ namespace KelpNet.Sample
                     Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
 
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = cifarData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet datasetX = cifarData.Train.GetRandomDataSet(BATCH_DATA_COUNT);
 
                     //バッチ学習を並列実行する
-                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    Real sumLoss = Trainer.Train(nn, datasetX, new SoftmaxCrossEntropy());
                     totalLoss += sumLoss;
                     totalLossCount++;
 
@@ -82,10 +82,10 @@ namespace KelpNet.Sample
                         Console.WriteLine("\nTesting...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = cifarData.GetRandomYSet(TEACH_DATA_COUNT);
+                        TestDataSet datasetY = cifarData.Eval.GetRandomDataSet(TEACH_DATA_COUNT);
 
                         //テストを実行
-                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

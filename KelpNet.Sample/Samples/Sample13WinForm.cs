@@ -81,7 +81,7 @@ namespace KelpNet.Sample
                 NdArray[] img_y = this.model.Forward(img_p);
 
                 //img_yを暗黙的にNdArrayとして使用
-                this.BackgroundImage = NdArrayConverter.NdArray2Image(img_y[0].GetSingleArray(0));
+                this.BackgroundImage = ImageDataConverter.NdArray2Image(img_y[0].GetSingleArray(0));
 
                 Real loss = this.meanSquaredError.Evaluate(img_y, img_core);
 

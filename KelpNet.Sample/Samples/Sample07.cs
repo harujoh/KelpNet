@@ -105,10 +105,10 @@ namespace KelpNet.Sample
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
                     //訓練データからランダムにデータを取得
-                    TestDataSet datasetX = mnistData.GetRandomXSet(BATCH_DATA_COUNT);
+                    TestDataSet datasetX = mnistData.Train.GetRandomDataSet(BATCH_DATA_COUNT);
 
                     //学習を実行
-                    Real sumLoss = Trainer.Train(nn, datasetX.Data, datasetX.Label, new SoftmaxCrossEntropy());
+                    Real sumLoss = Trainer.Train(nn, datasetX, new SoftmaxCrossEntropy());
                     totalLoss += sumLoss;
                     totalLossCounter++;
 
@@ -123,10 +123,10 @@ namespace KelpNet.Sample
                         Console.WriteLine("Testing...");
 
                         //テストデータからランダムにデータを取得
-                        TestDataSet datasetY = mnistData.GetRandomYSet(TEST_DATA_COUNT);
+                        TestDataSet datasetY = mnistData.Eval.GetRandomDataSet(TEST_DATA_COUNT);
 
                         //テストを実行
-                        Real accuracy = Trainer.Accuracy(nn, datasetY.Data, datasetY.Label);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

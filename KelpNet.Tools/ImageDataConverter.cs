@@ -5,13 +5,14 @@ using System.Runtime.InteropServices;
 
 namespace KelpNet.Tools
 {
-    public class NdArrayConverter
+    public class ImageDataConverter
     {
         //Bitmapは [RGBRGB...]でデータが格納されているが多くの機械学習は[RR..GG..BB..]を前提にしているため入れ替えを行っている
         //Biasのチャンネル順は入力イメージに準ずる
         public static NdArray Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, Real[] bias = null)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
+
             if (bias == null || bitcount != bias.Length)
             {
                 bias = new Real[bitcount];
@@ -25,6 +26,8 @@ namespace KelpNet.Tools
             byte[] imageData = new byte[bmpdat.Stride * bmpdat.Height];
 
             Marshal.Copy(bmpdat.Scan0, imageData, 0, imageData.Length);
+
+            input.UnlockBits(bmpdat);
 
             if (isToBgrArray)
             {
@@ -54,6 +57,52 @@ namespace KelpNet.Tools
                     }
                 }
             }
+
+            return result;
+        }
+
+        public static Real[] Image2RealArray(Bitmap input, bool isToBgrArray = false, bool isNorm = true)
+        {
+            int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
+
+            Real norm = isNorm ? 255 : 1;
+
+            BitmapData bmpdat = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly, input.PixelFormat);
+            byte[] imageData = new byte[bmpdat.Stride * bmpdat.Height];
+
+            Marshal.Copy(bmpdat.Scan0, imageData, 0, imageData.Length);
+
+            input.UnlockBits(bmpdat);
+
+            Real[] result = new Real[input.Height * input.Width];
+
+            if (isToBgrArray)
+            {
+                for (int y = 0; y < input.Height; y++)
+                {
+                    for (int x = 0; x < input.Width; x++)
+                    {
+                        for (int ch = bitcount - 1; ch >= 0; ch--)
+                        {
+                            result[ch * input.Height * input.Width + y * input.Width + x] = imageData[y * bmpdat.Stride + x * bitcount + ch] / norm;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int y = 0; y < input.Height; y++)
+                {
+                    for (int x = 0; x < input.Width; x++)
+                    {
+                        for (int ch = 0; ch < bitcount; ch++)
+                        {
+                            result[ch * input.Height * input.Width + y * input.Width + x] = imageData[y * bmpdat.Stride + x * bitcount + ch] / norm;
+                        }
+                    }
+                }
+            }
+
             return result;
         }
 
@@ -152,7 +201,5 @@ namespace KelpNet.Tools
 
             return result;
         }
-
     }
-
 }

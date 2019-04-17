@@ -76,7 +76,7 @@ namespace KelpNet.Sample
                     g.DrawImage(baseImage, 0, 0, 224, 224);
                     g.Dispose();
 
-                    NdArray imageArray = NdArrayConverter.Image2NdArray(resultImage, false, true);
+                    NdArray imageArray = ImageDataConverter.Image2NdArray(resultImage, false, true);
                     imageArray -= mean;
                     imageArray.ParentFunc = null;
 

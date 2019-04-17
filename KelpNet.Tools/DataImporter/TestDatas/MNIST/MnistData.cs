@@ -1,84 +1,53 @@
-﻿using System;
-
-namespace KelpNet.Tools
+﻿namespace KelpNet.Tools
 {
     public class MnistData
     {
-        readonly MnistDataLoader mnistDataLoader = new MnistDataLoader();
+        //訓練データ
+        public LabeledDataSet Train;
 
-        private NdArray[] X;
-        private NdArray[] Tx;
-
-        private NdArray[] Y;
-        private NdArray[] Ty;
+        //評価データ
+        public LabeledDataSet Eval;
 
         public MnistData()
         {
-            //トレーニングデータ
-            this.X = new NdArray[this.mnistDataLoader.TrainData.Length];
-            //トレーニングデータラベル
-            this.Tx = new NdArray[this.mnistDataLoader.TrainData.Length];
+            MnistDataLoader mnistDataLoader = new MnistDataLoader();
 
-            for (int i = 0; i < this.mnistDataLoader.TrainData.Length; i++)
+            //訓練用データ
+            Real[][] x = new Real[mnistDataLoader.TrainData.Length][];
+            Real[] xLabel = new Real[mnistDataLoader.TrainData.Length];
+
+            for (int i = 0; i < mnistDataLoader.TrainData.Length; i++)
             {
-                Real[] x = new Real[28 * 28];
-                for (int j = 0; j < this.mnistDataLoader.TrainData[i].Length; j++)
+                x[i] = new Real[3 * 32 * 32];
+
+                for (int j = 0; j < mnistDataLoader.TrainData[i].Length; j++)
                 {
-                    x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0;
+                    x[i][j] = mnistDataLoader.TrainData[i][j] / 255.0;
                 }
-                this.X[i] = new NdArray(x, new[] { 1, 28, 28 });
 
-                this.Tx[i] = new NdArray(new[] { (Real)this.mnistDataLoader.TrainLabel[i] });
+                xLabel[i] = mnistDataLoader.TrainLabel[i];
             }
 
-            //教師データ
-            this.Y = new NdArray[this.mnistDataLoader.TeachData.Length];
-            //教師データラベル
-            this.Ty = new NdArray[this.mnistDataLoader.TeachData.Length];
+            this.Train = new LabeledDataSet(x, new[] { 3, 32, 32 }, xLabel);
 
-            for (int i = 0; i < this.mnistDataLoader.TeachData.Length; i++)
+
+            //評価用データ
+            Real[][] y = new Real[mnistDataLoader.TeachData.Length][];
+            Real[] yLabel = new Real[mnistDataLoader.TeachData.Length];
+
+            for (int i = 0; i < mnistDataLoader.TeachData.Length; i++)
             {
-                Real[] y = new Real[28 * 28];
-                for (int j = 0; j < this.mnistDataLoader.TeachData[i].Length; j++)
+                y[i] = new Real[3 * 32 * 32];
+
+                for (int j = 0; j < mnistDataLoader.TeachData[i].Length; j++)
                 {
-                    y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0;
+                    y[i][j] = mnistDataLoader.TeachData[i][j] / 255.0;
                 }
-                this.Y[i] = new NdArray(y, new[] { 1, 28, 28 });
 
-                this.Ty[i] = new NdArray(new[] { (Real)this.mnistDataLoader.TeachLabel[i] });
-            }
-        }
-
-        public TestDataSet GetRandomYSet(int dataCount)
-        {
-            NdArray listY = new NdArray(new[] { 1, 28, 28 }, dataCount);
-            NdArray listTy = new NdArray(new[] { 1 }, dataCount);
-
-            for (int i = 0; i < dataCount; i++)
-            {
-                int index = Mother.Dice.Next(this.Y.Length);
-
-                Array.Copy(this.Y[index].Data, 0, listY.Data,i * listY.Length,listY.Length);
-                listTy.Data[i] = this.Ty[index].Data[0];
+                yLabel[i] = mnistDataLoader.TeachLabel[i];
             }
 
-            return new TestDataSet(listY, listTy);
-        }
-
-        public TestDataSet GetRandomXSet(int dataCount)
-        {
-            NdArray listX = new NdArray(new[] { 1, 28, 28 }, dataCount);
-            NdArray listTx = new NdArray(new[] { 1 }, dataCount);
-
-            for (int i = 0; i < dataCount; i++)
-            {
-                int index = Mother.Dice.Next(this.X.Length);
-
-                Array.Copy(this.X[index].Data, 0, listX.Data, i * listX.Length, listX.Length);
-                listTx.Data[i] = this.Tx[index].Data[0];
-            }
-
-            return new TestDataSet(listX, listTx);
+            this.Eval = new LabeledDataSet(y, new[] { 3, 32, 32 }, yLabel);
         }
     }
 }
