@@ -70,7 +70,7 @@
     <Compile Include="DataImporter\TestDatas\MNIST\MnistLabelLoader.cs" />
     <Compile Include="DeepCopyHelper.cs" />
     <Compile Include="InternetFileDownloader.cs" />
-    <Compile Include="ImageDataConverter.cs" />
+    <Compile Include="BitmapConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

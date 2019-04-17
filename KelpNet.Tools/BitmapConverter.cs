@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace KelpNet.Tools
 {
-    public class ImageDataConverter
+    public class BitmapConverter
     {
         //Bitmapは [RGBRGB...]でデータが格納されているが多くの機械学習は[RR..GG..BB..]を前提にしているため入れ替えを行っている
         //Biasのチャンネル順は入力イメージに準ずる
