@@ -74,7 +74,7 @@ namespace KelpNet.Tools
 
             input.UnlockBits(bmpdat);
 
-            Real[] result = new Real[input.Height * input.Width];
+            Real[] result = new Real[bmpdat.Stride * input.Width];
 
             if (isToBgrArray)
             {
