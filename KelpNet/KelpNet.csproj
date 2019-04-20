@@ -59,6 +59,7 @@
     <Compile Include="Common\Functions\IParallelizable.cs" />
     <Compile Include="Common\Real.cs" />
     <Compile Include="Common\Tools\Initializer.cs" />
+    <Compile Include="Common\Tools\LabeledData.cs" />
     <Compile Include="Common\Tools\LabeledDataSet.cs" />
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Common\Tools\TestDataSet.cs" />
