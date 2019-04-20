@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.Serialization;
 
 namespace KelpNet
 {
+    [Serializable]
     public class LabeledDataSet
     {
         public List<Real[]> Data = new List<Real[]>();
@@ -57,9 +59,16 @@ namespace KelpNet
         {
             NetDataContractSerializer bf = new NetDataContractSerializer();
 
-            using (Stream stream = File.OpenWrite(fileName))
+            //ZIP書庫を作成
+            using (ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create))
             {
-                bf.Serialize(stream, this);
+                ZipArchiveEntry entry = zipArchive.CreateEntry(Path.GetFileNameWithoutExtension(fileName));
+
+                using (Stream stream = entry.Open())
+                {
+                    // エントリにバイナリを書き込む
+                    bf.Serialize(stream, this);
+                }
             }
         }
 
@@ -68,9 +77,18 @@ namespace KelpNet
             NetDataContractSerializer bf = new NetDataContractSerializer();
             LabeledDataSet result;
 
-            using (Stream stream = File.OpenRead(fileName))
+            using (ZipArchive a = ZipFile.OpenRead(fileName))
             {
-                result = (LabeledDataSet)bf.Deserialize(stream);
+                ZipArchiveEntry e = a.GetEntry(Path.GetFileNameWithoutExtension(fileName));
+
+                if (e != null)
+                {
+                    result = (LabeledDataSet)bf.Deserialize(e.Open());
+                }
+                else
+                {
+                    throw new Exception("ファイル形式が異なります");
+                }
             }
 
             return result;

@@ -37,7 +37,7 @@ namespace KelpNet.Tools
         public NpzDictionary(Stream stream)
         {
             this.stream = stream;
-            this.archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+            this.archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
             this.entries = new Dictionary<string, ZipArchiveEntry>();
 
