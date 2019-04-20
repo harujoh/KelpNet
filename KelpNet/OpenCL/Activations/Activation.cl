@@ -1,6 +1,6 @@
 ﻿__kernel void /*kernelNameBase*/Forward(
-    const __global read_only Real *gpuX,
-	__global write_only Real *gpuY)
+    const __global Real *gpuX,
+	__global Real *gpuY)
 {
 	int i = get_global_id(0);
 
@@ -8,9 +8,9 @@
 }
 
 __kernel void /*kernelNameBase*/Backward(
-    const __global read_only Real *gpugY,
-    const __global read_only Real *gpuY,
-    __global write_only Real *gpugX)
+    const __global Real *gpugY,
+    const __global Real *gpuY,
+    __global Real *gpugX)
 {
 	int i = get_global_id(0);
     

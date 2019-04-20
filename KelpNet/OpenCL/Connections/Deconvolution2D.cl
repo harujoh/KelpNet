@@ -1,8 +1,8 @@
 ﻿__kernel void Deconvolution2DForward(
-	const __global __read_only	Real* gpuX,
-	const __global __read_only	Real* gpuW,
-	const __global __read_only	Real* gpub,
-	__global __write_only Real* gpuY,
+	const __global Real* gpuX,
+	const __global Real* gpuW,
+	const __global Real* gpub,
+	__global Real* gpuY,
 	const int inputShape1,
 	const int inputShape2,
 	const int inputLength,
@@ -52,9 +52,9 @@
 }
 
 __kernel void Deconvolution2DgWBackward(
-	const __global __read_only	Real* activatedgy,
-	const __global __read_only	Real* gpuX,
-	__global __read_write Real* gpugW,
+	const __global Real* activatedgy,
+	const __global Real* gpuX,
+	__global Real* gpugW,
 	const int yBatchCount,
 	const int outputCount,
 	const int yLength,
@@ -105,9 +105,9 @@ __kernel void Deconvolution2DgWBackward(
 }
 
 __kernel void Deconvolution2DgXBackward(
-	const __global __read_only	Real* activatedgy,
-	const __global __read_only	Real* gpuW,
-	__global __write_only Real* gpugX,
+	const __global Real* activatedgy,
+	const __global Real* gpuW,
+	__global Real* gpugX,
 	const int outputCount,
 	const int inputCount,
 	const int yLength,
