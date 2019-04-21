@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using Cloo;
 using KelpNet.Properties;
 
@@ -51,22 +50,22 @@ namespace KelpNet
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, Size kSize, Size subSample = new Size(), Size trim = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
-            if (subSample == Size.Empty)
-                subSample = new Size(1, 1);
+            if (subSample == null)
+                subSample = new[] { 1, 1 };
 
-            if (trim == Size.Empty)
-                trim = new Size(0, 0);
+            if (trim == null)
+                trim = new[] { 0, 0 };
 
-            this._kWidth = kSize.Width;
-            this._kHeight = kSize.Height;
-            this._padX = trim.Width;
-            this._padY = trim.Height;
+            this._kWidth = kSize[0];
+            this._kHeight = kSize[1];
+            this._padX = trim[0];
+            this._padY = trim[1];
             this.NoBias = noBias;
 
-            this._strideX = subSample.Width;
-            this._strideY = subSample.Height;
+            this._strideX = subSample[0];
+            this._strideY = subSample[1];
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
 

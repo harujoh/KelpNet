@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using ProtoBuf;
 
@@ -258,9 +257,9 @@ namespace KelpNet.Tools
 
         static Function SetupPooling(PoolingParameter param, string name, string[] inputNames, string[] outputNames)
         {
-            Size ksize = GetKernelSize(param);
-            Size stride = GetKernelStride(param);
-            Size pad = GetKernelPad(param);
+            int[] ksize = GetKernelSize(param);
+            int[] stride = GetKernelStride(param);
+            int[] pad = GetKernelPad(param);
 
             switch (param.Pool)
             {
@@ -307,9 +306,9 @@ namespace KelpNet.Tools
 
         static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
         {
-            Size ksize = GetKernelSize(param);
-            Size stride = GetKernelStride(param);
-            Size pad = GetKernelPad(param);
+            int[] ksize = GetKernelSize(param);
+            int[] stride = GetKernelStride(param);
+            int[] pad = GetKernelPad(param);
             int num = GetNum(blobs[0]);
             int channels = GetChannels(blobs[0]);
             int nIn = channels * (int)param.Group;
@@ -402,90 +401,90 @@ namespace KelpNet.Tools
             throw new Exception(blob.Shape.Dims.Length + "-dimentional array is not supported");
         }
 
-        static Size GetKernelSize(ConvolutionParameter param)
+        static int[] GetKernelSize(ConvolutionParameter param)
         {
             if (param.KernelH > 0)
             {
-                return new Size((int)param.KernelW, (int)param.KernelH);
+                return new []{ (int)param.KernelW, (int)param.KernelH };
             }
 
             if (param.KernelSizes.Length == 1)
             {
-                return new Size((int)param.KernelSizes[0], (int)param.KernelSizes[0]);
+                return new []{(int)param.KernelSizes[0], (int)param.KernelSizes[0]};
             }
 
-            return new Size((int)param.KernelSizes[1], (int)param.KernelSizes[0]);
+            return new []{(int)param.KernelSizes[1], (int)param.KernelSizes[0]};
         }
 
-        static Size GetKernelSize(PoolingParameter param)
+        static int[] GetKernelSize(PoolingParameter param)
         {
             if (param.KernelH > 0)
             {
-                return new Size((int)param.KernelW, (int)param.KernelH);
+                return new []{(int)param.KernelW, (int)param.KernelH};
             }
 
-            return new Size((int)param.KernelSize, (int)param.KernelSize);
+            return new []{(int)param.KernelSize, (int)param.KernelSize};
         }
 
-        static Size GetKernelStride(ConvolutionParameter param)
+        static int[] GetKernelStride(ConvolutionParameter param)
         {
             if (param.StrideH > 0)
             {
-                return new Size((int)param.StrideW, (int)param.StrideH);
+                return new []{(int)param.StrideW, (int)param.StrideH};
             }
 
             if (param.Strides == null || param.Strides.Length == 0)
             {
-                return new Size(1, 1);
+                return new []{1, 1};
             }
 
             if (param.Strides.Length == 1)
             {
-                return new Size((int)param.Strides[0], (int)param.Strides[0]);
+                return new []{(int)param.Strides[0], (int)param.Strides[0]};
             }
 
-            return new Size((int)param.Strides[1], (int)param.Strides[0]);
+            return new []{(int)param.Strides[1], (int)param.Strides[0]};
         }
 
-        static Size GetKernelStride(PoolingParameter param)
+        static int[] GetKernelStride(PoolingParameter param)
         {
             if (param.StrideH > 0)
             {
-                return new Size((int)param.StrideW, (int)param.StrideH);
+                return new []{(int)param.StrideW, (int)param.StrideH};
             }
 
-            return new Size((int)param.Stride, (int)param.Stride);
+            return new []{(int)param.Stride, (int)param.Stride};
         }
 
 
-        static Size GetKernelPad(ConvolutionParameter param)
+        static int[] GetKernelPad(ConvolutionParameter param)
         {
             if (param.PadH > 0)
             {
-                return new Size((int)param.PadW, (int)param.PadH);
+                return new []{(int)param.PadW, (int)param.PadH};
             }
 
             if (param.Pads == null || param.Pads.Length == 0)
             {
-                return new Size(1, 1);
+                return new []{1, 1};
             }
 
             if (param.Pads.Length == 1)
             {
-                return new Size((int)param.Pads[0], (int)param.Pads[0]);
+                return new []{(int)param.Pads[0], (int)param.Pads[0]};
             }
 
-            return new Size((int)param.Pads[1], (int)param.Pads[0]);
+            return new []{(int)param.Pads[1], (int)param.Pads[0]};
         }
 
-        static Size GetKernelPad(PoolingParameter param)
+        static int[] GetKernelPad(PoolingParameter param)
         {
             if (param.PadH > 0)
             {
-                return new Size((int)param.PadW, (int)param.PadH);
+                return new []{(int)param.PadW, (int)param.PadH};
             }
 
-            return new Size((int)param.Pad, (int)param.Pad);
+            return new []{(int)param.Pad, (int)param.Pad};
         }
 
         static int GetNum(BlobProto brob)

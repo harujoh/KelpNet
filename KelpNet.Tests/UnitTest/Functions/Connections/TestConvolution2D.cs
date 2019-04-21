@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
@@ -81,9 +80,9 @@ namespace KelpNet.Tests
             //KelpNet
             KelpNet.Convolution2D convolution2D = new KelpNet.Convolution2D(
                 inChCount, outChCount,
-                new Size(kWidth, kHeight),
-                new Size(strideX, strideY),
-                new Size(padX, padY),
+                new[] { kWidth, kHeight },
+                new[] { strideX, strideY },
+                new[] { padX, padY },
                 false, w, b, gpuEnable: gpuEnable);
 
             NdArray x = new NdArray(Real.ToRealArray(input), new[] { inChCount, heightSize, wideSize }, batchCount);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
@@ -55,9 +54,9 @@ namespace KelpNet.Tests
 
             //KelpNet
             KelpNet.AveragePooling2D maxPooling2D = new KelpNet.AveragePooling2D(
-                new Size(kWidth, kHeight),
-                new Size(strideX, strideY),
-                new Size(padX, padY));
+                new[] { kWidth, kHeight },
+                new[] { strideX, strideY },
+                new[] { padX, padY });
 
             NdArray x = new NdArray(Real.ToRealArray(input), new[] { chCount, heightSize, wideSize }, batchCount);
 

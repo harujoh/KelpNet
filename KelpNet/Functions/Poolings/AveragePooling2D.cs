@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 
 namespace KelpNet
 {
@@ -28,20 +27,20 @@ namespace KelpNet
             SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        public AveragePooling2D(Size ksize, Size stride = new Size(), Size pad = new Size(), string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public AveragePooling2D(int[] ksize, int[] stride = null, int[] pad = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            if (pad == Size.Empty)
-                pad = new Size(0, 0);
+            if (pad == null)
+                pad = new[] { 0, 0 };
 
-            if (stride == Size.Empty)
-                stride = new Size(1, 1);
+            if (stride == null)
+                stride = new[] { 1, 1 };
 
-            this._kWidth = ksize.Width;
-            this._kHeight = ksize.Height;
-            this._padY = pad.Height;
-            this._padX = pad.Width;
-            this._strideX = stride.Width;
-            this._strideY = stride.Height;
+            this._kWidth = ksize[0];
+            this._kHeight = ksize[1];
+            this._padX = pad[0];
+            this._padY = pad[1];
+            this._strideX = stride[0];
+            this._strideY = stride[1];
 
             SingleInputForward = NeedPreviousForwardCpu;
             SingleOutputBackward = NeedPreviousBackwardCpu;

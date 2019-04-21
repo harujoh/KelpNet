@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using Cloo;
 using KelpNet.Properties;
 
@@ -51,20 +50,20 @@ namespace KelpNet
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, Size kSize, Size stride = new Size(), Size pad = new Size(), bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Convolution2D(int inputChannels, int outputChannels, int[] kSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
-            if (pad == Size.Empty)
-                pad = new Size(0, 0);
+            if (pad == null)
+                pad = new[] { 0, 0 };
 
-            if (stride == Size.Empty)
-                stride = new Size(1, 1);
+            if (stride == null)
+                stride = new[] { 1, 1 };
 
-            this._kWidth = kSize.Width;
-            this._kHeight = kSize.Height;
-            this._strideX = stride.Width;
-            this._strideY = stride.Height;
-            this._padX = pad.Width;
-            this._padY = pad.Height;
+            this._kWidth = kSize[0];
+            this._kHeight = kSize[1];
+            this._strideX = stride[0];
+            this._strideY = stride[1];
+            this._padX = pad[0];
+            this._padY = pad[1];
             this.NoBias = noBias;
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
