@@ -17,6 +17,11 @@ namespace KelpNet
         public string[] LabelName;
         public int[] Shape;
 
+        public int ClassCount
+        {
+            get { return LabelName.Length; }
+        }
+
         public LabeledData this[int i]
         {
             get
@@ -48,7 +53,7 @@ namespace KelpNet
             ZipArchiveData = zipArchive;
 
             ZipArchiveEntry zipLength = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension("Length"));
-            Length = (int) bf.Deserialize(zipLength.Open());
+            Length = (int)bf.Deserialize(zipLength.Open());
 
             ZipArchiveEntry zipShape = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension("Shape"));
             Shape = (int[])bf.Deserialize(zipShape.Open());
