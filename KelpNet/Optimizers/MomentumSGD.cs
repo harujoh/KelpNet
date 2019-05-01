@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace KelpNet
 {
@@ -37,13 +38,13 @@ namespace KelpNet
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+            Parallel.For(0, FunctionParameter.Data.Length, i =>
             {
                 this.v[i] *= this.optimizer.Momentum;
                 this.v[i] -= this.optimizer.LearningRate * this.FunctionParameter.Grad[i];
 
                 this.FunctionParameter.Data[i] += this.v[i];
-            }
+            });
         }
     }
 

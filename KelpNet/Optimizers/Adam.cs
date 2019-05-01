@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace KelpNet
 {
@@ -68,7 +69,7 @@ namespace KelpNet
 
             Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            Parallel.For(0, FunctionParameter.Data.Length, i =>
             {
                 Real grad = this.FunctionParameter.Grad[i];
 
@@ -81,7 +82,7 @@ namespace KelpNet
                 }
 
                 this.FunctionParameter.Data[i] -= this._optimizer.Eta * (learningRate * this.m[i] / (Math.Sqrt(this.vhat[i]) + this._optimizer.Epsilon) + this._optimizer.WeightDecayRate * this.FunctionParameter.Data[i]);
-            }
+            });
         }
     }
 
@@ -108,7 +109,7 @@ namespace KelpNet
 
             Real learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            Parallel.For(0, FunctionParameter.Data.Length, i =>
             {
                 Real grad = this.FunctionParameter.Grad[i];
 
@@ -116,7 +117,7 @@ namespace KelpNet
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
                 this.FunctionParameter.Data[i] -= this._optimizer.Eta * (learningRate * this.m[i] / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon) + this._optimizer.WeightDecayRate * this.FunctionParameter.Data[i]);
-            }
+            });
         }
     }
 

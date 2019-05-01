@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace KelpNet
 {
@@ -47,10 +48,10 @@ namespace KelpNet
 
             if (rate < 1)
             {
-                for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+                Parallel.For(0, FunctionParameter.Data.Length, i =>
                 {
                     this.FunctionParameter.Grad[i] *= rate;
-                }
+                });
             }
         }
     }
