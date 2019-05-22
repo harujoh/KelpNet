@@ -33,7 +33,7 @@ namespace KelpNet.Sample
                 new BatchNormalization(64, name: "l1 BatchNorm"),
                 new ReLU(name: "l2 ReLU"),
                 new MaxPooling2D(2, 2, name: "l2 MaxPooling", gpuEnable: true),
-                new Linear(13 * 13 * 64, 512, name: "l3 Linear", gpuEnable: true),
+                new Linear(14 * 14 * 64, 512, name: "l3 Linear", gpuEnable: true),
                 new ReLU(name: "l3 ReLU"),
                 //Cifar100のときは100クラス、簡素であれば20クラス、Cifar10のときは10クラス分類
                 new Linear(512, cifarData.ClassCount, name: "l4 Linear", gpuEnable: true)
