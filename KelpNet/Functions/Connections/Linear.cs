@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Cloo;
 using KelpNet.Properties;
 
@@ -135,13 +134,9 @@ namespace KelpNet
         {
             Real[] activatedgY = new Real[y.Grad.Length];
 
-            for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
+            for (int i = 0; i < activatedgY.Length; i++)
             {
-                for (int i = 0; i < this.OutputCount; i++)
-                {
-                    int index = batchCount * this.OutputCount + i;
-                    activatedgY[index] = this.Activator.BackwardActivate(y.Grad[index], y.Data[index]);
-                }
+                activatedgY[i] = this.Activator.BackwardActivate(y.Grad[i], y.Data[i]);
             }
 
             return activatedgY;
