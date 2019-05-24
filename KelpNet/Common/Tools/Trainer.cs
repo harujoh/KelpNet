@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace KelpNet
 {
@@ -57,11 +58,11 @@ namespace KelpNet
                 Real maxval = forwardResult.Data[b * forwardResult.Length];
                 int maxindex = 0;
 
-                for (int i = 0; i < forwardResult.Length; i++)
+                for (int i = 1; i < forwardResult.Length; i++)
                 {
-                    if (maxval < forwardResult.Data[i + b * forwardResult.Length])
+                    if (maxval < forwardResult.Data[b * forwardResult.Length + i])
                     {
-                        maxval = forwardResult.Data[i + b * forwardResult.Length];
+                        maxval = forwardResult.Data[b * forwardResult.Length + i];
                         maxindex = i;
                     }
                 }

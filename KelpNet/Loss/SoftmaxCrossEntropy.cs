@@ -44,7 +44,6 @@ namespace KelpNet
                     m.Data[i] += Math.Log(s.Data[i]);
                 }
 
-                //y = x - log_z
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {
                     for (int i = 0; i < chLen; i++)
@@ -58,12 +57,14 @@ namespace KelpNet
                 }
 
                 Real[] log_p = new Real[teachSignal[k].Data.Length];
+
                 for (int b = 0; b < teachSignal[k].BatchCount; b++)
                 {
                     for (int j = 0; j < teachSignal[k].Length; j++)
                     {
                         int index = b * teachSignal[k].Length + j;
                         int tb = (int)teachSignal[k].Data[index];
+
                         log_p[index] = y.Data[b * y.Length + tb * dataLen + j];
                     }
                 }
@@ -74,10 +75,12 @@ namespace KelpNet
                 {
                     localLoss += log_p[i];
                 }
+
                 resultLoss += localLoss * -coef;
 
 
                 Real[] gx = new Real[input[k].Data.Length];
+
                 for (int i = 0; i < gx.Length; i++)
                 {
                     gx[i] = Math.Exp(y.Data[i]) * coef;
@@ -89,6 +92,7 @@ namespace KelpNet
                     {
                         int index = b * teachSignal[k].Length + j;
                         int tb = (int)teachSignal[k].Data[index];
+
                         gx[b * y.Length + tb * dataLen + j] -= coef;
                     }
                 }
