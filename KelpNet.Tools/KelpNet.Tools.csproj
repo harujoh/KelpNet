@@ -71,6 +71,7 @@
     <Compile Include="DeepCopyHelper.cs" />
     <Compile Include="InternetFileDownloader.cs" />
     <Compile Include="BitmapConverter.cs" />
+    <Compile Include="LabeledDataMaker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

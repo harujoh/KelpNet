@@ -69,7 +69,7 @@ namespace KelpNet.Sample
                     g.DrawImage(baseImage, 0, 0, 224, 224);
                     g.Dispose();
 
-                    Real[] bias = { -123.68, -116.779, -103.939 }; //補正値のチャンネル順は入力画像に従う
+                    Real[] bias = { -123.68, -116.779, -103.939 }; //補正値のチャンネル順は入力画像に従う(標準的なBitmapならRGB)
                     NdArray imageArray = BitmapConverter.Image2NdArray(resultImage, false, true, bias);
 
                     Console.WriteLine("Start predict.");
