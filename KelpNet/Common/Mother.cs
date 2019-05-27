@@ -5,7 +5,7 @@ namespace KelpNet
     //乱数の素
     //C#ではRandomを複数同時にインスタンスすると似たような値しか吐かないため
     //一箇所でまとめて管理しておく必要がある
-    public class Mother
+    public class Mother // Der Alte würfelt nicht.
     {
 #if DEBUG
         //デバッグ時はシードを固定

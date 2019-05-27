@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -12,6 +13,10 @@ namespace KelpNet
         private ZipArchive ZipArchiveData;
         private bool[] Loaded;
         private LabeledData[] Data;
+
+        private int[] trainIndex;
+        private int[] validIndex;
+        private int[] testIndex;
 
         public int Length = 0;
         public string[] LabelName;
@@ -30,25 +35,111 @@ namespace KelpNet
             }
         }
 
-        public LabeledDataSet(Real[][] data, int[] shape, Real[] label, string[] labelName = null)
+        public LabeledDataSet(Real[][] data, int[] shape, Real[] label, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true) :
+            this(
+                LabeledData.Convert(data, label),
+                shape,
+                labelName,
+                makeValidData
+            )
         {
-            Data = LabeledData.Convert(data, label);
-            Loaded = Enumerable.Repeat(true, data.Length).ToArray();
-            LabelName = labelName;
-            Shape = shape;
-            Length = data.Length;
         }
 
-        public LabeledDataSet(LabeledData[] data, int[] shape, string[] labelName = null)
+        public LabeledDataSet(LabeledData[] data, int[] shape, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true)
         {
             Data = data;
             Loaded = Enumerable.Repeat(true, data.Length).ToArray();
             LabelName = labelName;
             Shape = shape;
             Length = data.Length;
+
+            //ラベル名称が未指定の場合、連番を自動的に割り当てる
+            if (LabelName == null)
+            {
+                Real maxLabel = 0;
+
+                for (int i = 0; i < Data.Length; i++)
+                {
+                    if (Data[i].Label > maxLabel) maxLabel = Data[i].Label;
+                }
+
+                LabelName = Enumerable.Range(0, (int)maxLabel).Select(s => s.ToString()).ToArray();
+            }
+
+            if (makeTrainIndex)
+            {
+                MakeTrainData(makeValidData);
+            }
         }
 
-        public LabeledDataSet(ZipArchive zipArchive, bool isAllLoad = false)
+        void MakeTrainData(bool makeValidData)
+        {
+            //Train,Valid,Testデータを作成する
+
+            //全データのインデックスを最初に持っておく
+            List<int> trainIndexList = new List<int>(Enumerable.Range(0, Data.Length));
+
+            //各ラベルで10％をテストデータに割り当てる
+            int testDataCount = Data.Length / LabelName.Length / 10;
+
+            //少なすぎる場合は一つ
+            if (testDataCount == 0) testDataCount = 1;
+
+            testIndex = GetRondomIndex(testDataCount * 10, trainIndexList);
+
+            if (makeValidData)
+            {
+                validIndex = GetRondomIndex(testDataCount * 10, trainIndexList);
+            }
+
+            //残りをトレーニングデータとして使用する
+            trainIndex = trainIndexList.ToArray();
+        }
+
+        private int[] GetRondomIndex(int dataCount, List<int> trainIndexList)
+        {
+            int[] result = new int[dataCount];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                int randomIndex = -1;
+                int count = 0;
+
+                do
+                {
+                    randomIndex = trainIndexList[Mother.Dice.Next(trainIndexList.Count)];
+                    count++;
+                } while (count < 5 && (int)Get(randomIndex).Label != i % LabelName.Length);
+
+                //5回くじを引いて当たりを引けなければ線形探索で値を代入
+                if (count == 5)
+                {
+                    randomIndex = -1;
+                    int j = 0;
+
+                    do
+                    {
+                        if ((int)Get(trainIndexList[j]).Label == i % LabelName.Length)
+                        {
+                            randomIndex = trainIndexList[j];
+                        }
+
+                        j++;
+                    } while (j < trainIndexList.Count && randomIndex == -1);
+
+                    //データが必要量無い
+                    if (j == trainIndexList.Count) throw new Exception();
+                }
+
+                //全データのインデックスから使用分を除く
+                trainIndexList.Remove(randomIndex);
+                result[i] = randomIndex;
+            }
+
+            return result;
+        }
+
+        public LabeledDataSet(ZipArchive zipArchive, bool isAllLoad = false, bool makeValidData = false, bool makeTrainIndex = true)
         {
             ZipArchiveData = zipArchive;
 
@@ -80,6 +171,11 @@ namespace KelpNet
                 Data = new LabeledData[Length];
                 Loaded = new bool[Length];
             }
+
+            if (makeTrainIndex)
+            {
+                MakeTrainData(makeValidData);
+            }
         }
 
         public LabeledData Get(int i)
@@ -92,6 +188,21 @@ namespace KelpNet
             }
 
             return Data[i];
+        }
+
+        public LabeledData GetTrain(int i)
+        {
+            return Get(trainIndex[i]);
+        }
+
+        public LabeledData GetValid(int i)
+        {
+            return Get(validIndex[i]);
+        }
+
+        public LabeledData GetTest(int i)
+        {
+            return Get(testIndex[i]);
         }
 
         public void AllLoad()
@@ -110,11 +221,31 @@ namespace KelpNet
         //データをランダムに取得しバッチにまとめる
         public TestDataSet GetRandomDataSet(int batchCount)
         {
+            return GetRandomData(batchCount, () => Mother.Dice.Next(Data.Length));
+        }
+
+        public TestDataSet GetRandomTrainDataSet(int batchCount)
+        {
+            return GetRandomData(batchCount, () => trainIndex[Mother.Dice.Next(trainIndex.Length)]);
+        }
+
+        public TestDataSet GetRandomValidDataSet(int batchCount)
+        {
+            return GetRandomData(batchCount, () => validIndex[Mother.Dice.Next(validIndex.Length)]);
+        }
+
+        public TestDataSet GetRandomTestDataSet(int batchCount)
+        {
+            return GetRandomData(batchCount, () => testIndex[Mother.Dice.Next(testIndex.Length)]);
+        }
+
+        private TestDataSet GetRandomData(int batchCount, Func<int> getIndexFunc)
+        {
             TestDataSet result = new TestDataSet(new NdArray(Shape, batchCount), new NdArray(new[] { 1 }, batchCount));
 
             for (int i = 0; i < batchCount; i++)
             {
-                int index = Mother.Dice.Next(Data.Length);
+                int index = getIndexFunc();
 
                 LabeledData labeledData = Get(index);
 
