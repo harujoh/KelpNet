@@ -86,17 +86,65 @@ namespace KelpNet.Tools
                     }
 # endif
 
-                    Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
-                    Graphics g = Graphics.FromImage(resultBmp);
-                    g.InterpolationMode = InterpolationMode.Bilinear;
-                    g.DrawImage(baseBmp, 0, 0, width, height);
-                    g.Dispose();
-
-                    data.Add(new LabeledData(BitmapConverter.Image2RealArray(resultBmp), i));
+                    SetAugmentatedBmp(data, baseBmp, width, height, pixelFormat, i);
                 }
             }
 
             return new LabeledDataSet(data.ToArray(), new[] { bitcount, height, width }, labelName.ToArray());
+        }
+
+        static void SetResizedBmp(List<LabeledData> data, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, Real label)
+        {
+            Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
+            Graphics g = Graphics.FromImage(resultBmp);
+            g.InterpolationMode = InterpolationMode.Bilinear;
+            g.DrawImage(baseBmp, 0, 0, width, height);
+            g.Dispose();
+
+            data.Add(new LabeledData(BitmapConverter.Image2RealArray(resultBmp), label));
+        }
+
+        //SizeRatioは100分率で指定 10を指定した場合10%縮めた範囲を9回切り抜いて出力する
+        static void SetAugmentatedBmp(List<LabeledData> data, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, Real label, int sizeRatio = 10)
+        {
+            Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
+            Rectangle desRect = new Rectangle(0, 0, width, height);
+
+            int widthOffset = baseBmp.Width / sizeRatio;
+            int heightOffset = baseBmp.Height / sizeRatio;
+
+            for (int y = 0; y < 3; y++)
+            {
+                for (int x = 0; x < 3; x++)
+                {
+                    Rectangle srcRect = new Rectangle(x * widthOffset / 2, y * heightOffset / 2, baseBmp.Width - widthOffset, baseBmp.Height - heightOffset);
+
+                    Graphics g = Graphics.FromImage(resultBmp);
+                    g.InterpolationMode = InterpolationMode.Bilinear;
+                    g.DrawImage(baseBmp, desRect, srcRect, GraphicsUnit.Pixel);
+                    g.Dispose();
+
+                    data.Add(new LabeledData(BitmapConverter.Image2RealArray(resultBmp), label));
+                }
+            }
+        }
+
+        static void SetRotateImage(List<LabeledData> data, Bitmap baseBmp, Real label)
+        {
+            //90
+            baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            data.Add(new LabeledData(BitmapConverter.Image2RealArray(baseBmp), label));
+
+            //180
+            baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            data.Add(new LabeledData(BitmapConverter.Image2RealArray(baseBmp), label));
+
+            //270
+            baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
+            data.Add(new LabeledData(BitmapConverter.Image2RealArray(baseBmp), label));
+
+            //もとに戻す
+            baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
         }
     }
 }

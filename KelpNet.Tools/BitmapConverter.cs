@@ -106,25 +106,32 @@ namespace KelpNet.Tools
             return result;
         }
 
-        public static Bitmap NdArray2Image(NdArray input, bool isNorm = true, bool isFromBgrArray = false)
+        public static Bitmap[] NdArray2Image(NdArray input, bool isNorm = true, bool isFromBgrArray = false)
         {
-            if (input.Shape.Length == 2)
+            Bitmap[] result = new Bitmap[input.BatchCount];
+
+            for (int i = 0; i < result.Length; i++)
             {
-                return CreateMonoImage(input.Data, input.Shape[0], input.Shape[1], isNorm);
-            }
-            else if (input.Shape.Length == 3)
-            {
-                if (input.Shape[0] == 1)
+                NdArray tmp = input.GetSingleArray(i);
+
+                if (input.Shape.Length == 2)
                 {
-                    return CreateMonoImage(input.Data, input.Shape[1], input.Shape[2], isNorm);
+                    result[i] = CreateMonoImage(tmp.Data, input.Shape[0], input.Shape[1], isNorm);
                 }
-                else if (input.Shape[0] == 3)
+                else if (input.Shape.Length == 3)
                 {
-                    return CreateColorImage(input.Data, input.Shape[1], input.Shape[2], isNorm, isFromBgrArray);
+                    if (input.Shape[0] == 1)
+                    {
+                        result[i] = CreateMonoImage(tmp.Data, input.Shape[1], input.Shape[2], isNorm);
+                    }
+                    else if (input.Shape[0] == 3)
+                    {
+                        result[i] = CreateColorImage(tmp.Data, input.Shape[1], input.Shape[2], isNorm, isFromBgrArray);
+                    }
                 }
             }
 
-            return null;
+            return result;
         }
 
         static Bitmap CreateMonoImage(Real[] data, int width, int height, bool isNorm)
@@ -143,13 +150,28 @@ namespace KelpNet.Tools
 
             byte[] resultData = new byte[bmpdat.Stride * height];
 
-            Real datamax = data.Max();
-
-            for (int y = 0; y < result.Height; y++)
+            if (isNorm)
             {
-                for (int x = 0; x < result.Width; x++)
+                Real datamax = data.Max();
+
+                for (int y = 0; y < result.Height; y++)
                 {
-                    resultData[y * bmpdat.Stride + x] = (byte)(data[y * width + x] / datamax * norm);
+                    for (int x = 0; x < result.Width; x++)
+                    {
+                        resultData[y * bmpdat.Stride + x] = data[y * width + x] > 0
+                            ? (byte) (data[y * width + x] / datamax * norm)
+                            : (byte) 0;
+                    }
+                }
+            }
+            else
+            {
+                for (int y = 0; y < result.Height; y++)
+                {
+                    for (int x = 0; x < result.Width; x++)
+                    {
+                        resultData[y * bmpdat.Stride + x] = data[y * width + x] > 0 ? (byte)data[y * width + x] : (byte)0;
+                    }
                 }
             }
 

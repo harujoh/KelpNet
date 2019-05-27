@@ -103,33 +103,11 @@ namespace KelpNet
             for (int i = 0; i < result.Length; i++)
             {
                 int randomIndex = -1;
-                int count = 0;
 
                 do
                 {
                     randomIndex = trainIndexList[Mother.Dice.Next(trainIndexList.Count)];
-                    count++;
-                } while (count < 5 && (int)Get(randomIndex).Label != i % LabelName.Length);
-
-                //5回くじを引いて当たりを引けなければ線形探索で値を代入
-                if (count == 5)
-                {
-                    randomIndex = -1;
-                    int j = 0;
-
-                    do
-                    {
-                        if ((int)Get(trainIndexList[j]).Label == i % LabelName.Length)
-                        {
-                            randomIndex = trainIndexList[j];
-                        }
-
-                        j++;
-                    } while (j < trainIndexList.Count && randomIndex == -1);
-
-                    //データが必要量無い
-                    if (j == trainIndexList.Count) throw new Exception();
-                }
+                } while ((int)Get(randomIndex).Label != i % LabelName.Length);
 
                 //全データのインデックスから使用分を除く
                 trainIndexList.Remove(randomIndex);
@@ -297,9 +275,9 @@ namespace KelpNet
             }
         }
 
-        public static LabeledDataSet Load(string fileName, bool isAllLoad = false)
+        public static LabeledDataSet Load(string fileName, bool isAllLoad = false, bool makeValidData = false, bool makeTrainIndex = true)
         {
-            return new LabeledDataSet(ZipFile.OpenRead(fileName), isAllLoad);
+            return new LabeledDataSet(ZipFile.OpenRead(fileName), isAllLoad, makeValidData, makeTrainIndex);
         }
     }
 }
