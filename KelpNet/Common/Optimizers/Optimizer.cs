@@ -19,22 +19,22 @@ namespace KelpNet
 
         public void Update()
         {
-            if (this.OptimizerParameters[0].FunctionParameter.TrainCount != 0)
+            if (this.OptimizerParameters[0].FunctionParameter.TrainCount > 0)
             {
                 this.UpdateCount++;
-            }
 
-            for (int i = 0; i < this.OptimizerParameters.Count; i++)
-            {
-                //傾きの割引を実行
-                this.OptimizerParameters[i].FunctionParameter.Reduce();
+                for (int i = 0; i < this.OptimizerParameters.Count; i++)
+                {
+                    //傾きの割引を実行
+                    this.OptimizerParameters[i].FunctionParameter.Reduce();
 
-                this.OptimizerParameters[i].UpdateFunctionParameters();
+                    this.OptimizerParameters[i].UpdateFunctionParameters();
 
-                this.OptimizerParameters[i].FunctionParameter.ClearGrad();
+                    this.OptimizerParameters[i].FunctionParameter.ClearGrad();
 
-                //カウンタをリセット
-                this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
+                    //カウンタをリセット
+                    this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
+                }
             }
         }
 
