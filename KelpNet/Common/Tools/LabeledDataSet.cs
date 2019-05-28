@@ -12,7 +12,9 @@ namespace KelpNet
         NetDataContractSerializer bf = new NetDataContractSerializer();
         private ZipArchive ZipArchiveData;
         private bool[] Loaded;
-        private LabeledData[] Data;
+
+        private Real[][] Data;
+        private Real[] Label;
 
         private int[] trainIndex;
         private int[] validIndex;
@@ -22,32 +24,10 @@ namespace KelpNet
         public string[] LabelName;
         public int[] Shape;
 
-        public int ClassCount
-        {
-            get { return LabelName.Length; }
-        }
-
-        public LabeledData this[int i]
-        {
-            get
-            {
-                return Get(i);
-            }
-        }
-
-        public LabeledDataSet(Real[][] data, int[] shape, Real[] label, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true) :
-            this(
-                LabeledData.Convert(data, label),
-                shape,
-                labelName,
-                makeValidData
-            )
-        {
-        }
-
-        public LabeledDataSet(LabeledData[] data, int[] shape, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true)
+        public LabeledDataSet(Real[][] data, int[] shape, Real[] label, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true)
         {
             Data = data;
+            Label = label;
             Loaded = Enumerable.Repeat(true, data.Length).ToArray();
             LabelName = labelName;
             Shape = shape;
@@ -58,9 +38,9 @@ namespace KelpNet
             {
                 Real maxLabel = 0;
 
-                for (int i = 0; i < Data.Length; i++)
+                for (int i = 0; i < Label.Length; i++)
                 {
-                    if (Data[i].Label > maxLabel) maxLabel = Data[i].Label;
+                    if (Label[i] > maxLabel) maxLabel = Label[i];
                 }
 
                 LabelName = Enumerable.Range(0, (int)maxLabel).Select(s => s.ToString()).ToArray();
@@ -77,19 +57,20 @@ namespace KelpNet
             //Train,Valid,Testデータを作成する
 
             //全データのインデックスを最初に持っておく
-            List<int> trainIndexList = new List<int>(Enumerable.Range(0, Data.Length));
+            List<int> trainIndexList = new List<int>(Enumerable.Range(0, Label.Length));
 
-            //各ラベルで10％をテストデータに割り当てる
-            int testDataCount = Data.Length / LabelName.Length / 10;
+            //各ラベルで10％のデータをテストデータに割り当てる
+            int testDataCount = Label.Length / LabelName.Length / 10;
 
             //少なすぎる場合は一つ
             if (testDataCount == 0) testDataCount = 1;
 
-            testIndex = GetRondomIndex(testDataCount * 10, trainIndexList);
+            testIndex = GetRondomIndex(testDataCount * LabelName.Length, trainIndexList);
 
+            //Validはオプション
             if (makeValidData)
             {
-                validIndex = GetRondomIndex(testDataCount * 10, trainIndexList);
+                validIndex = GetRondomIndex(testDataCount * LabelName.Length, trainIndexList);
             }
 
             //残りをトレーニングデータとして使用する
@@ -107,7 +88,7 @@ namespace KelpNet
                 do
                 {
                     randomIndex = trainIndexList[Mother.Dice.Next(trainIndexList.Count)];
-                } while ((int)Get(randomIndex).Label != i % LabelName.Length);
+                } while (Label[randomIndex] != i % LabelName.Length);
 
                 //全データのインデックスから使用分を除く
                 trainIndexList.Remove(randomIndex);
@@ -121,24 +102,27 @@ namespace KelpNet
         {
             ZipArchiveData = zipArchive;
 
-            ZipArchiveEntry zipLength = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension("Length"));
+            ZipArchiveEntry zipLength = ZipArchiveData.GetEntry("Length");
             Length = (int)bf.Deserialize(zipLength.Open());
 
-            ZipArchiveEntry zipShape = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension("Shape"));
+            ZipArchiveEntry zipShape = ZipArchiveData.GetEntry("Shape");
             Shape = (int[])bf.Deserialize(zipShape.Open());
 
-            ZipArchiveEntry zipLabelName = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension("LabelName"));
+            ZipArchiveEntry zipLabelName = ZipArchiveData.GetEntry("LabelName");
             LabelName = (string[])bf.Deserialize(zipLabelName.Open());
+
+            ZipArchiveEntry zipLabel = ZipArchiveData.GetEntry("Label");
+            Label = (Real[])bf.Deserialize(zipLabel.Open());
 
             if (isAllLoad)
             {
                 //全読み込み
-                Data = new LabeledData[Length];
+                Data = new Real[Length][];
 
                 for (int i = 0; i < Data.Length; i++)
                 {
-                    ZipArchiveEntry zipData = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension(i.ToString()));
-                    Data[i] = (LabeledData)bf.Deserialize(zipData.Open());
+                    ZipArchiveEntry zipData = ZipArchiveData.GetEntry(i.ToString());
+                    Data[i] = (Real[])bf.Deserialize(zipData.Open());
                 }
 
                 Loaded = Enumerable.Repeat(true, Length).ToArray();
@@ -146,7 +130,7 @@ namespace KelpNet
             else
             {
                 //遅延読込
-                Data = new LabeledData[Length];
+                Data = new Real[Length][];
                 Loaded = new bool[Length];
             }
 
@@ -156,29 +140,29 @@ namespace KelpNet
             }
         }
 
-        public LabeledData Get(int i)
+        public Real[] Get(int i)
         {
             if (!Loaded[i])
             {
-                ZipArchiveEntry zipData = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension(i.ToString()));
-                Data[i] = (LabeledData)bf.Deserialize(zipData.Open());
+                ZipArchiveEntry zipData = ZipArchiveData.GetEntry(i.ToString());
+                Data[i] = (Real[])bf.Deserialize(zipData.Open());
                 Loaded[i] = true;
             }
 
             return Data[i];
         }
 
-        public LabeledData GetTrain(int i)
+        public Real[] GetTrain(int i)
         {
             return Get(trainIndex[i]);
         }
 
-        public LabeledData GetValid(int i)
+        public Real[] GetValid(int i)
         {
             return Get(validIndex[i]);
         }
 
-        public LabeledData GetTest(int i)
+        public Real[] GetTest(int i)
         {
             return Get(testIndex[i]);
         }
@@ -189,8 +173,8 @@ namespace KelpNet
             {
                 if (!Loaded[i])
                 {
-                    ZipArchiveEntry zipData = ZipArchiveData.GetEntry(Path.GetFileNameWithoutExtension(i.ToString()));
-                    Data[i] = (LabeledData)bf.Deserialize(zipData.Open());
+                    ZipArchiveEntry zipData = ZipArchiveData.GetEntry(i.ToString());
+                    Data[i] = (Real[])bf.Deserialize(zipData.Open());
                     Loaded[i] = true;
                 }
             }
@@ -225,10 +209,10 @@ namespace KelpNet
             {
                 int index = getIndexFunc();
 
-                LabeledData labeledData = Get(index);
+                Real[] labeledData = Get(index);
+                Array.Copy(labeledData, 0, result.Data.Data, i * result.Data.Length, result.Data.Length);
 
-                Array.Copy(labeledData.Data, 0, result.Data.Data, i * result.Data.Length, result.Data.Length);
-                result.Label.Data[i] = labeledData.Label;
+                result.Label.Data[i] = Label[index];
             }
 
             return result;
@@ -271,6 +255,12 @@ namespace KelpNet
                 using (Stream stream = zipLength.Open())
                 {
                     bf.Serialize(stream, Length);
+                }
+
+                ZipArchiveEntry entryLabel = zipArchive.CreateEntry("Label");
+                using (Stream stream = entryLabel.Open())
+                {
+                    bf.Serialize(stream, Label);
                 }
             }
         }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -25,7 +24,8 @@ namespace KelpNet.Tools
 
         public static LabeledDataSet MakeFromFolder(string foldersPath, int width = -1, int height = -1, bool eraseAlphaCh = true)
         {
-            List<LabeledData> data = new List<LabeledData>();
+            List<Real[]> data = new List<Real[]>();
+            List<Real> label = new List<Real>();
             List<string> labelName = new List<string>();
 
             string[] folders = Directory.GetDirectories(foldersPath);
@@ -86,14 +86,14 @@ namespace KelpNet.Tools
                     }
 # endif
 
-                    SetAugmentatedBmp(data, baseBmp, width, height, pixelFormat, i);
+                    SetAugmentatedBmp(data, label, baseBmp, width, height, pixelFormat, i);
                 }
             }
 
-            return new LabeledDataSet(data.ToArray(), new[] { bitcount, height, width }, labelName.ToArray());
+            return new LabeledDataSet(data.ToArray(), new[] { bitcount, height, width }, label.ToArray(), labelName.ToArray());
         }
 
-        static void SetResizedBmp(List<LabeledData> data, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, Real label)
+        static void SetResizedBmp(List<Real[]> data, List<Real> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex)
         {
             Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
             Graphics g = Graphics.FromImage(resultBmp);
@@ -101,11 +101,12 @@ namespace KelpNet.Tools
             g.DrawImage(baseBmp, 0, 0, width, height);
             g.Dispose();
 
-            data.Add(new LabeledData(BitmapConverter.Image2RealArray(resultBmp), label));
+            data.Add(BitmapConverter.Image2RealArray(resultBmp));
+            label.Add(labelIndex);
         }
 
         //SizeRatioは100分率で指定 10を指定した場合10%縮めた範囲を9回切り抜いて出力する
-        static void SetAugmentatedBmp(List<LabeledData> data, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, Real label, int sizeRatio = 10)
+        static void SetAugmentatedBmp(List<Real[]> data, List<Real> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex, int sizeRatio = 10)
         {
             Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
             Rectangle desRect = new Rectangle(0, 0, width, height);
@@ -124,24 +125,28 @@ namespace KelpNet.Tools
                     g.DrawImage(baseBmp, desRect, srcRect, GraphicsUnit.Pixel);
                     g.Dispose();
 
-                    data.Add(new LabeledData(BitmapConverter.Image2RealArray(resultBmp), label));
+                    data.Add(BitmapConverter.Image2RealArray(resultBmp));
+                    label.Add(labelIndex);
                 }
             }
         }
 
-        static void SetRotateImage(List<LabeledData> data, Bitmap baseBmp, Real label)
+        static void SetRotateImage(List<Real[]> data, List<Real> label, Bitmap baseBmp, int labelIndex)
         {
             //90
             baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            data.Add(new LabeledData(BitmapConverter.Image2RealArray(baseBmp), label));
+            data.Add(BitmapConverter.Image2RealArray(baseBmp));
+            label.Add(labelIndex);
 
             //180
             baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            data.Add(new LabeledData(BitmapConverter.Image2RealArray(baseBmp), label));
+            data.Add(BitmapConverter.Image2RealArray(baseBmp));
+            label.Add(labelIndex);
 
             //270
             baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            data.Add(new LabeledData(BitmapConverter.Image2RealArray(baseBmp), label));
+            data.Add(BitmapConverter.Image2RealArray(baseBmp));
+            label.Add(labelIndex);
 
             //もとに戻す
             baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
