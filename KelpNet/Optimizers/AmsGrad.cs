@@ -4,55 +4,35 @@ using System.Threading.Tasks;
 namespace KelpNet
 {
     [Serializable]
-    public class Adam : Optimizer
+    public class AmsGrad : Adam
     {
-        public Real Alpha;
-        public Real Beta1;
-        public Real Beta2;
-        public Real Epsilon;
-        public Real Eta;
-
-        public Real AlphaT
-        {
-            get
-            {
-                Real fix1 = 1 - Math.Pow(Beta1, UpdateCount);
-                Real fix2 = 1 - Math.Pow(Beta2, UpdateCount);
-
-                return Alpha * Math.Sqrt(fix2) / fix1;
-            }
-        }
-
-        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0)
-        {
-            this.Alpha = alpha;
-            this.Beta1 = beta1;
-            this.Beta2 = beta2;
-            this.Epsilon = epsilon;
-            this.Eta = eta;
-        }
+        public AmsGrad(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0) :
+            base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
+        { }
 
         internal override void AddFunctionParameters(NdArray[] functionParameters)
         {
             foreach (NdArray functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new AmsGradParameter(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class AdamParameter : OptimizerParameter
+    class AmsGradParameter : OptimizerParameter
     {
         private readonly Adam _optimizer;
 
         private readonly Real[] m;
         private readonly Real[] v;
+        private readonly Real[] vhat;
 
-        public AdamParameter(NdArray parameter, Adam optimizer) : base(parameter)
+        public AmsGradParameter(NdArray parameter, Adam optimizer) : base(parameter)
         {
             this.m = new Real[parameter.Data.Length];
             this.v = new Real[parameter.Data.Length];
+            this.vhat = new Real[parameter.Data.Length];
 
             this._optimizer = optimizer;
         }
@@ -68,7 +48,12 @@ namespace KelpNet
                 this.m[i] += (1 - this._optimizer.Beta1) * (grad - this.m[i]);
                 this.v[i] += (1 - this._optimizer.Beta2) * (grad * grad - this.v[i]);
 
-                Real step = alphaT / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
+                if (this.vhat[i] < this.v[i])
+                {
+                    this.vhat[i] = this.v[i];
+                }
+
+                Real step = alphaT / (Math.Sqrt(this.vhat[i]) + this._optimizer.Epsilon);
 
                 this.FunctionParameter.Data[i] -= this._optimizer.Eta * step * this.m[i];
             });

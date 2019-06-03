@@ -10,16 +10,10 @@ namespace KelpNet.Tests
         [TestMethod]
         public void AdamRandomTest()
         {
-            RandomTest(false);
+            RandomTest();
         }
 
-        [TestMethod]
-        public void AMSGradRandomTest()
-        {
-            RandomTest(true);
-        }
-
-        public void RandomTest(bool isAmsGrad)
+        public void RandomTest()
         {
             Python.Initialize();
             Chainer.Initialize();
@@ -39,11 +33,10 @@ namespace KelpNet.Tests
             float beta2 = (float)Mother.Dice.NextDouble(); //0.999f;
             float eps = (float)Mother.Dice.NextDouble(); //1e-08f;
             float eta = (float)Mother.Dice.NextDouble(); //1.0f;
-            float weight_decay_rate = (float)Mother.Dice.NextDouble(); //0.0;
 
             //Chainer
             NChainer.Linear<Real> cLinear = new NChainer.Linear<Real>(inputCount, outputCount, false, Real.ToBaseNdArray(w), Real.ToBaseArray(b));
-            NChainer.Adam<Real> cAdam = new NChainer.Adam<Real>(alpha, beta1, beta2, eps, eta, weight_decay_rate, isAmsGrad);
+            NChainer.Adam<Real> cAdam = new NChainer.Adam<Real>(alpha, beta1, beta2, eps, eta);
             cAdam.Setup(cLinear);
 
             Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
@@ -57,7 +50,7 @@ namespace KelpNet.Tests
 
             //KelpNet
             KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b);
-            KelpNet.Adam adam = new Adam(alpha, beta1, beta2, eps, eta, weight_decay_rate, isAmsGrad);
+            KelpNet.Adam adam = new Adam(alpha, beta1, beta2, eps, eta);
             adam.SetUp(linear);
 
             NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);

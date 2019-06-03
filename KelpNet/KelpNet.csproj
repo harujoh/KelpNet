@@ -107,9 +107,13 @@
     <Compile Include="Functions\Poolings\MaxPooling2D.cs" />
     <Compile Include="Common\Mother.cs" />
     <Compile Include="Common\Optimizers\Optimizer.cs" />
+    <Compile Include="Optimizers\AdaBound.cs" />
     <Compile Include="Optimizers\AdaDelta.cs" />
     <Compile Include="Optimizers\AdaGrad.cs" />
     <Compile Include="Optimizers\Adam.cs" />
+    <Compile Include="Optimizers\AdamW.cs" />
+    <Compile Include="Optimizers\AmsBound.cs" />
+    <Compile Include="Optimizers\AmsGrad.cs" />
     <Compile Include="Optimizers\GradientClipping.cs" />
     <Compile Include="Optimizers\MomentumSGD.cs" />
     <Compile Include="Optimizers\RMSprop.cs" />

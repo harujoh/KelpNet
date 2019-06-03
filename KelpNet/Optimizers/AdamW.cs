@@ -4,52 +4,34 @@ using System.Threading.Tasks;
 namespace KelpNet
 {
     [Serializable]
-    public class Adam : Optimizer
+    public class AdamW : Adam
     {
-        public Real Alpha;
-        public Real Beta1;
-        public Real Beta2;
-        public Real Epsilon;
-        public Real Eta;
+        public Real WeightDecayRate;
 
-        public Real AlphaT
+        public AdamW(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0, double weightDecayRate = 0) :
+            base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
         {
-            get
-            {
-                Real fix1 = 1 - Math.Pow(Beta1, UpdateCount);
-                Real fix2 = 1 - Math.Pow(Beta2, UpdateCount);
-
-                return Alpha * Math.Sqrt(fix2) / fix1;
-            }
-        }
-
-        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0)
-        {
-            this.Alpha = alpha;
-            this.Beta1 = beta1;
-            this.Beta2 = beta2;
-            this.Epsilon = epsilon;
-            this.Eta = eta;
+            this.WeightDecayRate = weightDecayRate;
         }
 
         internal override void AddFunctionParameters(NdArray[] functionParameters)
         {
             foreach (NdArray functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
+                this.OptimizerParameters.Add(new AdamWParameter(functionParameter, this));
             }
         }
     }
 
     [Serializable]
-    class AdamParameter : OptimizerParameter
+    class AdamWParameter : OptimizerParameter
     {
-        private readonly Adam _optimizer;
+        private readonly AdamW _optimizer;
 
         private readonly Real[] m;
         private readonly Real[] v;
 
-        public AdamParameter(NdArray parameter, Adam optimizer) : base(parameter)
+        public AdamWParameter(NdArray parameter, AdamW optimizer) : base(parameter)
         {
             this.m = new Real[parameter.Data.Length];
             this.v = new Real[parameter.Data.Length];
@@ -70,7 +52,7 @@ namespace KelpNet
 
                 Real step = alphaT / (Math.Sqrt(this.v[i]) + this._optimizer.Epsilon);
 
-                this.FunctionParameter.Data[i] -= this._optimizer.Eta * step * this.m[i];
+                this.FunctionParameter.Data[i] -= this._optimizer.Eta * (step * this.m[i] + this._optimizer.WeightDecayRate * this.FunctionParameter.Data[i]);
             });
         }
     }

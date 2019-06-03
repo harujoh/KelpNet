@@ -40,7 +40,7 @@ namespace KelpNet.Sample
             );
 
             //optimizerを宣言
-            nn.SetOptimizer(new Adam(isAmsGrad: true));
+            nn.SetOptimizer(new Adam());
 
             Console.WriteLine("Training Start...");
 
