@@ -65,6 +65,12 @@ Twitter: https://twitter.com/harujoh
 - Cloo [MIT License] https://sourceforge.net/projects/cloo/
 
 ## 実装済み関数
+- Connections:
+　・Convolution2D
+　・Deconvolution2D
+　・EmbedID
+　・Linear
+　・LSTM
 - Activations:
 　・ELU
 　・LeakyReLU
@@ -74,15 +80,15 @@ Twitter: https://twitter.com/harujoh
 　・Softmax
 　・Softplus
 　・Swish
-- Connections:
-　・Convolution2D
-　・Deconvolution2D
-　・EmbedID
-　・Linear
-　・LSTM
 - Poolings:
 　・AveragePooling2D
 　・MaxPooling2D
+- Normalize:
+　・BatchNormalization
+　・LRN
+- Noise:
+　・DropOut
+　・StochasticDepth
 - LossFunctions:
 　・MeanSquaredError
 　・SoftmaxCrossEntropy
@@ -93,13 +99,7 @@ Twitter: https://twitter.com/harujoh
 　・Adam
 　・AdamW
 　・AMSBound
-　・AMSGrad
+　・AMSGrad 
 　・MomentumSGD
 　・RMSprop
 　・SGD
-- Normalize:
-　・BatchNormalization
-　・LRN
-- Noise:
-　・DropOut
-　・StochasticDepth
