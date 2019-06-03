@@ -78,7 +78,7 @@ namespace KelpNet.Sample
             //ベンチマーク
             SingleBenchmark.Run();
 
-            Console.WriteLine("Test Done...");
+            Console.WriteLine("Done...");
             Console.Read();
         }
     }

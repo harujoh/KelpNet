@@ -10,11 +10,6 @@ namespace KelpNet.Tests
         [TestMethod]
         public void AdamRandomTest()
         {
-            RandomTest();
-        }
-
-        public void RandomTest()
-        {
             Python.Initialize();
             Chainer.Initialize();
 
