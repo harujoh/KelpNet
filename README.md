@@ -87,9 +87,12 @@ Twitter: https://twitter.com/harujoh
 　・MeanSquaredError
 　・SoftmaxCrossEntropy
 - Optimizers:
+　・AdaBound
 　・AdaDelta
 　・AdaGrad
 　・Adam
+　・AdamW
+　・AMSBound
 　・AMSGrad
 　・MomentumSGD
 　・RMSprop
