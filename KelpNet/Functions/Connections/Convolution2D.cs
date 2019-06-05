@@ -336,7 +336,6 @@ namespace KelpNet
                                         int xIndex = xChOffset + iy * x.Shape[2] + ix;
 
                                         this.Weight.Grad[wIndex] += x.Data[xIndex] * activatedgy[gyIndex];
-
                                         x.Grad[xIndex] += this.Weight.Data[wIndex] * activatedgy[gyIndex];
                                     }
                                 }
@@ -352,6 +351,9 @@ namespace KelpNet
             Real[] gx = new Real[x.Data.Length];
             Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
+
+            int kyStartPrevOffset = _kHeight - _padY - x.Shape[1];
+            int kxStartPrevOffset = _kWidth - _padX - x.Shape[2];
 
             //gyは共通で使用
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer, activatedgy))
@@ -396,20 +398,22 @@ namespace KelpNet
                     this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
                     this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
                     this.BackwardgXKernel.SetMemoryArgument(2, gpugX);
-                    this.BackwardgXKernel.SetValueArgument(3, this.InputCount);
+                    this.BackwardgXKernel.SetValueArgument(3, y.Length);
                     this.BackwardgXKernel.SetValueArgument(4, y.Shape[0]);
                     this.BackwardgXKernel.SetValueArgument(5, y.Shape[1]);
                     this.BackwardgXKernel.SetValueArgument(6, y.Shape[2]);
-                    this.BackwardgXKernel.SetValueArgument(7, y.Length);
-                    this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
-                    this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
-                    this.BackwardgXKernel.SetValueArgument(10, x.Length);
+                    this.BackwardgXKernel.SetValueArgument(7, x.Length);
+                    this.BackwardgXKernel.SetValueArgument(8, x.Shape[0]);
+                    this.BackwardgXKernel.SetValueArgument(9, x.Shape[1]);
+                    this.BackwardgXKernel.SetValueArgument(10, x.Shape[2]);
                     this.BackwardgXKernel.SetValueArgument(11, this._strideX);
                     this.BackwardgXKernel.SetValueArgument(12, this._strideY);
                     this.BackwardgXKernel.SetValueArgument(13, this._padX);
                     this.BackwardgXKernel.SetValueArgument(14, this._padY);
-                    this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
-                    this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
+                    this.BackwardgXKernel.SetValueArgument(15, this._kWidth);
+                    this.BackwardgXKernel.SetValueArgument(16, this._kHeight);
+                    this.BackwardgXKernel.SetValueArgument(17, kxStartPrevOffset);
+                    this.BackwardgXKernel.SetValueArgument(18, kyStartPrevOffset);
 
                     Weaver.CommandQueue.Execute
                     (

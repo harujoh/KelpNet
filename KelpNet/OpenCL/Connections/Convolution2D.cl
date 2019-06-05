@@ -116,56 +116,62 @@ __kernel void Convolution2DgXBackward(
 	const __global Real* activatedgy,
 	const __global Real* gpuW,
 	__global Real* gpugX,
-	const int inputCount,
+	const int yLength,
 	const int yShape0,
 	const int yShape1,
 	const int yShape2,
-	const int yLength,
+	const int xLength,
+	const int xShape0,
 	const int xShape1,
 	const int xShape2,
-	const int xLength,
 	const int strideX,
 	const int strideY,
 	const int padX,
 	const int padY,
+	const int kWidth,
 	const int kHeight,
-	const int kWidth)
+	const int kxStartPrevOffset,
+	const int kyStartPrevOffset)
 {
-	int batchCounter = get_global_id(0) / inputCount;
-	int ich = get_global_id(0) % inputCount;
-	int iy = get_global_id(1) + padY + 1;
-	int ix = get_global_id(2) + padX + 1;
+	int batchCounter = get_global_id(0) / xShape0;
+	int ich = get_global_id(0) % xShape0;
+	int iy = get_global_id(1);
+	int ix = get_global_id(2);
 
     int yBatchOffset = batchCounter * yLength;
 
     int wIchOffset = ich * kHeight * kWidth;
 
-    int oyStart = 0 > iy - kHeight ? 0 : (iy - kHeight + strideY - 1) / strideY * strideY;
-    int oyLimit = yShape1 * strideY < iy ? yShape1 * strideY : iy;
+	int kyStartOffset = (kyStartPrevOffset + iy) / strideY * strideY > 0 ? (kyStartPrevOffset + iy) / strideY * strideY : 0;
+    int kyStart = (iy + padY) % strideY + kyStartOffset;
+    int kyStop = iy + padY + 1 < kHeight ? iy + padY + 1 : kHeight;
 
-    int oxStart = 0 > ix - kWidth ? 0 : (ix - kWidth + strideX - 1) / strideX * strideX;
-    int oxLimit = yShape2 * strideX < ix ? yShape2 * strideX : ix;
+	int kxStartOffset = (kxStartPrevOffset + ix) / strideX * strideX > 0 ? (kxStartPrevOffset + ix) / strideX * strideX : 0;
+    int kxStart = (ix + padX) % strideX + kxStartOffset;
+    int kxStop = ix + padX + 1 < kWidth ? ix + padX + 1 : kWidth;
 
 	Real localgX = 0;
 
     for (int och = 0; och < yShape0; och++)
     {
-        int wOchOffset = wIchOffset + och * inputCount * kHeight * kWidth;
+        int wOchOffset = wIchOffset + och * xShape0 * kHeight * kWidth;
+        int yChOffset = yBatchOffset + och * yShape1 * yShape2;
 
-        int yChOffset = och * yShape1 * yShape2;
-
-        for (int oy = oyStart; oy < oyLimit; oy += strideY)
+        for (int ky = kyStart; ky < kyStop; ky += strideY)
         {
-            for (int ox = oxStart; ox < oxLimit; ox += strideX)
+            for (int kx = kxStart; kx < kxStop; kx += strideX)
             {
-                int gyIndex = yBatchOffset + yChOffset + oy / strideY * yShape2 + ox / strideX;
-                int wIndex = wOchOffset + (iy - oy - 1) * kWidth + ix - ox - 1;
+			    int oy = (iy + padY - ky) / strideY;
+                int ox = (ix + padX - kx) / strideX;
+
+                int wIndex = wOchOffset + ky * kWidth + kx;
+                int gyIndex = yChOffset + oy * yShape2 + ox;
 
                 localgX += gpuW[wIndex] * activatedgy[gyIndex];
 	        }
         }
     }
 
-	int resultIndex = batchCounter * xLength + ich * xShape1 * xShape2 + (iy - padY - 1) * xShape2 + ix - padX - 1;
-	gpugX[resultIndex] = localgX;
+    int xIndex = batchCounter * xLength + ich * xShape1 * xShape2 + iy * xShape2 + ix;
+	gpugX[xIndex] = localgX;
 }
