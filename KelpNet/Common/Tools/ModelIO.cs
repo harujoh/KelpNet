@@ -15,7 +15,7 @@ namespace KelpNet
             }
         }
 
-        public static T Load<T>(string fileName) where T : Function
+        public static Function Load(string fileName)
         {
             NetDataContractSerializer bf = new NetDataContractSerializer();
             Function result;
@@ -37,7 +37,7 @@ namespace KelpNet
                 }
             }
 
-            return (T)result;
+            return result;
         }
 
         static void InitFunctionStack(FunctionStack functionStack)
