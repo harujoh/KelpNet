@@ -40,7 +40,7 @@
                 }
             }
 
-            this.Train = new LabeledDataSet(x, new[] {3, 32, 32}, xLabel);
+            this.Train = new LabeledDataSet(x, xLabel, new[] { 3, 32, 32 });
 
             //評価用データ
             Real[][] y = new Real[cifarDataLoader.TestData.Length][];
@@ -64,7 +64,7 @@
                 }
             }
 
-            this.Eval = new LabeledDataSet(y, new[] { 3, 32, 32 }, yLabel);
+            this.Eval = new LabeledDataSet(y, yLabel, new[] { 3, 32, 32 });
         }
     }
 }

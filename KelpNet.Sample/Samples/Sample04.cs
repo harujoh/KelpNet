@@ -47,7 +47,6 @@ namespace KelpNet.Sample
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
                 {
-
                     //訓練データからランダムにデータを取得
                     TestDataSet datasetX = mnistData.Train.GetRandomDataSet(BATCH_DATA_COUNT);
 

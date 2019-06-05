@@ -28,7 +28,7 @@
                 xLabel[i] = mnistDataLoader.TrainLabel[i];
             }
 
-            this.Train = new LabeledDataSet(x, new[] { 1, 28, 28 }, xLabel);
+            this.Train = new LabeledDataSet(x, xLabel, new[] { 1, 28, 28 });
 
 
             //評価用データ
@@ -47,7 +47,7 @@
                 yLabel[i] = mnistDataLoader.TeachLabel[i];
             }
 
-            this.Eval = new LabeledDataSet(y, new[] { 1, 28, 28 }, yLabel);
+            this.Eval = new LabeledDataSet(y, yLabel, new[] { 1, 28, 28 });
         }
     }
 }

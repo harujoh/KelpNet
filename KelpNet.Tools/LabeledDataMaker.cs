@@ -26,7 +26,7 @@ namespace KelpNet.Tools
         public static LabeledDataSet MakeFromFolder(string foldersPath, int width = -1, int height = -1, bool eraseAlphaCh = true)
         {
             List<Real[]> data = new List<Real[]>();
-            List<Real> label = new List<Real>();
+            List<Real> dataLabel = new List<Real>();
             List<string> labelName = new List<string>();
 
             string[] folders = Directory.GetDirectories(foldersPath);
@@ -60,7 +60,7 @@ namespace KelpNet.Tools
                         }
                         else
                         {
-                            if(bitcount != Image.GetPixelFormatSize(baseBmp.PixelFormat) / 8) throw new Exception();
+                            if (bitcount != Image.GetPixelFormatSize(baseBmp.PixelFormat) / 8) throw new Exception();
                         }
                     }
 # endif
@@ -72,7 +72,7 @@ namespace KelpNet.Tools
 # if DEBUG
                     else
                     {
-                        if(width != baseBmp.Width) throw new Exception();
+                        if (width != baseBmp.Width) throw new Exception();
                     }
 # endif
 
@@ -83,15 +83,15 @@ namespace KelpNet.Tools
 # if DEBUG
                     else
                     {
-                        if(height != baseBmp.Height) throw new Exception();
+                        if (height != baseBmp.Height) throw new Exception();
                     }
 # endif
 
-                    SetAugmentatedBmp(data, label, baseBmp, width, height, pixelFormat, i);
+                    SetAugmentatedBmp(data, dataLabel, baseBmp, width, height, pixelFormat, i);
                 }
             }
 
-            return new LabeledDataSet(data.ToArray(), new[] { bitcount, height, width }, label.ToArray(), labelName.ToArray());
+            return new LabeledDataSet(data.ToArray(), dataLabel.ToArray(), new[] { bitcount, height, width }, labelName.ToArray());
         }
 
         static void SetResizedBmp(List<Real[]> data, List<Real> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex)

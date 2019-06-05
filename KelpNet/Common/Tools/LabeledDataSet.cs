@@ -14,7 +14,7 @@ namespace KelpNet
         private bool[] Loaded;
 
         private Real[][] Data;
-        private Real[] Label;
+        private Real[] DataLabel;
 
         private int[] trainIndex;
         private int[] validIndex;
@@ -24,10 +24,10 @@ namespace KelpNet
         public string[] LabelName;
         public int[] Shape;
 
-        public LabeledDataSet(Real[][] data, int[] shape, Real[] label, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true)
+        public LabeledDataSet(Real[][] data, Real[] dataLabel, int[] shape, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true)
         {
             Data = data;
-            Label = label;
+            DataLabel = dataLabel;
             Loaded = Enumerable.Repeat(true, data.Length).ToArray();
             LabelName = labelName;
             Shape = shape;
@@ -38,9 +38,9 @@ namespace KelpNet
             {
                 Real maxLabel = 0;
 
-                for (int i = 0; i < Label.Length; i++)
+                for (int i = 0; i < DataLabel.Length; i++)
                 {
-                    if (Label[i] > maxLabel) maxLabel = Label[i];
+                    if (DataLabel[i] > maxLabel) maxLabel = DataLabel[i];
                 }
 
                 LabelName = Enumerable.Range(0, (int)maxLabel).Select(s => s.ToString()).ToArray();
@@ -52,15 +52,14 @@ namespace KelpNet
             }
         }
 
+        //Train,Valid,Testデータを作成する
         void MakeTrainData(bool makeValidData)
         {
-            //Train,Valid,Testデータを作成する
-
             //全データのインデックスを最初に持っておく
-            List<int> trainIndexList = new List<int>(Enumerable.Range(0, Label.Length));
+            List<int> trainIndexList = new List<int>(Enumerable.Range(0, DataLabel.Length));
 
             //各ラベルで10％のデータをテストデータに割り当てる
-            int testDataCount = Label.Length / LabelName.Length / 10;
+            int testDataCount = DataLabel.Length / LabelName.Length / 10;
 
             //少なすぎる場合は一つ
             if (testDataCount == 0) testDataCount = 1;
@@ -88,7 +87,7 @@ namespace KelpNet
                 do
                 {
                     randomIndex = trainIndexList[Mother.Dice.Next(trainIndexList.Count)];
-                } while (Label[randomIndex] != i % LabelName.Length);
+                } while (DataLabel[randomIndex] != i % LabelName.Length);
 
                 //全データのインデックスから使用分を除く
                 trainIndexList.Remove(randomIndex);
@@ -111,8 +110,8 @@ namespace KelpNet
             ZipArchiveEntry zipLabelName = ZipArchiveData.GetEntry("LabelName");
             LabelName = (string[])bf.Deserialize(zipLabelName.Open());
 
-            ZipArchiveEntry zipLabel = ZipArchiveData.GetEntry("Label");
-            Label = (Real[])bf.Deserialize(zipLabel.Open());
+            ZipArchiveEntry zipLabel = ZipArchiveData.GetEntry("DataLabel");
+            DataLabel = (Real[])bf.Deserialize(zipLabel.Open());
 
             if (isAllLoad)
             {
@@ -212,7 +211,7 @@ namespace KelpNet
                 Real[] labeledData = Get(index);
                 Array.Copy(labeledData, 0, result.Data.Data, i * result.Data.Length, result.Data.Length);
 
-                result.Label.Data[i] = Label[index];
+                result.Label.Data[i] = DataLabel[index];
             }
 
             return result;
@@ -257,10 +256,10 @@ namespace KelpNet
                     bf.Serialize(stream, Length);
                 }
 
-                ZipArchiveEntry entryLabel = zipArchive.CreateEntry("Label");
+                ZipArchiveEntry entryLabel = zipArchive.CreateEntry("DataLabel");
                 using (Stream stream = entryLabel.Open())
                 {
-                    bf.Serialize(stream, Label);
+                    bf.Serialize(stream, DataLabel);
                 }
             }
         }
