@@ -97,9 +97,9 @@ namespace KelpNet
             return result;
         }
 
-        public LabeledDataSet(ZipArchive zipArchive, bool isAllLoad = false, bool makeValidData = false, bool makeTrainIndex = true)
+        private LabeledDataSet(string fileName, bool isAllLoad = false, bool makeValidData = false, bool makeTrainIndex = true)
         {
-            ZipArchiveData = zipArchive;
+            ZipArchiveData = ZipFile.OpenRead(fileName);
 
             ZipArchiveEntry zipLength = ZipArchiveData.GetEntry("Length");
             Length = (int)bf.Deserialize(zipLength.Open());
@@ -266,7 +266,7 @@ namespace KelpNet
 
         public static LabeledDataSet Load(string fileName, bool isAllLoad = false, bool makeValidData = false, bool makeTrainIndex = true)
         {
-            return new LabeledDataSet(ZipFile.OpenRead(fileName), isAllLoad, makeValidData, makeTrainIndex);
+            return new LabeledDataSet(fileName, isAllLoad, makeValidData, makeTrainIndex);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.IO.Compression;
 using System.Runtime.Serialization;
 
 namespace KelpNet
@@ -9,27 +10,34 @@ namespace KelpNet
         {
             NetDataContractSerializer bf = new NetDataContractSerializer();
 
-            using (Stream stream = File.OpenWrite(fileName))
+            //ZIP書庫を作成
+            if (File.Exists(fileName))
             {
-                bf.Serialize(stream, function);
+                File.Delete(fileName);
+            }
+
+            using (ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create))
+            {
+                ZipArchiveEntry entry = zipArchive.CreateEntry("Function");
+                using (Stream stream = entry.Open())
+                {
+                    bf.Serialize(stream, function);
+                }
             }
         }
 
         public static Function Load(string fileName)
         {
             NetDataContractSerializer bf = new NetDataContractSerializer();
-            Function result;
 
-            using (Stream stream = File.OpenRead(fileName))
-            {
-                result = (Function)bf.Deserialize(stream);
-            }
+            ZipArchiveEntry zipData = ZipFile.OpenRead(fileName).GetEntry("Function");
+            Function result = (Function)bf.Deserialize(zipData.Open());
 
             if (result is FunctionStack functionStack)
             {
                 InitFunctionStack(functionStack);
             }
-            else if(result is FunctionDictionary functionDictionary)
+            else if (result is FunctionDictionary functionDictionary)
             {
                 foreach (FunctionStack functionBlock in functionDictionary.FunctionBlocks)
                 {
