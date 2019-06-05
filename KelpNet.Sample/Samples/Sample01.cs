@@ -63,7 +63,7 @@ namespace KelpNet.Sample
             ModelIO.Save(nn, "test.nn");
 
             //学習の終わったネットワークを読み込み
-            FunctionStack testnn = ModelIO.Load("test.nn");
+            FunctionStack testnn = ModelIO.Load<FunctionStack>("test.nn");
 
             Console.WriteLine("Test Start...");
             foreach (Real[] input in trainData)
