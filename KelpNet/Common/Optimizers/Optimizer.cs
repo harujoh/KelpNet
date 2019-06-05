@@ -12,6 +12,8 @@ namespace KelpNet
 
         internal abstract void AddFunctionParameters(NdArray[] functionParameters);
 
+        public List<Scheduler> Schedulers = new List<Scheduler>();
+
         public void SetUp(Function function)
         {
             AddFunctionParameters(function.Parameters);
@@ -36,6 +38,10 @@ namespace KelpNet
                     this.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
                 }
             }
+        }
+
+        public virtual void Step()
+        {
         }
 
         public void ResetParams()

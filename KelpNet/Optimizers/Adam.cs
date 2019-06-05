@@ -39,6 +39,14 @@ namespace KelpNet
                 this.OptimizerParameters.Add(new AdamParameter(functionParameter, this));
             }
         }
+
+        public override void Step()
+        {
+            for (int i = 0; i < Schedulers.Count; i++)
+            {
+                Alpha = Schedulers[i].Step(Alpha);
+            }
+        }
     }
 
     [Serializable]

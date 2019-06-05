@@ -60,6 +60,7 @@
     <Compile Include="Common\Tools\Initializer.cs" />
     <Compile Include="Common\Tools\LabeledDataSet.cs" />
     <Compile Include="Common\Tools\ModelIO.cs" />
+    <Compile Include="Common\Optimizers\Scheduler.cs" />
     <Compile Include="Common\Tools\TestDataSet.cs" />
     <Compile Include="Common\Weaver.cs" />
     <Compile Include="Common\Functions\Container\FunctionStack.cs" />
@@ -117,6 +118,8 @@
     <Compile Include="Optimizers\GradientClipping.cs" />
     <Compile Include="Optimizers\MomentumSGD.cs" />
     <Compile Include="Optimizers\RMSprop.cs" />
+    <Compile Include="Optimizers\Scheduler\LinearShift.cs" />
+    <Compile Include="Optimizers\Scheduler\StepLR.cs" />
     <Compile Include="Optimizers\SGD.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Tools\Trainer.cs" />
