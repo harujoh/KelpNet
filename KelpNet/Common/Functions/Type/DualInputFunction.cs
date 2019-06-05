@@ -36,8 +36,8 @@ namespace KelpNet
             xs[0].UseCount--;
             xs[1].UseCount--;
 
-            if (xs[0].Grad == null) xs[0].ClearGrad();
-            if (xs[1].Grad == null) xs[1].ClearGrad();
+            if (xs[0].Grad == null) xs[0].InitGrad();
+            if (xs[1].Grad == null) xs[1].InitGrad();
 
             UsedPrevInputs.Add(xs);
 

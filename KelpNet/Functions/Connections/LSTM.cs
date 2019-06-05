@@ -137,7 +137,7 @@ namespace KelpNet
             else
             {
                 NdArray hPrevParam = this.hParam.Clone();
-                hPrevParam.ClearGrad();
+                if(hPrevParam.Grad != null) hPrevParam.InitGrad();
                 lstmIn += this.lateral.Forward(hPrevParam)[0];
                 hPrevParams.Add(hPrevParam);
             }

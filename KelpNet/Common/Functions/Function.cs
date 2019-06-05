@@ -65,7 +65,7 @@ namespace KelpNet
         {
             foreach (NdArray parameter in this.Parameters)
             {
-                if(parameter.Grad == null) parameter.ClearGrad();
+                if(parameter.Grad == null) parameter.InitGrad();
             }
         }
 

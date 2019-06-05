@@ -259,9 +259,15 @@ namespace KelpNet
         }
 
         //傾きの初期化
-        public void ClearGrad()
+        public void InitGrad()
         {
             this.Grad = new Real[this.Data.Length];
+        }
+
+        //傾きの初期化
+        public void ClearGrad()
+        {
+            this.Grad = null;
         }
 
         public override string ToString()
@@ -753,7 +759,7 @@ namespace KelpNet
                 int[] resultShape = array.Shape.ToArray();
                 resultShape[axis] = resultAxisShapes[i];
                 resultArrays[i] = new NdArray(resultShape, array.BatchCount);
-                resultArrays[i].ClearGrad();
+                if(array.Grad != null) resultArrays[i].InitGrad();
             }
 
             for (int batchCount = 0; batchCount < array.BatchCount; batchCount++)
@@ -861,10 +867,18 @@ namespace KelpNet
             {
                 throw new Exception("バッチの大きさがマッチしていません");
             }
+
+            if((a.Grad != null) != (b.Grad != null))
+            {
+                throw new Exception("Grad値の有無が揃っていません");
+            }
 #endif
 
             NdArray result = new NdArray(shapeList, a.BatchCount);
-            result.ClearGrad();
+            if (a.Grad != null || b.Grad != null)
+            {
+                result.InitGrad();
+            }
 
             for (int batchCount = 0; batchCount < a.BatchCount; batchCount++)
             {

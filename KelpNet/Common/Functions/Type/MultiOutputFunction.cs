@@ -40,7 +40,7 @@ namespace KelpNet
             //出力した両方で使用が終わったら
             if (xs[0].UseCount <= 0)
             {
-                if (xs[0].Grad == null) xs[0].ClearGrad();
+                if (xs[0].Grad == null) xs[0].InitGrad();
 
                 InitGrad();
                 BackwardCountUp();

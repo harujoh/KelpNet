@@ -35,7 +35,7 @@ namespace KelpNet
             foreach (NdArray x in xs)
             {
                 x.UseCount--;
-                if (x.Grad == null) x.ClearGrad();
+                if (x.Grad == null) x.InitGrad();
             }
 
             UsedPrevInputs.Add(xs);

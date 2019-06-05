@@ -174,8 +174,8 @@ namespace KelpNet
 
         private void BackwardCpu(NdArray y, NdArray x)
         {
-            this.Beta.ClearGrad();
-            this.Gamma.ClearGrad();
+            this.Beta.InitGrad();
+            this.Gamma.InitGrad();
 
             int dataSize = x.Length / ChannelSize;
 

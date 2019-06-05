@@ -32,7 +32,7 @@ namespace KelpNet
             BackwardCountUp();
 
             xs[0].UseCount--;
-            if(xs[0].Grad == null)xs[0].ClearGrad();
+            if(xs[0].Grad == null)xs[0].InitGrad();
 
             UsedPrevInputs.Add(xs);
 
