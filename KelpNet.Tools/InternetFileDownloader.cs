@@ -10,11 +10,11 @@ namespace KelpNet.Tools
         private const string TMP_DATA_PATH = "KelpNet/TestData/";
         static readonly string TmpFolderPath = Path.Combine(Path.GetTempPath(), TMP_DATA_PATH);
 
-        public static string Donwload(string url, string fileName, string hash = "")
+        public static string Donwload(string url, string fileName, string hash = "", string saveFolder = null)
         {
             WebClient downloadClient = new WebClient();
 
-            string savedPath = Path.Combine(TmpFolderPath, fileName);
+            string savedPath = Path.Combine(saveFolder ?? TmpFolderPath, fileName);
 
             if (File.Exists(savedPath))
             {

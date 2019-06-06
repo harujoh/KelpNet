@@ -21,8 +21,8 @@ namespace KelpNet.Sample
             Stopwatch sw = new Stopwatch();
 
             //MNISTのデータを用意する
-            Console.WriteLine("MNIST Data Loading...");
-            MnistData mnistData = new MnistData();
+            Console.WriteLine("Fashion-MNIST Data Loading...");
+            FashionMnistData mnistData = new FashionMnistData();
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack nn = new FunctionStack(

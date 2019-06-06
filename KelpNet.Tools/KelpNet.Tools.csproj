@@ -63,6 +63,8 @@
     <Compile Include="DataImporter\TestDatas\CIFAR\Extensions.cs" />
     <Compile Include="DataImporter\TestDatas\CIFAR\RawSerializer.cs" />
     <Compile Include="DataImporter\TestDatas\CIFAR\Tar.cs" />
+    <Compile Include="DataImporter\TestDatas\FashionMNIST\FashionMnistData.cs" />
+    <Compile Include="DataImporter\TestDatas\FashionMNIST\FashionMnistDataLoader.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\BinaryReaderBE.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\MnistData.cs" />
     <Compile Include="DataImporter\TestDatas\MNIST\MnistDataLoader.cs" />
