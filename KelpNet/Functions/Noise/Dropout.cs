@@ -34,10 +34,10 @@ namespace KelpNet
         {
             this.GpuEnable = enable & Weaver.Enable;
 
-            CreateKernel();
-
             if (GpuEnable)
             {
+                CreateKernel();
+
                 SingleInputForward = ForwardGpu;
                 SingleOutputBackward = BackwardGpu;
             }

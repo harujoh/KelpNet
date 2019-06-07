@@ -44,10 +44,10 @@ namespace KelpNet
         {
             this.GpuEnable = enable & Weaver.Enable;
 
-            CreateKernel();
-
             if (GpuEnable)
             {
+                CreateKernel();
+
                 SingleInputForward = ForwardGpu;
             }
             else
@@ -76,7 +76,6 @@ namespace KelpNet
 
             if (this.SetGpuEnable(gpuEnable))
             {
-                CreateKernel();
                 SingleInputForward = ForwardGpu;
             }
             else
