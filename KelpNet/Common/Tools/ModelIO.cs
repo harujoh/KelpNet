@@ -54,11 +54,6 @@ namespace KelpNet
             {
                 function.ResetState();
 
-                for (int i = 0; i < function.Optimizers.Length; i++)
-                {
-                    function.Optimizers[i].ResetParams();
-                }
-
                 if (function is IParallelizable)
                 {
                     ((IParallelizable)function).CreateKernel();
