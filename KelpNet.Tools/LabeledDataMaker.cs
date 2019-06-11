@@ -23,7 +23,7 @@ namespace KelpNet.Tools
         //    ├ ImageC1.jpg
         //    └ ImageC1.jpg
 
-        public static LabeledDataSet MakeFromFolder(string foldersPath, int width = -1, int height = -1, bool eraseAlphaCh = true)
+        public static LabeledDataSet MakeFromFolder(string foldersPath, int width = -1, int height = -1, bool eraseAlphaCh = true, bool makeValidData = false, bool makeTrainIndex = true)
         {
             List<Real[]> data = new List<Real[]>();
             List<Real> dataLabel = new List<Real>();
@@ -51,47 +51,23 @@ namespace KelpNet.Tools
                     {
                         pixelFormat = PixelFormat.Format24bppRgb;
                     }
-# if DEBUG
-                    else
-                    {
-                        if (bitcount == -1)
-                        {
-                            bitcount = Image.GetPixelFormatSize(baseBmp.PixelFormat) / 8;
-                        }
-                        else
-                        {
-                            if (bitcount != Image.GetPixelFormatSize(baseBmp.PixelFormat) / 8) throw new Exception();
-                        }
-                    }
-# endif
 
                     if (width == -1)
                     {
                         width = baseBmp.Width;
                     }
-# if DEBUG
-                    else
-                    {
-                        if (width != baseBmp.Width) throw new Exception();
-                    }
-# endif
 
                     if (height == -1)
                     {
                         height = baseBmp.Height;
                     }
-# if DEBUG
-                    else
-                    {
-                        if (height != baseBmp.Height) throw new Exception();
-                    }
-# endif
 
+                    //dataとdatalabelに水増ししつつ値をセット
                     SetAugmentatedBmp(data, dataLabel, baseBmp, width, height, pixelFormat, i);
                 }
             }
 
-            return new LabeledDataSet(data.ToArray(), dataLabel.ToArray(), new[] { bitcount, height, width }, labelName.ToArray());
+            return new LabeledDataSet(data.ToArray(), dataLabel.ToArray(), new[] { bitcount, height, width }, labelName.ToArray(), makeValidData, makeTrainIndex, 9);
         }
 
         static void SetResizedBmp(List<Real[]> data, List<Real> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex)

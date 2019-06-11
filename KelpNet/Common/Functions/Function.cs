@@ -13,10 +13,12 @@ namespace KelpNet
         public bool GpuEnable { get; protected set; }
 
         public NdArray[] Parameters = { };
+        [NonSerialized]
         public Optimizer[] Optimizers = { };
 
         [NonSerialized]
         public List<NdArray[]> PrevInputs = new List<NdArray[]>();
+        [NonSerialized]
         public List<NdArray[]> UsedPrevInputs = new List<NdArray[]>();
 
         public abstract NdArray[] Forward(params NdArray[] xs);

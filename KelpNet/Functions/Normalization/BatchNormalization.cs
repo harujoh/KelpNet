@@ -24,7 +24,9 @@ namespace KelpNet
         private Real Decay;
         private Real Eps;
 
+        [NonSerialized]
         private Real[] Std;
+        [NonSerialized]
         private Real[] Xhat;
 
         private Real[] Mean;

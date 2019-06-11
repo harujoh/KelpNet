@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace KelpNet
 {
@@ -21,20 +22,20 @@ namespace KelpNet
         private int[] testIndex;
 
         public int Length = 0;
-        public string[] LabelName;
+        public string[] LabelNames;
         public int[] Shape;
 
-        public LabeledDataSet(Real[][] data, Real[] dataLabel, int[] shape, string[] labelName = null, bool makeValidData = false, bool makeTrainIndex = true)
+        public LabeledDataSet(Real[][] data, Real[] dataLabel, int[] shape, string[] labelNames = null, bool makeValidData = false, bool makeTrainIndex = true, int augmentCount = 1)
         {
             Data = data;
             DataLabel = dataLabel;
             Loaded = Enumerable.Repeat(true, data.Length).ToArray();
-            LabelName = labelName;
+            LabelNames = labelNames;
             Shape = shape;
             Length = data.Length;
 
             //ラベル名称が未指定の場合、連番を自動的に割り当てる
-            if (LabelName == null)
+            if (LabelNames == null)
             {
                 Real maxLabel = 0;
 
@@ -43,55 +44,67 @@ namespace KelpNet
                     if (DataLabel[i] > maxLabel) maxLabel = DataLabel[i];
                 }
 
-                LabelName = Enumerable.Range(0, (int)maxLabel).Select(s => s.ToString()).ToArray();
+                LabelNames = Enumerable.Range(0, (int)maxLabel).Select(s => s.ToString()).ToArray();
             }
 
             if (makeTrainIndex)
             {
-                MakeTrainData(makeValidData);
+                MakeTrainData(makeValidData, augmentCount);
             }
         }
 
         //Train,Valid,Testデータを作成する
-        void MakeTrainData(bool makeValidData)
+        void MakeTrainData(bool makeValidData, int augmentCount = 1)
         {
             //全データのインデックスを最初に持っておく
             List<int> trainIndexList = new List<int>(Enumerable.Range(0, DataLabel.Length));
 
-            //各ラベルで10％のデータをテストデータに割り当てる
-            int testDataCount = DataLabel.Length / LabelName.Length / 10;
+            //各クラスで水増し前の10％のデータをテストデータに割り当てる
+            int testDataCount = DataLabel.Length / LabelNames.Length / 10 / augmentCount;
 
             //少なすぎる場合は一つ
             if (testDataCount == 0) testDataCount = 1;
 
-            testIndex = GetRondomIndex(testDataCount * LabelName.Length, trainIndexList);
+            //テストデータ用のIndexを作成
+            testIndex = GetRondomIndex(testDataCount, LabelNames.Length, augmentCount, trainIndexList);
 
             //Validはオプション
             if (makeValidData)
             {
-                validIndex = GetRondomIndex(testDataCount * LabelName.Length, trainIndexList);
+                //検証データ用のIndexを作成
+                validIndex = GetRondomIndex(testDataCount, LabelNames.Length, augmentCount, trainIndexList);
             }
 
             //残りをトレーニングデータとして使用する
             trainIndex = trainIndexList.ToArray();
         }
 
-        private int[] GetRondomIndex(int dataCount, List<int> trainIndexList)
+        //dataCount:１クラスに必要な数
+        private int[] GetRondomIndex(int dataCount, int labelNameLength, int augmentCount, List<int> trainIndexList)
         {
-            int[] result = new int[dataCount];
+            int[] result = new int[dataCount * labelNameLength * augmentCount];
 
-            for (int i = 0; i < result.Length; i++)
+            //各クラスのクジをどれだけ引いたかを管理
+            int[] classDataCount = Enumerable.Repeat(0, labelNameLength).ToArray();
+
+            for (int i = 0; i < dataCount * labelNameLength; i++)
             {
                 int randomIndex = -1;
 
+                //ほしいクラスが出るまでくじ引きを行う
                 do
                 {
-                    randomIndex = trainIndexList[Mother.Dice.Next(trainIndexList.Count)];
-                } while (DataLabel[randomIndex] != i % LabelName.Length);
+                    randomIndex = trainIndexList[Mother.Dice.Next(trainIndexList.Count) / augmentCount * augmentCount];
+                } while (classDataCount[(int)DataLabel[randomIndex]] == dataCount);
 
-                //全データのインデックスから使用分を除く
-                trainIndexList.Remove(randomIndex);
-                result[i] = randomIndex;
+                classDataCount[(int)DataLabel[randomIndex]]++;
+
+                for (int j = 0; j < augmentCount; j++)
+                {
+                    //全データのインデックスから使用分を除く
+                    trainIndexList.Remove(randomIndex + j);
+                    result[i * augmentCount + j] = randomIndex + j;
+                }
             }
 
             return result;
@@ -107,8 +120,8 @@ namespace KelpNet
             ZipArchiveEntry zipShape = ZipArchiveData.GetEntry("Shape");
             Shape = (int[])bf.Deserialize(zipShape.Open());
 
-            ZipArchiveEntry zipLabelName = ZipArchiveData.GetEntry("LabelName");
-            LabelName = (string[])bf.Deserialize(zipLabelName.Open());
+            ZipArchiveEntry zipLabelName = ZipArchiveData.GetEntry("LabelNames");
+            LabelNames = (string[])bf.Deserialize(zipLabelName.Open());
 
             ZipArchiveEntry zipLabel = ZipArchiveData.GetEntry("DataLabel");
             DataLabel = (Real[])bf.Deserialize(zipLabel.Open());
@@ -217,17 +230,17 @@ namespace KelpNet
             return result;
         }
 
-        public void Save(string fileName)
+        public void Save(string savePath)
         {
             //ZIP書庫を作成
-            if (File.Exists(fileName))
+            if (File.Exists(savePath))
             {
-                File.Delete(fileName);
+                File.Delete(savePath);
             }
 
             AllLoad();
 
-            using (ZipArchive zipArchive = ZipFile.Open(fileName, ZipArchiveMode.Create))
+            using (ZipArchive zipArchive = ZipFile.Open(savePath, ZipArchiveMode.Create))
             {
                 for (int i = 0; i < Data.Length; i++)
                 {
@@ -238,10 +251,10 @@ namespace KelpNet
                     }
                 }
 
-                ZipArchiveEntry zipLabelName = zipArchive.CreateEntry("LabelName");
+                ZipArchiveEntry zipLabelName = zipArchive.CreateEntry("LabelNames");
                 using (Stream stream = zipLabelName.Open())
                 {
-                    bf.Serialize(stream, LabelName);
+                    bf.Serialize(stream, LabelNames);
                 }
 
                 ZipArchiveEntry zipShape = zipArchive.CreateEntry("Shape");
@@ -262,6 +275,9 @@ namespace KelpNet
                     bf.Serialize(stream, DataLabel);
                 }
             }
+
+            string classFileName = Path.Combine(Path.GetDirectoryName(savePath) ?? string.Empty, Path.GetFileNameWithoutExtension(savePath) + "Classes.txt");
+            File.WriteAllLines(classFileName, LabelNames, Encoding.UTF8);
         }
 
         public static LabeledDataSet Load(string fileName, bool isAllLoad = false, bool makeValidData = false, bool makeTrainIndex = true)

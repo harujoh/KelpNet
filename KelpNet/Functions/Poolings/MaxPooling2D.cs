@@ -19,6 +19,7 @@ namespace KelpNet
         private int _strideY;
         private bool _coverAll;
 
+        [NonSerialized]
         private List<int[]> _outputIndicesList = new List<int[]>();
 
         [NonSerialized]

@@ -9,7 +9,9 @@ namespace KelpNet
         protected Func<NdArray, NdArray[]> SingleInputForward;
         protected Action<NdArray[], NdArray> SingleOutputBackward;
 
+        [NonSerialized]
         List<NdArray[]> PrevOutputs = new List<NdArray[]>();
+        [NonSerialized]
         List<NdArray[]> UsedPrevOutputs = new List<NdArray[]>();
 
         protected MultiOutputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
