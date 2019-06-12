@@ -10,7 +10,8 @@ namespace KelpNet
     {
         public string Name;
 
-        public bool GpuEnable { get; protected set; }
+        [NonSerialized]
+        public bool GpuEnable;
 
         public NdArray[] Parameters = { };
         [NonSerialized]
