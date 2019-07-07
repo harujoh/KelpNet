@@ -10,15 +10,16 @@ namespace KelpNet
     {
         public string Name;
 
-        [NonSerialized]
         public bool GpuEnable;
 
         public NdArray[] Parameters = { };
+
         [NonSerialized]
         public Optimizer[] Optimizers = { };
 
         [NonSerialized]
         public List<NdArray[]> PrevInputs = new List<NdArray[]>();
+
         [NonSerialized]
         public List<NdArray[]> UsedPrevInputs = new List<NdArray[]>();
 
