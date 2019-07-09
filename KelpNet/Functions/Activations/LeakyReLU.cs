@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using KelpNet.Properties;
 
 namespace KelpNet.CPU
 {
@@ -8,16 +6,10 @@ namespace KelpNet.CPU
     public class LeakyReLU : CompressibleActivation
     {
         const string FUNCTION_NAME = "LeakyReLU";
-        private const string PARAM_NAME = "/*slope*/";
-
-        public override string ActivateFunctionString
-        {
-            get { return Weaver.GetKernelSource(Resources.LeakyReLU); }
-        }
 
         private readonly Real _slope;
 
-        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, new[] { new KeyValuePair<string, string>(PARAM_NAME, slope.ToString()) }, name, inputNames, outputNames, gpuEnable)
+        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._slope = slope;
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Cloo;
 using KelpNet.Properties;
 
 namespace KelpNet.CPU
@@ -22,13 +21,9 @@ namespace KelpNet.CPU
         [NonSerialized]
         private List<int[]> _outputIndicesList = new List<int[]>();
 
-        [NonSerialized]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public ComputeKernel ForwardKernel;
-
         public bool IsParallel { get; set; }
 
-        public MaxPooling2D(int ksize, int stride = 1, int pad = 0, bool coverAll = true, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling2D(int ksize, int stride = 1, int pad = 0, bool coverAll = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._kHeight = ksize;
             this._kWidth = ksize;
@@ -38,27 +33,10 @@ namespace KelpNet.CPU
             this._strideY = stride;
             this._coverAll = coverAll;
 
-            this.SetParallel(gpuEnable);
+            IsParallel = false;
 
+            SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
-        }
-
-        public bool SetParallel(bool enable)
-        {
-            this.IsParallel = enable & Weaver.Enable;
-
-            if (IsParallel)
-            {
-                InitParallel();
-
-                SingleInputForward = ForwardGpu;
-            }
-            else
-            {
-                SingleInputForward = ForwardCpu;
-            }
-
-            return IsParallel;
         }
 
         public MaxPooling2D(int[] ksize, int[] stride = null, int[] pad = null, bool coverAll = true, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
@@ -77,22 +55,19 @@ namespace KelpNet.CPU
             this._strideY = stride[1];
             this._coverAll = coverAll;
 
-            if (this.SetParallel(gpuEnable))
-            {
-                SingleInputForward = ForwardGpu;
-            }
-            else
-            {
-                SingleInputForward = ForwardCpu;
-            }
+            IsParallel = false;
 
+            SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
+        }
+
+        public bool SetParallel(bool enable)
+        {
+            return false;
         }
 
         public void InitParallel()
         {
-            if (IsParallel)
-                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(Resources.MaxPooling2D)).CreateKernel("MaxPoolingForward");
         }
 
         private NdArray ForwardCpu(NdArray input)
@@ -154,49 +129,6 @@ namespace KelpNet.CPU
                         }
                     }
                 }
-            }
-
-            return GetForwardResult(input, outputIndices, outputWidth, outputHeight);
-        }
-
-        private NdArray ForwardGpu(NdArray input)
-        {
-            int outputHeight = _coverAll ?
-                (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0 + this._strideY - 1.0) / this._strideY) + 1 :
-                (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
-            int outputWidth = _coverAll ?
-                (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0 + this._strideX - 1.0) / this._strideX) + 1 :
-                (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
-            int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
-
-            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
-            using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, outputIndices.Length))
-            {
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuYIndex);
-                ForwardKernel.SetValueArgument(2, outputHeight);
-                ForwardKernel.SetValueArgument(3, outputWidth);
-                ForwardKernel.SetValueArgument(4, input.Shape[0]);
-                ForwardKernel.SetValueArgument(5, input.Shape[1]);
-                ForwardKernel.SetValueArgument(6, input.Shape[2]);
-                ForwardKernel.SetValueArgument(7, this._kHeight);
-                ForwardKernel.SetValueArgument(8, this._kWidth);
-                ForwardKernel.SetValueArgument(9, this._strideX);
-                ForwardKernel.SetValueArgument(10, this._strideY);
-                ForwardKernel.SetValueArgument(11, this._padY);
-                ForwardKernel.SetValueArgument(12, this._padX);
-
-                Weaver.CommandQueue.Execute
-                (
-                    ForwardKernel,
-                    null,
-                    new long[] { input.BatchCount * input.Shape[0], outputHeight, outputWidth },
-                    null,
-                    null
-                );
-
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpuYIndex, ref outputIndices, true, null);
             }
 
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);

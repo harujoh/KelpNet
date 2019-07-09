@@ -5,7 +5,7 @@ using KelpNet.CL.Properties;
 namespace KelpNet.CL
 {
     [Serializable]
-    public class Deconvolution2D : KelpNet.CompressibleFunction
+    public class Deconvolution2D : CompressibleFunction
     {
         const string FUNCTION_NAME = "Deconvolution2D";
 
@@ -28,11 +28,11 @@ namespace KelpNet.CL
         {
             get
             {
-                return Weaver.GetKernelSource(Resources.Deconvolution2D);
+                return OpenCL.GetKernelSource(Resources.Deconvolution2D);
             }
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -50,7 +50,7 @@ namespace KelpNet.CL
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
             if (subSample == null)
                 subSample = new[] { 1, 1 };
@@ -221,10 +221,10 @@ namespace KelpNet.CL
 
             Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
-            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
-            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.Weight.Data))
-            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.NoBias ? new Real[OutputCount] : this.Bias.Data))
-            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
+            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
+            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.Weight.Data))
+            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.NoBias ? new Real[OutputCount] : this.Bias.Data))
+            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
             {
                 ForwardKernel.SetMemoryArgument(0, gpuX);
                 ForwardKernel.SetMemoryArgument(1, gpuW);
@@ -244,7 +244,7 @@ namespace KelpNet.CL
                 ForwardKernel.SetValueArgument(15, this.OutputCount);
                 ForwardKernel.SetValueArgument(16, this.InputCount);
 
-                Weaver.CommandQueue.Execute
+                OpenCL.CommandQueue.Execute
                     (
                         ForwardKernel,
                         null,
@@ -253,8 +253,8 @@ namespace KelpNet.CL
                         null
                     );
 
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
+                OpenCL.CommandQueue.Finish();
+                OpenCL.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
             }
 
             return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
@@ -352,10 +352,10 @@ namespace KelpNet.CL
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             //gyは共通で使用
-            using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, activatedgy))
+            using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, activatedgy))
             {
-                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, this.Weight.Grad))
-                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
+                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, this.Weight.Grad))
+                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
                 {
                     this.BackwardgWKernel.SetMemoryArgument(0, gpugY);
                     this.BackwardgWKernel.SetMemoryArgument(1, gpuX);
@@ -375,7 +375,7 @@ namespace KelpNet.CL
                     this.BackwardgWKernel.SetValueArgument(15, this._kHeight);
                     this.BackwardgWKernel.SetValueArgument(16, this._kWidth);
 
-                    Weaver.CommandQueue.Execute
+                    OpenCL.CommandQueue.Execute
                     (
                         this.BackwardgWKernel,
                         null,
@@ -384,12 +384,12 @@ namespace KelpNet.CL
                         null
                     );
 
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.Weight.Grad, true, null);
+                    OpenCL.CommandQueue.Finish();
+                    OpenCL.CommandQueue.ReadFromBuffer(gpugW, ref this.Weight.Grad, true, null);
                 }
 
-                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
-                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.Weight.Data))
+                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
+                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.Weight.Data))
                 {
                     this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
                     this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
@@ -409,7 +409,7 @@ namespace KelpNet.CL
                     this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
                     this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
 
-                    Weaver.CommandQueue.Execute
+                    OpenCL.CommandQueue.Execute
                     (
                         this.BackwardgXKernel,
                         null,
@@ -418,8 +418,8 @@ namespace KelpNet.CL
                         null
                     );
 
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
+                    OpenCL.CommandQueue.Finish();
+                    OpenCL.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
                 }
             }
 

@@ -94,17 +94,19 @@ namespace KelpNet.CPU
                 }
             }
 
-            this.upward = new Linear(inSize, outSize * 4, noBias: false, initialW: upwardW, initialb: upwardb, name: "upward", gpuEnable: gpuEnable);
+            this.upward = new Linear(inSize, outSize * 4, noBias: false, initialW: upwardW, initialb: upwardb, name: "upward");
             functionParameters.AddRange(this.upward.Parameters);
 
             //lateralはBiasは無し
-            this.lateral = new Linear(outSize, outSize * 4, noBias: true, initialW: lateralW, name: "lateral", gpuEnable: gpuEnable);
+            this.lateral = new Linear(outSize, outSize * 4, noBias: true, initialW: lateralW, name: "lateral");
             functionParameters.AddRange(this.lateral.Parameters);
 
             this.Parameters = functionParameters.ToArray();
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
+
+            IsParallel = false;
         }
 
         public void InitParallel()

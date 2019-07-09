@@ -12,7 +12,7 @@ namespace KelpNet.CL
 
         public override string ActivateFunctionString
         {
-            get { return Weaver.GetKernelSource(Resources.LeakyReLU); }
+            get { return OpenCL.GetKernelSource(Resources.LeakyReLU); }
         }
 
         private readonly Real _slope;

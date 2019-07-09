@@ -18,9 +18,9 @@ namespace KelpNet.Tests
         [TestMethod]
         public void Conv2DGPURandomTest()
         {
-            Weaver.Initialize();
+            OpenCL.Initialize();
 
-            if (Weaver.Enable)
+            if (OpenCL.Enable)
             {
                 RandomTest(true);
             }

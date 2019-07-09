@@ -10,7 +10,7 @@ namespace KelpNet.CL
 
         public override string ActivateFunctionString
         {
-            get { return Weaver.GetKernelSource(Resources.TanhActivation); }
+            get { return OpenCL.GetKernelSource(Resources.TanhActivation); }
         }
 
         public TanhActivation(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)

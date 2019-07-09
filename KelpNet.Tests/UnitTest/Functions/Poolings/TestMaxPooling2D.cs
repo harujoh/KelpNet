@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.CL;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
@@ -17,9 +18,9 @@ namespace KelpNet.Tests
         [TestMethod]
         public void MaxPoolingGPURandomTest()
         {
-            Weaver.Initialize();
+            OpenCL.Initialize();
 
-            if (Weaver.Enable)
+            if (OpenCL.Enable)
             {
                 RandomTest(true);
             }

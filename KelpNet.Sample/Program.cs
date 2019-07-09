@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.CL;
 
 namespace KelpNet.Sample
 {
@@ -9,11 +10,11 @@ namespace KelpNet.Sample
         static void Main(string[] args)
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
-            Weaver.Initialize();
+            OpenCL.Initialize();
             //Weaver.Initialize(ComputeDeviceTypes.Cpu); //複数の種類のデバイスがある場合はデバイスタイプを指定
             //Weaver.Initialize(ComputeDeviceTypes.Gpu, 1); //同じ種類のGPUやCPUが複数ある場合は添字を使用
 
-            Console.WriteLine("Running on " + Weaver.InfoString);
+            Console.WriteLine("Running on " + OpenCL.InfoString);
 
             //MLPによるXORの学習
             //Sample01.Run();

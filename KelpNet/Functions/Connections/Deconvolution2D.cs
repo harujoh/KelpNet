@@ -1,6 +1,4 @@
 ﻿using System;
-using Cloo;
-using KelpNet.Properties;
 
 namespace KelpNet.CPU
 {
@@ -24,15 +22,7 @@ namespace KelpNet.CPU
         public readonly int InputCount;
         public readonly int OutputCount;
 
-        protected override string KernelString
-        {
-            get
-            {
-                return Weaver.GetKernelSource(Resources.Deconvolution2D);
-            }
-        }
-
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -50,7 +40,7 @@ namespace KelpNet.CPU
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
             if (subSample == null)
                 subSample = new[] { 1, 1 };
@@ -214,52 +204,6 @@ namespace KelpNet.CPU
             return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        protected override NdArray NeedPreviousForwardGpu(NdArray input)
-        {
-            int outputHeight = (input.Shape[1] - 1) * this._strideY + this._kHeight - this._padY * 2;
-            int outputWidth = (input.Shape[2] - 1) * this._strideX + this._kWidth - this._padX * 2;
-
-            Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
-
-            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
-            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.Weight.Data))
-            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.NoBias ? new Real[OutputCount] : this.Bias.Data))
-            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
-            {
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuW);
-                ForwardKernel.SetMemoryArgument(2, gpub);
-                ForwardKernel.SetMemoryArgument(3, gpuY);
-                ForwardKernel.SetValueArgument(4, input.Shape[1]);
-                ForwardKernel.SetValueArgument(5, input.Shape[2]);
-                ForwardKernel.SetValueArgument(6, input.Length);
-                ForwardKernel.SetValueArgument(7, outputWidth);
-                ForwardKernel.SetValueArgument(8, outputHeight);
-                ForwardKernel.SetValueArgument(9, this._strideX);
-                ForwardKernel.SetValueArgument(10, this._strideY);
-                ForwardKernel.SetValueArgument(11, this._padX);
-                ForwardKernel.SetValueArgument(12, this._padY);
-                ForwardKernel.SetValueArgument(13, this._kHeight);
-                ForwardKernel.SetValueArgument(14, this._kWidth);
-                ForwardKernel.SetValueArgument(15, this.OutputCount);
-                ForwardKernel.SetValueArgument(16, this.InputCount);
-
-                Weaver.CommandQueue.Execute
-                    (
-                        ForwardKernel,
-                        null,
-                        new long[] { input.BatchCount * OutputCount, outputHeight, outputWidth },
-                        null,
-                        null
-                    );
-
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
-            }
-
-            return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
-        }
-
         Real[] GetActivatedgy(NdArray y)
         {
             int gyIndex = 0;
@@ -342,90 +286,6 @@ namespace KelpNet.CPU
                         }
                     }
                 }
-            }
-        }
-
-        protected override void NeedPreviousBackwardGpu(NdArray y, NdArray x)
-        {
-            Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
-            if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
-
-            //gyは共通で使用
-            using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, activatedgy))
-            {
-                using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, this.Weight.Grad))
-                using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
-                {
-                    this.BackwardgWKernel.SetMemoryArgument(0, gpugY);
-                    this.BackwardgWKernel.SetMemoryArgument(1, gpuX);
-                    this.BackwardgWKernel.SetMemoryArgument(2, gpugW);
-                    this.BackwardgWKernel.SetValueArgument(3, y.BatchCount);
-                    this.BackwardgWKernel.SetValueArgument(4, this.OutputCount);
-                    this.BackwardgWKernel.SetValueArgument(5, y.Length);
-                    this.BackwardgWKernel.SetValueArgument(6, y.Shape[1]);
-                    this.BackwardgWKernel.SetValueArgument(7, y.Shape[2]);
-                    this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
-                    this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
-                    this.BackwardgWKernel.SetValueArgument(10, x.Length);
-                    this.BackwardgWKernel.SetValueArgument(11, this._strideX);
-                    this.BackwardgWKernel.SetValueArgument(12, this._strideY);
-                    this.BackwardgWKernel.SetValueArgument(13, this._padX);
-                    this.BackwardgWKernel.SetValueArgument(14, this._padY);
-                    this.BackwardgWKernel.SetValueArgument(15, this._kHeight);
-                    this.BackwardgWKernel.SetValueArgument(16, this._kWidth);
-
-                    Weaver.CommandQueue.Execute
-                    (
-                        this.BackwardgWKernel,
-                        null,
-                        new long[] { this.InputCount * this.OutputCount, this._kHeight, this._kWidth },
-                        null,
-                        null
-                    );
-
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugW, ref this.Weight.Grad, true, null);
-                }
-
-                using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
-                using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, this.Weight.Data))
-                {
-                    this.BackwardgXKernel.SetMemoryArgument(0, gpugY);
-                    this.BackwardgXKernel.SetMemoryArgument(1, gpuW);
-                    this.BackwardgXKernel.SetMemoryArgument(2, gpugX);
-                    this.BackwardgXKernel.SetValueArgument(3, this.OutputCount);
-                    this.BackwardgXKernel.SetValueArgument(4, this.InputCount);
-                    this.BackwardgXKernel.SetValueArgument(5, y.Length);
-                    this.BackwardgXKernel.SetValueArgument(6, y.Shape[1]);
-                    this.BackwardgXKernel.SetValueArgument(7, y.Shape[2]);
-                    this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
-                    this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
-                    this.BackwardgXKernel.SetValueArgument(10, x.Length);
-                    this.BackwardgXKernel.SetValueArgument(11, this._strideX);
-                    this.BackwardgXKernel.SetValueArgument(12, this._strideY);
-                    this.BackwardgXKernel.SetValueArgument(13, this._padX);
-                    this.BackwardgXKernel.SetValueArgument(14, this._padY);
-                    this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
-                    this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
-
-                    Weaver.CommandQueue.Execute
-                    (
-                        this.BackwardgXKernel,
-                        null,
-                        new long[] { x.BatchCount * x.Shape[0], x.Shape[1], x.Shape[2] },
-                        null,
-                        null
-                    );
-
-                    Weaver.CommandQueue.Finish();
-                    Weaver.CommandQueue.ReadFromBuffer(gpugX, ref gx, true, null);
-                }
-            }
-
-            for (int i = 0; i < x.Grad.Length; i++)
-            {
-                x.Grad[i] += gx[i];
             }
         }
     }

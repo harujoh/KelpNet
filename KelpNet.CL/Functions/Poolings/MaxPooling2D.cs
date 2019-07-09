@@ -45,7 +45,7 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
-            this.IsParallel = enable & Weaver.Enable;
+            this.IsParallel = enable & OpenCL.Enable;
 
             if (IsParallel)
             {
@@ -92,7 +92,7 @@ namespace KelpNet.CL
         public void InitParallel()
         {
             if (IsParallel)
-                ForwardKernel = Weaver.CreateProgram(Weaver.GetKernelSource(Resources.MaxPooling2D)).CreateKernel("MaxPoolingForward");
+                ForwardKernel = OpenCL.CreateProgram(OpenCL.GetKernelSource(Resources.MaxPooling2D)).CreateKernel("MaxPoolingForward");
         }
 
         private NdArray ForwardCpu(NdArray input)
@@ -169,8 +169,8 @@ namespace KelpNet.CL
                 (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
 
-            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
-            using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, outputIndices.Length))
+            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
+            using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, outputIndices.Length))
             {
                 ForwardKernel.SetMemoryArgument(0, gpuX);
                 ForwardKernel.SetMemoryArgument(1, gpuYIndex);
@@ -186,7 +186,7 @@ namespace KelpNet.CL
                 ForwardKernel.SetValueArgument(11, this._padY);
                 ForwardKernel.SetValueArgument(12, this._padX);
 
-                Weaver.CommandQueue.Execute
+                OpenCL.CommandQueue.Execute
                 (
                     ForwardKernel,
                     null,
@@ -195,8 +195,8 @@ namespace KelpNet.CL
                     null
                 );
 
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpuYIndex, ref outputIndices, true, null);
+                OpenCL.CommandQueue.Finish();
+                OpenCL.CommandQueue.ReadFromBuffer(gpuYIndex, ref outputIndices, true, null);
             }
 
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);

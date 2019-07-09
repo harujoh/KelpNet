@@ -34,7 +34,7 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
-            this.IsParallel = enable & Weaver.Enable;
+            this.IsParallel = enable & OpenCL.Enable;
 
             if (IsParallel)
             {
@@ -56,8 +56,8 @@ namespace KelpNet.CL
         {
             if (IsParallel)
             {
-                string kernelSource = Weaver.GetKernelSource(Resources.Dropout);
-                ComputeProgram program = Weaver.CreateProgram(kernelSource);
+                string kernelSource = OpenCL.GetKernelSource(Resources.Dropout);
+                ComputeProgram program = OpenCL.CreateProgram(kernelSource);
 
                 ForwardKernel = program.CreateKernel("DropoutForward");
                 BackwardKernel = program.CreateKernel("DropoutBackward");
@@ -97,16 +97,16 @@ namespace KelpNet.CL
             Real[] result = new Real[x.Data.Length];
             Real[] mask = MakeMask(x.Length);
 
-            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
-            using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, mask))
-            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
+            using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
+            using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, mask))
+            using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
             {
                 ForwardKernel.SetMemoryArgument(0, gpuX);
                 ForwardKernel.SetMemoryArgument(1, gpuMask);
                 ForwardKernel.SetMemoryArgument(2, gpuY);
                 ForwardKernel.SetValueArgument(3, mask.Length);
 
-                Weaver.CommandQueue.Execute
+                OpenCL.CommandQueue.Execute
                 (
                     ForwardKernel,
                     null,
@@ -115,8 +115,8 @@ namespace KelpNet.CL
                     null
                 );
 
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
+                OpenCL.CommandQueue.Finish();
+                OpenCL.CommandQueue.ReadFromBuffer(gpuY, ref result, true, null);
             }
 
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);
@@ -148,14 +148,14 @@ namespace KelpNet.CL
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
-            using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, mask))
-            using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(Weaver.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, result))
+            using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, mask))
+            using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, result))
             {
                 BackwardKernel.SetMemoryArgument(0, gpuMask);
                 BackwardKernel.SetMemoryArgument(1, gpugX);
                 BackwardKernel.SetValueArgument(2, y.Length);
 
-                Weaver.CommandQueue.Execute
+                OpenCL.CommandQueue.Execute
                 (
                     BackwardKernel,
                     null,
@@ -164,8 +164,8 @@ namespace KelpNet.CL
                     null
                 );
 
-                Weaver.CommandQueue.Finish();
-                Weaver.CommandQueue.ReadFromBuffer(gpugX, ref result, true, null);
+                OpenCL.CommandQueue.Finish();
+                OpenCL.CommandQueue.ReadFromBuffer(gpugX, ref result, true, null);
             }
 
             for (int i = 0; i < x.Grad.Length; i++)

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using KelpNet.CL;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
 
@@ -16,9 +17,9 @@ namespace KelpNet.Tests
         [TestMethod]
         public void LinearGPURandomTest()
         {
-            Weaver.Initialize();
+            OpenCL.Initialize();
 
-            if (Weaver.Enable)
+            if (OpenCL.Enable)
             {
                 RandomTest(true);
             }
