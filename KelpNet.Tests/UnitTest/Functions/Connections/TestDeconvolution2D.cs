@@ -78,7 +78,7 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.Deconvolution2D deconvolution2D = new KelpNet.Deconvolution2D(
+            KelpNet.CL.Deconvolution2D deconvolution2D = new KelpNet.CL.Deconvolution2D(
                 inChCount, outChCount,
                 new []{kWidth, kHeight},
                 new []{strideX, strideY},

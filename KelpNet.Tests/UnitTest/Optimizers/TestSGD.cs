@@ -39,7 +39,7 @@ namespace KelpNet.Tests
             cSgd.Update();
 
             //KelpNet
-            KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b);
+            KelpNet.CL.Linear linear = new KelpNet.CL.Linear(inputCount, outputCount, false, w, b);
             KelpNet.SGD sgd = new SGD();
             sgd.SetUp(linear);
 

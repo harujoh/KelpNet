@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using KelpNet.CL;
 using KelpNet.Tools;
 
 namespace KelpNet.Sample

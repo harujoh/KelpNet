@@ -78,7 +78,7 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.MaxPooling2D maxPooling2D = new KelpNet.MaxPooling2D(
+            KelpNet.CL.MaxPooling2D maxPooling2D = new KelpNet.CL.MaxPooling2D(
                 new[] { kWidth, kHeight },
                 new[] { strideX, strideY },
                 new[] { padX, padY },

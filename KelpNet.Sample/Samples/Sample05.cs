@@ -1,4 +1,5 @@
 ﻿using System;
+using KelpNet.CL;
 
 namespace KelpNet.Sample
 {

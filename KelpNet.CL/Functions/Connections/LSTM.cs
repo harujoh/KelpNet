@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using KelpNet.CPU;
 
-namespace KelpNet.CPU
+namespace KelpNet.CL
 {
     [Serializable]
     public class LSTM : SingleInputFunction, IParallelizable
@@ -109,11 +110,12 @@ namespace KelpNet.CPU
 
         public void InitParallel()
         {
+            throw new NotImplementedException();
         }
 
         public bool SetParallel(bool enable)
         {
-            return false;
+            throw new NotImplementedException();
         }
 
         public NdArray ForwardCpu(NdArray x)

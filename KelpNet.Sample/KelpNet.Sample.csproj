@@ -78,6 +78,10 @@
     <Compile Include="Samples\SampleX.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\KelpNet.CL\KelpNet.CL.csproj">
+      <Project>{bcadef3a-a9bb-464f-972d-886581995bf1}</Project>
+      <Name>KelpNet.CL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\KelpNet.Tools\KelpNet.Tools.csproj">
       <Project>{74f187e5-0e1e-400b-9381-426ccc0f453b}</Project>
       <Name>KelpNet.Tools</Name>

@@ -5,7 +5,7 @@ using System.Linq;
 using Cloo;
 using KelpNet.Properties;
 
-namespace KelpNet
+namespace KelpNet.CPU
 {
     [Serializable]
     public class Dropout : SingleInputFunction, IParallelizable

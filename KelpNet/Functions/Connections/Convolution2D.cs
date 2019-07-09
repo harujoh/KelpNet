@@ -2,7 +2,7 @@
 using Cloo;
 using KelpNet.Properties;
 
-namespace KelpNet
+namespace KelpNet.CPU
 {
     [Serializable]
     public class Convolution2D : CompressibleFunction

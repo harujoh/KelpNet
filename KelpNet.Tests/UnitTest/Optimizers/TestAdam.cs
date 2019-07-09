@@ -44,7 +44,7 @@ namespace KelpNet.Tests
             cAdam.Update();
 
             //KelpNet
-            KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b);
+            KelpNet.CL.Linear linear = new KelpNet.CL.Linear(inputCount, outputCount, false, w, b);
             KelpNet.Adam adam = new Adam(alpha, beta1, beta2, eps, eta);
             adam.SetUp(linear);
 

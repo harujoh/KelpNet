@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using KelpNet.Tools;
+using KelpNet.CL;
 
 namespace KelpNet.Sample
 {

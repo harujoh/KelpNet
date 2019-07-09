@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using KelpNet.CL;
 using KelpNet.Tools;
 
 namespace KelpNet.Sample

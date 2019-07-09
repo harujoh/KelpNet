@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+using KelpNet.CL;
 
 namespace KelpNet.Tests
 {
@@ -78,7 +79,7 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.Convolution2D convolution2D = new KelpNet.Convolution2D(
+            KelpNet.CL.Convolution2D convolution2D = new KelpNet.CL.Convolution2D(
                 inChCount, outChCount,
                 new[] { kWidth, kHeight },
                 new[] { strideX, strideY },

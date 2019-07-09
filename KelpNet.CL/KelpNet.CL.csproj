@@ -51,6 +51,7 @@
     <Compile Include="Functions\Connections\Convolution2D.cs" />
     <Compile Include="Functions\Connections\Deconvolution2D.cs" />
     <Compile Include="Functions\Connections\Linear.cs" />
+    <Compile Include="Functions\Connections\LSTM.cs" />
     <Compile Include="Functions\Noise\Dropout.cs" />
     <Compile Include="Functions\Poolings\MaxPooling2D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

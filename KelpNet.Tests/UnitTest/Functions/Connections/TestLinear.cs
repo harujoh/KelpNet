@@ -56,7 +56,7 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.Linear linear = new KelpNet.Linear(inputCount, outputCount, false, w, b, gpuEnable: gpuEnable);
+            KelpNet.CL.Linear linear = new KelpNet.CL.Linear(inputCount, outputCount, false, w, b, gpuEnable: gpuEnable);
 
             NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
 

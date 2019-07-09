@@ -1,7 +1,7 @@
 ﻿using System;
 using KelpNet.CL.Properties;
 
-namespace KelpNet.CL.Activations
+namespace KelpNet.CL
 {
     [Serializable]
     public class Sigmoid : CompressibleActivation

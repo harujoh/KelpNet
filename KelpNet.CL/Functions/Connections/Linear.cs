@@ -5,7 +5,7 @@ using KelpNet.CL.Properties;
 namespace KelpNet.CL
 {
     [Serializable]
-    public class Linear : KelpNet.CompressibleFunction
+    public class Linear : CompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";
 
@@ -25,7 +25,7 @@ namespace KelpNet.CL
             }
         }
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
             this.OutputCount = outputCount;
             this.InputCount = inputCount;
