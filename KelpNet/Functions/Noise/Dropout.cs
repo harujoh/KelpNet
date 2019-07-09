@@ -9,7 +9,7 @@ namespace KelpNet.CPU
     {
         const string FUNCTION_NAME = "Dropout";
 
-        private readonly Real dropoutRatio;
+        public Real DropoutRatio;
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
         public bool IsParallel { get; set; }
@@ -17,7 +17,7 @@ namespace KelpNet.CPU
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             IsParallel = false;
-            this.dropoutRatio = dropoutRatio;
+            this.DropoutRatio = dropoutRatio;
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
@@ -35,11 +35,11 @@ namespace KelpNet.CPU
         private Real[] MakeMask(int xLength)
         {
             Real[] mask = new Real[xLength];
-            Real scale = 1 / (1 - this.dropoutRatio);
+            Real scale = 1 / (1 - this.DropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)
             {
-                mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
+                mask[i] = Mother.Dice.NextDouble() >= this.DropoutRatio ? scale : 0;
             }
 
             this.maskStack.Add(mask);

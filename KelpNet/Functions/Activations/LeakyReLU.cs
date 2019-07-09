@@ -7,21 +7,21 @@ namespace KelpNet.CPU
     {
         const string FUNCTION_NAME = "LeakyReLU";
 
-        private readonly Real _slope;
+        public Real Slope;
 
         public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this._slope = slope;
+            this.Slope = slope;
         }
 
         public override Real ForwardActivate(Real x)
         {
-            return x < 0 ? (Real)(x * this._slope) : x;
+            return x < 0 ? (Real)(x * this.Slope) : x;
         }
 
         public override Real BackwardActivate(Real gy, Real y)
         {
-            return y <= 0 ? (Real)(y * this._slope) : gy;
+            return y <= 0 ? (Real)(y * this.Slope) : gy;
         }
     }
 }

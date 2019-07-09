@@ -1,5 +1,4 @@
 ﻿using System;
-using KelpNet.Properties;
 
 namespace KelpNet.CPU
 {
@@ -11,10 +10,10 @@ namespace KelpNet.CPU
         public NdArray Weight;
         public NdArray Bias;
 
-        public readonly bool NoBias;
+        public bool NoBias;
 
-        public readonly int InputCount;
-        public readonly int OutputCount;
+        public int InputCount;
+        public int OutputCount;
 
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(activation, name, inputNames, outputNames)
         {

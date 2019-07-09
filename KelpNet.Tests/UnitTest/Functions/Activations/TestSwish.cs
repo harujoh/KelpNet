@@ -67,10 +67,10 @@ namespace KelpNet.Tests
             }
 
             //b.grad
-            Assert.AreEqual(cbgrad.Length, swish.beta.Grad.Length);
-            for (int i = 0; i < swish.beta.Grad.Length; i++)
+            Assert.AreEqual(cbgrad.Length, swish.Beta.Grad.Length);
+            for (int i = 0; i < swish.Beta.Grad.Length; i++)
             {
-                Assert.AreEqual(cbgrad[i], swish.beta.Grad[i], delta);
+                Assert.AreEqual(cbgrad[i], swish.Beta.Grad[i], delta);
             }
         }
     }

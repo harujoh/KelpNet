@@ -9,8 +9,8 @@ namespace KelpNet
 
         public NdArray Weight;
 
-        public readonly int InputCount;
-        public readonly int OutputCount;
+        public int InputCount;
+        public int OutputCount;
 
         public EmbedID(int inputCount, int outputCount, Real[,] initialW = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {

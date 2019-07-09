@@ -7,11 +7,11 @@ namespace KelpNet
     {
         const string FUNCTION_NAME = "ELU";
 
-        private readonly Real _alpha;
+        public Real Alpha;
 
         public ELU(double alpha = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this._alpha = alpha;
+            this.Alpha = alpha;
 
             SingleInputForward = NeedPreviousForwardCpu;
             SingleOutputBackward = NeedPreviousBackwardCpu;
@@ -29,7 +29,7 @@ namespace KelpNet
                 }
                 else
                 {
-                    result[i] = this._alpha * (Math.Exp(x.Data[i]) - 1);
+                    result[i] = this.Alpha * (Math.Exp(x.Data[i]) - 1);
                 }
             }
 
@@ -46,7 +46,7 @@ namespace KelpNet
                 }
                 else
                 {
-                    x.Grad[i] += y.Grad[i] * this._alpha * Math.Exp(x.Data[i]);
+                    x.Grad[i] += y.Grad[i] * this.Alpha * Math.Exp(x.Data[i]);
                 }
             }
         }

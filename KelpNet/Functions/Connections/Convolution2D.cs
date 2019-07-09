@@ -10,27 +10,26 @@ namespace KelpNet.CPU
         public NdArray Weight;
         public NdArray Bias;
 
-        public readonly bool NoBias;
+        public bool NoBias;
 
-        private readonly int _kWidth;
-        private readonly int _kHeight;
-        private readonly int _strideX;
-        private readonly int _strideY;
-        private readonly int _padX;
-        private readonly int _padY;
+        public int KernelWidth;
+        public int KernelHeight;
+        public int StrideX;
+        public int StrideY;
+        public int PadX;
+        public int PadY;
 
-        public readonly int InputCount;
-        public readonly int OutputCount;
+        public int InputCount;
+        public int OutputCount;
 
-
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
+        public Convolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
-            this._kWidth = kSize;
-            this._kHeight = kSize;
-            this._strideX = stride;
-            this._strideY = stride;
-            this._padX = pad;
-            this._padY = pad;
+            this.KernelWidth = kernelSize;
+            this.KernelHeight = kernelSize;
+            this.StrideX = stride;
+            this.StrideY = stride;
+            this.PadX = pad;
+            this.PadY = pad;
             this.NoBias = noBias;
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
@@ -49,12 +48,12 @@ namespace KelpNet.CPU
             if (stride == null)
                 stride = new[] { 1, 1 };
 
-            this._kWidth = kSize[0];
-            this._kHeight = kSize[1];
-            this._strideX = stride[0];
-            this._strideY = stride[1];
-            this._padX = pad[0];
-            this._padY = pad[1];
+            this.KernelWidth = kSize[0];
+            this.KernelHeight = kSize[1];
+            this.StrideX = stride[0];
+            this.StrideY = stride[1];
+            this.PadX = pad[0];
+            this.PadY = pad[1];
             this.NoBias = noBias;
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
@@ -67,24 +66,24 @@ namespace KelpNet.CPU
 
         public Convolution2D(Linear linear) : base(linear.Activator, linear.Name, linear.InputNames, linear.OutputNames)
         {
-            this._kWidth = 1;
-            this._kHeight = 1;
-            this._strideX = 1;
-            this._strideY = 1;
-            this._padX = 0;
-            this._padY = 0;
+            this.KernelWidth = 1;
+            this.KernelHeight = 1;
+            this.StrideX = 1;
+            this.StrideY = 1;
+            this.PadX = 0;
+            this.PadY = 0;
 
             this.Parameters = linear.Parameters;
 
             this.Weight = linear.Weight;
-            this.Weight.Reshape(OutputCount, InputCount, this._kHeight, this._kWidth);
+            this.Weight.Reshape(OutputCount, InputCount, this.KernelHeight, this.KernelWidth);
             this.Bias = linear.Bias;
             this.NoBias = linear.NoBias;
         }
 
         void Initialize(Array initialW = null, Array initialb = null)
         {
-            this.Weight = new NdArray(OutputCount, InputCount, this._kHeight, this._kWidth);
+            this.Weight = new NdArray(OutputCount, InputCount, this.KernelHeight, this.KernelWidth);
             this.Weight.Name = this.Name + " Weight";
 
             if (initialW == null)
@@ -114,8 +113,8 @@ namespace KelpNet.CPU
 
         protected override NdArray NeedPreviousForwardCpu(NdArray x)
         {
-            int outputHeight = (int)Math.Floor((x.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
-            int outputWidth = (int)Math.Floor((x.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
+            int outputHeight = (int)Math.Floor((x.Shape[1] - this.KernelHeight + this.PadY * 2.0) / this.StrideY) + 1;
+            int outputWidth = (int)Math.Floor((x.Shape[2] - this.KernelWidth + this.PadX * 2.0) / this.StrideX) + 1;
 
             Real[] y = new Real[x.BatchCount * this.OutputCount * outputHeight * outputWidth];
 
@@ -126,25 +125,25 @@ namespace KelpNet.CPU
 
                 for (int och = 0; och < this.OutputCount; och++)
                 {
-                    int kOchOffset = och * this.InputCount * this._kHeight * this._kWidth;
+                    int kOchOffset = och * this.InputCount * this.KernelHeight * this.KernelWidth;
 
                     int yChOffset = yBatchOffset + och * outputHeight * outputWidth;
 
-                    for (int oy = 0; oy < outputHeight * this._strideY; oy += this._strideY)
+                    for (int oy = 0; oy < outputHeight * this.StrideY; oy += this.StrideY)
                     {
-                        int iyStart = oy - this._padY < 0 ? 0 : oy - this._padY;
-                        int iyLimit = this._kHeight + oy - this._padY < x.Shape[1] ? this._kHeight + oy - this._padY : x.Shape[1];
+                        int iyStart = oy - this.PadY < 0 ? 0 : oy - this.PadY;
+                        int iyLimit = this.KernelHeight + oy - this.PadY < x.Shape[1] ? this.KernelHeight + oy - this.PadY : x.Shape[1];
 
-                        for (int ox = 0; ox < outputWidth * this._strideX; ox += this._strideX)
+                        for (int ox = 0; ox < outputWidth * this.StrideX; ox += this.StrideX)
                         {
-                            int ixStart = ox - this._padX < 0 ? 0 : ox - this._padX;
-                            int ixLimit = this._kWidth + ox - this._padX < x.Shape[2] ? this._kWidth + ox - this._padX : x.Shape[2];
+                            int ixStart = ox - this.PadX < 0 ? 0 : ox - this.PadX;
+                            int ixLimit = this.KernelWidth + ox - this.PadX < x.Shape[2] ? this.KernelWidth + ox - this.PadX : x.Shape[2];
 
-                            int yIndex = yChOffset + oy / this._strideY * outputWidth + ox / this._strideX;
+                            int yIndex = yChOffset + oy / this.StrideY * outputWidth + ox / this.StrideX;
 
                             for (int ich = 0; ich < this.InputCount; ich++)
                             {
-                                int kIchOffset = kOchOffset + ich * this._kHeight * this._kWidth;
+                                int kIchOffset = kOchOffset + ich * this.KernelHeight * this.KernelWidth;
 
                                 int xChOffset = xBatchOffset + ich * x.Shape[1] * x.Shape[2];
 
@@ -152,7 +151,7 @@ namespace KelpNet.CPU
                                 {
                                     for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
-                                        int wIndex = kIchOffset + (iy - oy + this._padY) * this._kWidth + ix - ox + this._padX;
+                                        int wIndex = kIchOffset + (iy - oy + this.PadY) * this.KernelWidth + ix - ox + this.PadX;
                                         int xIndex = xChOffset + iy * x.Shape[2] + ix;
 
                                         y[yIndex] += x.Data[xIndex] * this.Weight.Data[wIndex];
@@ -251,25 +250,25 @@ namespace KelpNet.CPU
 
                 for (int och = 0; och < y.Shape[0]; och++)
                 {
-                    int wOchOffset = och * this.InputCount * this._kHeight * this._kWidth;
+                    int wOchOffset = och * this.InputCount * this.KernelHeight * this.KernelWidth;
 
                     int yChOffset = och * y.Shape[1] * y.Shape[2];
 
-                    for (int oy = 0; oy < y.Shape[1] * this._strideY; oy += this._strideY)
+                    for (int oy = 0; oy < y.Shape[1] * this.StrideY; oy += this.StrideY)
                     {
-                        int iyStart = oy - this._padY < 0 ? 0 : oy - this._padY;
-                        int iyLimit = this._kHeight + oy - this._padY < x.Shape[1] ? this._kHeight + oy - this._padY : x.Shape[1];
+                        int iyStart = oy - this.PadY < 0 ? 0 : oy - this.PadY;
+                        int iyLimit = this.KernelHeight + oy - this.PadY < x.Shape[1] ? this.KernelHeight + oy - this.PadY : x.Shape[1];
 
-                        for (int ox = 0; ox < y.Shape[2] * this._strideX; ox += this._strideX)
+                        for (int ox = 0; ox < y.Shape[2] * this.StrideX; ox += this.StrideX)
                         {
-                            int ixStart = ox - this._padX < 0 ? 0 : ox - this._padX;
-                            int ixLimit = this._kWidth + ox - this._padX < x.Shape[2] ? this._kWidth + ox - this._padX : x.Shape[2];
+                            int ixStart = ox - this.PadX < 0 ? 0 : ox - this.PadX;
+                            int ixLimit = this.KernelWidth + ox - this.PadX < x.Shape[2] ? this.KernelWidth + ox - this.PadX : x.Shape[2];
 
-                            int gyIndex = yBatchOffset + yChOffset + oy / this._strideY * y.Shape[2] + ox / this._strideX;
+                            int gyIndex = yBatchOffset + yChOffset + oy / this.StrideY * y.Shape[2] + ox / this.StrideX;
 
                             for (int ich = 0; ich < x.Shape[0]; ich++)
                             {
-                                int wIchOffset = wOchOffset + ich * this._kHeight * this._kWidth;
+                                int wIchOffset = wOchOffset + ich * this.KernelHeight * this.KernelWidth;
 
                                 int xChOffset = xBatchOffset + ich * x.Shape[1] * x.Shape[2];
 
@@ -277,7 +276,7 @@ namespace KelpNet.CPU
                                 {
                                     for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
-                                        int wIndex = wIchOffset + (iy - oy + this._padY) * this._kWidth + ix - ox + this._padX;
+                                        int wIndex = wIchOffset + (iy - oy + this.PadY) * this.KernelWidth + ix - ox + this.PadX;
                                         int xIndex = xChOffset + iy * x.Shape[2] + ix;
 
                                         this.Weight.Grad[wIndex] += x.Data[xIndex] * activatedgy[gyIndex];
