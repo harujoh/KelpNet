@@ -101,7 +101,7 @@ namespace KelpNet.Sample
             {
                 if (function is Convolution2D || function is Linear || function is MaxPooling2D)
                 {
-                    ((IParallelizable)function).SetGpuEnable(true);
+                    ((IParallelizable)function).SetParallel(true);
                 }
 
                 if (function is SplitFunction)

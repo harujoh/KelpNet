@@ -2,7 +2,9 @@
 {
     public interface IParallelizable
     {
-        void CreateKernel();
-        bool SetGpuEnable(bool enable);
+        bool IsParallel { get; set; }
+
+        void InitParallel();
+        bool SetParallel(bool enable);
     }
 }

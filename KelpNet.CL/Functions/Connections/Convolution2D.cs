@@ -1,11 +1,11 @@
 ﻿using System;
 using Cloo;
-using KelpNet.Properties;
+using KelpNet.CL.Properties;
 
-namespace KelpNet
+namespace KelpNet.CL
 {
     [Serializable]
-    public class Convolution2D : CompressibleFunction
+    public class Convolution2D : KelpNet.CompressibleFunction
     {
         const string FUNCTION_NAME = "Convolution2D";
 
@@ -32,7 +32,7 @@ namespace KelpNet
             }
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Convolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
             this._kWidth = kSize;
             this._kHeight = kSize;
@@ -50,7 +50,7 @@ namespace KelpNet
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, int[] kSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Convolution2D(int inputChannels, int outputChannels, int[] kSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
         {
             if (pad == null)
                 pad = new[] { 0, 0 };

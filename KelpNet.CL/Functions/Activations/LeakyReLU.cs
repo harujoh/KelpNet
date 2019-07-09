@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using KelpNet.Properties;
+using KelpNet.CL.Properties;
 
-namespace KelpNet
+namespace KelpNet.CL.Activations
 {
     [Serializable]
     public class LeakyReLU : CompressibleActivation

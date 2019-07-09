@@ -41,7 +41,52 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Functions\CompressibleActivation.cs" />
+    <Compile Include="Common\Functions\CompressibleFunction.cs" />
+    <Compile Include="Common\OpenCL.cs" />
+    <Compile Include="Functions\Activations\LeakyReLU.cs" />
+    <Compile Include="Functions\Activations\ReLU.cs" />
+    <Compile Include="Functions\Activations\Sigmoid.cs" />
+    <Compile Include="Functions\Activations\TanhActivation.cs" />
+    <Compile Include="Functions\Connections\Convolution2D.cs" />
+    <Compile Include="Functions\Connections\Deconvolution2D.cs" />
+    <Compile Include="Functions\Connections\Linear.cs" />
+    <Compile Include="Functions\Noise\Dropout.cs" />
+    <Compile Include="Functions\Poolings\MaxPooling2D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenCL\Activations\Activation.cl" />
+    <None Include="OpenCL\Activations\LeakyReLU.cl" />
+    <None Include="OpenCL\Activations\ReLU.cl" />
+    <None Include="OpenCL\Activations\Sigmoid.cl" />
+    <None Include="OpenCL\Activations\TanhActivation.cl" />
+    <None Include="OpenCL\Connections\Convolution2D.cl" />
+    <None Include="OpenCL\Connections\Deconvolution2D.cl" />
+    <None Include="OpenCL\Connections\Linear.cl" />
+    <None Include="OpenCL\Noise\Dropout.cl" />
+    <None Include="OpenCL\Poolings\MaxPooling2D.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cloo\Cloo.csproj">
+      <Project>{6ec82c77-96ba-4102-9589-ad89e3f4e068}</Project>
+      <Name>Cloo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KelpNet\KelpNet.csproj">
+      <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
+      <Name>KelpNet</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

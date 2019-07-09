@@ -49,7 +49,7 @@ namespace KelpNet.Sample
                 {
                     if (vggNet[i] is Convolution2D || vggNet[i] is Linear || vggNet[i] is MaxPooling2D)
                     {
-                        ((IParallelizable)vggNet[i]).SetGpuEnable(true);
+                        ((IParallelizable)vggNet[i]).SetParallel(true);
                     }
                 }
 

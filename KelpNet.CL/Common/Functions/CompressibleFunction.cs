@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Cloo;
 
-namespace KelpNet
+namespace KelpNet.CL
 {
     [Serializable]
     public abstract class CompressibleFunction : SingleInputFunction, IParallelizable
@@ -50,7 +50,7 @@ namespace KelpNet
 
         public bool SetParallel(bool enable)
         {
-            this.IsParallel = enable & Weaver.Enable;
+            this.IsParallel = enable & OpenCL.Enable;
 
             if (this.IsParallel)
             {
@@ -96,7 +96,7 @@ namespace KelpNet
                     kernelSource = activationSource + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate");
                 }
 
-                ComputeProgram program = Weaver.CreateProgram(kernelSource);
+                ComputeProgram program = OpenCL.CreateProgram(kernelSource);
                 this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
                 this.BackwardgWKernel = program.CreateKernel(this.BackwardgWKernelName);
                 this.BackwardgXKernel = program.CreateKernel(this.BackwardgXKernelName);

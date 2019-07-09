@@ -56,7 +56,7 @@ namespace KelpNet
 
                 if (function is IParallelizable)
                 {
-                    ((IParallelizable)function).CreateKernel();
+                    ((IParallelizable)function).InitParallel();
                 }
             }
         }

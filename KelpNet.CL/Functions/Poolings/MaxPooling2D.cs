@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Cloo;
-using KelpNet.Properties;
+using KelpNet.CL.Properties;
 
-namespace KelpNet
+namespace KelpNet.CL
 {
     [Serializable]
     public class MaxPooling2D : SingleInputFunction, IParallelizable

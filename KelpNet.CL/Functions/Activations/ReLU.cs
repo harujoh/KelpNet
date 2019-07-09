@@ -1,7 +1,7 @@
 ﻿using System;
-using KelpNet.Properties;
+using KelpNet.CL.Properties;
 
-namespace KelpNet
+namespace KelpNet.CL.Activations
 {
     [Serializable]
     public class ReLU : CompressibleActivation

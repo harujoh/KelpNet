@@ -37,7 +37,7 @@ namespace KelpNet.Sample
                 {
                     if (alexNet[i] is Convolution2D || alexNet[i] is Linear || alexNet[i] is MaxPooling2D)
                     {
-                        ((IParallelizable) alexNet[i]).SetGpuEnable(true);
+                        ((IParallelizable) alexNet[i]).SetParallel(true);
                     }
                 }
 
