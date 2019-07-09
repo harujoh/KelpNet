@@ -7,7 +7,7 @@ using KelpNet.CL.Properties;
 namespace KelpNet.CL
 {
     [Serializable]
-    public abstract class CompressibleActivation : KelpNet.CompressibleActivation
+    public abstract class CompressibleActivation : KelpNet.CompressibleActivation, IParallelizable
     {
         const string FUNCTION_NAME = "Activation";
 
@@ -27,6 +27,8 @@ namespace KelpNet.CL
 
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
+
+        public bool IsParallel { get; set; }
 
         protected CompressibleActivation(string functionName, string activateFunctionString, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
@@ -51,7 +53,7 @@ namespace KelpNet.CL
             this.SetParallel(gpuEnable);
         }
 
-        public override bool SetParallel(bool enable)
+        public bool SetParallel(bool enable)
         {
             this.IsParallel = enable & OpenCL.Enable;
 
@@ -71,7 +73,7 @@ namespace KelpNet.CL
             return IsParallel;
         }
 
-        public override void InitParallel()
+        public void InitParallel()
         {
             if (this.IsParallel)
             {

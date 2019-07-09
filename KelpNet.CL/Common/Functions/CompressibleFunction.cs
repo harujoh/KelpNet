@@ -5,7 +5,7 @@ using Cloo;
 namespace KelpNet.CL
 {
     [Serializable]
-    public abstract class CompressibleFunction : KelpNet.CompressibleFunction
+    public abstract class CompressibleFunction : KelpNet.CompressibleFunction, IParallelizable
     {
         const string FUNCTION_NAME = "CompressibleFunction";
 
@@ -30,7 +30,9 @@ namespace KelpNet.CL
         protected abstract NdArray NeedPreviousForwardGpu(NdArray input);
         protected abstract void NeedPreviousBackwardGpu(NdArray y, NdArray x);
 
-        protected CompressibleFunction(string functionName,string kernelString, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
+        public bool IsParallel { get; set; }
+
+        protected CompressibleFunction(string functionName, string kernelString, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";
@@ -44,7 +46,15 @@ namespace KelpNet.CL
             this.SetParallel(gpuEnable);
         }
 
-        public override bool SetParallel(bool enable)
+        //後からActivationを追加する用
+        public override void SetActivation(KelpNet.CompressibleActivation activation)
+        {
+            this.Activator = activation;
+
+            InitParallel();
+        }
+
+        public bool SetParallel(bool enable)
         {
             this.IsParallel = enable & OpenCL.Enable;
 
@@ -64,7 +74,7 @@ namespace KelpNet.CL
             return IsParallel;
         }
 
-        public override void InitParallel()
+        public void InitParallel()
         {
             if (this.IsParallel)
             {

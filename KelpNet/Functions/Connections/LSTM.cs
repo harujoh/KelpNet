@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace KelpNet.CPU
 {
     [Serializable]
-    public class LSTM : SingleInputFunction, IParallelizable
+    public class LSTM : SingleInputFunction
     {
         const string FUNCTION_NAME = "LSTM";
 
@@ -35,8 +35,6 @@ namespace KelpNet.CPU
 
         public readonly int InputCount;
         public readonly int OutputCount;
-
-        public bool IsParallel { get; set; }
 
         public LSTM(int inSize, int outSize, Array lateralInit = null, Array upwardInit = null, Array biasInit = null, Array forgetBiasInit = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
@@ -105,17 +103,6 @@ namespace KelpNet.CPU
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
-
-            IsParallel = false;
-        }
-
-        public void InitParallel()
-        {
-        }
-
-        public bool SetParallel(bool enable)
-        {
-            return false;
         }
 
         public NdArray ForwardCpu(NdArray x)

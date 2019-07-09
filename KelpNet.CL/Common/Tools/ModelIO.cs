@@ -2,7 +2,7 @@
 using System.IO.Compression;
 using System.Runtime.Serialization;
 
-namespace KelpNet.CPU
+namespace KelpNet.CL
 {
     public class ModelIO
     {
@@ -53,6 +53,11 @@ namespace KelpNet.CPU
             foreach (Function function in functionStack.Functions)
             {
                 function.ResetState();
+
+                if (function is IParallelizable)
+                {
+                    ((IParallelizable)function).InitParallel();
+                }
             }
         }
     }

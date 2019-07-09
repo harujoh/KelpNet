@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace KelpNet.CPU
 {
     [Serializable]
-    public class MaxPooling2D : SingleInputFunction, IParallelizable
+    public class MaxPooling2D : SingleInputFunction
     {
         const string FUNCTION_NAME = "MaxPooling2D";
 
@@ -19,8 +19,6 @@ namespace KelpNet.CPU
         [NonSerialized]
         private List<int[]> _outputIndicesList = new List<int[]>();
 
-        public bool IsParallel { get; set; }
-
         public MaxPooling2D(int kernelSize, int stride = 1, int pad = 0, bool coverAll = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.KernelHeight = kernelSize;
@@ -30,8 +28,6 @@ namespace KelpNet.CPU
             this.StrideX = stride;
             this.StrideY = stride;
             this.CoverAll = coverAll;
-
-            IsParallel = false;
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
@@ -53,19 +49,8 @@ namespace KelpNet.CPU
             this.StrideY = stride[1];
             this.CoverAll = coverAll;
 
-            IsParallel = false;
-
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
-        }
-
-        public bool SetParallel(bool enable)
-        {
-            return false;
-        }
-
-        public void InitParallel()
-        {
         }
 
         private NdArray ForwardCpu(NdArray input)

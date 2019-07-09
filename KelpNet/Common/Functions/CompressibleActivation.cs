@@ -3,7 +3,7 @@
 namespace KelpNet
 {
     [Serializable]
-    public abstract class CompressibleActivation : SingleInputFunction, IParallelizable
+    public abstract class CompressibleActivation : SingleInputFunction
     {
         const string FUNCTION_NAME = "Activation";
 
@@ -11,23 +11,10 @@ namespace KelpNet
         public abstract Real ForwardActivate(Real x);
         public abstract Real BackwardActivate(Real gy, Real y);
 
-        public bool IsParallel { get; set; }
-
         protected CompressibleActivation(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this.IsParallel = false;
-
             this.SingleInputForward = this.NeedPreviousForwardCpu;
             this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
-        }
-
-        public virtual bool SetParallel(bool enable)
-        {
-            return false;
-        }
-
-        public virtual void InitParallel()
-        {
         }
 
         protected NdArray NeedPreviousForwardCpu(NdArray x)

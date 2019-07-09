@@ -5,31 +5,19 @@ using System.Linq;
 namespace KelpNet.CPU
 {
     [Serializable]
-    public class Dropout : SingleInputFunction, IParallelizable
+    public class Dropout : SingleInputFunction
     {
         const string FUNCTION_NAME = "Dropout";
 
         public Real DropoutRatio;
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
-        public bool IsParallel { get; set; }
-
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            IsParallel = false;
             this.DropoutRatio = dropoutRatio;
 
             SingleInputForward = ForwardCpu;
             SingleOutputBackward = BackwardCpu;
-        }
-
-        public bool SetParallel(bool enable)
-        {
-            return false;
-        }
-
-        public void InitParallel()
-        {
         }
 
         private Real[] MakeMask(int xLength)

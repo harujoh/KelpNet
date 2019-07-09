@@ -1,4 +1,4 @@
-﻿namespace KelpNet
+﻿namespace KelpNet.CL
 {
     public interface IParallelizable
     {
