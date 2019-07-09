@@ -7,12 +7,8 @@ namespace KelpNet.CL
     public class ReLU : CompressibleActivation
     {
         const string FUNCTION_NAME = "ReLU";
-        public override string ActivateFunctionString
-        {
-            get { return OpenCL.GetKernelSource(Resources.ReLU); }
-        }
 
-        public ReLU(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
+        public ReLU(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.ReLU), null, name, inputNames, outputNames, gpuEnable)
         {
         }
 

@@ -12,20 +12,12 @@ namespace KelpNet.CL
         public NdArray Weight;
         public NdArray Bias;
 
-        public readonly bool NoBias;
+        public bool NoBias;
 
-        public readonly int InputCount;
-        public readonly int OutputCount;
+        public int InputCount;
+        public int OutputCount;
 
-        protected override string KernelString
-        {
-            get
-            {
-                return OpenCL.GetKernelSource(Resources.Linear);
-            }
-        }
-
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Linear), activation, name, inputNames, outputNames, gpuEnable)
         {
             this.OutputCount = outputCount;
             this.InputCount = inputCount;

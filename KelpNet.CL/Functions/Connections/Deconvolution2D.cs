@@ -12,34 +12,26 @@ namespace KelpNet.CL
         public NdArray Weight;
         public NdArray Bias;
 
-        public readonly bool NoBias;
+        public bool NoBias;
 
-        private readonly int _kWidth;
-        private readonly int _kHeight;
-        private readonly int _strideX;
-        private readonly int _strideY;
-        private readonly int _padX;
-        private readonly int _padY;
+        public int KernelWidth;
+        public int KernelHeight;
+        public int StrideX;
+        public int StrideY;
+        public int PadX;
+        public int PadY;
 
-        public readonly int InputCount;
-        public readonly int OutputCount;
+        public int InputCount;
+        public int OutputCount;
 
-        protected override string KernelString
+        public Deconvolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, name, inputNames, outputNames, gpuEnable)
         {
-            get
-            {
-                return OpenCL.GetKernelSource(Resources.Deconvolution2D);
-            }
-        }
-
-        public Deconvolution2D(int inputChannels, int outputChannels, int kSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
-        {
-            this._kWidth = kSize;
-            this._kHeight = kSize;
-            this._padX = pad;
-            this._padY = pad;
-            this._strideX = stride;
-            this._strideY = stride;
+            this.KernelWidth = kernelSize;
+            this.KernelHeight = kernelSize;
+            this.PadX = pad;
+            this.PadY = pad;
+            this.StrideX = stride;
+            this.StrideY = stride;
             this.NoBias = noBias;
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
@@ -50,7 +42,7 @@ namespace KelpNet.CL
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, activation, name, inputNames, outputNames, gpuEnable)
+        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, name, inputNames, outputNames, gpuEnable)
         {
             if (subSample == null)
                 subSample = new[] { 1, 1 };
@@ -58,14 +50,14 @@ namespace KelpNet.CL
             if (trim == null)
                 trim = new[] { 0, 0 };
 
-            this._kWidth = kSize[0];
-            this._kHeight = kSize[1];
-            this._padX = trim[0];
-            this._padY = trim[1];
+            this.KernelWidth = kSize[0];
+            this.KernelHeight = kSize[1];
+            this.PadX = trim[0];
+            this.PadY = trim[1];
             this.NoBias = noBias;
 
-            this._strideX = subSample[0];
-            this._strideY = subSample[1];
+            this.StrideX = subSample[0];
+            this.StrideY = subSample[1];
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
 
@@ -77,7 +69,7 @@ namespace KelpNet.CL
 
         void Initialize(Array initialW = null, Array initialb = null)
         {
-            this.Weight = new NdArray(InputCount, OutputCount, this._kHeight, this._kWidth);
+            this.Weight = new NdArray(InputCount, OutputCount, this.KernelHeight, this.KernelWidth);
             this.Weight.Name = this.Name + " Weight";
 
             if (initialW == null)
@@ -90,7 +82,6 @@ namespace KelpNet.CL
             }
 
             this.Parameters[0] = this.Weight;
-
 
             if (!NoBias)
             {
@@ -108,8 +99,8 @@ namespace KelpNet.CL
 
         protected override NdArray NeedPreviousForwardCpu(NdArray input)
         {
-            int outputHeight = (input.Shape[1] - 1) * this._strideY + this._kHeight - this._padY * 2;
-            int outputWidth = (input.Shape[2] - 1) * this._strideX + this._kWidth - this._padX * 2;
+            int outputHeight = (input.Shape[1] - 1) * this.StrideY + this.KernelHeight - this.PadY * 2;
+            int outputWidth = (input.Shape[2] - 1) * this.StrideX + this.KernelWidth - this.PadX * 2;
 
             Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
@@ -121,17 +112,17 @@ namespace KelpNet.CL
             {
                 for (int och = 0; och < this.OutputCount; och++)
                 {
-                    for (int oy = this._padY; oy < outputHeight + this._padY; oy++)
+                    for (int oy = this.PadY; oy < outputHeight + this.PadY; oy++)
                     {
-                        int iyLimit = oy / this._strideY + 1 < input.Shape[1] ? oy / this._strideY + 1 : input.Shape[1];
-                        int iyStart = oy - this.Weight.Shape[2] < 0 ? 0 : (oy - this.Weight.Shape[2]) / this._strideY + 1;
+                        int iyLimit = oy / this.StrideY + 1 < input.Shape[1] ? oy / this.StrideY + 1 : input.Shape[1];
+                        int iyStart = oy - this.Weight.Shape[2] < 0 ? 0 : (oy - this.Weight.Shape[2]) / this.StrideY + 1;
 
-                        for (int ox = this._padX; ox < outputWidth + this._padX; ox++)
+                        for (int ox = this.PadX; ox < outputWidth + this.PadX; ox++)
                         {
-                            int ixLimit = ox / this._strideX + 1 < input.Shape[2] ? ox / this._strideX + 1 : input.Shape[2];
-                            int ixStart = ox - this.Weight.Shape[3] < 0 ? 0 : (ox - this.Weight.Shape[3]) / this._strideX + 1;
+                            int ixLimit = ox / this.StrideX + 1 < input.Shape[2] ? ox / this.StrideX + 1 : input.Shape[2];
+                            int ixStart = ox - this.Weight.Shape[3] < 0 ? 0 : (ox - this.Weight.Shape[3]) / this.StrideX + 1;
 
-                            int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._padY) * outputWidth + ox - this._padX;
+                            int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this.PadY) * outputWidth + ox - this.PadX;
 
                             for (int ich = 0; ich < input.Shape[0]; ich++)
                             {
@@ -143,13 +134,12 @@ namespace KelpNet.CL
                                     for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
                                         int inputIndex = inputIndexOffset + iy * input.Shape[2] + ix;
-                                        int kernelIndex = kernelIndexOffset + (oy - iy * this._strideY) * this.Weight.Shape[3] + (ox - ix * this._strideX);
+                                        int kernelIndex = kernelIndexOffset + (oy - iy * this.StrideY) * this.Weight.Shape[3] + (ox - ix * this.StrideX);
 
                                         result[outputIndex] += input.Data[inputIndex] * this.Weight.Data[kernelIndex];
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -161,11 +151,11 @@ namespace KelpNet.CL
                 {
                     for (int och = 0; och < this.OutputCount; och++)
                     {
-                        for (int oy = this._padY; oy < outputHeight + this._padY; oy++)
+                        for (int oy = this.PadY; oy < outputHeight + this.PadY; oy++)
                         {
-                            for (int ox = this._padX; ox < outputWidth + this._padX; ox++)
+                            for (int ox = this.PadX; ox < outputWidth + this.PadX; ox++)
                             {
-                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._padY) * outputWidth + ox - this._padX;
+                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this.PadY) * outputWidth + ox - this.PadX;
 
                                 result[outputIndex] += this.Bias.Data[och];
                                 result[outputIndex] = this.Activator.ForwardActivate(result[outputIndex]);
@@ -180,11 +170,11 @@ namespace KelpNet.CL
                 {
                     for (int och = 0; och < this.OutputCount; och++)
                     {
-                        for (int oy = this._padY; oy < outputHeight + this._padY; oy++)
+                        for (int oy = this.PadY; oy < outputHeight + this.PadY; oy++)
                         {
-                            for (int ox = this._padX; ox < outputWidth + this._padX; ox++)
+                            for (int ox = this.PadX; ox < outputWidth + this.PadX; ox++)
                             {
-                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._padY) * outputWidth + ox - this._padX;
+                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this.PadY) * outputWidth + ox - this.PadX;
 
                                 result[outputIndex] += this.Bias.Data[och];
                             }
@@ -198,11 +188,11 @@ namespace KelpNet.CL
                 {
                     for (int och = 0; och < this.OutputCount; och++)
                     {
-                        for (int oy = this._padY; oy < outputHeight + this._padY; oy++)
+                        for (int oy = this.PadY; oy < outputHeight + this.PadY; oy++)
                         {
-                            for (int ox = this._padX; ox < outputWidth + this._padX; ox++)
+                            for (int ox = this.PadX; ox < outputWidth + this.PadX; ox++)
                             {
-                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this._padY) * outputWidth + ox - this._padX;
+                                int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this.PadY) * outputWidth + ox - this.PadX;
 
                                 result[outputIndex] = this.Activator.ForwardActivate(result[outputIndex]);
                             }
@@ -216,8 +206,8 @@ namespace KelpNet.CL
 
         protected override NdArray NeedPreviousForwardGpu(NdArray input)
         {
-            int outputHeight = (input.Shape[1] - 1) * this._strideY + this._kHeight - this._padY * 2;
-            int outputWidth = (input.Shape[2] - 1) * this._strideX + this._kWidth - this._padX * 2;
+            int outputHeight = (input.Shape[1] - 1) * this.StrideY + this.KernelHeight - this.PadY * 2;
+            int outputWidth = (input.Shape[2] - 1) * this.StrideX + this.KernelWidth - this.PadX * 2;
 
             Real[] result = new Real[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
@@ -235,12 +225,12 @@ namespace KelpNet.CL
                 ForwardKernel.SetValueArgument(6, input.Length);
                 ForwardKernel.SetValueArgument(7, outputWidth);
                 ForwardKernel.SetValueArgument(8, outputHeight);
-                ForwardKernel.SetValueArgument(9, this._strideX);
-                ForwardKernel.SetValueArgument(10, this._strideY);
-                ForwardKernel.SetValueArgument(11, this._padX);
-                ForwardKernel.SetValueArgument(12, this._padY);
-                ForwardKernel.SetValueArgument(13, this._kHeight);
-                ForwardKernel.SetValueArgument(14, this._kWidth);
+                ForwardKernel.SetValueArgument(9, this.StrideX);
+                ForwardKernel.SetValueArgument(10, this.StrideY);
+                ForwardKernel.SetValueArgument(11, this.PadX);
+                ForwardKernel.SetValueArgument(12, this.PadY);
+                ForwardKernel.SetValueArgument(13, this.KernelHeight);
+                ForwardKernel.SetValueArgument(14, this.KernelWidth);
                 ForwardKernel.SetValueArgument(15, this.OutputCount);
                 ForwardKernel.SetValueArgument(16, this.InputCount);
 
@@ -310,17 +300,17 @@ namespace KelpNet.CL
                     int wOchOffset = och * this.Weight.Shape[2] * this.Weight.Shape[3];
                     int yChOffset = och * y.Shape[1] * y.Shape[2];
 
-                    for (int oy = this._padY; oy < y.Shape[1] + this._padY; oy++)
+                    for (int oy = this.PadY; oy < y.Shape[1] + this.PadY; oy++)
                     {
-                        int iyLimit = oy / this._strideY + 1 < x.Shape[1] ? oy / this._strideY + 1 : x.Shape[1];
-                        int iyStart = oy - this.Weight.Shape[2] < 0 ? 0 : (oy - this.Weight.Shape[2]) / this._strideY + 1;
+                        int iyLimit = oy / this.StrideY + 1 < x.Shape[1] ? oy / this.StrideY + 1 : x.Shape[1];
+                        int iyStart = oy - this.Weight.Shape[2] < 0 ? 0 : (oy - this.Weight.Shape[2]) / this.StrideY + 1;
 
-                        for (int ox = this._padX; ox < y.Shape[2] + this._padX; ox++)
+                        for (int ox = this.PadX; ox < y.Shape[2] + this.PadX; ox++)
                         {
-                            int ixLimit = ox / this._strideX + 1 < x.Shape[2] ? ox / this._strideX + 1 : x.Shape[2];
-                            int ixStart = ox - this.Weight.Shape[3] < 0 ? 0 : (ox - this.Weight.Shape[3]) / this._strideX + 1;
+                            int ixLimit = ox / this.StrideX + 1 < x.Shape[2] ? ox / this.StrideX + 1 : x.Shape[2];
+                            int ixStart = ox - this.Weight.Shape[3] < 0 ? 0 : (ox - this.Weight.Shape[3]) / this.StrideX + 1;
 
-                            int gyIndex = batchCount * y.Length + yChOffset + (oy - this._padY) * y.Shape[2] + ox - this._padX;
+                            int gyIndex = batchCount * y.Length + yChOffset + (oy - this.PadY) * y.Shape[2] + ox - this.PadX;
 
                             for (int ich = 0; ich < InputCount; ich++)
                             {
@@ -332,7 +322,7 @@ namespace KelpNet.CL
                                     for (int ix = ixStart; ix < ixLimit; ix++)
                                     {
                                         int xIndex = xChOffset + iy * x.Shape[2] + ix;
-                                        int wIndex = wIchOffset + (oy - iy * this._strideY) * this.Weight.Shape[3] + (ox - ix * this._strideX);
+                                        int wIndex = wIchOffset + (oy - iy * this.StrideY) * this.Weight.Shape[3] + (ox - ix * this.StrideX);
 
                                         this.Weight.Grad[wIndex] += x.Data[xIndex] * activatedgy[gyIndex];
                                         x.Grad[xIndex] += this.Weight.Data[wIndex] * activatedgy[gyIndex];
@@ -368,18 +358,18 @@ namespace KelpNet.CL
                     this.BackwardgWKernel.SetValueArgument(8, x.Shape[1]);
                     this.BackwardgWKernel.SetValueArgument(9, x.Shape[2]);
                     this.BackwardgWKernel.SetValueArgument(10, x.Length);
-                    this.BackwardgWKernel.SetValueArgument(11, this._strideX);
-                    this.BackwardgWKernel.SetValueArgument(12, this._strideY);
-                    this.BackwardgWKernel.SetValueArgument(13, this._padX);
-                    this.BackwardgWKernel.SetValueArgument(14, this._padY);
-                    this.BackwardgWKernel.SetValueArgument(15, this._kHeight);
-                    this.BackwardgWKernel.SetValueArgument(16, this._kWidth);
+                    this.BackwardgWKernel.SetValueArgument(11, this.StrideX);
+                    this.BackwardgWKernel.SetValueArgument(12, this.StrideY);
+                    this.BackwardgWKernel.SetValueArgument(13, this.PadX);
+                    this.BackwardgWKernel.SetValueArgument(14, this.PadY);
+                    this.BackwardgWKernel.SetValueArgument(15, this.KernelHeight);
+                    this.BackwardgWKernel.SetValueArgument(16, this.KernelWidth);
 
                     OpenCL.CommandQueue.Execute
                     (
                         this.BackwardgWKernel,
                         null,
-                        new long[] { this.InputCount * this.OutputCount, this._kHeight, this._kWidth },
+                        new long[] { this.InputCount * this.OutputCount, this.KernelHeight, this.KernelWidth },
                         null,
                         null
                     );
@@ -402,12 +392,12 @@ namespace KelpNet.CL
                     this.BackwardgXKernel.SetValueArgument(8, x.Shape[1]);
                     this.BackwardgXKernel.SetValueArgument(9, x.Shape[2]);
                     this.BackwardgXKernel.SetValueArgument(10, x.Length);
-                    this.BackwardgXKernel.SetValueArgument(11, this._strideX);
-                    this.BackwardgXKernel.SetValueArgument(12, this._strideY);
-                    this.BackwardgXKernel.SetValueArgument(13, this._padX);
-                    this.BackwardgXKernel.SetValueArgument(14, this._padY);
-                    this.BackwardgXKernel.SetValueArgument(15, this._kHeight);
-                    this.BackwardgXKernel.SetValueArgument(16, this._kWidth);
+                    this.BackwardgXKernel.SetValueArgument(11, this.StrideX);
+                    this.BackwardgXKernel.SetValueArgument(12, this.StrideY);
+                    this.BackwardgXKernel.SetValueArgument(13, this.PadX);
+                    this.BackwardgXKernel.SetValueArgument(14, this.PadY);
+                    this.BackwardgXKernel.SetValueArgument(15, this.KernelHeight);
+                    this.BackwardgXKernel.SetValueArgument(16, this.KernelWidth);
 
                     OpenCL.CommandQueue.Execute
                     (

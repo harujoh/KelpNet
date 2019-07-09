@@ -20,22 +20,25 @@ namespace KelpNet.CL
         public ComputeKernel BackwardKernel;
 
         //GPU向けのActivate関数の文字列
-        public abstract string ActivateFunctionString { get; } //外部の関数に組み込まれる
-        protected string ActivateKernelString { get; } //単品で呼ぶ用
+        public string ActivateFunctionString; //外部の関数に組み込まれる
+        protected string ActivateKernelString; //単品で呼ぶ用
 
         public readonly KeyValuePair<string, string>[] ActivationParameters;
 
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
 
-        protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        protected CompressibleActivation(string functionName, string activateFunctionString, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
             string kernelNameBase = functionName.Replace(" ", "");
+
+            this.ActivateFunctionString = activateFunctionString;
+
             this.ActivateKernelString = OpenCL.GetKernelSource(Resources.Activation).Replace("/*kernelNameBase*/", kernelNameBase);
 
             if (parameters == null)
             {
-                ActivationParameters = new KeyValuePair<string, string>[]{};
+                ActivationParameters = new KeyValuePair<string, string>[] { };
             }
             else
             {

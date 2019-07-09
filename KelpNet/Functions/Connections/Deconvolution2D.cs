@@ -40,7 +40,7 @@ namespace KelpNet.CPU
             this.Initialize(initialW, initialb);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
+        public Deconvolution2D(int inputChannels, int outputChannels, int[] kernelSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
             if (subSample == null)
                 subSample = new[] { 1, 1 };
@@ -48,8 +48,8 @@ namespace KelpNet.CPU
             if (trim == null)
                 trim = new[] { 0, 0 };
 
-            this.KernelWidth = kSize[0];
-            this.KernelHeight = kSize[1];
+            this.KernelWidth = kernelSize[0];
+            this.KernelHeight = kernelSize[1];
             this.PadX = trim[0];
             this.PadY = trim[1];
             this.NoBias = noBias;

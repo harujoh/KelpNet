@@ -12,7 +12,7 @@ namespace KelpNet.CL
     {
         const string FUNCTION_NAME = "Dropout";
 
-        private readonly Real dropoutRatio;
+        public Real DropoutRatio;
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
         [NonSerialized]
@@ -27,7 +27,7 @@ namespace KelpNet.CL
 
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
-            this.dropoutRatio = dropoutRatio;
+            this.DropoutRatio = dropoutRatio;
 
             this.SetParallel(gpuEnable);
         }
@@ -67,11 +67,11 @@ namespace KelpNet.CL
         private Real[] MakeMask(int xLength)
         {
             Real[] mask = new Real[xLength];
-            Real scale = 1 / (1 - this.dropoutRatio);
+            Real scale = 1 / (1 - this.DropoutRatio);
 
             for (int i = 0; i < mask.Length; i++)
             {
-                mask[i] = Mother.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
+                mask[i] = Mother.Dice.NextDouble() >= this.DropoutRatio ? scale : 0;
             }
 
             this.maskStack.Add(mask);

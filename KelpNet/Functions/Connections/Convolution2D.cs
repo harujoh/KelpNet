@@ -40,7 +40,7 @@ namespace KelpNet.CPU
             this.Initialize(initialW, initialb);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, int[] kSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
+        public Convolution2D(int inputChannels, int outputChannels, int[] kernelSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
             if (pad == null)
                 pad = new[] { 0, 0 };
@@ -48,8 +48,8 @@ namespace KelpNet.CPU
             if (stride == null)
                 stride = new[] { 1, 1 };
 
-            this.KernelWidth = kSize[0];
-            this.KernelHeight = kSize[1];
+            this.KernelWidth = kernelSize[0];
+            this.KernelHeight = kernelSize[1];
             this.StrideX = stride[0];
             this.StrideY = stride[1];
             this.PadX = pad[0];

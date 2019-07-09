@@ -25,12 +25,12 @@ namespace KelpNet.CL
         public string BackwardgWKernelName { get; }
         public string BackwardgXKernelName { get; }
 
-        protected abstract string KernelString { get; }
+        protected string KernelString;
 
         protected abstract NdArray NeedPreviousForwardGpu(NdArray input);
         protected abstract void NeedPreviousBackwardGpu(NdArray y, NdArray x);
 
-        protected CompressibleFunction(string functionName, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
+        protected CompressibleFunction(string functionName,string kernelString, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";
@@ -38,6 +38,8 @@ namespace KelpNet.CL
             this.BackwardgXKernelName = kernelNameBase + "gXBackward";
 
             this.Activator = activation;
+
+            this.KernelString = kernelString;
 
             this.SetParallel(gpuEnable);
         }

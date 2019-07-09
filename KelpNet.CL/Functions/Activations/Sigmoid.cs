@@ -8,12 +8,7 @@ namespace KelpNet.CL
     {
         const string FUNCTION_NAME = "Sigmoid";
 
-        public override string ActivateFunctionString
-        {
-            get { return OpenCL.GetKernelSource(Resources.Sigmoid); }
-        }
-
-        public Sigmoid(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, null, name, inputNames, outputNames, gpuEnable)
+        public Sigmoid(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Sigmoid), null, name, inputNames, outputNames, gpuEnable)
         {
         }
 
