@@ -13,10 +13,9 @@ namespace KelpNet
 
         public bool IsParallel { get; set; }
 
-        protected CompressibleActivation(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        protected CompressibleActivation(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.IsParallel = false;
-            this.SetParallel(gpuEnable);
 
             this.SingleInputForward = this.NeedPreviousForwardCpu;
             this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
