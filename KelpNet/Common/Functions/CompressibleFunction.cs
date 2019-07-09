@@ -23,7 +23,7 @@ namespace KelpNet
             this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
         }
 
-        public bool SetParallel(bool enable)
+        public virtual bool SetParallel(bool enable)
         {
             return false;
         }
@@ -37,7 +37,7 @@ namespace KelpNet
             InitParallel();
         }
 
-        public void InitParallel()
+        public virtual void InitParallel()
         {
         }
     }

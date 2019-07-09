@@ -5,11 +5,9 @@ using Cloo;
 namespace KelpNet.CL
 {
     [Serializable]
-    public abstract class CompressibleFunction : SingleInputFunction, IParallelizable
+    public abstract class CompressibleFunction : KelpNet.CompressibleFunction
     {
         const string FUNCTION_NAME = "CompressibleFunction";
-
-        public CompressibleActivation Activator { get; protected set; }
 
         [NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -29,14 +27,10 @@ namespace KelpNet.CL
 
         protected abstract string KernelString { get; }
 
-        protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
         protected abstract NdArray NeedPreviousForwardGpu(NdArray input);
-        protected abstract void NeedPreviousBackwardCpu(NdArray y, NdArray x);
         protected abstract void NeedPreviousBackwardGpu(NdArray y, NdArray x);
 
-        public bool IsParallel { get; set; }
-
-        protected CompressibleFunction(string functionName, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        protected CompressibleFunction(string functionName, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             this.ForwardKernelName = kernelNameBase + "Forward";
@@ -48,7 +42,7 @@ namespace KelpNet.CL
             this.SetParallel(gpuEnable);
         }
 
-        public bool SetParallel(bool enable)
+        public override bool SetParallel(bool enable)
         {
             this.IsParallel = enable & OpenCL.Enable;
 
@@ -68,26 +62,17 @@ namespace KelpNet.CL
             return IsParallel;
         }
 
-        //後からActivationを追加する用
-        public void SetActivation(CompressibleActivation activation)
-        {
-            this.Activator = activation;
-
-            //Kernelの再構築が必要
-            InitParallel();
-        }
-
-        public void InitParallel()
+        public override void InitParallel()
         {
             if (this.IsParallel)
             {
                 string kernelSource = this.KernelString;
 
-                if (this.Activator != null)
+                if (this.Activator is CompressibleActivation activator)
                 {
-                    string activationSource = this.Activator.ActivateFunctionString;
+                    string activationSource = activator.ActivateFunctionString;
 
-                    foreach (var activationParameter in this.Activator.ActivationParameters)
+                    foreach (var activationParameter in activator.ActivationParameters)
                     {
                         activationSource = activationSource.Replace(activationParameter.Key, activationParameter.Value);
                     }

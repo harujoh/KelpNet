@@ -22,16 +22,16 @@ namespace KelpNet
             this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
         }
 
-        public bool SetParallel(bool enable)
+        public virtual bool SetParallel(bool enable)
         {
             return false;
         }
 
-        public void InitParallel()
+        public virtual void InitParallel()
         {
         }
 
-        private NdArray NeedPreviousForwardCpu(NdArray x)
+        protected NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -43,7 +43,7 @@ namespace KelpNet
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             for (int i = 0; i < x.Grad.Length; i++)
             {

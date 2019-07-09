@@ -7,7 +7,7 @@ using KelpNet.CL.Properties;
 namespace KelpNet.CL
 {
     [Serializable]
-    public abstract class CompressibleActivation : SingleInputFunction, IParallelizable
+    public abstract class CompressibleActivation : KelpNet.CompressibleActivation
     {
         const string FUNCTION_NAME = "Activation";
 
@@ -25,14 +25,8 @@ namespace KelpNet.CL
 
         public readonly KeyValuePair<string, string>[] ActivationParameters;
 
-        //.Netで使用するActivateの仮想関数
-        public abstract Real ForwardActivate(Real x);
-        public abstract Real BackwardActivate(Real gy, Real y);
-
         public string ForwardKernelName { get; }
         public string BackwardKernelName { get; }
-
-        public bool IsParallel { get; set; }
 
         protected CompressibleActivation(string functionName, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
@@ -54,7 +48,7 @@ namespace KelpNet.CL
             this.SetParallel(gpuEnable);
         }
 
-        public bool SetParallel(bool enable)
+        public override bool SetParallel(bool enable)
         {
             this.IsParallel = enable & OpenCL.Enable;
 
@@ -74,7 +68,7 @@ namespace KelpNet.CL
             return IsParallel;
         }
 
-        public void InitParallel()
+        public override void InitParallel()
         {
             if (this.IsParallel)
             {
@@ -91,18 +85,6 @@ namespace KelpNet.CL
                 this.ForwardKernel = program.CreateKernel(this.ForwardKernelName);
                 this.BackwardKernel = program.CreateKernel(this.BackwardKernelName);
             }
-        }
-
-        private NdArray NeedPreviousForwardCpu(NdArray x)
-        {
-            Real[] y = new Real[x.Data.Length];
-
-            for (int i = 0; i < y.Length; i++)
-            {
-                y[i] = this.ForwardActivate(x.Data[i]);
-            }
-
-            return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
         private NdArray NeedPreviousForwardGpu(NdArray x)
@@ -129,14 +111,6 @@ namespace KelpNet.CL
             }
 
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
-        }
-
-        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
-        {
-            for (int i = 0; i < x.Grad.Length; i++)
-            {
-                x.Grad[i] += this.BackwardActivate(y.Grad[i], y.Data[i]);
-            }
         }
 
         private void NeedPreviousBackwardGpu(NdArray y, NdArray x)
