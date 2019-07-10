@@ -55,7 +55,7 @@ namespace KelpNet.Sample
             //Deconvolution2Dのテスト(Winform)
             //new Sample13WinForm().ShowDialog();
 
-            //Test6を連結して実行
+            //Test6を連結してFashion-MNISTを学習
             //Sample14.Run();
 
             //CaffeモデルのVGGを読み込んで画像分類をさせるテスト

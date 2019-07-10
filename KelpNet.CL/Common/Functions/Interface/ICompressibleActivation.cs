@@ -19,7 +19,7 @@ namespace KelpNet.CL
         string BackwardKernelName { get; set; }
     }
 
-    public static class ICompressibleActivationFunction
+    public static class CompressibleActivation
     {
         const string FUNCTION_NAME = "CompressibleFunction";
 

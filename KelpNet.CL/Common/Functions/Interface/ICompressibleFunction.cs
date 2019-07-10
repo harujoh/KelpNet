@@ -20,11 +20,11 @@ namespace KelpNet.CL
         void NeedPreviousBackwardGpu(NdArray y, NdArray x);
     }
 
-    public static class ICompressibleFunctionFunction
+    public static class CompressibleFunction
     {
         const string FUNCTION_NAME = "CompressibleFunction";
 
-        public static void Initialize(this ICompressibleFunction compressibleFunction, string functionName, string kernelString, KelpNet.CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false)
+        public static void Initialize(this ICompressibleFunction compressibleFunction, string functionName, string kernelString, KelpNet.ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             compressibleFunction.ForwardKernelName = kernelNameBase + "Forward";
@@ -39,7 +39,7 @@ namespace KelpNet.CL
         }
 
         //後からActivationを追加する用
-        public static void SetActivation(this ICompressibleFunction compressibleFunction, KelpNet.CompressibleActivation activation)
+        public static void SetActivation(this ICompressibleFunction compressibleFunction, ICompressibleActivation activation)
         {
             compressibleFunction.Activator = activation;
 

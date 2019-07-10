@@ -15,7 +15,7 @@ namespace KelpNet.CPU
         public int InputCount;
         public int OutputCount;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(activation, name, inputNames, outputNames)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(activation, name, inputNames, outputNames)
         {
             this.OutputCount = outputCount;
             this.InputCount = inputCount;
