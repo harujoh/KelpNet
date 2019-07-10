@@ -44,7 +44,7 @@ namespace KelpNet
                     if (DataLabel[i] > maxLabel) maxLabel = DataLabel[i];
                 }
 
-                LabelNames = Enumerable.Range(0, (int)maxLabel).Select(s => s.ToString()).ToArray();
+                LabelNames = Enumerable.Range(0, (int)maxLabel + 1).Select(s => s.ToString()).ToArray();
             }
 
             if (makeTrainIndex)
