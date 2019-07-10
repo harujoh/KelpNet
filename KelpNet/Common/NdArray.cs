@@ -29,7 +29,7 @@ namespace KelpNet
 
         //自身が関数から生成された場合、その関数をここに保存する
         [NonSerialized]
-        public Function ParentFunc;
+        public IFunction ParentFunc;
 
         //各関数内でまとめて実行されるバッチの数を示し、Loss関数内の割引で使用される
         public int BatchCount = 1;
@@ -38,7 +38,7 @@ namespace KelpNet
         [NonSerialized]
         public int TrainCount;
 
-        public NdArray(Array data, Function parentFunc = null)
+        public NdArray(Array data, IFunction parentFunc = null)
         {
             Real[] resultData = Real.ToRealArray(data);
 
@@ -62,7 +62,7 @@ namespace KelpNet
             this.Length = Data.Length;
         }
 
-        public NdArray(Real[] data, int[] shape, int batchCount = 1, Function parentFunc = null)
+        public NdArray(Real[] data, int[] shape, int batchCount = 1, IFunction parentFunc = null)
         {
             this.Shape = shape.ToArray();
             this.Length = data.Length / batchCount;
@@ -71,7 +71,7 @@ namespace KelpNet
             this.ParentFunc = parentFunc;
         }
 
-        public NdArray(int[] shape, int batchCount, Function parentFunc = null)
+        public NdArray(int[] shape, int batchCount, IFunction parentFunc = null)
         {
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
@@ -81,7 +81,7 @@ namespace KelpNet
         }
 
         //アレイ配列をバッチとして登録する
-        public static NdArray FromArrays(Array[] arrays, Function parentFunc = null)
+        public static NdArray FromArrays(Array[] arrays, IFunction parentFunc = null)
         {
             int[] resultShape = new int[arrays[0].Rank];
 
@@ -101,7 +101,7 @@ namespace KelpNet
             return new NdArray(result, resultShape, arrays.Length, parentFunc);
         }
 
-        public static NdArray Convert(Real[] data, int[] shape, int batchCount, Function parentFunc = null)
+        public static NdArray Convert(Real[] data, int[] shape, int batchCount, IFunction parentFunc = null)
         {
             return new NdArray(shape, batchCount, parentFunc) { Data = data };
         }

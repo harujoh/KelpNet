@@ -52,7 +52,7 @@ namespace KelpNet.CPU
             }
         }
 
-        Real[] GetBiasedValue(int batchCount)
+        protected Real[] GetBiasedValue(int batchCount)
         {
             Real[] y = new Real[OutputCount * batchCount];
 
@@ -64,7 +64,7 @@ namespace KelpNet.CPU
             return y;
         }
 
-        protected override NdArray NeedPreviousForwardCpu(NdArray x)
+        public override NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
@@ -102,7 +102,7 @@ namespace KelpNet.CPU
             return activatedgY;
         }
 
-        void CalcBiasGrad(Real[] gy, int batchCount)
+        protected void CalcBiasGrad(Real[] gy, int batchCount)
         {
             for (int batchCounter = 0; batchCounter < batchCount; batchCounter++)
             {
@@ -113,7 +113,7 @@ namespace KelpNet.CPU
             }
         }
 
-        protected override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);

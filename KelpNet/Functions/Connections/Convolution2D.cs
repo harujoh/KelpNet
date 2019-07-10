@@ -111,7 +111,7 @@ namespace KelpNet.CPU
             }
         }
 
-        protected override NdArray NeedPreviousForwardCpu(NdArray x)
+        public override NdArray NeedPreviousForwardCpu(NdArray x)
         {
             int outputHeight = (int)Math.Floor((x.Shape[1] - this.KernelHeight + this.PadY * 2.0) / this.StrideY) + 1;
             int outputWidth = (int)Math.Floor((x.Shape[2] - this.KernelWidth + this.PadX * 2.0) / this.StrideX) + 1;
@@ -208,7 +208,7 @@ namespace KelpNet.CPU
             return NdArray.Convert(y, new[] { this.OutputCount, outputHeight, outputWidth }, x.BatchCount, this);
         }
 
-        Real[] GetActivatedgy(NdArray y)
+        protected Real[] GetActivatedgy(NdArray y)
         {
             Real[] activatedgy = new Real[y.Grad.Length];
 
@@ -220,7 +220,7 @@ namespace KelpNet.CPU
             return activatedgy;
         }
 
-        void CalcBiasGrad(Real[] gy, int[] gyShape, int batchCount)
+        protected void CalcBiasGrad(Real[] gy, int[] gyShape, int batchCount)
         {
             int gyIndex = 0;
 
@@ -238,7 +238,7 @@ namespace KelpNet.CPU
             }
         }
 
-        protected override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);

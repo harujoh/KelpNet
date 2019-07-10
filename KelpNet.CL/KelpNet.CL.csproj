@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -44,9 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Functions\CompressibleActivation.cs" />
-    <Compile Include="Common\Functions\CompressibleFunction.cs" />
-    <Compile Include="Common\Functions\IParallelizable.cs" />
+    <Compile Include="Common\Functions\Interface\ICompressibleActivation.cs" />
+    <Compile Include="Common\Functions\Interface\ICompressibleFunction.cs" />
+    <Compile Include="Common\Functions\Interface\IParallelizable.cs" />
     <Compile Include="Common\OpenCL.cs" />
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Functions\Activations\LeakyReLU.cs" />

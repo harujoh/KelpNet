@@ -1,25 +1,38 @@
 ﻿using System;
+using System.Collections.Generic;
+using Cloo;
 using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
     [Serializable]
-    public class ReLU : CompressibleActivation
+    public class ReLU : CPU.ReLU, ICompressibleActivation
     {
         const string FUNCTION_NAME = "ReLU";
 
-        public ReLU(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.ReLU), null, name, inputNames, outputNames, gpuEnable)
+        public ComputeKernel ForwardKernel { get; set; }
+        public ComputeKernel BackwardKernel { get; set; }
+        public string ActivateFunctionString { get; set; }
+        public string ActivateKernelString { get; set; }
+        public KeyValuePair<string, string>[] ActivationParameters { get; set; }
+        public string ForwardKernelName { get; set; }
+        public string BackwardKernelName { get; set; }
+
+        public bool IsParallel { get; set; }
+
+        void IParallelizable.InitParallel()
         {
+            this.InitParallel();
         }
 
-        public override Real ForwardActivate(Real x)
+        bool IParallelizable.SetParallel(bool enable)
         {
-            return x < 0 ? 0 : x;
+            return this.SetParallel(enable);
         }
 
-        public override Real BackwardActivate(Real gy, Real y)
+        public ReLU(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
-            return y <= 0 ? 0 : gy;
+            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.ReLU), null, name, inputNames, outputNames, gpuEnable);
         }
     }
 }

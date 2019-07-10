@@ -3,10 +3,10 @@
 namespace KelpNet
 {
     [Serializable]
-    public abstract class SingleInputFunction : Function
+    public abstract class SingleInputFunction : Function, ISingleInputFunction
     {
-        protected Func<NdArray, NdArray> SingleInputForward;
-        protected Action<NdArray, NdArray> SingleOutputBackward;
+        public Func<NdArray, NdArray> SingleInputForward { get; set; }
+        public Action<NdArray, NdArray> SingleOutputBackward { get; set; }
 
         protected SingleInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {

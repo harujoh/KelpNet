@@ -6,7 +6,7 @@ namespace KelpNet
 {
     //FunctionStackに積み上げるFunctionの基底クラス
     [Serializable]
-    public abstract class Function
+    public abstract class Function : IFunction
     {
         public string Name;
 
@@ -15,15 +15,15 @@ namespace KelpNet
         [NonSerialized]
         public Optimizer[] Optimizers = { };
 
-        [NonSerialized]
-        public List<NdArray[]> PrevInputs = new List<NdArray[]>();
+        [field: NonSerialized]
+        public List<NdArray[]> PrevInputs { get; set; }
 
         [NonSerialized]
         public List<NdArray[]> UsedPrevInputs = new List<NdArray[]>();
 
         public abstract NdArray[] Forward(params NdArray[] xs);
         public abstract NdArray[] Predict(params NdArray[] xs);
-        public virtual void Backward(params NdArray[] ys){}
+        public virtual void Backward(params NdArray[] ys) { }
 
         public string[] InputNames;
         public string[] OutputNames;
@@ -42,6 +42,8 @@ namespace KelpNet
             {
                 this.OutputNames = outputNames.ToArray();
             }
+
+            this.PrevInputs = new List<NdArray[]>();
         }
 
         public virtual void SetOptimizer(params Optimizer[] optimizers)
@@ -67,7 +69,7 @@ namespace KelpNet
         {
             foreach (NdArray parameter in this.Parameters)
             {
-                if(parameter.Grad == null) parameter.InitGrad();
+                if (parameter.Grad == null) parameter.InitGrad();
             }
         }
 

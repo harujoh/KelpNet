@@ -3,14 +3,14 @@
 namespace KelpNet
 {
     [Serializable]
-    public abstract class CompressibleFunction : SingleInputFunction
+    public abstract class CompressibleFunction : SingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "CompressibleFunction";
 
-        public CompressibleActivation Activator { get; protected set; }
+        public CompressibleActivation Activator { get; set; }
 
-        protected abstract NdArray NeedPreviousForwardCpu(NdArray input);
-        protected abstract void NeedPreviousBackwardCpu(NdArray y, NdArray x);
+        public abstract NdArray NeedPreviousForwardCpu(NdArray input);
+        public abstract void NeedPreviousBackwardCpu(NdArray y, NdArray x);
 
         protected CompressibleFunction(CompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {

@@ -3,7 +3,7 @@
 namespace KelpNet
 {
     [Serializable]
-    public abstract class CompressibleActivation : SingleInputFunction
+    public abstract class CompressibleActivation : SingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "Activation";
 
@@ -17,7 +17,7 @@ namespace KelpNet
             this.SingleOutputBackward = this.NeedPreviousBackwardCpu;
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray x)
+        public NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -29,7 +29,7 @@ namespace KelpNet
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             for (int i = 0; i < x.Grad.Length; i++)
             {
