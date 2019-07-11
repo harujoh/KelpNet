@@ -3,7 +3,7 @@
 namespace KelpNet.CPU
 {
     [Serializable]
-    public class Linear : SingleInputFunction,ICompressibleFunction
+    public class Linear : SingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";
 
@@ -94,18 +94,6 @@ namespace KelpNet.CPU
             return NdArray.Convert(y, new[] { OutputCount }, x.BatchCount, this);
         }
 
-        Real[] GetActivatedgy(NdArray y)
-        {
-            Real[] activatedgY = new Real[y.Grad.Length];
-
-            for (int i = 0; i < activatedgY.Length; i++)
-            {
-                activatedgY[i] = this.Activation.BackwardActivate(y.Grad[i], y.Data[i]);
-            }
-
-            return activatedgY;
-        }
-
         protected void CalcBiasGrad(Real[] gy, int batchCount)
         {
             for (int batchCounter = 0; batchCounter < batchCount; batchCounter++)
@@ -119,7 +107,7 @@ namespace KelpNet.CPU
 
         public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? this.GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)

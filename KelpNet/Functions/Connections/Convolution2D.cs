@@ -216,18 +216,6 @@ namespace KelpNet.CPU
             return NdArray.Convert(y, new[] { this.OutputCount, outputHeight, outputWidth }, x.BatchCount, this);
         }
 
-        protected Real[] GetActivatedgy(NdArray y)
-        {
-            Real[] activatedgy = new Real[y.Grad.Length];
-
-            for (int i = 0; i < activatedgy.Length; i++)
-            {
-                activatedgy[i] = this.Activation.BackwardActivate(y.Grad[i], y.Data[i]);
-            }
-
-            return activatedgy;
-        }
-
         protected void CalcBiasGrad(Real[] gy, int[] gyShape, int batchCount)
         {
             int gyIndex = 0;
@@ -248,7 +236,7 @@ namespace KelpNet.CPU
 
         public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? this.GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
