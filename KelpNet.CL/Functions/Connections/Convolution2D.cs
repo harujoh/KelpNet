@@ -40,7 +40,7 @@ namespace KelpNet.CL
 
         public Convolution2D(Linear linear) : base(linear)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Convolution2D), linear.Activator, linear.Name, linear.InputNames, linear.OutputNames, linear.IsParallel);
+            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Convolution2D), linear.Activation, linear.Name, linear.InputNames, linear.OutputNames, linear.IsParallel);
         }
 
         public NdArray NeedPreviousForwardGpu(NdArray input)
@@ -92,7 +92,7 @@ namespace KelpNet.CL
         public void NeedPreviousBackwardGpu(NdArray y, NdArray x)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             int kyStartPrevOffset = KernelHeight - PadY - x.Shape[1];

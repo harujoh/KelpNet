@@ -48,7 +48,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Functions\CompressibleActivation.cs" />
     <Compile Include="Common\Functions\Container\SplitFunction.cs" />
     <Compile Include="Common\Functions\Interface\ICompressibleActivation.cs" />
     <Compile Include="Common\Functions\Interface\ICompressibleFunction.cs" />
@@ -60,7 +59,6 @@
     <Compile Include="Common\Functions\Type\MultiOutputFunction.cs" />
     <Compile Include="Common\Functions\Type\SingleInputFunction.cs" />
     <Compile Include="Common\NdArray.cs" />
-    <Compile Include="Common\Functions\CompressibleFunction.cs" />
     <Compile Include="Common\Real.cs" />
     <Compile Include="Common\Tools\Initializer.cs" />
     <Compile Include="Common\Tools\LabeledDataSet.cs" />

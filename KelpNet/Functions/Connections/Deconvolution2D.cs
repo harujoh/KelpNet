@@ -3,7 +3,7 @@
 namespace KelpNet.CPU
 {
     [Serializable]
-    public class Deconvolution2D : CompressibleFunction
+    public class Deconvolution2D : SingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Deconvolution2D";
 
@@ -22,7 +22,9 @@ namespace KelpNet.CPU
         public int InputCount;
         public int OutputCount;
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
+        public ICompressibleActivation Activation { get; set; }
+
+        public Deconvolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.KernelWidth = kernelSize;
             this.KernelHeight = kernelSize;
@@ -38,9 +40,11 @@ namespace KelpNet.CPU
             this.InputCount = inputChannels;
 
             this.Initialize(initialW, initialb);
+
+            this.Initialize(activation);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int[] kernelSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(activation, name, inputNames, outputNames)
+        public Deconvolution2D(int inputChannels, int outputChannels, int[] kernelSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             if (subSample == null)
                 subSample = new[] { 1, 1 };
@@ -63,6 +67,8 @@ namespace KelpNet.CPU
             this.InputCount = inputChannels;
 
             this.Initialize(initialW, initialb);
+
+            this.Initialize(activation);
         }
 
         void Initialize(Array initialW = null, Array initialb = null)
@@ -96,7 +102,7 @@ namespace KelpNet.CPU
             }
         }
 
-        public override NdArray NeedPreviousForwardCpu(NdArray input)
+        public NdArray NeedPreviousForwardCpu(NdArray input)
         {
             int outputHeight = (input.Shape[1] - 1) * this.StrideY + this.KernelHeight - this.PadY * 2;
             int outputWidth = (input.Shape[2] - 1) * this.StrideX + this.KernelWidth - this.PadX * 2;
@@ -145,7 +151,7 @@ namespace KelpNet.CPU
                 }
             }
 
-            if (this.Activator != null && !NoBias)
+            if (this.Activation != null && !NoBias)
             {
                 for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
                 {
@@ -158,7 +164,7 @@ namespace KelpNet.CPU
                                 int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this.PadY) * outputWidth + ox - this.PadX;
 
                                 result[outputIndex] += this.Bias.Data[och];
-                                result[outputIndex] = this.Activator.ForwardActivate(result[outputIndex]);
+                                result[outputIndex] = this.Activation.ForwardActivate(result[outputIndex]);
                             }
                         }
                     }
@@ -182,7 +188,7 @@ namespace KelpNet.CPU
                     }
                 }
             }
-            else if (this.Activator != null)
+            else if (this.Activation != null)
             {
                 for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
                 {
@@ -194,7 +200,7 @@ namespace KelpNet.CPU
                             {
                                 int outputIndex = batchCount * this.OutputCount * outSizeOffset + och * outSizeOffset + (oy - this.PadY) * outputWidth + ox - this.PadX;
 
-                                result[outputIndex] = this.Activator.ForwardActivate(result[outputIndex]);
+                                result[outputIndex] = this.Activation.ForwardActivate(result[outputIndex]);
                             }
                         }
                     }
@@ -216,7 +222,7 @@ namespace KelpNet.CPU
                 {
                     for (int olocation = 0; olocation < y.Shape[1] * y.Shape[2]; olocation++)
                     {
-                        activatedgy[gyIndex] = this.Activator.BackwardActivate(y.Grad[gyIndex], y.Data[gyIndex]);
+                        activatedgy[gyIndex] = this.Activation.BackwardActivate(y.Grad[gyIndex], y.Data[gyIndex]);
                         gyIndex++;
                     }
                 }
@@ -242,9 +248,9 @@ namespace KelpNet.CPU
             }
         }
 
-        public override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)

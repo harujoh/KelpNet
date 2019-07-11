@@ -3,20 +3,21 @@
 namespace KelpNet.CPU
 {
     [Serializable]
-    public class ReLU : CompressibleActivation
+    public class ReLU : SingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "ReLU";
 
         public ReLU(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
+            this.Initialize();
         }
 
-        public override Real ForwardActivate(Real x)
+        public Real ForwardActivate(Real x)
         {
             return x < 0 ? 0 : x;
         }
 
-        public override Real BackwardActivate(Real gy, Real y)
+        public Real BackwardActivate(Real gy, Real y)
         {
             return y <= 0 ? 0 : gy;
         }

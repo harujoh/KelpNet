@@ -88,7 +88,7 @@ namespace KelpNet.CL
         public void NeedPreviousBackwardGpu(NdArray y, NdArray x)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             //gyは共通で使用

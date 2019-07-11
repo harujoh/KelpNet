@@ -26,7 +26,7 @@ namespace KelpNet
 
         public FunctionStack(params Function[] functions) : base(FUNCTION_NAME)
         {
-            this.Functions = new Function[]{};
+            this.Functions = new Function[] { };
             this.Add(functions);
         }
 
@@ -61,11 +61,11 @@ namespace KelpNet
             //層を圧縮
             for (int i = 0; i < functionList.Count - 1; i++)
             {
-                if (functionList[i] is CompressibleFunction)
+                if (functionList[i] is ICompressibleFunction)
                 {
-                    if (functionList[i + 1] is CompressibleActivation)
+                    if (functionList[i + 1] is ICompressibleActivation)
                     {
-                        ((CompressibleFunction)functionList[i]).SetActivation((CompressibleActivation)functionList[i + 1]);
+                        ((ICompressibleFunction)functionList[i]).Activation = (ICompressibleActivation)functionList[i + 1];
                         functionList.RemoveAt(i + 1);
                     }
                 }
@@ -98,7 +98,7 @@ namespace KelpNet
         {
             foreach (var function in Functions)
             {
-                function.Update();                
+                function.Update();
             }
 
             ResetState();

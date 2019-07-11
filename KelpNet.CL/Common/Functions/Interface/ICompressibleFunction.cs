@@ -31,7 +31,7 @@ namespace KelpNet.CL
             compressibleFunction.BackwardgWKernelName = kernelNameBase + "gWBackward";
             compressibleFunction.BackwardgXKernelName = kernelNameBase + "gXBackward";
 
-            compressibleFunction.Activator = activation;
+            compressibleFunction.Activation = activation;
 
             compressibleFunction.KernelString = kernelString;
 
@@ -41,7 +41,7 @@ namespace KelpNet.CL
         //後からActivationを追加する用
         public static void SetActivation(this ICompressibleFunction compressibleFunction, ICompressibleActivation activation)
         {
-            compressibleFunction.Activator = activation;
+            compressibleFunction.Activation = activation;
 
             InitParallel(compressibleFunction);
         }
@@ -72,7 +72,7 @@ namespace KelpNet.CL
             {
                 string kernelSource = compressibleFunction.KernelString;
 
-                if (compressibleFunction.Activator is ICompressibleActivation activator)
+                if (compressibleFunction.Activation is ICompressibleActivation activator)
                 {
                     string activationSource = activator.ActivateFunctionString;
 

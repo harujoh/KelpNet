@@ -69,7 +69,7 @@ namespace KelpNet.CL
 
             for (int i = 0; i < activatedgY.Length; i++)
             {
-                activatedgY[i] = this.Activator.BackwardActivate(y.Grad[i], y.Data[i]);
+                activatedgY[i] = this.Activation.BackwardActivate(y.Grad[i], y.Data[i]);
             }
 
             return activatedgY;
@@ -79,7 +79,7 @@ namespace KelpNet.CL
         public void NeedPreviousBackwardGpu(NdArray y, NdArray x)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, activatedgy))

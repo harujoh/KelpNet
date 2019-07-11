@@ -3,7 +3,7 @@
 namespace KelpNet.CPU
 {
     [Serializable]
-    public class Linear : CompressibleFunction
+    public class Linear : SingleInputFunction,ICompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";
 
@@ -15,7 +15,9 @@ namespace KelpNet.CPU
         public int InputCount;
         public int OutputCount;
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(activation, name, inputNames, outputNames)
+        public ICompressibleActivation Activation { get; set; }
+
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.OutputCount = outputCount;
             this.InputCount = inputCount;
@@ -50,6 +52,8 @@ namespace KelpNet.CPU
 
                 this.Parameters[1] = this.Bias;
             }
+
+            this.Initialize(activation);
         }
 
         protected Real[] GetBiasedValue(int batchCount)
@@ -64,7 +68,7 @@ namespace KelpNet.CPU
             return y;
         }
 
-        public override NdArray NeedPreviousForwardCpu(NdArray x)
+        public NdArray NeedPreviousForwardCpu(NdArray x)
         {
             Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
@@ -79,11 +83,11 @@ namespace KelpNet.CPU
                 }
             }
 
-            if (this.Activator != null)
+            if (this.Activation != null)
             {
                 for (int i = 0; i < y.Length; i++)
                 {
-                    y[i] = this.Activator.ForwardActivate(y[i]);
+                    y[i] = this.Activation.ForwardActivate(y[i]);
                 }
             }
 
@@ -96,7 +100,7 @@ namespace KelpNet.CPU
 
             for (int i = 0; i < activatedgY.Length; i++)
             {
-                activatedgY[i] = this.Activator.BackwardActivate(y.Grad[i], y.Data[i]);
+                activatedgY[i] = this.Activation.BackwardActivate(y.Grad[i], y.Data[i]);
             }
 
             return activatedgY;
@@ -113,9 +117,9 @@ namespace KelpNet.CPU
             }
         }
 
-        public override void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
-            Real[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
