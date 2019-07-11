@@ -8,25 +8,25 @@ namespace KelpNet
     [Serializable]
     public abstract class Function : IFunction
     {
-        public string Name;
+        public string Name { get; set; }
 
-        public NdArray[] Parameters = { };
+        public NdArray[] Parameters { get; set; }
 
-        [NonSerialized]
-        public Optimizer[] Optimizers = { };
+        [field: NonSerialized]
+        public Optimizer[] Optimizers { get; set; }
 
         [field: NonSerialized]
         public List<NdArray[]> PrevInputs { get; set; }
 
-        [NonSerialized]
-        public List<NdArray[]> UsedPrevInputs = new List<NdArray[]>();
+        [field: NonSerialized]
+        public List<NdArray[]> UsedPrevInputs { get; set; }
 
         public abstract NdArray[] Forward(params NdArray[] xs);
         public abstract NdArray[] Predict(params NdArray[] xs);
         public virtual void Backward(params NdArray[] ys) { }
 
-        public string[] InputNames;
-        public string[] OutputNames;
+        public string[] InputNames { get; set; }
+        public string[] OutputNames { get; set; }
 
         //コンストラクタ
         protected Function(string name, string[] inputNames = null, string[] outputNames = null)
@@ -44,6 +44,10 @@ namespace KelpNet
             }
 
             this.PrevInputs = new List<NdArray[]>();
+            this.UsedPrevInputs = new List<NdArray[]>();
+
+            Parameters = new NdArray[] { };
+            Optimizers = new Optimizer[] { };
         }
 
         public virtual void SetOptimizer(params Optimizer[] optimizers)
