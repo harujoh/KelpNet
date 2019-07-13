@@ -34,7 +34,7 @@ FunctionStack nn = new FunctionStack(
 
 ## 特徴
 - 行列演算にライブラリを使用していないため、全てのアルゴリズムが可読になっています
-- KerasやChainerが採用している、関数を書き連ねるように記述するコーディングスタイルを採用しています
+- KerasやChainerに似た、関数を書き連ねるコーディングスタイルを採用しています
 - 並列演算にOpenCLを採用しているため、GPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
 > ※OpenCLを使用するためには対応するドライバの追加インストールが必要になることがあります
 > - Intel製 CPU GPU: https://software.intel.com/en-us/articles/opencl-drivers
@@ -42,9 +42,9 @@ FunctionStack nn = new FunctionStack(
 > - Nvidia製 GPU: https://developer.nvidia.com/opencl
 
 ### C#で作られているメリット
-- 開発環境の構築が容易で、プログラミング初学者にも学びやすい言語です
-- WindowsFormやUnity等、処理結果を視覚的に表現するための選択肢が豊富です
-- PCや携帯、組み込み機器等、様々なプラットフォームに向けたアプリケーションの開発ができます
+- 開発環境の構築がカンタンで、プログラミングの初学者にも学びやすい言語です
+- .Net標準のFormやUnity等、処理結果を視覚的に表現するための選択肢が豊富です
+- PCや携帯、組み込み機器等、様々なプラットフォームに向けた開発ができます
 
 ## このライブラリについて
 このライブラリの基幹部分はChainerを参考に実装されています。
