@@ -1,22 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Cloo.Bindings;
 
 namespace Cloo
 {
     public class ComputeKernel : ComputeResource
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ComputeContext context;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly string functionName;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ComputeProgram program;
-
         public CLKernelHandle Handle
         {
             get;
@@ -31,10 +20,6 @@ namespace Cloo
 
             SetID(Handle.Value);
 
-            context = program.Context;
-            this.functionName = functionName;
-            this.program = program;
-
 #if DEBUG
             Trace.WriteLine("Create " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
 #endif
@@ -48,12 +33,13 @@ namespace Cloo
 
         public void SetMemoryArgument(int index, ComputeMemory memObj)
         {
-            SetValueArgument<CLMemoryHandle>(index, memObj.Handle);
+            SetValueArgument(index, memObj.Handle);
         }
 
         public void SetValueArgument<T>(int index, T data) where T : struct
         {
             GCHandle gcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
             try
             {
                 SetArgument(

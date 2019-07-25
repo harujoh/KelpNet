@@ -157,36 +157,6 @@ namespace Cloo
         CL_DEVICE_PARTITION_STYLE_EXT = 0x4058
     }
 
-    [Flags]
-    public enum ComputeDeviceSingleCapabilities : long
-    {
-        Denorm = 1 << 0,
-        InfNan = 1 << 1,
-        RoundToNearest = 1 << 2,
-        RoundToZero = 1 << 3,
-        RoundToInf = 1 << 4,
-        Fma = 1 << 5,
-        SoftFloat = 1 << 6
-    }
-
-    public enum ComputeDeviceMemoryCacheType : int
-    {
-        None = 0x0,
-        ReadOnlyCache = 0x1,
-        ReadWriteCache = 0x2,
-    }
-
-    public enum ComputeDeviceLocalMemoryType : int
-    {
-        Local = 0x1,
-        Global = 0x2
-    }
-
-    public enum ComputeDeviceExecutionCapabilities : int
-    {
-        OpenCLKernel = 1 << 0,
-        NativeKernel = 1 << 1
-    }
 
     [Flags]
     public enum ComputeCommandQueueFlags : long

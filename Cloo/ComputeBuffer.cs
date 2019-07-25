@@ -6,12 +6,10 @@ namespace Cloo
 {
     public class ComputeBuffer<T> : ComputeBufferBase<T> where T : struct
     {
-        public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, long count)
-            : this(context, flags, count, IntPtr.Zero)
+        public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, long count) : this(context, flags, count, IntPtr.Zero)
         { }
 
         public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, long count, IntPtr dataPtr)
-            : base(context, flags)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
             Handle = CL10.CreateBuffer(context.Handle, flags, new IntPtr(Marshal.SizeOf(typeof(T)) * count), dataPtr, out error);
@@ -20,9 +18,9 @@ namespace Cloo
         }
 
         public ComputeBuffer(ComputeContext context, ComputeMemoryFlags flags, T[] data)
-            : base(context, flags)
         {
             GCHandle dataPtr = GCHandle.Alloc(data, GCHandleType.Pinned);
+
             try
             {
                 ComputeErrorCode error = ComputeErrorCode.Success;
@@ -33,6 +31,7 @@ namespace Cloo
             {
                 dataPtr.Free();
             }
+
             Init();
         }
     }

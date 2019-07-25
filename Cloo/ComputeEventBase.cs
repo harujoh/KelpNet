@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
 using Cloo.Bindings;
 
 namespace Cloo
@@ -22,7 +21,9 @@ namespace Cloo
             {
                 aborted += value;
                 if (status != null && status.Status != ComputeCommandExecutionStatus.Complete)
+                {
                     value.Invoke(this, status);
+                }
             }
             remove
             {
@@ -36,7 +37,9 @@ namespace Cloo
             {
                 completed += value;
                 if (status != null && status.Status == ComputeCommandExecutionStatus.Complete)
+                {
                     value.Invoke(this, status);
+                }
             }
             remove
             {
@@ -68,7 +71,7 @@ namespace Cloo
 
         protected void HookNotifier()
         {
-            statusNotify = new ComputeEventCallback(StatusNotify);
+            statusNotify = StatusNotify;
             ComputeErrorCode error = CL11.SetEventCallback(Handle, (int)ComputeCommandExecutionStatus.Complete, statusNotify, IntPtr.Zero);
             ComputeException.ThrowOnError(error);
         }
@@ -79,7 +82,9 @@ namespace Cloo
             Trace.WriteLine("Complete " + Type + " operation of " + this + ".", "Information");
 #endif
             if (completed != null)
+            {
                 completed(sender, evArgs);
+            }
         }
 
         protected virtual void OnAborted(object sender, ComputeCommandStatusArgs evArgs)
@@ -88,12 +93,15 @@ namespace Cloo
             Trace.WriteLine("Abort " + Type + " operation of " + this + ".", "Information");
 #endif
             if (aborted != null)
+            {
                 aborted(sender, evArgs);
+            }
         }
 
         private void StatusNotify(CLEventHandle eventHandle, int cmdExecStatusOrErr, IntPtr userData)
         {
             status = new ComputeCommandStatusArgs(this, (ComputeCommandExecutionStatus)cmdExecStatusOrErr);
+
             switch (cmdExecStatusOrErr)
             {
                 case (int)ComputeCommandExecutionStatus.Complete: OnCompleted(this, status); break;

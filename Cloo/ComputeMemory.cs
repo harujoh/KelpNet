@@ -1,17 +1,9 @@
-﻿using System.Diagnostics;
-using System.Threading;
-using Cloo.Bindings;
+﻿using Cloo.Bindings;
 
 namespace Cloo
 {
     public abstract class ComputeMemory : ComputeResource
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ComputeContext context;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ComputeMemoryFlags flags;
-
         public CLMemoryHandle Handle
         {
             get;
@@ -19,12 +11,6 @@ namespace Cloo
         }
 
         public long Size { get; protected set; }
-
-        protected ComputeMemory(ComputeContext context, ComputeMemoryFlags flags)
-        {
-            this.context = context;
-            this.flags = flags;
-        }
 
         protected override void Dispose(bool manual)
         {

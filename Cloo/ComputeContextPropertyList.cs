@@ -16,24 +16,18 @@ namespace Cloo
             properties.Add(new ComputeContextProperty(ComputeContextPropertyName.Platform, platform.Handle.Value));
         }
 
-        public ComputeContextProperty GetByName(ComputeContextPropertyName name)
-        {
-            foreach (ComputeContextProperty property in properties)
-                if (property.Name == name)
-                    return property;
-
-            return null;
-        }
-
         internal IntPtr[] ToIntPtrArray()
         {
             IntPtr[] result = new IntPtr[2 * properties.Count + 1];
+
             for (int i = 0; i < properties.Count; i++)
             {
                 result[2 * i] = new IntPtr((int)properties[i].Name);
                 result[2 * i + 1] = properties[i].Value;
             }
+
             result[result.Length - 1] = IntPtr.Zero;
+
             return result;
         }
 
@@ -74,7 +68,7 @@ namespace Cloo
 
         public IEnumerator<ComputeContextProperty> GetEnumerator()
         {
-            return ((IEnumerable<ComputeContextProperty>)properties).GetEnumerator();
+            return properties.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

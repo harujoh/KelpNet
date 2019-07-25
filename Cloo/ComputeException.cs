@@ -1,23 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace Cloo
 {
     public class ComputeException : ApplicationException
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ComputeErrorCode code;
-
-        public ComputeErrorCode ComputeErrorCode { get { return code; } }
-
-        public ComputeException(ComputeErrorCode code) : base("OpenCL error code detected: " + code.ToString() + ".")
+        public ComputeException(ComputeErrorCode code) : base("OpenCL error code detected: " + code + ".")
         {
-            this.code = code;
-        }
-
-        public static void ThrowOnError(int errorCode)
-        {
-            ThrowOnError((ComputeErrorCode)errorCode);
         }
 
         public static void ThrowOnError(ComputeErrorCode errorCode)

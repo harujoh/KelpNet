@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Cloo.Bindings;
 
 namespace Cloo
@@ -23,7 +22,9 @@ namespace Cloo
             Context = queue.Context;
 
             if (ComputeTools.ParseVersionString(CommandQueue.Device.Platform.Version, 1) > new Version(1, 0))
+            {
                 HookNotifier();
+            }
 
 #if DEBUG
             Trace.WriteLine("Create " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
@@ -34,8 +35,8 @@ namespace Cloo
         {
             gcHandle = handle;
 
-            Completed += new ComputeCommandStatusChanged(Cleanup);
-            Aborted += new ComputeCommandStatusChanged(Cleanup);
+            Completed += Cleanup;
+            Aborted += Cleanup;
         }
 
         protected override void Dispose(bool manual)
@@ -54,14 +55,18 @@ namespace Cloo
                     Dispose();
                 }
                 else
+                {
                     FreeGCHandle();
+                }
             }
         }
 
         private void FreeGCHandle()
         {
             if (gcHandle.IsAllocated && gcHandle.Target != null)
+            {
                 gcHandle.Free();
+            }
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading;
 using Cloo.Bindings;
 
 namespace Cloo
@@ -10,28 +8,13 @@ namespace Cloo
     public class ComputeProgram : ComputeResource
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ComputeContext context;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ReadOnlyCollection<ComputeDevice> devices;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ReadOnlyCollection<string> source;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private string buildOptions;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private ComputeProgramBuildNotifier buildNotify;
-
 
         public CLProgramHandle Handle
         {
             get;
             protected set;
         }
-
-        public ComputeContext Context { get { return context; } }
 
         public ComputeProgram(ComputeContext context, string source)
         {
@@ -40,10 +23,6 @@ namespace Cloo
             ComputeException.ThrowOnError(error);
 
             SetID(Handle.Value);
-
-            this.context = context;
-            this.devices = context.Devices;
-            this.source = new ReadOnlyCollection<string>(new string[] { source });
 
 #if DEBUG
             Trace.WriteLine("Create " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
@@ -54,7 +33,6 @@ namespace Cloo
         {
             int handleCount;
             CLDeviceHandle[] deviceHandles = ComputeTools.ExtractHandles(devices, out handleCount);
-            buildOptions = (options != null) ? options : "";
             buildNotify = notify;
 
             ComputeErrorCode error = CL10.BuildProgram(Handle, handleCount, deviceHandles, options, buildNotify, notifyDataPtr);
@@ -68,7 +46,7 @@ namespace Cloo
 
         public string GetBuildLog(ComputeDevice device)
         {
-            return GetStringInfo<CLProgramHandle, CLDeviceHandle, ComputeProgramBuildInfo>(Handle, device.Handle, ComputeProgramBuildInfo.BuildLog, CL10.GetProgramBuildInfo);
+            return GetStringInfo(Handle, device.Handle, ComputeProgramBuildInfo.BuildLog, CL10.GetProgramBuildInfo);
         }
 
         protected override void Dispose(bool manual)

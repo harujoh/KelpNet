@@ -12,29 +12,16 @@ namespace Cloo
         private ReadOnlyCollection<ComputeDevice> devices;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly ReadOnlyCollection<string> extensions;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly string name;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private static ReadOnlyCollection<ComputePlatform> platforms;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly string profile;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly string vendor;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly string version;
 
 
-        public CLPlatformHandle Handle
-        {
-            get;
-            protected set;
-        }
+        public CLPlatformHandle Handle { get; protected set; }
 
         public ReadOnlyCollection<ComputeDevice> Devices { get { return devices; } }
 
@@ -51,7 +38,9 @@ namespace Cloo
                 try
                 {
                     if (platforms != null)
+                    {
                         return;
+                    }
 
                     CLPlatformHandle[] handles;
                     int handlesLength;
@@ -63,8 +52,11 @@ namespace Cloo
                     ComputeException.ThrowOnError(error);
 
                     List<ComputePlatform> platformList = new List<ComputePlatform>(handlesLength);
+
                     foreach (CLPlatformHandle handle in handles)
+                    {
                         platformList.Add(new ComputePlatform(handle));
+                    }
 
                     platforms = platformList.AsReadOnly();
                 }
@@ -80,23 +72,9 @@ namespace Cloo
             Handle = handle;
             SetID(Handle.Value);
 
-            string extensionString = GetStringInfo<CLPlatformHandle, ComputePlatformInfo>(Handle, ComputePlatformInfo.Extensions, CL10.GetPlatformInfo);
-            extensions = new ReadOnlyCollection<string>(extensionString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
-
-            name = GetStringInfo<CLPlatformHandle, ComputePlatformInfo>(Handle, ComputePlatformInfo.Name, CL10.GetPlatformInfo);
-            profile = GetStringInfo<CLPlatformHandle, ComputePlatformInfo>(Handle, ComputePlatformInfo.Profile, CL10.GetPlatformInfo);
-            vendor = GetStringInfo<CLPlatformHandle, ComputePlatformInfo>(Handle, ComputePlatformInfo.Vendor, CL10.GetPlatformInfo);
-            version = GetStringInfo<CLPlatformHandle, ComputePlatformInfo>(Handle, ComputePlatformInfo.Version, CL10.GetPlatformInfo);
+            name = GetStringInfo(Handle, ComputePlatformInfo.Name, CL10.GetPlatformInfo);
+            version = GetStringInfo(Handle, ComputePlatformInfo.Version, CL10.GetPlatformInfo);
             QueryDevices();
-        }
-
-        public static ComputePlatform GetByHandle(IntPtr handle)
-        {
-            foreach (ComputePlatform platform in Platforms)
-                if (platform.Handle.Value == handle)
-                    return platform;
-
-            return null;
         }
 
         public ReadOnlyCollection<ComputeDevice> QueryDevices()
@@ -110,8 +88,11 @@ namespace Cloo
             ComputeException.ThrowOnError(error);
 
             ComputeDevice[] devices = new ComputeDevice[handlesLength];
+
             for (int i = 0; i < handlesLength; i++)
+            {
                 devices[i] = new ComputeDevice(this, handles[i]);
+            }
 
             this.devices = new ReadOnlyCollection<ComputeDevice>(devices);
 

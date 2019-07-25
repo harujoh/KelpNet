@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Cloo.Bindings;
 
 namespace Cloo
@@ -14,12 +13,6 @@ namespace Cloo
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly ComputeDevice device;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private bool outOfOrderExec;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private bool profiling;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         internal IList<ComputeEventBase> Events;
@@ -37,16 +30,13 @@ namespace Cloo
         public ComputeCommandQueue(ComputeContext context, ComputeDevice device, ComputeCommandQueueFlags properties)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL11.CreateCommandQueue(context.Handle, device.Handle, properties, out error);
+            Handle = CL10.CreateCommandQueue(context.Handle, device.Handle, properties, out error);
             ComputeException.ThrowOnError(error);
 
             SetID(Handle.Value);
 
             this.device = device;
             this.context = context;
-
-            outOfOrderExec = ((properties & ComputeCommandQueueFlags.OutOfOrderExecution) == ComputeCommandQueueFlags.OutOfOrderExecution);
-            profiling = ((properties & ComputeCommandQueueFlags.Profiling) == ComputeCommandQueueFlags.Profiling);
 
             Events = new List<ComputeEventBase>();
 
@@ -66,7 +56,9 @@ namespace Cloo
             ComputeException.ThrowOnError(error);
 
             if (eventsWritable)
+            {
                 events.Add(new ComputeEvent(newEventHandle[0], this));
+            }
         }
 
         public void Finish()
@@ -78,7 +70,6 @@ namespace Cloo
         public void Read<T>(ComputeBufferBase<T> source, bool blocking, long offset, long region, IntPtr destination, ICollection<ComputeEventBase> events) where T : struct
         {
             int sizeofT = Marshal.SizeOf(typeof(T));
-
             int eventWaitListSize;
             CLEventHandle[] eventHandles = ComputeTools.ExtractHandles(events, out eventWaitListSize);
             bool eventsWritable = (events != null && !events.IsReadOnly);
@@ -88,16 +79,13 @@ namespace Cloo
             ComputeException.ThrowOnError(error);
 
             if (eventsWritable)
+            {
                 events.Add(new ComputeEvent(newEventHandle[0], this));
+            }
         }
 
         protected override void Dispose(bool manual)
         {
-            if (manual)
-            {
-                //free managed resources
-            }
-
             // free native resources
             if (Handle.IsValid)
             {
