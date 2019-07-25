@@ -27,12 +27,10 @@ namespace Cloo
 
         protected QueriedType[] GetArrayInfo<HandleType, InfoType, QueriedType>(HandleType handle, InfoType paramName, GetInfoDelegate<HandleType, InfoType> getInfoDelegate)
         {
-            ComputeErrorCode error;
-            QueriedType[] buffer;
             IntPtr bufferSizeRet;
-            error = getInfoDelegate(handle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
+            var error = getInfoDelegate(handle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
             ComputeException.ThrowOnError(error);
-            buffer = new QueriedType[bufferSizeRet.ToInt64() / Marshal.SizeOf(typeof(QueriedType))];
+            var buffer = new QueriedType[bufferSizeRet.ToInt64() / Marshal.SizeOf(typeof(QueriedType))];
             GCHandle gcHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
             try
@@ -50,12 +48,10 @@ namespace Cloo
 
         protected QueriedType[] GetArrayInfo<MainHandleType, SecondHandleType, InfoType, QueriedType>(MainHandleType mainHandle, SecondHandleType secondHandle, InfoType paramName, GetInfoDelegateEx<MainHandleType, SecondHandleType, InfoType> getInfoDelegate)
         {
-            ComputeErrorCode error;
-            QueriedType[] buffer;
             IntPtr bufferSizeRet;
-            error = getInfoDelegate(mainHandle, secondHandle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
+            var error = getInfoDelegate(mainHandle, secondHandle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
             ComputeException.ThrowOnError(error);
-            buffer = new QueriedType[bufferSizeRet.ToInt64() / Marshal.SizeOf(typeof(QueriedType))];
+            var buffer = new QueriedType[bufferSizeRet.ToInt64() / Marshal.SizeOf(typeof(QueriedType))];
             GCHandle gcHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
             try
@@ -96,7 +92,7 @@ namespace Cloo
             byte[] buffer = GetArrayInfo<HandleType, InfoType, byte>(handle, paramName, getInfoDelegate);
             char[] chars = Encoding.ASCII.GetChars(buffer, 0, buffer.Length);
 
-            return (new string(chars)).TrimEnd(new char[] { '\0' });
+            return new string(chars).TrimEnd('\0');
         }
 
         protected string GetStringInfo<MainHandleType, SecondHandleType, InfoType>(MainHandleType mainHandle, SecondHandleType secondHandle, InfoType paramName, GetInfoDelegateEx<MainHandleType, SecondHandleType, InfoType> getInfoDelegate)
@@ -104,7 +100,7 @@ namespace Cloo
             byte[] buffer = GetArrayInfo<MainHandleType, SecondHandleType, InfoType, byte>(mainHandle, secondHandle, paramName, getInfoDelegate);
             char[] chars = Encoding.ASCII.GetChars(buffer, 0, buffer.Length);
 
-            return (new string(chars)).TrimEnd(new char[] { '\0' });
+            return new string(chars).TrimEnd('\0');
         }
 
         protected void SetID(IntPtr id)

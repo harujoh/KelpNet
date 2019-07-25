@@ -19,7 +19,7 @@ namespace Cloo
         public ComputeProgram(ComputeContext context, string source)
         {
             ComputeErrorCode error = ComputeErrorCode.Success;
-            Handle = CL10.CreateProgramWithSource(context.Handle, 1, new string[] { source }, null, out error);
+            Handle = CL10.CreateProgramWithSource(context.Handle, 1, new[] { source }, null, out error);
             ComputeException.ThrowOnError(error);
 
             SetID(Handle.Value);

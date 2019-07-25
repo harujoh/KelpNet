@@ -104,8 +104,13 @@ namespace Cloo
 
             switch (cmdExecStatusOrErr)
             {
-                case (int)ComputeCommandExecutionStatus.Complete: OnCompleted(this, status); break;
-                default: OnAborted(this, status); break;
+                case (int)ComputeCommandExecutionStatus.Complete:
+                    OnCompleted(this, status);
+                    break;
+
+                default:
+                    OnAborted(this, status);
+                    break;
             }
         }
     }

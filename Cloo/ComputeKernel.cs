@@ -36,16 +36,13 @@ namespace Cloo
             SetValueArgument(index, memObj.Handle);
         }
 
-        public void SetValueArgument<T>(int index, T data) where T : struct
+        public unsafe void SetValueArgument<T>(int index, T data) where T : unmanaged
         {
             GCHandle gcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
             try
             {
-                SetArgument(
-                    index,
-                    new IntPtr(Marshal.SizeOf(typeof(T))),
-                    gcHandle.AddrOfPinnedObject());
+                SetArgument(index, new IntPtr(sizeof(T)), gcHandle.AddrOfPinnedObject());
             }
             finally
             {

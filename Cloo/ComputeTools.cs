@@ -8,7 +8,7 @@ namespace Cloo
     {
         public static Version ParseVersionString(string versionString, int substringIndex)
         {
-            string[] verstring = versionString.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] verstring = versionString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             return new Version(verstring[substringIndex]);
         }

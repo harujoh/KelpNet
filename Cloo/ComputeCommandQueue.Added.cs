@@ -6,12 +6,12 @@ namespace Cloo
 {
     public partial class ComputeCommandQueue
     {
-        public void ReadFromBuffer<T>(ComputeBufferBase<T> source, ref T[] destination, bool blocking, IList<ComputeEventBase> events) where T : struct
+        public void ReadFromBuffer<T>(ComputeBufferBase<T> source, ref T[] destination, bool blocking, IList<ComputeEventBase> events) where T : unmanaged
         {
             ReadFromBuffer(source, ref destination, blocking, 0, 0, source.Count, events);
         }
 
-        public void ReadFromBuffer<T>(ComputeBufferBase<T> source, ref T[] destination, bool blocking, long sourceOffset, long destinationOffset, long region, IList<ComputeEventBase> events) where T : struct
+        public void ReadFromBuffer<T>(ComputeBufferBase<T> source, ref T[] destination, bool blocking, long sourceOffset, long destinationOffset, long region, IList<ComputeEventBase> events) where T : unmanaged
         {
             GCHandle destinationGCHandle = GCHandle.Alloc(destination, GCHandleType.Pinned);
             IntPtr destinationOffsetPtr = Marshal.UnsafeAddrOfPinnedArrayElement(destination, (int)destinationOffset);
@@ -23,8 +23,8 @@ namespace Cloo
             }
             else
             {
-                bool userEventsWritable = (events != null && !events.IsReadOnly);
-                IList<ComputeEventBase> eventList = (userEventsWritable) ? events : Events;
+                bool userEventsWritable = events != null && !events.IsReadOnly;
+                IList<ComputeEventBase> eventList = userEventsWritable ? events : Events;
                 Read(source, blocking, sourceOffset, region, destinationOffsetPtr, eventList);
                 ComputeEvent newEvent = (ComputeEvent)eventList[eventList.Count - 1];
                 newEvent.TrackGCHandle(destinationGCHandle);
