@@ -53,7 +53,7 @@ namespace KelpNet.Sample.Samples
             {
                 for (int pos = 0; pos < trainData.Length; pos++)
                 {
-                    NdArray<T> h = new NdArray<T>(new Real<T>[N_UNITS]);
+                    NdArray<T> h = new NdArray<T>(new T[N_UNITS]);
 
                     int id = trainData[pos];
                     s.Add(id);
@@ -150,7 +150,7 @@ namespace KelpNet.Sample.Samples
         {
             Real<T> sum = 0;
 
-            NdArray<T> h = new NdArray<T>(new Real<T>[N_UNITS]);
+            NdArray<T> h = new NdArray<T>(new T[N_UNITS]);
 
             for (int i = 1; i < s.Count; i++)
             {

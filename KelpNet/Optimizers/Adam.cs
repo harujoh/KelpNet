@@ -32,13 +32,13 @@ namespace KelpNet
     {
         private readonly Adam<T> _optimizer;
 
-        private readonly Real<T>[] m;
-        private readonly Real<T>[] v;
+        private RealArray<T> m;
+        private RealArray<T> v;
 
         public AdamParameter(NdArray<T> parameter, Adam<T> optimizer) : base(parameter)
         {
-            this.m = new Real<T>[parameter.Data.Length];
-            this.v = new Real<T>[parameter.Data.Length];
+            this.m = new T[parameter.DataLength];
+            this.v = new T[parameter.DataLength];
 
             this._optimizer = optimizer;
         }
@@ -59,7 +59,7 @@ namespace KelpNet
 
             Real<T> learningRate = this._optimizer.Alpha * Math.Sqrt(fix2) / fix1;
 
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < FunctionParameter.DataLength; i++)
             {
                 Real<T> grad = this.FunctionParameter.Grad[i];
 

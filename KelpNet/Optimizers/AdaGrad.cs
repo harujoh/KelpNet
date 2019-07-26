@@ -27,17 +27,17 @@ namespace KelpNet
     class AdaGradParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
         private readonly AdaGrad<T> optimizer;
-        private readonly Real<T>[] h;
+        private RealArray<T> h;
 
         public AdaGradParameter(NdArray<T> functionParameter, AdaGrad<T> optimizer) : base(functionParameter)
         {
-            this.h = new Real<T>[functionParameter.Data.Length];
+            this.h = new T[functionParameter.DataLength];
             this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.DataLength; i++)
             {
                 Real<T> grad = this.FunctionParameter.Grad[i];
 

@@ -10,7 +10,7 @@ namespace KelpNet
         const string FUNCTION_NAME = "Dropout";
 
         private readonly Real<T> dropoutRatio;
-        private readonly List<Real<T>[]> maskStack = new List<Real<T>[]>();
+        private readonly List<RealArray<T>> maskStack = new List<RealArray<T>>();
 
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
         {
@@ -20,12 +20,12 @@ namespace KelpNet
             SingleOutputBackward = BackwardCpu;
         }
 
-        private Real<T>[] MakeMask(int xLength)
+        private RealArray<T> MakeMask(int xLength)
         {
-            Real<T>[] mask = new Real<T>[xLength];
+            RealArray<T> mask = new T[xLength];
             Real<T> scale = 1 / (1 - this.dropoutRatio);
 
-            for (int i = 0; i < mask.Length; i++)
+            for (int i = 0; i < xLength; i++)
             {
                 mask[i] = Mother<T>.Dice.NextDouble() >= this.dropoutRatio ? scale : 0;
             }
@@ -37,12 +37,12 @@ namespace KelpNet
 
         public NdArray<T> ForwardCpu(NdArray<T> x)
         {
-            Real<T>[] result = new Real<T>[x.Data.Length];
-            Real<T>[] mask = MakeMask(x.Length);
+            RealArray<T> result = new T[x.DataLength];
+            RealArray<T> mask = MakeMask(x.Length);
 
-            for (int i = 0; i < x.Data.Length; i++)
+            for (int i = 0; i < x.DataLength; i++)
             {
-                result[i] = x.Data[i] * mask[i % mask.Length];
+                result[i] = x.Data[i] * mask[i % x.Length];
             }
 
             return NdArray<T>.Convert(result, x.Shape, x.BatchCount, this);
@@ -50,8 +50,8 @@ namespace KelpNet
 
         public void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            Real<T>[] result = y.Grad.ToArray();
-            Real<T>[] mask = this.maskStack[this.maskStack.Count - 1];
+            RealArray<T> result = y.Grad.Clone();
+            RealArray<T> mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
 
             for (int b = 0; b < y.BatchCount; b++)
@@ -62,7 +62,7 @@ namespace KelpNet
                 }
             }
 
-            for (int i = 0; i < x.Grad.Length; i++)
+            for (int i = 0; i < x.DataLength; i++)
             {
                 x.Grad[i] += result[i];
             }

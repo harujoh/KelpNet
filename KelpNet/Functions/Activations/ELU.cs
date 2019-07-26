@@ -19,9 +19,9 @@ namespace KelpNet
 
         private NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real<T>[] result = new Real<T>[x.Data.Length];
+            RealArray<T> result = new T[x.DataLength];
 
-            for (int i = 0; i < x.Data.Length; i++)
+            for (int i = 0; i < x.DataLength; i++)
             {
                 if (x.Data[i] >= 0)
                 {
@@ -38,7 +38,7 @@ namespace KelpNet
 
         private void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            for (int i = 0; i < y.Grad.Length; i++)
+            for (int i = 0; i < y.DataLength; i++)
             {
                 if (x.Data[i] >= 0)
                 {

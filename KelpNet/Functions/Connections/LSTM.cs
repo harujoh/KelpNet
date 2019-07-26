@@ -18,11 +18,11 @@ namespace KelpNet
         public Linear<T> lateral2;
         public Linear<T> lateral3;
 
-        private List<Real<T>[]> aParam;
-        private List<Real<T>[]> iParam;
-        private List<Real<T>[]> fParam;
-        private List<Real<T>[]> oParam;
-        private List<Real<T>[]> cParam;
+        private List<RealArray<T>> aParam;
+        private List<RealArray<T>> iParam;
+        private List<RealArray<T>> fParam;
+        private List<RealArray<T>> oParam;
+        private List<RealArray<T>> cParam;
 
         private NdArray<T> hParam;
         private bool Initialized;
@@ -31,7 +31,7 @@ namespace KelpNet
         NdArray<T> gxPrev1;
         NdArray<T> gxPrev2;
         NdArray<T> gxPrev3;
-        Real<T>[] gcPrev;
+        RealArray<T> gcPrev;
 
         public readonly int InputCount;
         public readonly int OutputCount;
@@ -72,7 +72,7 @@ namespace KelpNet
 
         public NdArray<T> ForwardCpu(NdArray<T> x)
         {
-            Real<T>[][] upwards = new Real<T>[4][];
+            RealArray<T>[] upwards = new RealArray<T>[4];
             upwards[0] = this.upward0.Forward(x)[0].Data;
             upwards[1] = this.upward1.Forward(x)[0].Data;
             upwards[2] = this.upward2.Forward(x)[0].Data;
@@ -83,18 +83,18 @@ namespace KelpNet
             if(!Initialized)
             {
                 //値がなければ初期化
-                this.aParam = new List<Real<T>[]>();
-                this.iParam = new List<Real<T>[]>();
-                this.fParam = new List<Real<T>[]>();
-                this.oParam = new List<Real<T>[]>();
-                this.cParam = new List<Real<T>[]>();
+                this.aParam = new List<RealArray<T>>();
+                this.iParam = new List<RealArray<T>>();
+                this.fParam = new List<RealArray<T>>();
+                this.oParam = new List<RealArray<T>>();
+                this.cParam = new List<RealArray<T>>();
             }
             else
             {
-                Real<T>[] laterals0 = this.lateral0.Forward(hParam)[0].Data;
-                Real<T>[] laterals1 = this.lateral1.Forward(hParam)[0].Data;
-                Real<T>[] laterals2 = this.lateral2.Forward(hParam)[0].Data;
-                Real<T>[] laterals3 = this.lateral3.Forward(hParam)[0].Data;
+                RealArray<T> laterals0 = this.lateral0.Forward(hParam)[0].Data;
+                RealArray<T> laterals1 = this.lateral1.Forward(hParam)[0].Data;
+                RealArray<T> laterals2 = this.lateral2.Forward(hParam)[0].Data;
+                RealArray<T> laterals3 = this.lateral3.Forward(hParam)[0].Data;
                 hParam.UseCount -= 4; //回数を補正 RFI
 
                 for (int i = 0; i < outputDataSize; i++)
@@ -108,16 +108,16 @@ namespace KelpNet
 
             if (this.cParam.Count == 0)
             {
-                this.cParam.Add(new Real<T>[outputDataSize]);
+                this.cParam.Add(new T[outputDataSize]);
             }
 
-            Real<T>[] la = new Real<T>[outputDataSize];
-            Real<T>[] li = new Real<T>[outputDataSize];
-            Real<T>[] lf = new Real<T>[outputDataSize];
-            Real<T>[] lo = new Real<T>[outputDataSize];
-            Real<T>[] cPrev = this.cParam[this.cParam.Count - 1];
-            Real<T>[] cResult = new Real<T>[cPrev.Length];
-            Real<T>[] lhParam = new Real<T>[outputDataSize];
+            RealArray<T> la = new T[outputDataSize];
+            RealArray<T> li = new T[outputDataSize];
+            RealArray<T> lf = new T[outputDataSize];
+            RealArray<T> lo = new T[outputDataSize];
+            RealArray<T> cPrev = this.cParam[this.cParam.Count - 1];
+            RealArray<T> cResult = new T[x.BatchCount * this.OutputCount];
+            RealArray<T> lhParam = new T[outputDataSize];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
@@ -145,8 +145,9 @@ namespace KelpNet
             this.fParam.Add(lf);
             this.oParam.Add(lo);
 
-            Initialized = true;
+            this.Initialized = true;
             this.hParam = new NdArray<T>(lhParam, new[] { OutputCount }, x.BatchCount, this);
+
             return this.hParam;
         }
 
@@ -159,7 +160,7 @@ namespace KelpNet
                 this.gxPrev1 = new NdArray<T>(new[] { OutputCount }, y.BatchCount);
                 this.gxPrev2 = new NdArray<T>(new[] { OutputCount }, y.BatchCount);
                 this.gxPrev3 = new NdArray<T>(new[] { OutputCount }, y.BatchCount);
-                this.gcPrev = new Real<T>[x.BatchCount * this.OutputCount];
+                this.gcPrev = new T[x.BatchCount * this.OutputCount];
             }
             else
             {
@@ -169,26 +170,26 @@ namespace KelpNet
                 this.lateral3.Backward(this.gxPrev3);
             }
 
-            Real<T>[] lcParam = this.cParam[this.cParam.Count - 1];
+            RealArray<T> lcParam = this.cParam[this.cParam.Count - 1];
             this.cParam.RemoveAt(this.cParam.Count - 1);
 
-            Real<T>[] laParam = this.aParam[this.aParam.Count - 1];
+            RealArray<T> laParam = this.aParam[this.aParam.Count - 1];
             this.aParam.RemoveAt(this.aParam.Count - 1);
 
-            Real<T>[] liParam = this.iParam[this.iParam.Count - 1];
+            RealArray<T> liParam = this.iParam[this.iParam.Count - 1];
             this.iParam.RemoveAt(this.iParam.Count - 1);
 
-            Real<T>[] lfParam = this.fParam[this.fParam.Count - 1];
+            RealArray<T> lfParam = this.fParam[this.fParam.Count - 1];
             this.fParam.RemoveAt(this.fParam.Count - 1);
 
-            Real<T>[] loParam = this.oParam[this.oParam.Count - 1];
+            RealArray<T> loParam = this.oParam[this.oParam.Count - 1];
             this.oParam.RemoveAt(this.oParam.Count - 1);
 
-            Real<T>[] cPrev = this.cParam[this.cParam.Count - 1];
+            RealArray<T> cPrev = this.cParam[this.cParam.Count - 1];
 
             for (int i = 0; i < y.BatchCount; i++)
             {
-                Real<T>[] gParam = new Real<T>[this.InputCount * 4];
+                RealArray<T> gParam = new T[this.InputCount * 4];
 
                 for (int j = 0; j < this.InputCount; j++)
                 {
@@ -206,7 +207,7 @@ namespace KelpNet
                     this.gcPrev[prevInputIndex] *= lfParam[prevOutputIndex];
                 }
 
-                Real<T>[] resultParam = new Real<T>[this.OutputCount * 4];
+                RealArray<T> resultParam = new T[this.OutputCount * 4];
 
                 //配置換え
                 for (int j = 0; j < this.OutputCount * 4; j++)
@@ -234,7 +235,7 @@ namespace KelpNet
         public override void ResetState()
         {
             base.ResetState();
-            this.gcPrev = new Real<T>[]{};
+            this.gcPrev = new T[]{};
             this.hParam = new NdArray<T>();
             this.Initialized = false;
         }

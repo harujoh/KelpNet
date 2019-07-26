@@ -15,7 +15,7 @@ namespace KelpNet.Sample.Samples
             FunctionStack<T> nn = new FunctionStack<T>(
                 new Convolution2D<T>(1, 2, 3, name: "conv1"),//必要であればGPUフラグも忘れずに
                 new ReLU<T>(),
-                new MaxPooling<T>(2, stride:2),
+                new MaxPooling<T>(2, stride: 2),
                 new Convolution2D<T>(2, 2, 2, name: "conv2"),
                 new ReLU<T>(),
                 new MaxPooling<T>(2, stride: 2),
@@ -68,7 +68,7 @@ namespace KelpNet.Sample.Samples
             }});
 
             //教師信号
-            Real<T>[] t = { 0.0f, 1.0f };
+            RealArray<T> t = new Real<T>[] { 0.0f, 1.0f };
 
             //訓練を実施
             Trainer<T>.Train(nn, x, t, new MeanSquaredError<T>(), false);

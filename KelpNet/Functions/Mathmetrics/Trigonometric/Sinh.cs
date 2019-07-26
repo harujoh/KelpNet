@@ -14,9 +14,9 @@ namespace KelpNet
 
         protected NdArray<T> ForwardCpu(NdArray<T> x)
         {
-            Real<T>[] resultData = new Real<T>[x.Data.Length];
+            RealArray<T> resultData = new T[x.DataLength];
 
-            for (int i = 0; i < resultData.Length; i++)
+            for (int i = 0; i < x.DataLength; i++)
             {
                 resultData[i] = Math.Sinh(x.Data[i]);
             }
@@ -26,7 +26,7 @@ namespace KelpNet
 
         protected void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            for (int i = 0; i < y.Grad.Length; i++)
+            for (int i = 0; i < y.DataLength; i++)
             {
                 x.Grad[i] += Math.Cosh(x.Data[i]) * y.Grad[i];
             }

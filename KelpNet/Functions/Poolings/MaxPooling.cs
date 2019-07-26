@@ -96,9 +96,9 @@ namespace KelpNet
 
         NdArray<T> GetForwardResult(NdArray<T> input, int[] outputIndices, int outputWidth, int outputHeight)
         {
-            Real<T>[] result = new Real<T>[outputIndices.Length];
+            RealArray<T> result = new T[outputIndices.Length];
 
-            for (int i = 0; i < result.Length; i++)
+            for (int i = 0; i < outputIndices.Length; i++)
             {
                 result[i] = input.Data[outputIndices[i]];
             }
@@ -113,7 +113,7 @@ namespace KelpNet
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);
 
-            for (int i = 0; i < y.Grad.Length; i++)
+            for (int i = 0; i < y.DataLength; i++)
             {
                 x.Grad[outputIndices[i]] += y.Grad[i];
             }

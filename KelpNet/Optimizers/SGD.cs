@@ -33,7 +33,7 @@ namespace KelpNet
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.DataLength; i++)
             {
                 this.FunctionParameter.Data[i] -= this.optimizer.LearningRate * this.FunctionParameter.Grad[i];
             }

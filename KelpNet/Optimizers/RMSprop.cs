@@ -29,17 +29,17 @@ namespace KelpNet
     class RMSpropParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
         private readonly RMSprop<T> optimizer;
-        private readonly Real<T>[] ms;
+        private RealArray<T> ms;
 
         public RMSpropParameter(NdArray<T> parameter, RMSprop<T> optimizer) : base(parameter)
         {
             this.optimizer = optimizer;
-            this.ms = new Real<T>[parameter.Data.Length];
+            this.ms = new T[parameter.DataLength];
         }
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.DataLength; i++)
             {
                 Real<T> grad = this.FunctionParameter.Grad[i];
                 this.ms[i] *= this.optimizer.Alpha;

@@ -15,7 +15,7 @@ namespace KelpNet
             for (int k = 0; k < input.Length; k++)
             {
                 Real<T> localloss = 0;
-                Real<T>[] gx = new Real<T>[input[k].Data.Length];
+                RealArray<T> gx = new T[input[k].DataLength];
 
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {
@@ -29,7 +29,7 @@ namespace KelpNet
                         }
                     }
 
-                    Real<T>[] logY = new Real<T>[input[k].Length];
+                    RealArray<T> logY = new T[input[k].Length];
                     Real<T> y = 0;
                     Real<T> m = input[k].Data[b * input[k].Length];
 
@@ -56,7 +56,7 @@ namespace KelpNet
                     localloss += -logY[(int)maxIndex];
 
 
-                    for (int i = 0; i < logY.Length; i++)
+                    for (int i = 0; i < input[k].Length; i++)
                     {
                         gx[i + b * input[k].Length] = Math.Exp(logY[i]);
                     }

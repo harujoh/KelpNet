@@ -10,12 +10,12 @@ namespace KelpNet.Tools
     {
         //Bitmapは [RGBRGB...]でデータが格納されているが多くの機械学習は[RR..GG..BB..]を前提にしているため入れ替えを行っている
         //Biasのチャンネル順は入力イメージに準ずる
-        public static NdArray<T> Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, Real<T>[] bias = null)
+        public static NdArray<T> Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, RealArray<T> bias = null)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
             if (bias == null || bitcount != bias.Length)
             {
-                bias = new Real<T>[bitcount];
+                bias = new T[bitcount];
             }
 
             Real<T> norm = isNorm ? 255 : 1;
@@ -79,7 +79,7 @@ namespace KelpNet.Tools
             return null;
         }
 
-        static Bitmap CreateMonoImage(Real<T>[] data, int width, int height, bool isNorm)
+        static Bitmap CreateMonoImage(RealArray<T> data, int width, int height, bool isNorm)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
             Real<T> norm = isNorm ? 255 : 1;
@@ -111,7 +111,7 @@ namespace KelpNet.Tools
             return result;
         }
 
-        static Bitmap CreateColorImage(Real<T>[] data, int width, int height, bool isNorm, bool isFromBgrArray)
+        static Bitmap CreateColorImage(RealArray<T> data, int width, int height, bool isNorm, bool isFromBgrArray)
         {
             Bitmap result = new Bitmap(width, height, PixelFormat.Format24bppRgb);
             Real<T> norm = isNorm ? 255 : 1;

@@ -16,8 +16,8 @@ namespace KelpNet.Sample.Samples
 
         public static void Run()
         {
-            Real<T>[][] trainData = new Real<T>[N][];
-            Real<T>[][] trainLabel = new Real<T>[N][];
+            RealArray<T>[] trainData = new RealArray<T>[N];
+            RealArray<T>[] trainLabel = new RealArray<T>[N];
 
             for (int i = 0; i < N; i++)
             {
@@ -59,7 +59,7 @@ namespace KelpNet.Sample.Samples
             //訓練結果を表示
             Console.WriteLine("Test Start...");
 
-            foreach (Real<T>[] val in trainData)
+            foreach (RealArray<T> val in trainData)
             {
                 Console.WriteLine(val[0] + ":" + nn.Predict(val)[0].Data[0]);
             }

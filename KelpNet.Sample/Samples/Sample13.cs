@@ -45,7 +45,7 @@ namespace KelpNet.Sample.Samples
         static NdArray<T> GetRandomImage(int N = 1, int img_w = 128, int img_h = 128)
         {
             // ランダムに0.1％の点を作る
-            Real<T>[] img_p = new Real<T>[N * img_w * img_h];
+            RealArray<T> img_p = new T[N * img_w * img_h];
 
             for (int i = 0; i < img_p.Length; i++)
             {
@@ -57,13 +57,13 @@ namespace KelpNet.Sample.Samples
         }
 
         //１つの球状の模様を作成（ガウスですが）
-        static Real<T>[] MakeOneCore()
+        static RealArray<T> MakeOneCore()
         {
             int max_xy = 15;
             double sig = 5;
             double sig2 = sig * sig;
             double c_xy = 7;
-            Real<T>[] core = new Real<T>[max_xy * max_xy];
+            RealArray<T> core = new T[max_xy * max_xy];
 
             for (int px = 0; px < max_xy; px++)
             {

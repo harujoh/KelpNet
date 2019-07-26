@@ -89,12 +89,13 @@ namespace KelpNet.Sample.Samples
 
         static void Predict(NdArray<T> seq, FunctionStack<T> model, int pre_length)
         {
-            Real<T>[] pre_input_seq = new Real<T>[seq.Data.Length / 4];
+            RealArray<T> pre_input_seq = new T[seq.Data.Length / 4];
             if (pre_input_seq.Length < 1)
             {
-                pre_input_seq = new Real<T>[1];
+                pre_input_seq = new T[1];
             }
-            Array.Copy(seq.Data, pre_input_seq, pre_input_seq.Length);
+            //Array.Copy(seq.Data, pre_input_seq, pre_input_seq.Length);
+            seq.Data.CopyTo(pre_input_seq, 0, 0, pre_input_seq.Length);
 
             List<Real<T>> input_seq = new List<Real<T>>();
             input_seq.AddRange(pre_input_seq);

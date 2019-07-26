@@ -44,7 +44,7 @@ namespace KelpNet
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
-            Real<T>[] result = new Real<T>[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
+            RealArray<T> result = new T[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
             Real<T> m = this._kHeight * this._kWidth;
 
             for (int b = 0; b < input.BatchCount; b++)

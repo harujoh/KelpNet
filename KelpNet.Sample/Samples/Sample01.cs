@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Tools;
 
 namespace KelpNet.Sample.Samples
@@ -13,7 +12,7 @@ namespace KelpNet.Sample.Samples
             const int learningCount = 10000;
 
             //訓練データ
-            Real<T>[][] trainData =
+            RealArray<T>[] trainData =
             {
                 new Real<T>[] { 0, 0 },
                 new Real<T>[] { 1, 0 },
@@ -22,7 +21,7 @@ namespace KelpNet.Sample.Samples
             };
 
             //訓練データラベル
-            Real<T>[][] trainLabel =
+            RealArray<T>[] trainLabel =
             {
                 new Real<T>[] { 0 },
                 new Real<T>[] { 1 },
@@ -53,10 +52,11 @@ namespace KelpNet.Sample.Samples
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (Real<T>[] input in trainData)
+            foreach (RealArray<T> input in trainData)
             {
                 NdArray<T> result = nn.Predict(input)[0];
-                int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
+                //int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
+                int resultIndex = result.Data.MaxIndex();
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
 
@@ -67,10 +67,11 @@ namespace KelpNet.Sample.Samples
             FunctionStack<T> testnn = ModelIO<T>.Load("test.nn");
 
             Console.WriteLine("Test Start...");
-            foreach (Real<T>[] input in trainData)
+            foreach (RealArray<T> input in trainData)
             {
                 NdArray<T> result = testnn.Predict(input)[0];
-                int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
+                //int resultIndex = Array.IndexOf(result.Data, result.Data.Max());
+                int resultIndex = result.Data.MaxIndex();
                 Console.WriteLine(input[0] + " xor " + input[1] + " = " + resultIndex + " " + result);
             }
         }

@@ -51,7 +51,7 @@ namespace KelpNet
 
                 for (int i = 0; i < result.Length; i++)
                 {
-                    for (int j = 0; j < result[i].Data.Length; j++)
+                    for (int j = 0; j < result[i].DataLength; j++)
                     {
                         result[i].Data[j] *= scale;
                     }
@@ -94,7 +94,7 @@ namespace KelpNet
                 {
                     copyys[i] = ys[i].Clone();
 
-                    for (int j = 0; j < ys[i].Data.Length; j++)
+                    for (int j = 0; j < ys[i].DataLength; j++)
                     {
                         copyys[i].Data[j] *= scale;
                     }

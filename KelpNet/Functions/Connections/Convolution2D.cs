@@ -113,7 +113,7 @@ namespace KelpNet
             int outputHeight = (int)Math.Floor((input.Shape[1] - this._kHeight + this._padY * 2.0) / this._strideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this._kWidth + this._padX * 2.0) / this._strideX) + 1;
 
-            Real<T>[] result = new Real<T>[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
+            RealArray<T> result = new T[this.OutputCount * outputHeight * outputWidth * input.BatchCount];
 
             for (int batchCounter = 0; batchCounter < input.BatchCount; batchCounter++)
             {
@@ -214,11 +214,11 @@ namespace KelpNet
             return NdArray<T>.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        Real<T>[] GetActivatedgy(NdArray<T> y)
+        RealArray<T> GetActivatedgy(NdArray<T> y)
         {
             int gyIndex = 0;
 
-            Real<T>[] activatedgy = new Real<T>[y.Grad.Length];
+            RealArray<T> activatedgy = new T[y.DataLength];
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
             {
@@ -235,7 +235,7 @@ namespace KelpNet
             return activatedgy;
         }
 
-        void CalcBiasGrad(Real<T>[] gy, int[] gyShape, int batchCount)
+        void CalcBiasGrad(RealArray<T> gy, int[] gyShape, int batchCount)
         {
             int gyIndex = 0;
 
@@ -255,7 +255,7 @@ namespace KelpNet
 
         protected override void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            Real<T>[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            RealArray<T> activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)

@@ -22,7 +22,7 @@ namespace KelpNet.Sample.DataManager
 
             for (int i = 0; i < this.mnistDataLoader.TrainData.Length; i++)
             {
-                Real<T>[] x = new Real<T>[28 * 28];
+                RealArray<T> x = new T[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TrainData[i].Length; j++)
                 {
                     x[j] = this.mnistDataLoader.TrainData[i][j] / 255.0f;
@@ -39,7 +39,7 @@ namespace KelpNet.Sample.DataManager
 
             for (int i = 0; i < this.mnistDataLoader.TeachData.Length; i++)
             {
-                Real<T>[] y = new Real<T>[28 * 28];
+                RealArray<T> y = new T[28 * 28];
                 for (int j = 0; j < this.mnistDataLoader.TeachData[i].Length; j++)
                 {
                     y[j] = this.mnistDataLoader.TeachData[i][j] / 255.0f;
@@ -59,7 +59,9 @@ namespace KelpNet.Sample.DataManager
             {
                 int index = Mother<T>.Dice.Next(this.Y.Length);
 
-                Array.Copy(this.Y[index].Data, 0, listY.Data,i * listY.Length,listY.Length);
+                //Array.Copy(this.Y[index].Data, 0, listY.Data, i * listY.Length, listY.Length);
+                this.Y[index].Data.CopyTo(listY.Data, 0, i * listY.Length, listY.Length);
+
                 listTy.Data[i] = this.Ty[index].Data[0];
             }
 
@@ -75,7 +77,9 @@ namespace KelpNet.Sample.DataManager
             {
                 int index = Mother<T>.Dice.Next(this.X.Length);
 
-                Array.Copy(this.X[index].Data, 0, listX.Data, i * listX.Length, listX.Length);
+                //Array.Copy(this.X[index].Data, 0, listX.Data, i * listX.Length, listX.Length);
+                this.X[index].Data.CopyTo(listX.Data, 0, i * listX.Length, listX.Length);
+
                 listTx.Data[i] = this.Tx[index].Data[0];
             }
 

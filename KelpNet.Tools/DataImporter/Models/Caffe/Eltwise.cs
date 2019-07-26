@@ -23,12 +23,13 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
         public NdArray<T> ForwardCpu(params NdArray<T>[] xs)
         {
-            Real<T>[] result = new Real<T>[xs[0].Data.Length];
+            RealArray<T> result = new T[xs[0].Data.Length];
 
             switch (_operation)
             {
                 case EltwiseParameter.EltwiseOp.Prod:
-                    Array.Copy(xs[0].Data, result, result.Length);
+                    //Array.Copy(xs[0].Data, result, result.Length);
+                    result = xs[0].Data.Clone();
                     for (int i = 1; i < xs.Length; i++)
                     {
                         for (int j = 0; j < result.Length; j++)
@@ -62,7 +63,8 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                     break;
 
                 case EltwiseParameter.EltwiseOp.Max:
-                    Array.Copy(xs[0].Data, result, result.Length);
+                    //Array.Copy(xs[0].Data, result, result.Length);
+                    result = xs[0].Data.Clone();
                     int[] outputIndex = new int[result.Length];
 
                     for (int i = 1; i < xs.Length; i++)
@@ -86,18 +88,19 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
 
         public void BackwardCpu(NdArray<T> y, params NdArray<T>[] xs)
         {
-            Real<T>[][] result = new Real<T>[xs.Length][];
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = new Real<T>[xs[i].Data.Length];
-            }
+            RealArray<T>[] result = new RealArray<T>[xs.Length];
+            //for (int i = 0; i < result.Length; i++)
+            //{
+            //    result[i] = new T[xs[i].Data.Length];
+            //}
 
             switch (_operation)
             {
                 case EltwiseParameter.EltwiseOp.Prod:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        Array.Copy(y.Grad, result[i], y.Grad.Length);
+                        result[i] = y.Grad.Clone();
+                        //Array.Copy(y.Grad, result[i], y.Grad.Length);
                         for (int j = 0; j < xs.Length; j++)
                         {
                             if (i != j)
@@ -114,7 +117,8 @@ namespace KelpNet.Tools.DataImporter.Models.Caffe
                 case EltwiseParameter.EltwiseOp.Sum:
                     for (int i = 0; i < result.Length; i++)
                     {
-                        Array.Copy(y.Grad, result[i], result[i].Length);
+                        //Array.Copy(y.Grad, result[i], result[i].Length);
+                        result[i] = y.Grad.Clone();
                     }
                     break;
 

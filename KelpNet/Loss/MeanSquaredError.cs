@@ -15,7 +15,7 @@ namespace KelpNet
             for (int k = 0; k < input.Length; k++)
             {
                 Real<T> sumLoss = 0;
-                Real<T>[] resultArray = new Real<T>[input[k].Data.Length];
+                RealArray<T> resultArray = new T[input[k].DataLength];
 
                 for (int b = 0; b < input[k].BatchCount; b++)
                 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace KelpNet
@@ -11,11 +12,15 @@ namespace KelpNet
     public class NdArray<T> : IDisposable where T : unmanaged, IComparable<T>
     {
         public string Name;
-        
-        public Real<T>[] Data;
+
+        //public RealArray<T> Data;
+        public RealArray<T> Data;
+
+        public int DataLength { private set; get; }
 
         [NonSerialized]
-        public Real<T>[] Grad;
+        public RealArray<T> Grad;
+        //public RealArray<T> Grad;
 
         //このNdArrayの各次元のサイズ
         public int[] Shape { private set; get; }
@@ -43,19 +48,17 @@ namespace KelpNet
             this.Name = "NdArray";
             this.UseCount = 0;
 
-            Real<T>[] resultData = Real<T>.GetArray(data);
-
             int[] resultShape = new int[data.Rank];
-
-            for (int i = 0; i < data.Rank; i++)
+            for (int i = 0; i < resultShape.Length; i++)
             {
                 resultShape[i] = data.GetLength(i);
             }
 
-            this.Data = resultData;
+            this.DataLength = data.Length;
+            this.Data = data;
             this.Shape = resultShape;
-            this.Length = Data.Length;
-            this.Grad = new Real<T>[this.Length];
+            this.Length = data.Length;
+            this.Grad = new T[this.Length];
             this.BatchCount = 1;
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
@@ -67,24 +70,41 @@ namespace KelpNet
             this.UseCount = 0;
             this.ParentFunc = null;
 
-            this.Data = new Real<T>[ShapeToArrayLength(shape)];
+            this.DataLength = ShapeToArrayLength(shape);
+            this.Data = new T[DataLength];
             this.Shape = shape.ToArray();
-            this.Length = Data.Length;
+            this.Length = DataLength;
             this.BatchCount = 1;
-            this.Grad = new Real<T>[this.Length];
+            this.Grad = new T[this.Length];
             this.TrainCount = 0;
         }
 
-        public NdArray(Real<T>[] data, int[] shape, int batchCount = 1, Function<T> parentFunc = null)
+        public NdArray(T[] data, int[] shape, int batchCount = 1, Function<T> parentFunc = null)
         {
             this.Name = "NdArray";
             this.UseCount = 0;
 
             this.Shape = shape.ToArray();
-            this.Length = data.Length / batchCount; ;
+            this.DataLength = data.Length;
+            this.Length = data.Length / batchCount;
             this.BatchCount = batchCount;
             this.Data = data.ToArray();
-            this.Grad = new Real<T>[this.Length * batchCount];
+            this.Grad = new T[this.Length * batchCount];
+            this.TrainCount = 0;
+            this.ParentFunc = parentFunc;
+        }
+
+        public NdArray(RealArray<T> data, int[] shape, int batchCount = 1, Function<T> parentFunc = null)
+        {
+            this.Name = "NdArray";
+            this.UseCount = 0;
+
+            this.Shape = shape.ToArray();
+            this.Length = ShapeToArrayLength(this.Shape);
+            this.DataLength = this.Length * batchCount;
+            this.BatchCount = batchCount;
+            this.Data = data.Clone();
+            this.Grad = new T[this.DataLength];
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
@@ -96,9 +116,10 @@ namespace KelpNet
 
             this.Shape = shape.ToArray();
             this.Length = ShapeToArrayLength(this.Shape);
+            this.DataLength = Length * batchCount;
             this.BatchCount = batchCount;
-            this.Data = new Real<T>[this.Length * batchCount];
-            this.Grad = new Real<T>[this.Length * batchCount];
+            this.Data = new T[DataLength];
+            this.Grad = new T[DataLength];
             this.TrainCount = 0;
             this.ParentFunc = parentFunc;
         }
@@ -107,14 +128,28 @@ namespace KelpNet
         public static NdArray<T> FromArrays(Array[] arrays, Function<T> parentFunc = null)
         {
             int[] resultShape = new int[arrays[0].Rank];
-
             for (int i = 0; i < arrays[0].Rank; i++)
             {
                 resultShape[i] = arrays[0].GetLength(i);
             }
 
             int length = arrays[0].Length;
-            Real<T>[] result = new Real<T>[length * arrays.Length];
+
+#if DEBUG
+            for (int i = 0; i < arrays.Length; i++)
+            {
+                if (typeof(T) != arrays[i].GetType().GetElementType()) throw new Exception();
+
+                if (length != arrays[i].Length) throw new Exception();
+
+                for (int j = 0; j < arrays[i].Rank; j++)
+                {
+                    if (resultShape[i] != arrays[i].GetLength(j)) throw new Exception();
+                }
+            }
+#endif
+
+            T[] result = new T[length * arrays.Length];
 
             for (int i = 0; i < arrays.Length; i++)
             {
@@ -124,9 +159,20 @@ namespace KelpNet
             return new NdArray<T>(result, resultShape, arrays.Length, parentFunc);
         }
 
-        public static NdArray<T> Convert(Real<T>[] data, int[] shape, int batchCount, Function<T> parentFunc = null)
+        //Convertはメモリを新規に確保しない
+        public static NdArray<T> Convert(T[] data, int[] shape, int batchCount, Function<T> parentFunc = null)
         {
             return new NdArray<T>(shape, batchCount, parentFunc) { Data = data };
+        }
+
+        public static NdArray<T> Convert(RealArray<T> data, int[] shape, int batchCount, Function<T> parentFunc = null)
+        {
+            return new NdArray<T>(shape, batchCount, parentFunc) { Data = data };
+        }
+
+        public static NdArray<T> Convert(RealArray<T> data)
+        {
+            return new NdArray<T>(new[] { data.Length }, 1) { Data = data };
         }
 
         //public static NdArray<T> ZerosLike(NdArray<T> baseArray)
@@ -207,10 +253,16 @@ namespace KelpNet
         }
 
         //バッチ番号に対応するアレイを排出する
-        public NdArray<T> GetSingleArray(int i)
+        public unsafe NdArray<T> GetSingleArray(int i)
         {
-            Real<T>[] data = new Real<T>[this.Length];
-            Array.Copy(this.Data, i * this.Length, data, 0, this.Length);
+            T[] data = new T[this.Length];
+
+            GCHandle h = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+            //Array.Copy(this.Data, i * this.Length, data, 0, this.Length);
+            //Marshal.Copy(Data.Ptr + i * this.Length * sizeof(T), data, 0, this.Length);
+
+            Buffer.MemoryCopy((void*)(Data.Ptr + i * this.Length * sizeof(T)), (void*)h.AddrOfPinnedObject(), this.Length * sizeof(T), this.Length * sizeof(T));
 
             return new NdArray<T>(data, this.Shape);
         }
@@ -229,11 +281,25 @@ namespace KelpNet
 
         public void Backward()
         {
+            T one = default;
+            if (1.0 is T dOne)
+            {
+                one = dOne;
+            }
+            else if (1.0f is T fOne)
+            {
+                one = fOne;
+            }
+            else if (1 is T iOne)
+            {
+                one = iOne;
+            }
+
             if (ParentFunc != null)
             {
-                for (int i = 0; i < Grad.Length; i++)
+                for (int i = 0; i < DataLength; i++)
                 {
-                    Grad[i] = 1;
+                    Grad[i] = one;
                 }
 
                 NdArray<T>.Backward(this);
@@ -269,7 +335,7 @@ namespace KelpNet
         {
             if (this.TrainCount > 0)
             {
-                for (int i = 0; i < this.Grad.Length; i++)
+                for (int i = 0; i < this.DataLength; i++)
                 {
                     this.Grad[i] /= this.TrainCount;
                 }
@@ -283,7 +349,7 @@ namespace KelpNet
         //傾きの初期化
         public void ClearGrad()
         {
-            this.Grad = new Real<T>[this.Data.Length];
+            this.Grad = new T[this.DataLength];
 
             //カウンタをリセット
             this.TrainCount = 0;
@@ -291,7 +357,7 @@ namespace KelpNet
 
         public override string ToString()
         {
-            return ToString(this.Data);
+            return ToString(this.Data.Ptr);
         }
 
         public string ToString(string format)
@@ -299,10 +365,10 @@ namespace KelpNet
             switch (format)
             {
                 case "Data":
-                    return ToString(this.Data);
+                    return ToString(this.Data.Ptr);
 
                 case "Grad":
-                    return ToString(this.Grad);
+                    return ToString(this.Grad.Ptr);
 
                 case "Shape":
                     return "[" + string.Join(",", Shape) + "]";
@@ -319,13 +385,15 @@ namespace KelpNet
             }
         }
 
-        public string ToString(Real<T>[] datas)
+        public unsafe string ToString(IntPtr dataPtr)
         {
             StringBuilder sb = new StringBuilder();
 
             int intMaxLength = 0; //整数部の最大値
             int realMaxLength = 0; //小数点以下の最大値
             bool isExponential = false; //指数表現にするか
+
+            Span<T> datas = new Span<T>((void*)dataPtr, DataLength);
 
             foreach (Real<T> data in datas)
             {
@@ -541,6 +609,11 @@ namespace KelpNet
             return new ConstDiv<T>().Forward(a, b)[0];
         }
 
+        //public static implicit operator NdArray<T>(RealArray<T> a)
+        //{
+        //    return new NdArray<T>(a);
+        //}
+
         public static implicit operator NdArray<T>(Real<T>[] a)
         {
             return new NdArray<T>(a);
@@ -561,7 +634,7 @@ namespace KelpNet
         {
             return new NdArray<T>(Data, Shape, BatchCount, ParentFunc)
             {
-                Grad = Grad.ToArray(),
+                Grad = Grad.Clone(),
                 Name = Name,
                 Length = Length,
                 UseCount = UseCount,

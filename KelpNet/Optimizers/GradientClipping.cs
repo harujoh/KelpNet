@@ -37,7 +37,7 @@ namespace KelpNet
             //_sum_sqnorm
             Real<T> s = 0;
 
-            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.DataLength; i++)
             {
                 s += this.FunctionParameter.Grad[i] * this.FunctionParameter.Grad[i];
             }
@@ -47,7 +47,7 @@ namespace KelpNet
 
             if (rate < 1)
             {
-                for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+                for (int i = 0; i < this.FunctionParameter.DataLength; i++)
                 {
                     this.FunctionParameter.Grad[i] *= rate;
                 }

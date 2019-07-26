@@ -37,7 +37,7 @@ namespace KelpNet
 
             if (initialW == null)
             {
-                this.Weight.Data = Enumerable.Repeat((Real<T>)1.0, Weight.Data.Length).ToArray();
+                this.Weight.Data = Enumerable.Repeat((Real<T>)1.0, Weight.DataLength).ToArray();
             }
             else
             {

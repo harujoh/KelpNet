@@ -59,7 +59,7 @@ namespace KelpNetTester.Tests
                     g.DrawImage(baseImage, 0, 0, 227, 227);
                     g.Dispose();
 
-                    Real<T>[] bias = {-123.68f, -116.779f, -103.939f}; //補正値のチャンネル順は入力画像に従う
+                    RealArray<T> bias = new Real<T>[]{-123.68f, -116.779f, -103.939f}; //補正値のチャンネル順は入力画像に従う
                     NdArray<T> imageArray = NdArrayConverter<T>.Image2NdArray(resultImage, false, true, bias);
 
                     Console.WriteLine("Start predict.");
@@ -71,7 +71,8 @@ namespace KelpNetTester.Tests
                                       (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") +
                                       "μｓ");
 
-                    int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
+                    //int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
+                    int maxIndex = result.Data.MaxIndex();
                     Console.WriteLine("[" + result.Data[maxIndex] + "] : " + classList[maxIndex]);
                 } while (ofd.ShowDialog() == DialogResult.OK);
 

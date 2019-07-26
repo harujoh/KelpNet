@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using KelpNet.Sample.DataManager;
 
 namespace KelpNet.Sample.Samples
@@ -32,12 +31,13 @@ namespace KelpNet.Sample.Samples
 
             public NdArray<T> GetTrainData()
             {
-                Real<T>[] tmp = new Real<T>[(256 + 10) * BATCH_DATA_COUNT];
+                RealArray<T> tmp = new T[(256 + 10) * BATCH_DATA_COUNT];
 
                 for (int i = 0; i < BATCH_DATA_COUNT; i++)
                 {
                     tmp[256 + (int)this.Label.Data[i * this.Label.Length] + i * (256 + 10)] = 1;
-                    Array.Copy(this.Result[0].Data, i * this.Result.Length, tmp, i * (256 + 10), 256);
+                    //Array.Copy(this.Result[0].Data, i * this.Result.Length, tmp, i * (256 + 10), 256);
+                    tmp.CopyFrom(this.Result[0].Data, i * this.Result.Length, i * (256 + 10), 256);
                 }
 
                 return NdArray<T>.Convert(tmp, new[] { 256 + 10 }, BATCH_DATA_COUNT);
@@ -88,21 +88,21 @@ namespace KelpNet.Sample.Samples
                 new Linear<T>(256 + 10, 1024, name: "cDNI1 Linear1"),
                 new BatchNormalization<T>(1024, name: "cDNI1 Nrom1"),
                 new ReLU<T>(name: "cDNI1 ReLU1"),
-                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "DNI1 Linear3")
+                new Linear<T>(1024, 256, initialW: new T[1024, 256], name: "DNI1 Linear3")
             );
 
             FunctionStack<T> cDNI2 = new FunctionStack<T>(
                 new Linear<T>(256 + 10, 1024, name: "cDNI2 Linear1"),
                 new BatchNormalization<T>(1024, name: "cDNI2 Nrom1"),
                 new ReLU<T>(name: "cDNI2 ReLU1"),
-                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "cDNI2 Linear3")
+                new Linear<T>(1024, 256, initialW: new T[1024, 256], name: "cDNI2 Linear3")
             );
 
             FunctionStack<T> cDNI3 = new FunctionStack<T>(
                 new Linear<T>(256 + 10, 1024, name: "cDNI3 Linear1"),
                 new BatchNormalization<T>(1024, name: "cDNI3 Nrom1"),
                 new ReLU<T>(name: "cDNI3 ReLU1"),
-                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "cDNI3 Linear3")
+                new Linear<T>(1024, 256, initialW: new T[1024, 256], name: "cDNI3 Linear3")
             );
 
             //optimizerを宣言
@@ -145,7 +145,7 @@ namespace KelpNet.Sample.Samples
                     NdArray<T>[] cDNI1Result = cDNI1.Forward(layer1ResultDataSet.GetTrainData());
 
                     //第一層の傾きを適用
-                    layer1ForwardResult[0].Grad = cDNI1Result[0].Data.ToArray();
+                    layer1ForwardResult[0].Grad = cDNI1Result[0].Data.Clone();
 
                     //第一層を更新
                     Layer1.Backward(layer1ForwardResult);
@@ -160,7 +160,7 @@ namespace KelpNet.Sample.Samples
                     NdArray<T>[] cDNI2Result = cDNI2.Forward(layer2ResultDataSet.GetTrainData());
 
                     //第二層の傾きを適用
-                    layer2ForwardResult[0].Grad = cDNI2Result[0].Data.ToArray();
+                    layer2ForwardResult[0].Grad = cDNI2Result[0].Data.Clone();
 
                     //第二層を更新
                     Layer2.Backward(layer2ForwardResult);
@@ -186,7 +186,7 @@ namespace KelpNet.Sample.Samples
                     NdArray<T>[] cDNI3Result = cDNI3.Forward(layer3ResultDataSet.GetTrainData());
 
                     //第三層の傾きを適用
-                    layer3ForwardResult[0].Grad = cDNI3Result[0].Data.ToArray();
+                    layer3ForwardResult[0].Grad = cDNI3Result[0].Data.Clone();
 
                     //第三層を更新
                     Layer3.Backward(layer3ForwardResult);

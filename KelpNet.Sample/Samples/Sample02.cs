@@ -11,7 +11,7 @@ namespace KelpNet.Sample.Samples
             const int learningCount = 1000;
 
             //訓練データ
-            Real<T>[][] trainData =
+            RealArray<T>[] trainData =
             {
                 new Real<T>[] { 0, 0 },
                 new Real<T>[] { 1, 0 },
@@ -20,7 +20,7 @@ namespace KelpNet.Sample.Samples
             };
 
             //訓練データラベル
-            Real<T>[][] trainLabel =
+            RealArray<T>[] trainLabel =
             {
                 new Real<T>[] { 0 },
                 new Real<T>[] { 1 },
@@ -54,7 +54,7 @@ namespace KelpNet.Sample.Samples
 
             //訓練結果を表示
             Console.WriteLine("Test Start...");
-            foreach (Real<T>[] val in trainData)
+            foreach (RealArray<T> val in trainData)
             {
                 NdArray<T> result = nn.Predict(val)[0];
                 Console.WriteLine(val[0] + " xor " + val[1] + " = " + (result.Data[0] > 0.5 ? 1 : 0) + " " + result);

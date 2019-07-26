@@ -73,7 +73,7 @@ namespace KelpNet
             }
             else
             {
-                this.Weight.Data = Real<T>.GetArray(initialW);
+                this.Weight.Data = initialW;
             }
 
             this.Parameters[0] = this.Weight;
@@ -86,7 +86,7 @@ namespace KelpNet
 
                 if (initialb != null)
                 {
-                    this.Bias.Data = Real<T>.GetArray(initialb);
+                    this.Bias.Data = initialb;
                 }
 
                 this.Parameters[1] = this.Bias;
@@ -98,7 +98,7 @@ namespace KelpNet
             int outputHeight = (input.Shape[1] - 1) * this._subSampleY + this._kHeight - this._trimY * 2;
             int outputWidth = (input.Shape[2] - 1) * this._subSampleX + this._kWidth - this._trimX * 2;
 
-            Real<T>[] result = new Real<T>[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
+            RealArray<T> result = new T[input.BatchCount * this.OutputCount * outputWidth * outputHeight];
 
             int outSizeOffset = outputWidth * outputHeight;
             int inputSizeOffset = input.Shape[1] * input.Shape[2];
@@ -201,11 +201,11 @@ namespace KelpNet
             return NdArray<T>.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        Real<T>[] GetActivatedgy(NdArray<T> y)
+        RealArray<T> GetActivatedgy(NdArray<T> y)
         {
             int gyIndex = 0;
 
-            Real<T>[] activatedgy = new Real<T>[y.Grad.Length];
+            RealArray<T> activatedgy = new T[y.DataLength];
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)
             {
@@ -222,7 +222,7 @@ namespace KelpNet
             return activatedgy;
         }
 
-        void CalcBiasGrad(Real<T>[] gy, int[] gyShape, int batchCount)
+        void CalcBiasGrad(RealArray<T> gy, int[] gyShape, int batchCount)
         {
             int gyIndex = 0;
 
@@ -242,8 +242,8 @@ namespace KelpNet
 
         protected override void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            //Real<T>[] gx = new Real<T>[x.Data.Length];
-            Real<T>[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            //RealArray<T> gx = new T[x.Data.Length];
+            RealArray<T> activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);
 
             //本来のロジック

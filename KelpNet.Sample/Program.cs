@@ -29,7 +29,7 @@ namespace KelpNet.Sample
             //Sample04<RealType>.Run();
 
             //5層CNNによるMNISTの学習
-            //Sample06<RealType>.Run();
+            Sample06<RealType>.Run();
 
             //BatchNormを使った15層MLPによるMNISTの学習
             //Sample07<RealType>.Run();

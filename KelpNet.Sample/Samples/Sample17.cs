@@ -90,7 +90,8 @@ namespace KelpNet.Sample.Samples
                                       (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") +
                                       "μｓ");
 
-                    int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
+                    //int maxIndex = Array.IndexOf(result.Data, result.Data.Max());
+                    int maxIndex = result.Data.MaxIndex();
                     Console.WriteLine("[" + result.Data[maxIndex] + "] : " + classList[maxIndex]);
                 } while (ofd.ShowDialog() == DialogResult.OK);
             }

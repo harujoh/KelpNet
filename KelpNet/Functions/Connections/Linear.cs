@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace KelpNet
 {
@@ -56,21 +57,24 @@ namespace KelpNet
             }
         }
 
-        Real<T>[] GetBiasedValue(int batchCount)
+        unsafe RealArray<T> GetBiasedValue(int batchCount)
         {
-            Real<T>[] y = new Real<T>[OutputCount * batchCount];
+            //T[] y = new T[OutputCount * batchCount];
+            IntPtr y = Marshal.AllocCoTaskMem(OutputCount * batchCount * sizeof(T));
 
             for (int i = 0; i < batchCount; i++)
             {
-                Array.Copy(this.Bias.Data, 0, y, i * this.OutputCount, this.Bias.Data.Length);
+                Buffer.MemoryCopy((void*)this.Bias.Data.Ptr, (void*)(y + i * this.OutputCount * sizeof(T)), OutputCount * sizeof(T), OutputCount * sizeof(T));
+                //Marshal.Copy(this.Bias.Data.Ptr, y, i * this.OutputCount, this.Bias.DataLength);
+                //Array.Copy(this.Bias.Data, 0, y, i * this.OutputCount, this.Bias.DataLength);
             }
 
-            return y;
+            return new RealArray<T>(y, OutputCount * batchCount);
         }
 
         protected override NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real<T>[] y = this.NoBias ? new Real<T>[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
+            RealArray<T> y = this.NoBias ? new T[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
             for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
@@ -85,7 +89,7 @@ namespace KelpNet
 
             if (this.Activator != null)
             {
-                for (int i = 0; i < y.Length; i++)
+                for (int i = 0; i < OutputCount * x.BatchCount; i++)
                 {
                     y[i] = this.Activator.ForwardActivate(y[i]);
                 }
@@ -94,9 +98,9 @@ namespace KelpNet
             return NdArray<T>.Convert(y, new[] { OutputCount }, x.BatchCount, this);
         }
 
-        Real<T>[] GetActivatedgy(NdArray<T> y)
+        RealArray<T> GetActivatedgy(NdArray<T> y)
         {
-            Real<T>[] activatedgY = new Real<T>[y.Grad.Length];
+            RealArray<T> activatedgY = new T[y.DataLength];
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
             {
@@ -110,7 +114,7 @@ namespace KelpNet
             return activatedgY;
         }
 
-        void CalcBiasGrad(Real<T>[] gy, int batchCount)
+        void CalcBiasGrad(RealArray<T> gy, int batchCount)
         {
             for (int batchCounter = 0; batchCounter < batchCount; batchCounter++)
             {
@@ -123,7 +127,7 @@ namespace KelpNet
 
         protected override void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            Real<T>[] activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
+            RealArray<T> activatedgy = this.Activator != null ? GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)

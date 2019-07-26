@@ -48,7 +48,7 @@ namespace KelpNet
                 resultNdArray = NdArray<T>.Concatenate(resultNdArray, ys[i], Axis);
             }
 
-            for (int i = 0; i < x.Grad.Length; i++)
+            for (int i = 0; i < x.DataLength; i++)
             {
                 x.Grad[i] += resultNdArray.Grad[i];
             }

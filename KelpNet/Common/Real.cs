@@ -289,12 +289,12 @@ namespace KelpNet
             Real<T>[] resultData = new Real<T>[data.Length];
 
             //型の不一致をここで吸収
-            if (arrayType != typeof(T) && arrayType != typeof(Real<T>))
+            if (arrayType != typeof(T) || arrayType != typeof(Real<T>))
             {
                 //一次元の長さの配列を用意
                 Array array = Array.CreateInstance(arrayType, data.Length);
                 //一次元化して
-                Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * resultData.Length);
+                Buffer.BlockCopy(data, 0, array, 0, Marshal.SizeOf(arrayType) * data.Length);
 
                 data = new T[array.Length];
 

@@ -38,7 +38,7 @@ namespace KelpNet
 
         protected NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real<T>[] result = new Real<T>[x.Data.Length * this.OutputCount];
+            RealArray<T> result = new T[x.DataLength * this.OutputCount];
 
             for (int b = 0; b < x.BatchCount; b++)
             {

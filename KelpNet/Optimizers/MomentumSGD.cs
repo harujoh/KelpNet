@@ -27,17 +27,17 @@ namespace KelpNet
     class MomentumSGDParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
         private readonly MomentumSGD<T> optimizer;
-        private readonly Real<T>[] v;
+        private RealArray<T> v;
 
         public MomentumSGDParameter(NdArray<T> functionParameter, MomentumSGD<T> optimizer) : base(functionParameter)
         {
-            this.v = new Real<T>[functionParameter.Data.Length];
+            this.v = new T[functionParameter.DataLength];
             this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.DataLength; i++)
             {
                 this.v[i] *= this.optimizer.Momentum;
                 this.v[i] -= this.optimizer.LearningRate * this.FunctionParameter.Grad[i];

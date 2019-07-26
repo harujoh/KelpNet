@@ -20,7 +20,7 @@ namespace KelpNet
 
         protected NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real<T>[] y = new Real<T>[x.Data.Length];
+            RealArray<T> y = new T[x.DataLength];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
@@ -50,7 +50,7 @@ namespace KelpNet
 
         protected void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            for (int i = 0; i < x.Grad.Length; i++)
+            for (int i = 0; i < x.DataLength; i++)
             {
                 x.Grad[i] += (1.0 - 1.0 / (1.0 + Math.Exp(this._beta * y.Data[i]))) * y.Grad[i];
             }

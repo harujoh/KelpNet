@@ -15,7 +15,7 @@ namespace KelpNet
 
         protected NdArray<T> NeedPreviousForwardCpu(NdArray<T> x)
         {
-            Real<T>[] y = new Real<T>[x.Data.Length];
+            RealArray<T> y = new T[x.DataLength];
 
             int indexOffset = 0;
 
@@ -52,7 +52,7 @@ namespace KelpNet
 
         protected void NeedPreviousBackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            Real<T>[] gx = new Real<T>[y.Grad.Length];
+            RealArray<T> gx = new T[y.DataLength];
 
             int indexOffset = 0;
 
@@ -74,7 +74,7 @@ namespace KelpNet
                 indexOffset += y.Length;
             }
 
-            for (int i = 0; i < x.Grad.Length; i++)
+            for (int i = 0; i < x.DataLength; i++)
             {
                 x.Grad[i] += gx[i];
             }

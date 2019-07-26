@@ -15,7 +15,7 @@ namespace KelpNet.Benchmark
 
 
             //1次元データを用意
-            NdArray<T> inputArrayCpu = new NdArray<T>(BenchDataMaker<T>.GetArray(INPUT_SIZE));
+            NdArray<T> inputArrayCpu = new NdArray<T>(BenchDataMaker<T>.GetArray(INPUT_SIZE), new[] { INPUT_SIZE });
 
 
             //Linear

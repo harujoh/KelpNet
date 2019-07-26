@@ -14,9 +14,9 @@ namespace KelpNet
 
         protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real<T>[] resultData = new Real<T>[a.Data.Length];
+            RealArray<T> resultData = new T[a.DataLength];
 
-            for (int i = 0; i < resultData.Length; i++)
+            for (int i = 0; i < a.DataLength; i++)
             {
                 resultData[i] = a.Data[i] / b.Data[i];
             }
@@ -26,7 +26,7 @@ namespace KelpNet
 
         protected void BackwardCpu(NdArray<T> y, NdArray<T> a, NdArray<T> b)
         {
-            for (int i = 0; i < y.Grad.Length; i++)
+            for (int i = 0; i < y.DataLength; i++)
             {
                 Real<T> gx = y.Grad[i] / b.Data[i];
                 a.Grad[i] += gx;
@@ -48,10 +48,10 @@ namespace KelpNet
 
         protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real<T>[] resultData = new Real<T>[a.Data.Length];
+            RealArray<T> resultData = new T[a.DataLength];
             Real<T> val = b.Data[0];
 
-            for (int i = 0; i < resultData.Length; i++)
+            for (int i = 0; i < a.DataLength; i++)
             {
                 resultData[i] = a.Data[i] / val;
             }
@@ -63,7 +63,7 @@ namespace KelpNet
         {
             Real<T> val = b.Data[0];
 
-            for (int i = 0; i < y.Grad.Length; i++)
+            for (int i = 0; i < y.DataLength; i++)
             {
                 a.Grad[i] += y.Grad[i] / val;
             }
@@ -83,10 +83,10 @@ namespace KelpNet
 
         protected NdArray<T> ForwardCpu(NdArray<T> a, NdArray<T> b)
         {
-            Real<T>[] resultData = new Real<T>[a.Data.Length];
+            RealArray<T> resultData = new T[a.DataLength];
             Real<T> val = a.Data[0];
 
-            for (int i = 0; i < resultData.Length; i++)
+            for (int i = 0; i < a.DataLength; i++)
             {
                 resultData[i] = val / b.Data[i];
             }
@@ -98,7 +98,7 @@ namespace KelpNet
         {
             Real<T> val = a.Data[0];
 
-            for (int i = 0; i < y.Grad.Length; i++)
+            for (int i = 0; i < y.DataLength; i++)
             {
                 Real<T> gx = y.Grad[i] / b.Data[i];
                 b.Grad[i] += -gx * val / b.Data[i];

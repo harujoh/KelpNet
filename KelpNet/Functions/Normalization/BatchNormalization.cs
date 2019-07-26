@@ -23,11 +23,11 @@ namespace KelpNet
         private readonly Real<T> Decay;
         private readonly Real<T> Eps;
 
-        private Real<T>[] Std;
-        private Real<T>[] Xhat;
+        private RealArray<T> Std;
+        private RealArray<T> Xhat;
 
-        private Real<T>[] Mean;
-        private Real<T>[] Variance;
+        private RealArray<T> Mean;
+        private RealArray<T> Variance;
 
         private readonly int ChannelSize;
 
@@ -82,8 +82,8 @@ namespace KelpNet
             if (this.IsTrain)
             {
                 //メンバのMeanとVarianceを設定する
-                this.Variance = new Real<T>[this.ChannelSize];
-                this.Mean = new Real<T>[this.ChannelSize];
+                this.Variance = new T[this.ChannelSize];
+                this.Mean = new T[this.ChannelSize];
 
                 for (int i = 0; i < this.ChannelSize; i++)
                 {
@@ -112,17 +112,17 @@ namespace KelpNet
                 this.Variance = this.AvgVar.Data;
             }
 
-            this.Std = new Real<T>[this.ChannelSize];
+            this.Std = new T[this.ChannelSize];
 
-            for (int i = 0; i < this.Std.Length; i++)
+            for (int i = 0; i < this.ChannelSize; i++)
             {
                 this.Std[i] = Math.Sqrt(this.Variance[i]);
             }
 
             //結果を計算
-            this.Xhat = new Real<T>[x.Data.Length];
+            this.Xhat = new T[x.DataLength];
 
-            Real<T>[] y = new Real<T>[x.Data.Length];
+            RealArray<T> y = new T[x.DataLength];
 
             int dataSize = 1;
 
@@ -151,7 +151,7 @@ namespace KelpNet
                 int m = x.BatchCount;
                 Real<T> adjust = (m / Math.Max(m - 1.0, 1.0)); // unbiased estimation
 
-                for (int i = 0; i < this.AvgMean.Data.Length; i++)
+                for (int i = 0; i < this.AvgMean.DataLength; i++)
                 {
                     this.AvgMean.Data[i] *= this.Decay;
                     this.Mean[i] *= 1 - this.Decay; // reuse buffer as a temporary

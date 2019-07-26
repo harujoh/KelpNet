@@ -49,7 +49,7 @@ namespace KelpNet
 
             for (int i = 0; i < xs.Length; i++)
             {
-                for (int j = 0; j < xs[i].Grad.Length; j++)
+                for (int j = 0; j < xs[i].DataLength; j++)
                 {
                     xs[i].Grad[j] += result[i].Grad[j];
                 }

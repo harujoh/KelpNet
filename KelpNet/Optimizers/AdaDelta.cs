@@ -26,20 +26,20 @@ namespace KelpNet
     [Serializable]
     class AdaDeltaParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
     {
-        private readonly Real<T>[] msg;
-        private readonly Real<T>[] msdx;
+        private RealArray<T> msg;
+        private RealArray<T> msdx;
         private readonly AdaDelta<T> optimizer;
 
         public AdaDeltaParameter(NdArray<T> functionParameter, AdaDelta<T> optimizer) : base(functionParameter)
         {
-            this.msg = new Real<T>[functionParameter.Data.Length];
-            this.msdx = new Real<T>[functionParameter.Data.Length];
+            this.msg = new T[functionParameter.DataLength];
+            this.msdx = new T[functionParameter.DataLength];
             this.optimizer = optimizer;
         }
 
         public override void UpdateFunctionParameters()
         {
-            for (int i = 0; i < this.FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < this.FunctionParameter.DataLength; i++)
             {
                 Real<T> grad = this.FunctionParameter.Grad[i];
                 this.msg[i] *= this.optimizer.Rho;

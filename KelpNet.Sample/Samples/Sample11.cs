@@ -65,7 +65,7 @@ namespace KelpNet.Sample.Samples
                 new Linear<T>(1024, 1024, name: "DNI1 Linear2"),
                 new BatchNormalization<T>(1024, name: "DNI1 Nrom2"),
                 new ReLU<T>(name: "DNI1 ReLU2"),
-                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "DNI1 Linear3")
+                new Linear<T>(1024, 256, initialW: new T[1024, 256], name: "DNI1 Linear3")
             );
 
             FunctionStack<T> DNI2 = new FunctionStack<T>(
@@ -75,7 +75,7 @@ namespace KelpNet.Sample.Samples
                 new Linear<T>(1024, 1024, name: "DNI2 Linear2"),
                 new BatchNormalization<T>(1024, name: "DNI2 Nrom2"),
                 new ReLU<T>(name: "DNI2 ReLU2"),
-                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "DNI2 Linear3")
+                new Linear<T>(1024, 256, initialW: new T[1024, 256], name: "DNI2 Linear3")
             );
 
             FunctionStack<T> DNI3 = new FunctionStack<T>(
@@ -85,7 +85,7 @@ namespace KelpNet.Sample.Samples
                 new Linear<T>(1024, 1024, name: "DNI3 Linear2"),
                 new BatchNormalization<T>(1024, name: "DNI3 Nrom2"),
                 new ReLU<T>(name: "DNI3 ReLU2"),
-                new Linear<T>(1024, 256, initialW: new Real<T>[1024, 256], name: "DNI3 Linear3")
+                new Linear<T>(1024, 256, initialW: new T[1024, 256], name: "DNI3 Linear3")
             );
 
             //optimizerを宣言
@@ -126,7 +126,7 @@ namespace KelpNet.Sample.Samples
                     NdArray<T>[] DNI1Result = DNI1.Forward(layer1ForwardResult);
 
                     //第一層の傾きを適用
-                    layer1ForwardResult[0].Grad = DNI1Result[0].Data.ToArray();
+                    layer1ForwardResult[0].Grad = DNI1Result[0].Data.Clone();
 
                     //第一層を更新
                     Layer1.Backward(layer1ForwardResult);
@@ -140,7 +140,7 @@ namespace KelpNet.Sample.Samples
                     NdArray<T>[] DNI2Result = DNI2.Forward(layer2ForwardResult);
 
                     //第二層の傾きを適用
-                    layer2ForwardResult[0].Grad = DNI2Result[0].Data.ToArray();
+                    layer2ForwardResult[0].Grad = DNI2Result[0].Data.Clone();
 
                     //第二層を更新
                     Layer2.Backward(layer2ForwardResult);
@@ -164,7 +164,7 @@ namespace KelpNet.Sample.Samples
                     NdArray<T>[] DNI3Result = DNI3.Forward(layer3ForwardResult);
 
                     //第三層の傾きを適用
-                    layer3ForwardResult[0].Grad = DNI3Result[0].Data.ToArray();
+                    layer3ForwardResult[0].Grad = DNI3Result[0].Data.Clone();
 
                     //第三層を更新
                     Layer3.Backward(layer3ForwardResult);

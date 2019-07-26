@@ -114,14 +114,14 @@ namespace KelpNet
             if (axis.Count > 0)
             {
                 NdArray<T> result = NdArray<T>.Sum(y, true, axis.ToArray());
-                for (int i = 0; i < x.Grad.Length; i++)
+                for (int i = 0; i < x.DataLength; i++)
                 {
                     x.Grad[i] += result.Grad[i];
                 }
             }
             else
             {
-                for (int i = 0; i < x.Grad.Length; i++)
+                for (int i = 0; i < x.DataLength; i++)
                 {
                     x.Grad[i] += y.Grad[i];
                 }

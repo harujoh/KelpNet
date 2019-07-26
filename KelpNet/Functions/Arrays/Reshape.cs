@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace KelpNet
 {
@@ -27,8 +26,7 @@ namespace KelpNet
 
         void BackwardCpu(NdArray<T> y, NdArray<T> x)
         {
-            y.Grad = x.Grad.ToArray();
+            y.Grad = x.Grad.Clone();
         }
     }
-    
 }

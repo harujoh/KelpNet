@@ -9,7 +9,7 @@ namespace KelpNet
         {
             Real<T> s = (1.0 / Math.Sqrt(2.0) * Math.Sqrt(2.0 / GetFans(array.Shape)));
 
-            for (int i = 0; i < array.Data.Length; i++)
+            for (int i = 0; i < array.DataLength; i++)
             {
                 array.Data[i] = Mother<T>.RandomNormal(s) * masterScale;
             }
