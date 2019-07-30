@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name = "TanhActivation")]
+    [DataContract(Name = "TanhActivation", Namespace = "KelpNet")]
     public class TanhActivation : SelectableSingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "TanhActivation";

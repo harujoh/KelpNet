@@ -43,13 +43,15 @@ namespace KelpNet.Sample
                 string modelFilePath = InternetFileDownloader.Donwload(Urls[vggId], FileNames[vggId], Hashes[vggId]);
 
                 List<Function> vggNet = CaffemodelDataLoader.ModelLoad(modelFilePath);
+
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
                 for (int i = 0; i < vggNet.Count - 1; i++)
                 {
-                    if (vggNet[i] is Convolution2D || vggNet[i] is Linear || vggNet[i] is MaxPooling2D)
+                    if (vggNet[i] is CPU.Convolution2D || vggNet[i] is CPU.Linear || vggNet[i] is CPU.MaxPooling2D)
                     {
+                        vggNet[i] = CLConverter.Convert(vggNet[i]);
                         ((IParallelizable)vggNet[i]).SetParallel(true);
                     }
                 }

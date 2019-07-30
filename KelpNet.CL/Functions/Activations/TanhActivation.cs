@@ -5,7 +5,7 @@ using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [DataContract(Name = "TanhActivation")]
+    [DataContract(Name = "TanhActivation", Namespace = "KelpNet")]
     public class TanhActivation : CPU.TanhActivation, ICompressibleActivation
     {
         const string FUNCTION_NAME = "TanhActivation";

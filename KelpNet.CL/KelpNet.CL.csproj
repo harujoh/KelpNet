@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CLConverter.cs" />
     <Compile Include="Common\Functions\Interface\ICompressibleActivation.cs" />
     <Compile Include="Common\Functions\Interface\ICompressibleFunction.cs" />
     <Compile Include="Common\Functions\Interface\IParallelizable.cs" />

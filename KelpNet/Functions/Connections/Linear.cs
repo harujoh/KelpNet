@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name = "Linear")]
+    [DataContract(Name = "Linear", Namespace = "KelpNet")]
     public class Linear : SelectableSingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";

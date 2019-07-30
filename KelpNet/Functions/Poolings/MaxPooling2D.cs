@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name="MaxPooling2D")]
+    [DataContract(Name="MaxPooling2D", Namespace = "KelpNet")]
     public class MaxPooling2D : SelectableSingleInputFunction, INeedPreviousFunction
     {
         const string FUNCTION_NAME = "MaxPooling2D";

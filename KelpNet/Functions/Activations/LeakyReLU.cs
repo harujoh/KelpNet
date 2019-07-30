@@ -2,7 +2,7 @@
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name = "LeakyReLU")]
+    [DataContract(Name = "LeakyReLU", Namespace = "KelpNet")]
     public class LeakyReLU : SelectableSingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "LeakyReLU";

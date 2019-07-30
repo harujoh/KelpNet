@@ -5,7 +5,7 @@ using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [DataContract(Name = "ReLU")]
+    [DataContract(Name = "ReLU", Namespace = "KelpNet")]
     public class ReLU : CPU.ReLU, ICompressibleActivation
     {
         const string FUNCTION_NAME = "ReLU";

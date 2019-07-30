@@ -7,7 +7,7 @@ using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [DataContract(Name = "Dropout")]
+    [DataContract(Name = "Dropout", Namespace = "KelpNet")]
     public class Dropout : SelectableSingleInputFunction, IParallelizable
     {
         const string FUNCTION_NAME = "Dropout";

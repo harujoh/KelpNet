@@ -5,7 +5,7 @@ using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [DataContract(Name = "Sigmoid")]
+    [DataContract(Name = "Sigmoid", Namespace = "KelpNet")]
     public class Sigmoid : CPU.Sigmoid, ICompressibleActivation
     {
         const string FUNCTION_NAME = "Sigmoid";

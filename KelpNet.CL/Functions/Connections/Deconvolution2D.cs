@@ -5,7 +5,7 @@ using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [DataContract(Name = "Deconvolution2D")]
+    [DataContract(Name = "Deconvolution2D", Namespace = "KelpNet")]
     public class Deconvolution2D : CPU.Deconvolution2D, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Deconvolution2D";

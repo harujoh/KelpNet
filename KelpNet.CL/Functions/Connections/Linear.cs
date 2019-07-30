@@ -5,7 +5,7 @@ using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [DataContract(Name = "Linear")]
+    [DataContract(Name = "Linear", Namespace = "KelpNet")]
     public class Linear : CPU.Linear, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";

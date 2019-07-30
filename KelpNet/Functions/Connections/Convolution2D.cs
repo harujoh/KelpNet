@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name = "Convolution2D")]
+    [DataContract(Name = "Convolution2D", Namespace = "KelpNet")]
     public class Convolution2D : SelectableSingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Convolution2D";

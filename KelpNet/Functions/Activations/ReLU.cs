@@ -2,7 +2,7 @@
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name = "ReLU")]
+    [DataContract(Name = "ReLU", Namespace = "KelpNet")]
     public class ReLU : SelectableSingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "ReLU";

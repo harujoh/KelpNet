@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name = "Dropout")]
+    [DataContract(Name = "Dropout", Namespace = "KelpNet")]
     public class Dropout : SelectableSingleInputFunction, INeedPreviousFunction
     {
         const string FUNCTION_NAME = "Dropout";
