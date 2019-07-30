@@ -12,12 +12,9 @@ namespace KelpNet
         public ELU(double alpha = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Alpha = alpha;
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        private NdArray NeedPreviousForwardCpu(NdArray x)
+        protected override NdArray SingleInputForward(NdArray x)
         {
             Real[] result = new Real[x.Data.Length];
 
@@ -36,7 +33,7 @@ namespace KelpNet
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {

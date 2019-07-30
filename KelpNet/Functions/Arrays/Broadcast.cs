@@ -13,12 +13,9 @@ namespace KelpNet
         public Broadcast(int[] shape, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Shape = shape.ToArray();
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        NdArray ForwardCpu(NdArray val)
+        protected override NdArray SingleInputForward(NdArray val)
         {
             int[] resultShape;
 
@@ -93,7 +90,7 @@ namespace KelpNet
             return result;
         }
 
-        protected void BackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             int ndim = x.Shape.Length;
 

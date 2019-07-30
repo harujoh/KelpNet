@@ -50,7 +50,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class AdamParameter : OptimizerParameter
+    public class AdamParameter : OptimizerParameter
     {
         private readonly Adam _optimizer;
 

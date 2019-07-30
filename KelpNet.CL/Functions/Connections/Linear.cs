@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using Cloo;
 using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [Serializable]
+    [DataContract(Name = "Linear")]
     public class Linear : CPU.Linear, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";
@@ -12,10 +13,20 @@ namespace KelpNet.CL
         public ComputeKernel ForwardKernel { get; set; }
         public ComputeKernel BackwardgWKernel { get; set; }
         public ComputeKernel BackwardgXKernel { get; set; }
+
+        [DataMember]
         public string ForwardKernelName { get; set; }
+
+        [DataMember]
         public string BackwardgWKernelName { get; set; }
+
+        [DataMember]
         public string BackwardgXKernelName { get; set; }
+
+        [DataMember]
         public string KernelString { get; set; }
+
+        [DataMember]
         public bool IsParallel { get; set; }
 
         void IParallelizable.InitParallel()
@@ -30,7 +41,7 @@ namespace KelpNet.CL
 
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Linear), activation, name, inputNames, outputNames, gpuEnable);
+            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Linear), activation, gpuEnable);
         }
 
         public NdArray NeedPreviousForwardGpu(NdArray x)

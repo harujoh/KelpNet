@@ -10,12 +10,9 @@ namespace KelpNet
         public Reshape(int[] shape, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Shape = shape;
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        NdArray ForwardCpu(NdArray val)
+        protected override NdArray SingleInputForward(NdArray val)
         {
             NdArray result = val.Clone();
             result.ParentFunc = this;
@@ -24,7 +21,7 @@ namespace KelpNet
             return result;
         }
 
-        void BackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             y.Grad = x.Grad.ToArray();
         }

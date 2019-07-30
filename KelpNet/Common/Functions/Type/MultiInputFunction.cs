@@ -5,8 +5,8 @@ namespace KelpNet
     [Serializable]
     public abstract class MultiInputFunction : Function
     {
-        protected Func<NdArray[], NdArray> MultiInputForward;
-        protected Action<NdArray, NdArray[]> MultiOutputBackward;
+        protected abstract NdArray MultiInputForward(params NdArray[] xs);
+        protected abstract void MultiOutputBackward(NdArray y, NdArray[] xs);
 
         protected MultiInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {

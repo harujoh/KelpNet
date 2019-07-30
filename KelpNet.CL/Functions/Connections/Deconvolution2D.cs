@@ -1,22 +1,32 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using Cloo;
 using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [Serializable]
+    [DataContract(Name = "Deconvolution2D")]
     public class Deconvolution2D : CPU.Deconvolution2D, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Deconvolution2D";
 
-        public bool IsParallel { get; set; }
-
         public ComputeKernel ForwardKernel { get; set; }
         public ComputeKernel BackwardgWKernel { get; set; }
         public ComputeKernel BackwardgXKernel { get; set; }
+
+        [DataMember]
+        public bool IsParallel { get; set; }
+
+        [DataMember]
         public string ForwardKernelName { get; set; }
+
+        [DataMember]
         public string BackwardgWKernelName { get; set; }
+
+        [DataMember]
         public string BackwardgXKernelName { get; set; }
+
+        [DataMember]
         public string KernelString { get; set; }
 
         void IParallelizable.InitParallel()
@@ -31,12 +41,12 @@ namespace KelpNet.CL
 
         public Deconvolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kernelSize, stride, pad, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, name, inputNames, outputNames, gpuEnable);
+            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, gpuEnable);
         }
 
         public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kSize, subSample, trim, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, name, inputNames, outputNames, gpuEnable);
+            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, gpuEnable);
         }
 
         public NdArray NeedPreviousForwardGpu(NdArray input)

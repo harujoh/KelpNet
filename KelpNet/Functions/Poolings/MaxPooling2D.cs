@@ -1,19 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [Serializable]
-    public class MaxPooling2D : SingleInputFunction
+    [DataContract(Name="MaxPooling2D")]
+    public class MaxPooling2D : SelectableSingleInputFunction, INeedPreviousFunction
     {
         const string FUNCTION_NAME = "MaxPooling2D";
 
+        [DataMember]
         public int KernelWidth;
+
+        [DataMember]
         public int KernelHeight;
+
+        [DataMember]
         public int PadX;
+
+        [DataMember]
         public int PadY;
+
+        [DataMember]
         public int StrideX;
+
+        [DataMember]
         public int StrideY;
+
+        [DataMember]
         public bool CoverAll;
 
         [NonSerialized]
@@ -29,8 +43,8 @@ namespace KelpNet.CPU
             this.StrideY = stride;
             this.CoverAll = coverAll;
 
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         public MaxPooling2D(int[] kernelSize, int[] stride = null, int[] pad = null, bool coverAll = true, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
@@ -49,11 +63,11 @@ namespace KelpNet.CPU
             this.StrideY = stride[1];
             this.CoverAll = coverAll;
 
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
+            SingleInputForward = NeedPreviousForwardCpu;
+            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        private NdArray ForwardCpu(NdArray input)
+        public NdArray NeedPreviousForwardCpu(NdArray input)
         {
             int outputHeight = CoverAll ?
                 (int)Math.Floor((input.Shape[1] - this.KernelHeight + this.PadY * 2.0 + this.StrideY - 1.0) / this.StrideY) + 1 :
@@ -138,7 +152,7 @@ namespace KelpNet.CPU
             return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        private void BackwardCpu(NdArray y, NdArray x)
+        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
         {
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);

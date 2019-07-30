@@ -1,31 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using Cloo;
 using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [Serializable]
-    public class MaxPooling2D : SingleInputFunction, IParallelizable
+    [DataContract(Name = "MaxPooling2D")]
+    public class MaxPooling2D : SelectableSingleInputFunction, IParallelizable
     {
         const string FUNCTION_NAME = "MaxPooling2D";
 
+        [DataMember]
         public int KernelWidth;
+
+        [DataMember]
         public int KernelHeight;
+
+        [DataMember]
         public int PadX;
+
+        [DataMember]
         public int PadY;
+
+        [DataMember]
         public int StrideX;
+
+        [DataMember]
         public int StrideY;
+
+        [DataMember]
         public bool CoverAll;
 
-        [NonSerialized]
+        //[NonSerialized]
         private List<int[]> _outputIndicesList = new List<int[]>();
 
-        [NonSerialized]
+        //[NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
+        [DataMember]
         public bool IsParallel { get; set; }
 
         public MaxPooling2D(int ksize, int stride = 1, int pad = 0, bool coverAll = true, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)

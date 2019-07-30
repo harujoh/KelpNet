@@ -1,6 +1,6 @@
 ﻿namespace KelpNet
 {
-    public interface ICompressibleActivation : ISingleInputFunction
+    public interface ICompressibleActivation : ISelectableSingleInputFunction
     {
         Real ForwardActivate(Real x);
         Real BackwardActivate(Real gy, Real y);

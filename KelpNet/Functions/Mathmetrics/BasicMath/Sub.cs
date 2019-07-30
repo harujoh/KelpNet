@@ -6,11 +6,9 @@
 
         public Sub(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            DualInputForward = ForwardCpu;
-            DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected override NdArray DualInputForward(NdArray a, NdArray b)
         {
             Real[] resultData = new Real[a.Data.Length];
 
@@ -22,7 +20,7 @@
             return new NdArray(resultData, a.Shape, a.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected override void DualOutputBackward(NdArray y, NdArray a, NdArray b)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
@@ -39,11 +37,9 @@
 
         public SubConst(string name = FUNCTION_NAME) : base(name)
         {
-            DualInputForward = ForwardCpu;
-            DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected override NdArray DualInputForward(NdArray a, NdArray b)
         {
             Real[] resultData = new Real[a.Data.Length];
             Real val = b.Data[0];
@@ -56,7 +52,7 @@
             return new NdArray(resultData, a.Shape, a.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected override void DualOutputBackward(NdArray y, NdArray a, NdArray b)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
@@ -72,11 +68,9 @@
 
         public ConstSub(string name = FUNCTION_NAME) : base(name)
         {
-            DualInputForward = ForwardCpu;
-            DualOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray a, NdArray b)
+        protected override NdArray DualInputForward(NdArray a, NdArray b)
         {
             Real[] resultData = new Real[a.Data.Length];
             Real val = a.Data[0];
@@ -89,7 +83,7 @@
             return new NdArray(resultData, b.Shape, b.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray a, NdArray b)
+        protected override void DualOutputBackward(NdArray y, NdArray a, NdArray b)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {

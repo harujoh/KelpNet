@@ -27,7 +27,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class RMSpropParameter : OptimizerParameter
+    public class RMSpropParameter : OptimizerParameter
     {
         private readonly RMSprop optimizer;
         private readonly Real[] ms;

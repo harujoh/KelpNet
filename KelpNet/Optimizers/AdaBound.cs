@@ -49,7 +49,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class AdaBoundParameter : OptimizerParameter
+    public class AdaBoundParameter : OptimizerParameter
     {
         private readonly AdaBound _optimizer;
 

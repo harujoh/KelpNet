@@ -1,9 +1,9 @@
-﻿using System;
+﻿using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [Serializable]
-    public class ReLU : SingleInputFunction, ICompressibleActivation
+    [DataContract(Name = "ReLU")]
+    public class ReLU : SelectableSingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "ReLU";
 

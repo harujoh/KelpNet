@@ -1,28 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using Cloo;
 using KelpNet.CL.Properties;
 
 namespace KelpNet.CL
 {
-    [Serializable]
-    public class Dropout : SingleInputFunction, IParallelizable
+    [DataContract(Name = "Dropout")]
+    public class Dropout : SelectableSingleInputFunction, IParallelizable
     {
         const string FUNCTION_NAME = "Dropout";
 
+        [DataMember]
         public Real DropoutRatio;
+
+        [DataMember]
         private readonly List<Real[]> maskStack = new List<Real[]>();
 
-        [NonSerialized]
+
+        //[NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
 
-        [NonSerialized]
+        //[NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardKernel;
 
+
+        [DataMember]
         public bool IsParallel { get; set; }
 
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)

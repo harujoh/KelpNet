@@ -1,20 +1,32 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [Serializable]
-    public class Linear : SingleInputFunction, ICompressibleFunction
+    [DataContract(Name = "Linear")]
+    public class Linear : SelectableSingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";
 
+        [DataMember]
         public NdArray Weight;
+
+        [DataMember]
         public NdArray Bias;
 
+
+        [DataMember]
         public bool NoBias;
 
+
+        [DataMember]
         public int InputCount;
+
+        [DataMember]
         public int OutputCount;
 
+
+        [DataMember]
         public ICompressibleActivation Activation { get; set; }
 
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)

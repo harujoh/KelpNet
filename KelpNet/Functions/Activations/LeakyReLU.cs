@@ -1,12 +1,13 @@
-﻿using System;
+﻿using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [Serializable]
-    public class LeakyReLU : SingleInputFunction, ICompressibleActivation
+    [DataContract(Name = "LeakyReLU")]
+    public class LeakyReLU : SelectableSingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "LeakyReLU";
 
+        [DataMember]
         public Real Slope;
 
         public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)

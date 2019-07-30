@@ -8,11 +8,9 @@ namespace KelpNet
 
         public Sinh(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray x)
+        protected override NdArray SingleInputForward(NdArray x)
         {
             Real[] resultData = new Real[x.Data.Length];
 
@@ -24,7 +22,7 @@ namespace KelpNet
             return new NdArray(resultData, x.Shape, x.BatchCount, this);
         }
 
-        protected void BackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {

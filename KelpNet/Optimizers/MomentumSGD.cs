@@ -25,7 +25,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class MomentumSGDParameter : OptimizerParameter
+    public class MomentumSGDParameter : OptimizerParameter
     {
         private readonly MomentumSGD optimizer;
         private readonly Real[] v;

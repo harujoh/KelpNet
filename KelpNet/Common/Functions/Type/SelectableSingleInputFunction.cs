@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace KelpNet
 {
-    [Serializable]
-    public abstract class SingleInputFunction : Function
+    [DataContract]
+    public abstract class SelectableSingleInputFunction : Function, ISelectableSingleInputFunction
     {
-        protected abstract NdArray SingleInputForward(NdArray x);
-        protected abstract void SingleOutputBackward(NdArray y, NdArray x);
-
-        protected SingleInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public Func<NdArray, NdArray> SingleInputForward { get; set; }
+        public Action<NdArray, NdArray> SingleOutputBackward { get; set; }
+    
+        protected SelectableSingleInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
         }
 

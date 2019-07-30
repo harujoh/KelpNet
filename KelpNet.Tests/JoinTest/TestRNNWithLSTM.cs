@@ -52,7 +52,7 @@ namespace KelpNet.Tests.JoinTest
 
             //KelpNet
             KelpNet.CL.Linear linear1 = new KelpNet.CL.Linear(inputCount, hiddenCount, false, w1, b1);
-            KelpNet.CL.LSTM lstm = new KelpNet.CL.LSTM(hiddenCount, hiddenCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
+            KelpNet.LSTM lstm = new KelpNet.LSTM(hiddenCount, hiddenCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
             KelpNet.CL.Linear linear2 = new KelpNet.CL.Linear(hiddenCount, outputCount, false, w2, b2);
 
             NdArray x1 = new NdArray(Real.ToRealArray(input), new[] { 1 }, 5);

@@ -21,9 +21,7 @@ namespace KelpNet.CL
 
     public static class CompressibleActivation
     {
-        const string FUNCTION_NAME = "CompressibleFunction";
-
-        public static void Initialize(this ICompressibleActivation compressibleActivation, string functionName, string activateFunctionString, KeyValuePair<string, string>[] parameters, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false)
+        public static void Initialize(this ICompressibleActivation compressibleActivation, string functionName, string activateFunctionString, KeyValuePair<string, string>[] parameters, bool gpuEnable = false)
         {
             string kernelNameBase = functionName.Replace(" ", "");
 

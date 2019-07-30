@@ -30,7 +30,7 @@ namespace KelpNet
         public void Add(Function function)
         {
             if (_compress && //分岐毎のまとめを行うか
-                (function is SingleInputFunction || function is MultiOutputFunction)) //入力が一つの関数のみまとめられる
+                (function is SingleInputFunction || function is SelectableSingleInputFunction || function is MultiOutputFunction)) //入力が一つの関数のみまとめられる
             {
                 //入力名称で辞書に登録が有るかチェック
                 if (this.FunctionBlockDictionary.ContainsKey(function.InputNames[0]))

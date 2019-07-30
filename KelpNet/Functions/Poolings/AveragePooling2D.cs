@@ -22,9 +22,6 @@ namespace KelpNet
             this.PadX = pad;
             this.StrideX = stride;
             this.StrideY = stride;
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
         public AveragePooling2D(int[] kernelSize, int[] stride = null, int[] pad = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
@@ -41,12 +38,9 @@ namespace KelpNet
             this.PadY = pad[1];
             this.StrideX = stride[0];
             this.StrideY = stride[1];
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray input)
+        protected override NdArray SingleInputForward(NdArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this.KernelHeight + this.PadY * 2.0) / this.StrideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this.KernelWidth + this.PadX * 2.0) / this.StrideX) + 1;
@@ -95,7 +89,7 @@ namespace KelpNet
             return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real m = this.KernelHeight * this.KernelWidth;
 

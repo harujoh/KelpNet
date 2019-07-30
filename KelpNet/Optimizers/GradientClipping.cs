@@ -24,7 +24,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class GradientClippingParameter : OptimizerParameter
+    public class GradientClippingParameter : OptimizerParameter
     {
         private readonly GradientClipping optimizer;
 

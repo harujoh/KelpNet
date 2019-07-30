@@ -16,12 +16,9 @@ namespace KelpNet.Tools
         {
             this._operation = operation;
             this._coeffs = coeffs;
-
-            MultiInputForward = ForwardCpu;
-            MultiOutputBackward = BackwardCpu;
         }
 
-        public NdArray ForwardCpu(params NdArray[] xs)
+        protected override NdArray MultiInputForward(params NdArray[] xs)
         {
             Real[] result = new Real[xs[0].Data.Length];
 
@@ -84,7 +81,7 @@ namespace KelpNet.Tools
             return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount, this);
         }
 
-        public void BackwardCpu(NdArray y, params NdArray[] xs)
+        protected override void MultiOutputBackward(NdArray y, params NdArray[] xs)
         {
             Real[][] result = new Real[xs.Length][];
             for (int i = 0; i < result.Length; i++)

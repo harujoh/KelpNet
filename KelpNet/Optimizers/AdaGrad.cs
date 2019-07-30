@@ -25,7 +25,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class AdaGradParameter : OptimizerParameter
+    public class AdaGradParameter : OptimizerParameter
     {
         private readonly AdaGrad optimizer;
         private readonly Real[] h;

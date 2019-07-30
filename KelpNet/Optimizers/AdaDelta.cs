@@ -25,7 +25,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class AdaDeltaParameter : OptimizerParameter
+    public class AdaDeltaParameter : OptimizerParameter
     {
         private readonly Real[] msg;
         private readonly Real[] msdx;

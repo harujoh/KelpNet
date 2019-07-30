@@ -5,8 +5,8 @@ namespace KelpNet
     [Serializable]
     public abstract class DualInputFunction : Function
     {
-        protected Func<NdArray, NdArray, NdArray> DualInputForward;
-        protected Action<NdArray, NdArray, NdArray> DualOutputBackward;
+        protected abstract NdArray DualInputForward(NdArray a, NdArray b);
+        protected abstract void DualOutputBackward(NdArray y, NdArray a, NdArray b);
 
         protected DualInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {

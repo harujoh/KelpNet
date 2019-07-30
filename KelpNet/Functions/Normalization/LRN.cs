@@ -19,12 +19,9 @@ namespace KelpNet
             this.k = (Real)k;
             this.alpha = (Real)alpha;
             this.beta = (Real)beta;
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        private NdArray NeedPreviousForwardCpu(NdArray input)
+        protected override NdArray SingleInputForward(NdArray input)
         {
             int nHalf = n / 2;
             Real[] result = new Real[input.Data.Length];
@@ -70,7 +67,7 @@ namespace KelpNet
             return NdArray.Convert(result, input.Shape, input.BatchCount, this);
         }
 
-        private void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             int nHalf = n / 2;
             Real[] summand = new Real[y.Grad.Length];

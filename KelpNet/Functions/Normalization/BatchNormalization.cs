@@ -79,12 +79,9 @@ namespace KelpNet
                 this.Parameters[paramIndex++] = this.AvgMean;
                 this.Parameters[paramIndex] = this.AvgVar;
             }
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        private NdArray ForwardCpu(NdArray x)
+        protected override NdArray SingleInputForward(NdArray x)
         {
             if (Finetune)
             {
@@ -174,7 +171,7 @@ namespace KelpNet
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        private void BackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             this.Beta.InitGrad();
             this.Gamma.InitGrad();

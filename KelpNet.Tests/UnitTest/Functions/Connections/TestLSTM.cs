@@ -36,7 +36,7 @@ namespace KelpNet.Tests
             cY.Backward();
 
             //KelpNet
-            KelpNet.CL.LSTM lstm = new KelpNet.CL.LSTM(inputCount, outputCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
+            KelpNet.LSTM lstm = new KelpNet.LSTM(inputCount, outputCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
 
             NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
             NdArray y = lstm.Forward(x)[0];

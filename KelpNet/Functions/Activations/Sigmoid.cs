@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [Serializable]
-    public class Sigmoid : SingleInputFunction, ICompressibleActivation
+    [DataContract(Name = "Sigmoid")]
+    public class Sigmoid : SelectableSingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "Sigmoid";
 

@@ -48,7 +48,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class AmsBoundParameter : OptimizerParameter
+    public class AmsBoundParameter : OptimizerParameter
     {
         private readonly AmsBound _optimizer;
 

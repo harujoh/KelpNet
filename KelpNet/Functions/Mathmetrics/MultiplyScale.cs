@@ -57,12 +57,9 @@ namespace KelpNet
 
                 this.Parameters[1] = this.Bias;
             }
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        protected NdArray ForwardCpu(NdArray x)
+        protected override NdArray SingleInputForward(NdArray x)
         {
             int[] inputShape = x.Shape;
             int[] outputShape = this.Weight.Shape;
@@ -99,7 +96,7 @@ namespace KelpNet
             }
         }
 
-        protected void BackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             //MultiplyScaleとして必要な処理はない
         }

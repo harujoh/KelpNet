@@ -12,12 +12,9 @@ namespace KelpNet
         public Concat(int axis, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Axis = axis;
-
-            MultiInputForward = ForwardCpu;
-            MultiOutputBackward = BackwardCpu;
         }
 
-        private NdArray ForwardCpu(params NdArray[] xs)
+        protected override NdArray MultiInputForward(params NdArray[] xs)
         {
             int[] sections = new int[xs.Length - 1];
             int sizeOffset = xs[0].Shape[Axis];
@@ -40,7 +37,7 @@ namespace KelpNet
             return resultNdArray;
         }
 
-        private void BackwardCpu(NdArray y, NdArray[] xs)
+        protected override void MultiOutputBackward(NdArray y, NdArray[] xs)
         {
             int[] prevInputShapes = this._prevInputSections[this._prevInputSections.Count - 1];
             this._prevInputSections.RemoveAt(this._prevInputSections.Count - 1);

@@ -1,27 +1,49 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [Serializable]
-    public class Convolution2D : SingleInputFunction, ICompressibleFunction
+    [DataContract(Name = "Convolution2D")]
+    public class Convolution2D : SelectableSingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Convolution2D";
 
+        [DataMember]
         public NdArray Weight;
+
+        [DataMember]
         public NdArray Bias;
 
+        [DataMember]
         public bool NoBias;
 
+
+        [DataMember]
         public int KernelWidth;
+
+        [DataMember]
         public int KernelHeight;
+
+        [DataMember]
         public int StrideX;
+
+        [DataMember]
         public int StrideY;
+
+        [DataMember]
         public int PadX;
+
+        [DataMember]
         public int PadY;
 
+
+        [DataMember]
         public int InputCount;
+
+        [DataMember]
         public int OutputCount;
 
+        [DataMember]
         public ICompressibleActivation Activation { get; set; }
 
         public Convolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)

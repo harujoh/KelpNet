@@ -22,7 +22,7 @@ namespace KelpNet
     }
 
     [Serializable]
-    class SGDParameter : OptimizerParameter
+    public class SGDParameter : OptimizerParameter
     {
         private readonly SGD optimizer;
 

@@ -9,11 +9,9 @@ namespace KelpNet
 
         public Softmax(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray x)
+        protected override NdArray SingleInputForward(NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -50,7 +48,7 @@ namespace KelpNet
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real[] gx = new Real[y.Grad.Length];
 

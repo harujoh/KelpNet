@@ -12,12 +12,9 @@ namespace KelpNet
         {
             this.Indices = indices.ToArray();
             this.Axis = axis;
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        private NdArray[] ForwardCpu(NdArray x)
+        protected override NdArray[] SingleInputForward(NdArray x)
         {
             NdArray[] resultArrays = NdArray.Split(x, Indices, Axis);
 
@@ -29,7 +26,7 @@ namespace KelpNet
             return resultArrays;
         }
 
-        private void BackwardCpu(NdArray[] ys, NdArray x)
+        protected override void MultiOutputBackward(NdArray[] ys, NdArray x)
         {
             NdArray resultNdArray = ys[0].Clone();
 

@@ -5,9 +5,7 @@ namespace KelpNet.CL
     public interface ICompressibleFunction : KelpNet.ICompressibleFunction, IParallelizable
     {
         ComputeKernel ForwardKernel { get; set; }
-
         ComputeKernel BackwardgWKernel { get; set; }
-
         ComputeKernel BackwardgXKernel { get; set; }
 
         string ForwardKernelName { get; set; }
@@ -22,9 +20,7 @@ namespace KelpNet.CL
 
     public static class CompressibleFunction
     {
-        const string FUNCTION_NAME = "CompressibleFunction";
-
-        public static void Initialize(this ICompressibleFunction compressibleFunction, string functionName, string kernelString, KelpNet.ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false)
+        public static void Initialize(this ICompressibleFunction compressibleFunction, string functionName, string kernelString, KelpNet.ICompressibleActivation activation = null, bool gpuEnable = false)
         {
             string kernelNameBase = functionName.Replace(" ", "");
             compressibleFunction.ForwardKernelName = kernelNameBase + "Forward";

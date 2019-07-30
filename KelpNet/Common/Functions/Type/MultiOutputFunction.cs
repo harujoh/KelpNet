@@ -6,11 +6,12 @@ namespace KelpNet
     [Serializable]
     public abstract class MultiOutputFunction : Function
     {
-        protected Func<NdArray, NdArray[]> SingleInputForward;
-        protected Action<NdArray[], NdArray> SingleOutputBackward;
+        protected abstract NdArray[] SingleInputForward(NdArray x);
+        protected abstract void MultiOutputBackward(NdArray[] ys, NdArray x);
 
         [NonSerialized]
         List<NdArray[]> PrevOutputs = new List<NdArray[]>();
+
         [NonSerialized]
         List<NdArray[]> UsedPrevOutputs = new List<NdArray[]>();
 
@@ -54,7 +55,7 @@ namespace KelpNet
                 UsedPrevInputs.Add(xs);
                 UsedPrevOutputs.Add(prevys);
 
-                SingleOutputBackward(prevys, xs[0]);
+                MultiOutputBackward(prevys, xs[0]);
 
                 if (PrevInputs.Count == 0)
                 {

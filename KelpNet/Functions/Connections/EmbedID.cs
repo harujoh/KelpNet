@@ -31,12 +31,9 @@ namespace KelpNet
             }
 
             this.Parameters = new[] { this.Weight };
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        protected NdArray NeedPreviousForwardCpu(NdArray x)
+        protected override NdArray SingleInputForward(NdArray x)
         {
             Real[] result = new Real[x.Data.Length * this.OutputCount];
 
@@ -54,7 +51,7 @@ namespace KelpNet
             return NdArray.Convert(result, new[] { x.Length, this.OutputCount }, x.BatchCount, this);
         }
 
-        protected void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             for (int b = 0; b < y.BatchCount; b++)
             {

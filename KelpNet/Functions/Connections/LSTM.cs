@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using KelpNet.CPU;
 
-namespace KelpNet.CPU
+namespace KelpNet
 {
     [Serializable]
     public class LSTM : SingleInputFunction
@@ -100,12 +101,9 @@ namespace KelpNet.CPU
             functionParameters.AddRange(this.lateral.Parameters);
 
             this.Parameters = functionParameters.ToArray();
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        public NdArray ForwardCpu(NdArray x)
+        protected override NdArray SingleInputForward(NdArray x)
         {
             NdArray lstmIn = this.upward.Forward(x)[0]; //a
 
@@ -182,7 +180,7 @@ namespace KelpNet.CPU
             return this.hParam;
         }
 
-        public void BackwardCpu(NdArray y, NdArray x)
+        protected override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real[] gxPrevGrad = new Real[y.BatchCount * OutputCount * 4];
 

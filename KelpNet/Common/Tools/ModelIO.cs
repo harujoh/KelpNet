@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Runtime.Serialization;
 
@@ -6,9 +7,67 @@ namespace KelpNet.CPU
 {
     public class ModelIO
     {
+        public static Type[] KnownTypes = new Type[]
+        {
+            typeof(Real),
+            typeof(NdArray),
+            typeof(FunctionDictionary),//Container
+            typeof(FunctionStack),
+            typeof(DualInputFunction),//Type
+            typeof(MultiInputFunction),
+            typeof(MultiOutputFunction),
+            typeof(SingleInputFunction),
+            typeof(SelectableSingleInputFunction),
+            typeof(SplitFunction),
+            typeof(Optimizer),//Optimizer
+            typeof(AdaBound),
+            typeof(AdaDelta),
+            typeof(AdaGrad),
+            typeof(Adam),
+            typeof(AdamW),
+            typeof(AmsBound),
+            typeof(AmsGrad),
+            typeof(GradientClipping),
+            typeof(MomentumSGD),
+            typeof(RMSprop),
+            typeof(SGD),
+            typeof(OptimizerParameter),//OptimizerParameter
+            typeof(AdaBoundParameter),
+            typeof(AdaDeltaParameter),
+            typeof(AdaGradParameter),
+            typeof(AdamParameter),
+            typeof(AdamWParameter),
+            typeof(AmsBoundParameter),
+            typeof(AmsGradParameter),
+            typeof(GradientClippingParameter),
+            typeof(MomentumSGDParameter),
+            typeof(RMSpropParameter),
+            typeof(SGDParameter),
+            typeof(ELU),//Activations
+            typeof(Softmax),
+            typeof(Swish),
+            typeof(Broadcast),//Arrays
+            typeof(EmbedID),//Connections
+            typeof(LSTM),
+            typeof(AddBias),//Mathmetrics
+            typeof(MultiplyScale),
+            typeof(StochasticDepth),//Noise
+            typeof(BatchNormalization),//Normalization
+            typeof(AveragePooling2D),//Poolings
+            typeof(LeakyReLU),//Parallizable
+            typeof(ReLU),
+            typeof(Sigmoid),
+            typeof(TanhActivation),
+            typeof(Convolution2D),
+            typeof(Deconvolution2D),
+            typeof(Linear),
+            typeof(Dropout),
+            typeof(MaxPooling2D)
+        };
+
         public static void Save(Function function, string fileName)
         {
-            NetDataContractSerializer bf = new NetDataContractSerializer();
+            DataContractSerializer bf = new DataContractSerializer(typeof(Function), KnownTypes);
 
             //ZIP書庫を作成
             if (File.Exists(fileName))
@@ -21,17 +80,17 @@ namespace KelpNet.CPU
                 ZipArchiveEntry entry = zipArchive.CreateEntry("Function");
                 using (Stream stream = entry.Open())
                 {
-                    bf.Serialize(stream, function);
+                    bf.WriteObject(stream, function);
                 }
             }
         }
 
         public static Function Load(string fileName)
         {
-            NetDataContractSerializer bf = new NetDataContractSerializer();
+            DataContractSerializer bf = new DataContractSerializer(typeof(Function), KnownTypes);
 
             ZipArchiveEntry zipData = ZipFile.OpenRead(fileName).GetEntry("Function");
-            Function result = (Function)bf.Deserialize(zipData.Open());
+            Function result = (Function)bf.ReadObject(zipData.Open());
 
             if (result is FunctionStack functionStack)
             {
@@ -53,6 +112,18 @@ namespace KelpNet.CPU
             foreach (Function function in functionStack.Functions)
             {
                 function.ResetState();
+
+                if (function is INeedPreviousFunction needPreviousFunction)
+                {
+                    needPreviousFunction.SingleInputForward = needPreviousFunction.NeedPreviousForwardCpu;
+                    needPreviousFunction.SingleOutputBackward = needPreviousFunction.NeedPreviousBackwardCpu;
+                }
+                else if (function is ICompressibleActivation compressibleActivation)
+                {
+                    //ICompressibleActivationはNeedPreviousForwardCpuの実体を持たないため別に
+                    compressibleActivation.SingleInputForward = compressibleActivation.NeedPreviousForwardCpu;
+                    compressibleActivation.SingleOutputBackward = compressibleActivation.NeedPreviousBackwardCpu;
+                }
             }
         }
     }

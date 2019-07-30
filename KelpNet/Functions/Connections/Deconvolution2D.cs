@@ -1,25 +1,47 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [Serializable]
-    public class Deconvolution2D : SingleInputFunction, ICompressibleFunction
+    [DataContract(Name = "Deconvolution2D")]
+    public class Deconvolution2D : SelectableSingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Deconvolution2D";
 
+        [DataMember]
         public NdArray Weight;
+
+        [DataMember]
         public NdArray Bias;
 
+
+        [DataMember]
         public bool NoBias;
 
+
+        [DataMember]
         public int KernelWidth;
+
+        [DataMember]
         public int KernelHeight;
+
+        [DataMember]
         public int StrideX;
+
+        [DataMember]
         public int StrideY;
+
+        [DataMember]
         public int PadX;
+
+        [DataMember]
         public int PadY;
 
+
+        [DataMember]
         public int InputCount;
+
+        [DataMember]
         public int OutputCount;
 
         public ICompressibleActivation Activation { get; set; }

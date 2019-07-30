@@ -19,12 +19,9 @@ namespace KelpNet
             {
                 SplitedFunctions[i] = new FunctionStack(new Function[] { }, name + i, new[] { inputNames[0] }, new[] { outputNames[i] });
             }
-
-            SingleInputForward = ForwardCpu;
-            SingleOutputBackward = BackwardCpu;
         }
 
-        private NdArray[] ForwardCpu(NdArray x)
+        protected override NdArray[] SingleInputForward(NdArray x)
         {
             NdArray[] result = new NdArray[_splitNum];
 
@@ -36,7 +33,7 @@ namespace KelpNet
             return result;
         }
 
-        private void BackwardCpu(NdArray[] ys, NdArray x)
+        protected override void MultiOutputBackward(NdArray[] ys, NdArray x)
         {
         }
 
