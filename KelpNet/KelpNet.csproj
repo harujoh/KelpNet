@@ -48,13 +48,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Functions\Interface\INeedPreviousFunction.cs" />
-    <Compile Include="Common\Functions\Type\SelectableSingleInputFunction.cs" />
+    <Compile Include="Common\Functions\Interface\ISingleInputFunction.cs" />
     <Compile Include="Common\Functions\Type\SplitFunction.cs" />
     <Compile Include="Common\Functions\Interface\ICompressibleActivation.cs" />
     <Compile Include="Common\Functions\Interface\ICompressibleFunction.cs" />
     <Compile Include="Common\Functions\Interface\IFunction.cs" />
-    <Compile Include="Common\Functions\Interface\ISelectableSingleInputFunction.cs" />
     <Compile Include="Common\Functions\Type\DualInputFunction.cs" />
     <Compile Include="Common\Functions\Container\FunctionDictionary.cs" />
     <Compile Include="Common\Functions\Type\MultiInputFunction.cs" />

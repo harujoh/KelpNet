@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using Cloo;
 using KelpNet.CL.Properties;
@@ -8,10 +9,16 @@ namespace KelpNet.CL
     [DataContract(Name = "Linear", Namespace = "KelpNet")]
     public class Linear : CPU.Linear, ICompressibleFunction
     {
-        const string FUNCTION_NAME = "Linear";
+        public string FunctionName => "Linear";
+        public string KernelSource => OpenCL.GetKernelSource(Resources.Linear);
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgWKernel { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgXKernel { get; set; }
 
         [DataMember]
@@ -24,28 +31,40 @@ namespace KelpNet.CL
         public string BackwardgXKernelName { get; set; }
 
         [DataMember]
-        public string KernelString { get; set; }
-
-        [DataMember]
         public bool IsParallel { get; set; }
-
-        void IParallelizable.InitParallel()
-        {
-            this.InitParallel();
-        }
 
         bool IParallelizable.SetParallel(bool enable)
         {
             return this.SetParallel(enable);
         }
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = "Linear", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Linear), activation, gpuEnable);
+            this.SetParallel(gpuEnable);
         }
 
-        public NdArray NeedPreviousForwardGpu(NdArray x)
+        public Linear(CPU.Linear linear) : base(linear.Name, linear.InputNames, linear.OutputNames)
         {
+            this.OutputCount = linear.OutputCount;
+            this.InputCount = linear.InputCount;
+
+            this.NoBias = linear.NoBias;
+
+            this.Weight = linear.Weight;
+            this.Bias = linear.Bias;
+
+            this.Parameters = linear.Parameters;
+
+            this.Activation = (ICompressibleActivation)CLConverter.Convert(linear.Activation);
+
+            this.SetParallel(true);
+        }
+
+        public override NdArray SingleInputForward(NdArray x)
+        {
+            //フラグチェック
+            if (!IsParallel) return base.SingleInputForward(x);
+
             Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
@@ -74,23 +93,17 @@ namespace KelpNet.CL
             return NdArray.Convert(y, new[] { OutputCount }, x.BatchCount, this);
         }
 
-        Real[] GetActivatedgy(NdArray y)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
-            Real[] activatedgY = new Real[y.Grad.Length];
-
-            for (int i = 0; i < activatedgY.Length; i++)
+            //フラグチェック
+            if (!IsParallel)
             {
-                activatedgY[i] = this.Activation.BackwardActivate(y.Grad[i], y.Data[i]);
+                base.SingleOutputBackward(y, x);
+                return;
             }
 
-            return activatedgY;
-        }
-
-
-        public void NeedPreviousBackwardGpu(NdArray y, NdArray x)
-        {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = this.Activation != null ? GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = this.Activation != null ? this.GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
 
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, activatedgy))
@@ -146,6 +159,11 @@ namespace KelpNet.CL
             {
                 x.Grad[i] += gx[i];
             }
+        }
+
+        public override CPU.Convolution2D AsConvolution2D()
+        {
+            return new Convolution2D(this);
         }
     }
 }

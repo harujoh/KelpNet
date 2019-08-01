@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using Cloo;
@@ -8,16 +7,10 @@ using KelpNet.CL.Properties;
 namespace KelpNet.CL
 {
     [DataContract(Name = "Dropout", Namespace = "KelpNet")]
-    public class Dropout : SelectableSingleInputFunction, IParallelizable
+    public class Dropout : CPU.Dropout, IParallelizable
     {
-        const string FUNCTION_NAME = "Dropout";
-
-        [DataMember]
-        public Real DropoutRatio;
-
-        [DataMember]
-        private readonly List<Real[]> maskStack = new List<Real[]>();
-
+        public string FunctionName => "Dropout";
+        public string KernelSource => OpenCL.GetKernelSource(Resources.Dropout);
 
         //[NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -27,15 +20,17 @@ namespace KelpNet.CL
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardKernel;
 
-
         [DataMember]
         public bool IsParallel { get; set; }
 
-        public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(name, inputNames, outputNames)
+        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(dropoutRatio, name, inputNames, outputNames)
         {
-            this.DropoutRatio = dropoutRatio;
-
             this.SetParallel(gpuEnable);
+        }
+
+        public Dropout(CPU.Dropout dropout) : base(dropout.Name, dropout.InputNames, dropout.OutputNames)
+        {
+            this.SetParallel(true);
         }
 
         public bool SetParallel(bool enable)
@@ -44,62 +39,20 @@ namespace KelpNet.CL
 
             if (IsParallel)
             {
-                InitParallel();
+                ComputeProgram program = OpenCL.CreateProgram(this.KernelSource);
 
-                SingleInputForward = ForwardGpu;
-                SingleOutputBackward = BackwardGpu;
-            }
-            else
-            {
-                SingleInputForward = ForwardCpu;
-                SingleOutputBackward = BackwardCpu;
+                ForwardKernel = program.CreateKernel("DropoutForward");
+                BackwardKernel = program.CreateKernel("DropoutBackward");
             }
 
             return IsParallel;
         }
 
-        public void InitParallel()
+        public override NdArray SingleInputForward(NdArray x)
         {
-            if (IsParallel)
-            {
-                string kernelSource = OpenCL.GetKernelSource(Resources.Dropout);
-                ComputeProgram program = OpenCL.CreateProgram(kernelSource);
+            //フラグチェック
+            if (!IsParallel) return base.SingleInputForward(x);
 
-                ForwardKernel = program.CreateKernel("DropoutForward");
-                BackwardKernel = program.CreateKernel("DropoutBackward");
-            }
-        }
-
-        private Real[] MakeMask(int xLength)
-        {
-            Real[] mask = new Real[xLength];
-            Real scale = 1 / (1 - this.DropoutRatio);
-
-            for (int i = 0; i < mask.Length; i++)
-            {
-                mask[i] = Mother.Dice.NextDouble() >= this.DropoutRatio ? scale : 0;
-            }
-
-            this.maskStack.Add(mask);
-
-            return mask;
-        }
-
-        public NdArray ForwardCpu(NdArray x)
-        {
-            Real[] result = new Real[x.Data.Length];
-            Real[] mask = MakeMask(x.Length);
-
-            for (int i = 0; i < x.Data.Length; i++)
-            {
-                result[i] = x.Data[i] * mask[i % mask.Length];
-            }
-
-            return NdArray.Convert(result, x.Shape, x.BatchCount, this);
-        }
-
-        public NdArray ForwardGpu(NdArray x)
-        {
             Real[] result = new Real[x.Data.Length];
             Real[] mask = MakeMask(x.Length);
 
@@ -128,28 +81,14 @@ namespace KelpNet.CL
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        public void BackwardCpu(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
-            Real[] result = y.Grad.ToArray();
-            Real[] mask = this.maskStack[this.maskStack.Count - 1];
-            this.maskStack.RemoveAt(this.maskStack.Count - 1);
-
-            for (int b = 0; b < y.BatchCount; b++)
+            if (!IsParallel)
             {
-                for (int i = 0; i < mask.Length; i++)
-                {
-                    result[b * y.Length + i] *= mask[i];
-                }
+                base.SingleOutputBackward(y, x);
+                return;
             }
 
-            for (int i = 0; i < x.Grad.Length; i++)
-            {
-                x.Grad[i] += result[i];
-            }
-        }
-
-        public void BackwardGpu(NdArray y, NdArray x)
-        {
             Real[] result = y.Grad.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];
             this.maskStack.RemoveAt(this.maskStack.Count - 1);
@@ -179,7 +118,6 @@ namespace KelpNet.CL
                 x.Grad[i] += result[i];
             }
         }
-
 
         //Predict時に何もしない
         public override NdArray Predict(NdArray input)

@@ -12,7 +12,7 @@ namespace KelpNet
             this.Shape = shape;
         }
 
-        protected override NdArray SingleInputForward(NdArray val)
+        public override NdArray SingleInputForward(NdArray val)
         {
             NdArray result = val.Clone();
             result.ParentFunc = this;
@@ -21,7 +21,7 @@ namespace KelpNet
             return result;
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             y.Grad = x.Grad.ToArray();
         }

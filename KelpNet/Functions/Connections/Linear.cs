@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace KelpNet.CPU
 {
     [DataContract(Name = "Linear", Namespace = "KelpNet")]
-    public class Linear : SelectableSingleInputFunction, ICompressibleFunction
+    public class Linear : SingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Linear";
 
@@ -41,6 +41,8 @@ namespace KelpNet.CPU
 
             this.Parameters = new NdArray[noBias ? 1 : 2];
 
+            this.Activation = activation;
+
             if (initialW == null)
             {
                 Initializer.InitWeight(this.Weight);
@@ -64,8 +66,10 @@ namespace KelpNet.CPU
 
                 this.Parameters[1] = this.Bias;
             }
+        }
 
-            this.Initialize(activation);
+        public Linear(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        {
         }
 
         protected Real[] GetBiasedValue(int batchCount)
@@ -80,7 +84,7 @@ namespace KelpNet.CPU
             return y;
         }
 
-        public NdArray NeedPreviousForwardCpu(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             Real[] y = this.NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount);
 
@@ -117,7 +121,7 @@ namespace KelpNet.CPU
             }
         }
 
-        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real[] activatedgy = this.Activation != null ? this.GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount);
@@ -137,7 +141,7 @@ namespace KelpNet.CPU
             }
         }
 
-        public Convolution2D AsConvolution2D()
+        public virtual Convolution2D AsConvolution2D()
         {
             return new Convolution2D(this);
         }

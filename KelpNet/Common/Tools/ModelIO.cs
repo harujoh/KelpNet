@@ -17,7 +17,6 @@ namespace KelpNet.CPU
             typeof(MultiInputFunction),
             typeof(MultiOutputFunction),
             typeof(SingleInputFunction),
-            typeof(SelectableSingleInputFunction),
             typeof(SplitFunction),
             typeof(Optimizer),//Optimizer
             typeof(AdaBound),
@@ -112,18 +111,6 @@ namespace KelpNet.CPU
             foreach (Function function in functionStack.Functions)
             {
                 function.ResetState();
-
-                if (function is INeedPreviousFunction needPreviousFunction)
-                {
-                    needPreviousFunction.SingleInputForward = needPreviousFunction.NeedPreviousForwardCpu;
-                    needPreviousFunction.SingleOutputBackward = needPreviousFunction.NeedPreviousBackwardCpu;
-                }
-                else if (function is ICompressibleActivation compressibleActivation)
-                {
-                    //ICompressibleActivationはNeedPreviousForwardCpuの実体を持たないため別に
-                    compressibleActivation.SingleInputForward = compressibleActivation.NeedPreviousForwardCpu;
-                    compressibleActivation.SingleOutputBackward = compressibleActivation.NeedPreviousBackwardCpu;
-                }
             }
         }
     }

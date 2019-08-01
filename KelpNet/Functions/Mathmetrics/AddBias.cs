@@ -24,7 +24,7 @@ namespace KelpNet
             this.Parameters = new[] { Bias };
         }
 
-        protected override NdArray SingleInputForward(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             int[] inputShape = x.Shape;
             int[] outputShape = this.Bias.Shape;
@@ -51,7 +51,7 @@ namespace KelpNet
             return x + y2;
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             //AddBiasとして必要な処理はない
         }

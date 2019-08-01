@@ -3,7 +3,7 @@
 namespace KelpNet.CPU
 {
     [DataContract(Name = "LeakyReLU", Namespace = "KelpNet")]
-    public class LeakyReLU : SelectableSingleInputFunction, ICompressibleActivation
+    public class LeakyReLU : SingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "LeakyReLU";
 
@@ -13,8 +13,20 @@ namespace KelpNet.CPU
         public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Slope = slope;
+        }
 
-            this.Initialize();
+        public LeakyReLU(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        {
+        }
+
+        public override NdArray SingleInputForward(NdArray x)
+        {
+            return this.NeedPreviousForwardCpu(x);
+        }
+
+        public override void SingleOutputBackward(NdArray y, NdArray x)
+        {
+            this.NeedPreviousBackwardCpu(y,x);
         }
 
         public Real ForwardActivate(Real x)

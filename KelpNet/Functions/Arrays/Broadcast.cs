@@ -15,7 +15,7 @@ namespace KelpNet
             this.Shape = shape.ToArray();
         }
 
-        protected override NdArray SingleInputForward(NdArray val)
+        public override NdArray SingleInputForward(NdArray val)
         {
             int[] resultShape;
 
@@ -90,7 +90,7 @@ namespace KelpNet
             return result;
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             int ndim = x.Shape.Length;
 

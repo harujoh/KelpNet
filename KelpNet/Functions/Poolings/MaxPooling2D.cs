@@ -4,8 +4,8 @@ using System.Runtime.Serialization;
 
 namespace KelpNet.CPU
 {
-    [DataContract(Name="MaxPooling2D", Namespace = "KelpNet")]
-    public class MaxPooling2D : SelectableSingleInputFunction, INeedPreviousFunction
+    [DataContract(Name = "MaxPooling2D", Namespace = "KelpNet")]
+    public class MaxPooling2D : SingleInputFunction
     {
         const string FUNCTION_NAME = "MaxPooling2D";
 
@@ -30,8 +30,8 @@ namespace KelpNet.CPU
         [DataMember]
         public bool CoverAll;
 
-        [NonSerialized]
-        private List<int[]> _outputIndicesList = new List<int[]>();
+        //[NonSerialized]
+        protected List<int[]> _outputIndicesList = new List<int[]>();
 
         public MaxPooling2D(int kernelSize, int stride = 1, int pad = 0, bool coverAll = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
@@ -42,12 +42,9 @@ namespace KelpNet.CPU
             this.StrideX = stride;
             this.StrideY = stride;
             this.CoverAll = coverAll;
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        public MaxPooling2D(int[] kernelSize, int[] stride = null, int[] pad = null, bool coverAll = true, bool gpuEnable = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaxPooling2D(int[] kernelSize, int[] stride = null, int[] pad = null, bool coverAll = true, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             if (pad == null)
                 pad = new[] { 0, 0 };
@@ -62,12 +59,13 @@ namespace KelpNet.CPU
             this.StrideX = stride[0];
             this.StrideY = stride[1];
             this.CoverAll = coverAll;
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        public NdArray NeedPreviousForwardCpu(NdArray input)
+        public MaxPooling2D(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        {
+        }
+
+        public override NdArray SingleInputForward(NdArray input)
         {
             int outputHeight = CoverAll ?
                 (int)Math.Floor((input.Shape[1] - this.KernelHeight + this.PadY * 2.0 + this.StrideY - 1.0) / this.StrideY) + 1 :
@@ -131,7 +129,7 @@ namespace KelpNet.CPU
             return GetForwardResult(input, outputIndices, outputWidth, outputHeight);
         }
 
-        NdArray GetForwardResult(NdArray input, int[] outputIndices, int outputWidth, int outputHeight)
+        protected NdArray GetForwardResult(NdArray input, int[] outputIndices, int outputWidth, int outputHeight)
         {
             Real[] result = new Real[outputIndices.Length];
 
@@ -152,7 +150,7 @@ namespace KelpNet.CPU
             return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             int[] outputIndices = this._outputIndicesList[this._outputIndicesList.Count - 1];
             this._outputIndicesList.RemoveAt(this._outputIndicesList.Count - 1);

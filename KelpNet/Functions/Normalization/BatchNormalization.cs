@@ -26,6 +26,7 @@ namespace KelpNet
 
         [NonSerialized]
         private Real[] Std;
+
         [NonSerialized]
         private Real[] Xhat;
 
@@ -81,7 +82,7 @@ namespace KelpNet
             }
         }
 
-        protected override NdArray SingleInputForward(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             if (Finetune)
             {
@@ -171,7 +172,7 @@ namespace KelpNet
             return NdArray.Convert(y, x.Shape, x.BatchCount, this);
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             this.Beta.InitGrad();
             this.Gamma.InitGrad();

@@ -17,7 +17,6 @@ namespace KelpNet.CL
             typeof(MultiInputFunction),
             typeof(MultiOutputFunction),
             typeof(SingleInputFunction),
-            typeof(SelectableSingleInputFunction),
             typeof(SplitFunction),
             typeof(Optimizer),//Optimizer
             typeof(AdaBound),
@@ -115,6 +114,11 @@ namespace KelpNet.CL
 
                 if (function is IParallelizable parallelizableFunc)
                 {
+                    if (function is ICompressibleActivation compressibleActivation)
+                    {
+                        compressibleActivation.InitParam();
+                    }
+
                     parallelizableFunc.SetParallel(parallelizableFunc.IsParallel);
                 }
             }

@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace KelpNet.CPU
 {
     [DataContract(Name = "Dropout", Namespace = "KelpNet")]
-    public class Dropout : SelectableSingleInputFunction, INeedPreviousFunction
+    public class Dropout : SingleInputFunction
     {
         const string FUNCTION_NAME = "Dropout";
 
@@ -13,17 +13,18 @@ namespace KelpNet.CPU
         public Real DropoutRatio;
 
         [DataMember]
-        private readonly List<Real[]> maskStack = new List<Real[]>();
+        protected readonly List<Real[]> maskStack = new List<Real[]>();
 
         public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.DropoutRatio = dropoutRatio;
-
-            SingleInputForward = NeedPreviousForwardCpu;
-            SingleOutputBackward = NeedPreviousBackwardCpu;
         }
 
-        private Real[] MakeMask(int xLength)
+        public Dropout(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        {
+        }
+
+        protected Real[] MakeMask(int xLength)
         {
             Real[] mask = new Real[xLength];
             Real scale = 1 / (1 - this.DropoutRatio);
@@ -38,7 +39,7 @@ namespace KelpNet.CPU
             return mask;
         }
 
-        public NdArray NeedPreviousForwardCpu(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             Real[] result = new Real[x.Data.Length];
             Real[] mask = MakeMask(x.Length);
@@ -51,7 +52,7 @@ namespace KelpNet.CPU
             return NdArray.Convert(result, x.Shape, x.BatchCount, this);
         }
 
-        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real[] result = y.Grad.ToArray();
             Real[] mask = this.maskStack[this.maskStack.Count - 1];

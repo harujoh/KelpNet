@@ -4,13 +4,22 @@ using System.Runtime.Serialization;
 namespace KelpNet.CPU
 {
     [DataContract(Name = "Sigmoid", Namespace = "KelpNet")]
-    public class Sigmoid : SelectableSingleInputFunction, ICompressibleActivation
+    public class Sigmoid : SingleInputFunction, ICompressibleActivation
     {
         const string FUNCTION_NAME = "Sigmoid";
 
         public Sigmoid(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this.Initialize();
+        }
+
+        public override NdArray SingleInputForward(NdArray x)
+        {
+            return this.NeedPreviousForwardCpu(x);
+        }
+
+        public override void SingleOutputBackward(NdArray y, NdArray x)
+        {
+            this.NeedPreviousBackwardCpu(y, x);
         }
 
         public Real ForwardActivate(Real x)

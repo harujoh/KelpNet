@@ -2,9 +2,11 @@
 {
     public interface IParallelizable
     {
+        string FunctionName { get; }
+        string KernelSource { get; }
+
         bool IsParallel { get; set; }
 
-        void InitParallel();
         bool SetParallel(bool enable);
     }
 }

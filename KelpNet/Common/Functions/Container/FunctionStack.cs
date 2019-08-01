@@ -61,11 +61,11 @@ namespace KelpNet
             //層を圧縮
             for (int i = 0; i < functionList.Count - 1; i++)
             {
-                if (functionList[i] is ICompressibleFunction)
+                if (functionList[i] is ICompressibleFunction compressibleFunction)
                 {
-                    if (functionList[i + 1] is ICompressibleActivation)
+                    if (compressibleFunction.Activation == null && functionList[i + 1] is ICompressibleActivation compressibleActivation)
                     {
-                        ((ICompressibleFunction)functionList[i]).Activation = (ICompressibleActivation)functionList[i + 1];
+                        compressibleFunction.Activation = compressibleActivation;
                         functionList.RemoveAt(i + 1);
                     }
                 }

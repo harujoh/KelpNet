@@ -10,7 +10,7 @@ namespace KelpNet
         {
         }
 
-        protected override NdArray SingleInputForward(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             Real[] resultData = new Real[x.Data.Length];
 
@@ -22,7 +22,7 @@ namespace KelpNet
             return new NdArray(resultData, x.Shape, x.BatchCount, this);
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {

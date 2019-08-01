@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using Cloo;
 using KelpNet.CL.Properties;
@@ -8,10 +9,16 @@ namespace KelpNet.CL
     [DataContract(Name = "Deconvolution2D", Namespace = "KelpNet")]
     public class Deconvolution2D : CPU.Deconvolution2D, ICompressibleFunction
     {
-        const string FUNCTION_NAME = "Deconvolution2D";
+        public string FunctionName => "Deconvolution2D";
+        public string KernelSource => OpenCL.GetKernelSource(Resources.Deconvolution2D);
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgWKernel { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgXKernel { get; set; }
 
         [DataMember]
@@ -26,31 +33,50 @@ namespace KelpNet.CL
         [DataMember]
         public string BackwardgXKernelName { get; set; }
 
-        [DataMember]
-        public string KernelString { get; set; }
-
-        void IParallelizable.InitParallel()
-        {
-            this.InitParallel();
-        }
 
         bool IParallelizable.SetParallel(bool enable)
         {
             return this.SetParallel(enable);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kernelSize, stride, pad, noBias, initialW, initialb, activation, name, inputNames, outputNames)
+        public Deconvolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = "Deconvolution2D", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kernelSize, stride, pad, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, gpuEnable);
+            this.SetParallel(gpuEnable);
         }
 
-        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kSize, subSample, trim, noBias, initialW, initialb, activation, name, inputNames, outputNames)
+        public Deconvolution2D(int inputChannels, int outputChannels, int[] kSize, int[] subSample = null, int[] trim = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = "Deconvolution2D", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kSize, subSample, trim, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Deconvolution2D), activation, gpuEnable);
+            this.SetParallel(gpuEnable);
         }
 
-        public NdArray NeedPreviousForwardGpu(NdArray input)
+        public Deconvolution2D(CPU.Deconvolution2D deconv2D) : base(deconv2D.Name, deconv2D.InputNames, deconv2D.OutputNames)
         {
+            this.KernelWidth = deconv2D.KernelWidth;
+            this.KernelHeight = deconv2D.KernelHeight;
+            this.PadX = deconv2D.PadX;
+            this.PadY = deconv2D.PadY;
+            this.StrideX = deconv2D.StrideX;
+            this.StrideY = deconv2D.StrideY;
+            this.NoBias = deconv2D.NoBias;
+
+            this.OutputCount = deconv2D.OutputCount;
+            this.InputCount = deconv2D.InputCount;
+
+            this.Weight = deconv2D.Weight;
+            this.Bias = deconv2D.Bias;
+
+            this.Parameters = deconv2D.Parameters;
+
+            this.Activation = (ICompressibleActivation)CLConverter.Convert(deconv2D.Activation);
+
+            this.SetParallel(true);
+        }
+
+        public override NdArray SingleInputForward(NdArray input)
+        {
+            //フラグチェック
+            if (!IsParallel) return base.SingleInputForward(input);
+
             int outputHeight = (input.Shape[1] - 1) * this.StrideY + this.KernelHeight - this.PadY * 2;
             int outputWidth = (input.Shape[2] - 1) * this.StrideX + this.KernelWidth - this.PadX * 2;
 
@@ -95,8 +121,14 @@ namespace KelpNet.CL
             return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        public void NeedPreviousBackwardGpu(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
+            if (!IsParallel)
+            {
+                base.SingleOutputBackward(y, x);
+                return;
+            }
+
             Real[] gx = new Real[x.Data.Length];
             Real[] activatedgy = this.Activation != null ? this.GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);

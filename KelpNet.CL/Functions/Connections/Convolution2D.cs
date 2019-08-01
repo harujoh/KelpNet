@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using Cloo;
 using KelpNet.CL.Properties;
@@ -8,10 +9,16 @@ namespace KelpNet.CL
     [DataContract(Name = "Convolution2D", Namespace = "KelpNet")]
     public class Convolution2D : CPU.Convolution2D, ICompressibleFunction
     {
-        const string FUNCTION_NAME = "Convolution2D";
+        public string FunctionName => "Convolution2D";
+        public string KernelSource => OpenCL.GetKernelSource(Resources.Convolution2D);
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgWKernel { get; set; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel BackwardgXKernel { get; set; }
 
         [DataMember]
@@ -24,38 +31,57 @@ namespace KelpNet.CL
         public string BackwardgXKernelName { get; set; }
 
         [DataMember]
-        public string KernelString { get; set; }
-
-        [DataMember]
         public bool IsParallel { get; set; }
-
-        void IParallelizable.InitParallel()
-        {
-            this.InitParallel();
-        }
 
         bool IParallelizable.SetParallel(bool enable)
         {
             return this.SetParallel(enable);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kernelSize, stride, pad, noBias, initialW, initialb, activation, name, inputNames, outputNames)
+        public Convolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = "Convolution2D", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kernelSize, stride, pad, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Convolution2D), activation, gpuEnable);
+            this.SetParallel(gpuEnable);
         }
 
-        public Convolution2D(int inputChannels, int outputChannels, int[] kernelSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kernelSize, stride, pad, noBias, initialW, initialb, activation, name, inputNames, outputNames)
+        public Convolution2D(int inputChannels, int outputChannels, int[] kernelSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = "Convolution2D", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputChannels, outputChannels, kernelSize, stride, pad, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Convolution2D), activation, gpuEnable);
+            this.SetParallel(gpuEnable);
         }
 
         public Convolution2D(Linear linear) : base(linear)
         {
-            this.Initialize(FUNCTION_NAME, OpenCL.GetKernelSource(Resources.Convolution2D), linear.Activation, linear.IsParallel);
+            this.SetParallel(linear.IsParallel);
         }
 
-        public NdArray NeedPreviousForwardGpu(NdArray input)
+        //Convert
+        public Convolution2D(CPU.Convolution2D conv2d) : base(conv2d.Name, conv2d.InputNames, conv2d.OutputNames)
         {
+            this.KernelWidth = conv2d.KernelWidth;
+            this.KernelHeight = conv2d.KernelHeight;
+            this.StrideX = conv2d.StrideX;
+            this.StrideY = conv2d.StrideY;
+            this.PadX = conv2d.PadX;
+            this.PadY = conv2d.PadY;
+            this.NoBias = conv2d.NoBias;
+
+            this.OutputCount = conv2d.OutputCount;
+            this.InputCount = conv2d.InputCount;
+
+            this.Weight = conv2d.Weight;
+            this.Bias = conv2d.Bias;
+
+            this.Parameters = conv2d.Parameters;
+
+            this.Activation = (ICompressibleActivation)CLConverter.Convert(conv2d.Activation);
+
+            this.SetParallel(true);
+        }
+
+        public override NdArray SingleInputForward(NdArray input)
+        {
+            //フラグチェック
+            if (!IsParallel) return base.SingleInputForward(input);
+
             int outputHeight = (int)Math.Floor((input.Shape[1] - this.KernelHeight + this.PadY * 2.0) / this.StrideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this.KernelWidth + this.PadX * 2.0) / this.StrideX) + 1;
 
@@ -100,8 +126,15 @@ namespace KelpNet.CL
             return NdArray.Convert(result, new[] { this.OutputCount, outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        public void NeedPreviousBackwardGpu(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
+            //フラグチェック
+            if (!IsParallel)
+            {
+                base.SingleOutputBackward(y, x);
+                return;
+            }
+
             Real[] gx = new Real[x.Data.Length];
             Real[] activatedgy = this.Activation != null ? this.GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);

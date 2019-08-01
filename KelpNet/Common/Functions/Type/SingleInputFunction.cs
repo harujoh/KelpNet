@@ -3,10 +3,10 @@
 namespace KelpNet
 {
     [Serializable]
-    public abstract class SingleInputFunction : Function
+    public abstract class SingleInputFunction : Function, ISingleInputFunction
     {
-        protected abstract NdArray SingleInputForward(NdArray x);
-        protected abstract void SingleOutputBackward(NdArray y, NdArray x);
+        public abstract NdArray SingleInputForward(NdArray x);
+        public abstract void SingleOutputBackward(NdArray y, NdArray x);
 
         protected SingleInputFunction(string name, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
@@ -32,7 +32,7 @@ namespace KelpNet
             BackwardCountUp();
 
             xs[0].UseCount--;
-            if(xs[0].Grad == null)xs[0].InitGrad();
+            if (xs[0].Grad == null) xs[0].InitGrad();
 
             UsedPrevInputs.Add(xs);
 

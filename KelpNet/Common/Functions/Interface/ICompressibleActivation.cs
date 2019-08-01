@@ -1,6 +1,6 @@
 ﻿namespace KelpNet
 {
-    public interface ICompressibleActivation : ISelectableSingleInputFunction
+    public interface ICompressibleActivation : ISingleInputFunction
     {
         Real ForwardActivate(Real x);
         Real BackwardActivate(Real gy, Real y);
@@ -8,12 +8,6 @@
 
     public static class CompressibleActivation
     {
-        public static void Initialize(this ICompressibleActivation compressibleActivation)
-        {
-            compressibleActivation.SingleInputForward = compressibleActivation.NeedPreviousForwardCpu;
-            compressibleActivation.SingleOutputBackward = compressibleActivation.NeedPreviousBackwardCpu;
-        }
-
         public static NdArray NeedPreviousForwardCpu(this ICompressibleActivation compressibleActivation, NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
@@ -33,6 +27,5 @@
                 x.Grad[i] += compressibleActivation.BackwardActivate(y.Grad[i], y.Data[i]);
             }
         }
-
     }
 }

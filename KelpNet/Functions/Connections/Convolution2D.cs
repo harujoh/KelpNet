@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace KelpNet.CPU
 {
     [DataContract(Name = "Convolution2D", Namespace = "KelpNet")]
-    public class Convolution2D : SelectableSingleInputFunction, ICompressibleFunction
+    public class Convolution2D : SingleInputFunction, ICompressibleFunction
     {
         const string FUNCTION_NAME = "Convolution2D";
 
@@ -46,6 +46,10 @@ namespace KelpNet.CPU
         [DataMember]
         public ICompressibleActivation Activation { get; set; }
 
+        public Convolution2D(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        {
+        }
+
         public Convolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.KernelWidth = kernelSize;
@@ -61,9 +65,9 @@ namespace KelpNet.CPU
             this.OutputCount = outputChannels;
             this.InputCount = inputChannels;
 
-            this.Initialize(initialW, initialb);
+            this.Activation = activation;
 
-            this.Initialize(activation);
+            this.Initialize(initialW, initialb);
         }
 
         public Convolution2D(int inputChannels, int outputChannels, int[] kernelSize, int[] stride = null, int[] pad = null, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
@@ -87,9 +91,9 @@ namespace KelpNet.CPU
             this.OutputCount = outputChannels;
             this.InputCount = inputChannels;
 
-            this.Initialize(initialW, initialb);
+            this.Activation = activation;
 
-            this.Initialize(activation);
+            this.Initialize(initialW, initialb);
         }
 
         public Convolution2D(Linear linear) : base(linear.Name, linear.InputNames, linear.OutputNames)
@@ -107,8 +111,7 @@ namespace KelpNet.CPU
             this.Weight.Reshape(OutputCount, InputCount, this.KernelHeight, this.KernelWidth);
             this.Bias = linear.Bias;
             this.NoBias = linear.NoBias;
-
-            this.Initialize(linear.Activation);
+            this.Activation = linear.Activation;
         }
 
         void Initialize(Array initialW = null, Array initialb = null)
@@ -141,7 +144,7 @@ namespace KelpNet.CPU
             }
         }
 
-        public NdArray NeedPreviousForwardCpu(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             int outputHeight = (int)Math.Floor((x.Shape[1] - this.KernelHeight + this.PadY * 2.0) / this.StrideY) + 1;
             int outputWidth = (int)Math.Floor((x.Shape[2] - this.KernelWidth + this.PadX * 2.0) / this.StrideX) + 1;
@@ -256,7 +259,7 @@ namespace KelpNet.CPU
             }
         }
 
-        public void NeedPreviousBackwardCpu(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real[] activatedgy = this.Activation != null ? this.GetActivatedgy(y) : y.Grad;
             if (!NoBias) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount);

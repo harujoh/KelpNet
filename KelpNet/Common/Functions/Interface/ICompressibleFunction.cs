@@ -1,20 +1,12 @@
 ﻿namespace KelpNet
 {
-    public interface ICompressibleFunction : INeedPreviousFunction
+    public interface ICompressibleFunction : ISingleInputFunction
     {
         ICompressibleActivation Activation { get; set; }
     }
 
     public static class CompressibleFunction
     {
-        public static void Initialize(this ICompressibleFunction compressibleFunction, ICompressibleActivation activation)
-        {
-            compressibleFunction.Activation = activation;
-
-            compressibleFunction.SingleInputForward = compressibleFunction.NeedPreviousForwardCpu;
-            compressibleFunction.SingleOutputBackward = compressibleFunction.NeedPreviousBackwardCpu;
-        }
-
         public static Real[] GetActivatedgy(this ICompressibleFunction compressibleFunction, NdArray y)
         {
             Real[] activatedgy = new Real[y.Grad.Length];

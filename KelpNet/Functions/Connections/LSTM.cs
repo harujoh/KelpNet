@@ -103,7 +103,7 @@ namespace KelpNet
             this.Parameters = functionParameters.ToArray();
         }
 
-        protected override NdArray SingleInputForward(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             NdArray lstmIn = this.upward.Forward(x)[0]; //a
 
@@ -180,7 +180,7 @@ namespace KelpNet
             return this.hParam;
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real[] gxPrevGrad = new Real[y.BatchCount * OutputCount * 4];
 

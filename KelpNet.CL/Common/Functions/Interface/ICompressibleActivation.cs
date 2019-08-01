@@ -6,11 +6,12 @@ namespace KelpNet.CL
 {
     public interface ICompressibleActivation : KelpNet.ICompressibleActivation, IParallelizable
     {
+        void InitParam();
+
         ComputeKernel ForwardKernel { get; set; }
         ComputeKernel BackwardKernel { get; set; }
 
         //GPU向けのActivate関数の文字列
-        string ActivateFunctionString { get; set; } //外部の関数に組み込まれる
         string ActivateKernelString { get; set; } //単品で呼ぶ用
 
         KeyValuePair<string, string>[] ActivationParameters { get; set; }
@@ -21,27 +22,19 @@ namespace KelpNet.CL
 
     public static class CompressibleActivation
     {
-        public static void Initialize(this ICompressibleActivation compressibleActivation, string functionName, string activateFunctionString, KeyValuePair<string, string>[] parameters, bool gpuEnable = false)
+        public static string GetActivateSource(this ICompressibleActivation compressibleActivation)
         {
-            string kernelNameBase = functionName.Replace(" ", "");
+            string activationSource = compressibleActivation.KernelSource;
 
-            compressibleActivation.ActivateFunctionString = activateFunctionString;
-
-            compressibleActivation.ActivateKernelString = OpenCL.GetKernelSource(Resources.Activation).Replace("/*kernelNameBase*/", kernelNameBase);
-
-            if (parameters == null)
+            if (compressibleActivation.ActivationParameters != null)
             {
-                compressibleActivation.ActivationParameters = new KeyValuePair<string, string>[] { };
-            }
-            else
-            {
-                compressibleActivation.ActivationParameters = parameters;
+                foreach (var activationParameter in compressibleActivation.ActivationParameters)
+                {
+                    activationSource = activationSource.Replace(activationParameter.Key, activationParameter.Value);
+                }
             }
 
-            compressibleActivation.ForwardKernelName = kernelNameBase + "Forward";
-            compressibleActivation.BackwardKernelName = kernelNameBase + "Backward";
-
-            compressibleActivation.SetParallel(gpuEnable);
+            return activationSource;
         }
 
         public static bool SetParallel(this ICompressibleActivation compressibleActivation, bool enable)
@@ -50,29 +43,16 @@ namespace KelpNet.CL
 
             if (compressibleActivation.IsParallel)
             {
-                compressibleActivation.InitParallel();
+                string kernelNameBase = compressibleActivation.FunctionName.Replace(" ", "");
+                compressibleActivation.ActivateKernelString = OpenCL.GetKernelSource(Resources.Activation).Replace("/*kernelNameBase*/", kernelNameBase);
+                compressibleActivation.ForwardKernelName = kernelNameBase + "Forward";
+                compressibleActivation.BackwardKernelName = kernelNameBase + "Backward";
 
-                compressibleActivation.SingleInputForward = compressibleActivation.NeedPreviousForwardGpu;
-                compressibleActivation.SingleOutputBackward = compressibleActivation.NeedPreviousBackwardGpu;
-            }
-            else
-            {
-                compressibleActivation.SingleInputForward = compressibleActivation.NeedPreviousForwardCpu;
-                compressibleActivation.SingleOutputBackward = compressibleActivation.NeedPreviousBackwardCpu;
-            }
-
-            return compressibleActivation.IsParallel;
-        }
-
-        public static void InitParallel(this ICompressibleActivation compressibleActivation)
-        {
-            if (compressibleActivation.IsParallel)
-            {
-                string kernelSource = compressibleActivation.ActivateFunctionString;
+                string kernelSource = compressibleActivation.KernelSource;
 
                 foreach (var parameter in compressibleActivation.ActivationParameters)
                 {
-                    kernelSource = compressibleActivation.ActivateFunctionString.Replace(parameter.Key, parameter.Value);
+                    kernelSource = kernelSource.Replace(parameter.Key, parameter.Value);
                 }
 
                 kernelSource += compressibleActivation.ActivateKernelString;
@@ -81,9 +61,11 @@ namespace KelpNet.CL
                 compressibleActivation.ForwardKernel = program.CreateKernel(compressibleActivation.ForwardKernelName);
                 compressibleActivation.BackwardKernel = program.CreateKernel(compressibleActivation.BackwardKernelName);
             }
+
+            return compressibleActivation.IsParallel;
         }
 
-        private static NdArray NeedPreviousForwardGpu(this ICompressibleActivation compressibleActivation, NdArray x)
+        public static NdArray NeedPreviousForwardGpu(this ICompressibleActivation compressibleActivation, NdArray x)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -109,7 +91,7 @@ namespace KelpNet.CL
             return NdArray.Convert(y, x.Shape, x.BatchCount, compressibleActivation);
         }
 
-        private static void NeedPreviousBackwardGpu(this ICompressibleActivation compressibleActivation, NdArray y, NdArray x)
+        public static void NeedPreviousBackwardGpu(this ICompressibleActivation compressibleActivation, NdArray y, NdArray x)
         {
             Real[] gx = new Real[y.Grad.Length];
 
@@ -139,6 +121,5 @@ namespace KelpNet.CL
                 x.Grad[i] += gx[i];
             }
         }
-
     }
 }

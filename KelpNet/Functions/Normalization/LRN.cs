@@ -21,7 +21,7 @@ namespace KelpNet
             this.beta = (Real)beta;
         }
 
-        protected override NdArray SingleInputForward(NdArray input)
+        public override NdArray SingleInputForward(NdArray input)
         {
             int nHalf = n / 2;
             Real[] result = new Real[input.Data.Length];
@@ -67,7 +67,7 @@ namespace KelpNet
             return NdArray.Convert(result, input.Shape, input.BatchCount, this);
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             int nHalf = n / 2;
             Real[] summand = new Real[y.Grad.Length];

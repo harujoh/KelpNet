@@ -59,7 +59,7 @@ namespace KelpNet
             }
         }
 
-        protected override NdArray SingleInputForward(NdArray x)
+        public override NdArray SingleInputForward(NdArray x)
         {
             int[] inputShape = x.Shape;
             int[] outputShape = this.Weight.Shape;
@@ -96,7 +96,7 @@ namespace KelpNet
             }
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             //MultiplyScaleとして必要な処理はない
         }

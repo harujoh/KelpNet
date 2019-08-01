@@ -40,7 +40,7 @@ namespace KelpNet
             this.StrideY = stride[1];
         }
 
-        protected override NdArray SingleInputForward(NdArray input)
+        public override NdArray SingleInputForward(NdArray input)
         {
             int outputHeight = (int)Math.Floor((input.Shape[1] - this.KernelHeight + this.PadY * 2.0) / this.StrideY) + 1;
             int outputWidth = (int)Math.Floor((input.Shape[2] - this.KernelWidth + this.PadX * 2.0) / this.StrideX) + 1;
@@ -89,7 +89,7 @@ namespace KelpNet
             return NdArray.Convert(result, new[] { input.Shape[0], outputHeight, outputWidth }, input.BatchCount, this);
         }
 
-        protected override void SingleOutputBackward(NdArray y, NdArray x)
+        public override void SingleOutputBackward(NdArray y, NdArray x)
         {
             Real m = this.KernelHeight * this.KernelWidth;
 
