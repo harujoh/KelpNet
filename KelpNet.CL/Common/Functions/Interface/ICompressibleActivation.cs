@@ -50,9 +50,12 @@ namespace KelpNet.CL
 
                 string kernelSource = compressibleActivation.KernelSource;
 
-                foreach (var parameter in compressibleActivation.ActivationParameters)
+                if (compressibleActivation.ActivationParameters != null)
                 {
-                    kernelSource = kernelSource.Replace(parameter.Key, parameter.Value);
+                    foreach (var parameter in compressibleActivation.ActivationParameters)
+                    {
+                        kernelSource = kernelSource.Replace(parameter.Key, parameter.Value);
+                    }
                 }
 
                 kernelSource += compressibleActivation.ActivateKernelString;
