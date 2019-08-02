@@ -36,9 +36,9 @@ namespace KelpNet.Sample
                 //GPUを初期化
                 for (int i = 0; i < alexNet.Count - 1; i++)
                 {
-                    if (alexNet[i] is Convolution2D || alexNet[i] is Linear || alexNet[i] is MaxPooling2D)
+                    if (alexNet[i] is CPU.Convolution2D || alexNet[i] is CPU.Linear || alexNet[i] is CPU.MaxPooling2D)
                     {
-                        ((IParallelizable) alexNet[i]).SetParallel(true);
+                        alexNet[i] = (Function)CLConverter.Convert(alexNet[i]);
                     }
                 }
 

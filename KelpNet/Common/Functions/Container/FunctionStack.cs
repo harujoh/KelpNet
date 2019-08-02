@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace KelpNet
+namespace KelpNet.CPU
 {
     //層を積み上げるこのライブラリのメインとなるクラス
     //一回のForward、Backward、Updateで同時に実行される関数の集まり
     [Serializable]
     public class FunctionStack : Function
     {
-        const string FUNCTION_NAME = "FunctionStack";
+        protected const string FUNCTION_NAME = "FunctionStack";
 
         //すべての層がココにFunctionクラスとして保管される
-        public Function[] Functions { get; private set; }
+        public Function[] Functions { get; set; }
 
         //コンストラクタ
         public FunctionStack(Function[] functions, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
@@ -54,7 +54,7 @@ namespace KelpNet
             }
         }
 
-        public void Compress()
+        public virtual void Compress()
         {
             List<Function> functionList = new List<Function>(Functions);
 

@@ -49,10 +49,7 @@ namespace KelpNet.Sample
                 //GPUを初期化
                 for (int i = 0; i < vggNet.Count - 1; i++)
                 {
-                    if (vggNet[i] is CPU.Convolution2D || 
-                        vggNet[i] is CPU.Linear ||
-                        vggNet[i] is CPU.MaxPooling2D
-                        )
+                    if (vggNet[i] is CPU.Convolution2D || vggNet[i] is CPU.Linear || vggNet[i] is CPU.MaxPooling2D)
                     {
                         vggNet[i] = (Function)CLConverter.Convert(vggNet[i]);
                     }

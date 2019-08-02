@@ -98,19 +98,18 @@ namespace KelpNet.Sample
 
         static void SwitchGPU(FunctionStack functionStack)
         {
-            foreach (Function function in functionStack.Functions)
+            for (int i = 0; i < functionStack.Functions.Length; i++)
             {
-                if (function is Convolution2D || function is Linear || function is MaxPooling2D)
+                if (functionStack.Functions[i] is CPU.Convolution2D || functionStack.Functions[i] is CPU.Linear || functionStack.Functions[i] is CPU.MaxPooling2D)
                 {
-                    ((IParallelizable)function).SetParallel(true);
+                    functionStack.Functions[i] = (Function)CLConverter.Convert(functionStack.Functions[i]);
                 }
 
-                if (function is SplitFunction)
+                if (functionStack.Functions[i] is SplitFunction splitFunction)
                 {
-                    SplitFunction splitFunction = (SplitFunction)function;
-                    for (int i = 0; i < splitFunction.SplitedFunctions.Length; i++)
+                    for (int j = 0; j < splitFunction.SplitedFunctions.Length; j++)
                     {
-                        SwitchGPU(splitFunction.SplitedFunctions[i]);
+                        SwitchGPU((FunctionStack)splitFunction.SplitedFunctions[j]);
                     }
                 }
             }
