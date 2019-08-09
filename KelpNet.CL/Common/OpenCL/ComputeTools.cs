@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace KelpNet.CL.Common.OpenCL
+namespace KelpNet.CL.Common
 {
     public class ComputeTools
     {

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace KelpNet.CL.Common.OpenCL.Bindings
+namespace KelpNet.CL.Common
 {
     [SuppressUnmanagedCodeSecurity]
     public class CL10

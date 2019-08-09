@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using KelpNet.CL.Common.OpenCL.Bindings;
 
-namespace KelpNet.CL.Common.OpenCL
+namespace KelpNet.CL.Common
 {
     public class ComputePlatform : ComputeObject
     {

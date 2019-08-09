@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using KelpNet.CL.Common.OpenCL.Bindings;
 
-namespace KelpNet.CL.Common.OpenCL
+namespace KelpNet.CL.Common
 {
     public class ComputeDevice : ComputeObject
     {

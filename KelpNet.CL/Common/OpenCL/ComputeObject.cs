@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace KelpNet.CL.Common.OpenCL
+namespace KelpNet.CL.Common
 {
     public abstract class ComputeObject : IEquatable<ComputeObject>
     {

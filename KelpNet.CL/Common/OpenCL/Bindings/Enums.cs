@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KelpNet.CL.Common.OpenCL.Bindings
+namespace KelpNet.CL.Common
 {
     public enum ComputePlatformInfo : int
     {

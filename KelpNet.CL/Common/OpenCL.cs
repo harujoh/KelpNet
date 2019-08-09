@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using KelpNet.CL.Common.OpenCL;
-using KelpNet.CL.Common.OpenCL.Bindings;
+using KelpNet.CL.Common;
 
 namespace KelpNet.CL
 {

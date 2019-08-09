@@ -1,4 +1,4 @@
-﻿using KelpNet.CL.Common.OpenCL;
+﻿using KelpNet.CL.Common;
 
 namespace KelpNet.CL
 {

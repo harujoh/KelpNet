@@ -4,9 +4,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using KelpNet.CL.Common.OpenCL.Bindings;
 
-namespace KelpNet.CL.Common.OpenCL
+namespace KelpNet.CL.Common
 {
     public class ComputeCommandQueue : ComputeObject, IDisposable
     {
