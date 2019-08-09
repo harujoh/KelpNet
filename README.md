@@ -37,8 +37,8 @@ FunctionStack nn = new FunctionStack(
 - KerasやChainerに似た、関数を書き連ねるコーディングスタイルを採用しています
 - 並列演算にOpenCLを採用しているため、GPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
 > ※OpenCLを使用するためには対応するドライバの追加インストールが必要になることがあります
-> - Intel製 CPU GPU: https://software.intel.com/en-us/articles/opencl-drivers
-> - AMD製 CPU GPU: http://www.amd.com/ja-jp/solutions/professional/hpc/opencl
+> - Intel製 CPU or GPU: https://software.intel.com/en-us/articles/opencl-drivers
+> - AMD製 CPU or GPU: http://www.amd.com/ja-jp/solutions/professional/hpc/opencl
 > - Nvidia製 GPU: https://developer.nvidia.com/opencl
 
 ### C#で作られているメリット
