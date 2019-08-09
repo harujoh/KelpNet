@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
-using Cloo.Bindings;
+﻿using System;
+using System.Diagnostics;
+using KelpNet.CL.Common.OpenCL.Bindings;
 
-namespace Cloo
+namespace KelpNet.CL.Common.OpenCL
 {
     public class ComputeDevice : ComputeObject
     {
@@ -9,22 +10,15 @@ namespace Cloo
         [DebuggerBrowsable(DebuggerBrowsableState.Never)] private readonly ComputePlatform platform;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)] private readonly ComputeDeviceTypes type;
 
-        public CLDeviceHandle Handle
-        {
-            get;
-            protected set;
-        }
-
         public string Name { get { return name; } }
 
         public ComputePlatform Platform { get { return platform; } }
 
         public ComputeDeviceTypes Type { get { return type; } }
 
-        internal ComputeDevice(ComputePlatform platform, CLDeviceHandle handle)
+        internal ComputeDevice(ComputePlatform platform, IntPtr handle)
         {
-            Handle = handle;
-            SetID(Handle.Value);
+            this.handle = handle;
 
             name = GetStringInfo(ComputeDeviceInfo.Name);
             this.platform = platform;
@@ -33,12 +27,12 @@ namespace Cloo
 
         private NativeType GetInfo<NativeType>(ComputeDeviceInfo paramName) where NativeType : struct
         {
-            return GetInfo<CLDeviceHandle, ComputeDeviceInfo, NativeType>(Handle, paramName, CL10.GetDeviceInfo);
+            return GetInfo<IntPtr, ComputeDeviceInfo, NativeType>(handle, paramName, CL10.GetDeviceInfo);
         }
 
         private string GetStringInfo(ComputeDeviceInfo paramName)
         {
-            return GetStringInfo(Handle, paramName, CL10.GetDeviceInfo);
+            return GetStringInfo(handle, paramName, CL10.GetDeviceInfo);
         }
     }
 }

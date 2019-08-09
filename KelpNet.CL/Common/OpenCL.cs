@@ -1,23 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Cloo;
+using KelpNet.CL.Common.OpenCL;
+using KelpNet.CL.Common.OpenCL.Bindings;
 
 namespace KelpNet.CL
 {
-    /// <summary>
-    /// The types of devices.
-    /// </summary>
-    [Flags]
-    public enum ComputeDeviceTypes : long
-    {
-        Default = 1 << 0,
-        Cpu = 1 << 1,
-        Gpu = 1 << 2,
-        Accelerator = 1 << 3,
-        All = 0xFFFFFFFF
-    }
-
     //GPU関連の処理を担うマネージャー
     public class OpenCL
     {
@@ -134,7 +122,7 @@ typedef REAL Real;
             {
                 program.Build(ComputePlatform.Platforms[PlatformId].Devices, string.Format("-D REAL={0} -Werror", realType), null, IntPtr.Zero);
             }
-            catch (ComputeException e)
+            catch (Exception e)
             {
                 throw new Exception(program.GetBuildLog(ComputePlatform.Platforms[PlatformId].Devices[DeviceIndex]), e);
             }

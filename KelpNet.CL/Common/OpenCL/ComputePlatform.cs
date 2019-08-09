@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Cloo.Bindings;
+using KelpNet.CL.Common.OpenCL.Bindings;
 
-namespace Cloo
+namespace KelpNet.CL.Common.OpenCL
 {
     public class ComputePlatform : ComputeObject
     {
@@ -19,9 +19,6 @@ namespace Cloo
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly string version;
-
-
-        public CLPlatformHandle Handle { get; protected set; }
 
         public ReadOnlyCollection<ComputeDevice> Devices { get { return devices; } }
 
@@ -42,18 +39,16 @@ namespace Cloo
                         return;
                     }
 
-                    CLPlatformHandle[] handles;
+                    IntPtr[] handles;
                     int handlesLength;
-                    ComputeErrorCode error = CL10.GetPlatformIDs(0, null, out handlesLength);
-                    ComputeException.ThrowOnError(error);
-                    handles = new CLPlatformHandle[handlesLength];
+                    CL10.GetPlatformIDs(0, null, out handlesLength);
+                    handles = new IntPtr[handlesLength];
 
-                    error = CL10.GetPlatformIDs(handlesLength, handles, out handlesLength);
-                    ComputeException.ThrowOnError(error);
+                    CL10.GetPlatformIDs(handlesLength, handles, out handlesLength);
 
                     List<ComputePlatform> platformList = new List<ComputePlatform>(handlesLength);
 
-                    foreach (CLPlatformHandle handle in handles)
+                    foreach (IntPtr handle in handles)
                     {
                         platformList.Add(new ComputePlatform(handle));
                     }
@@ -67,25 +62,22 @@ namespace Cloo
             }
         }
 
-        private ComputePlatform(CLPlatformHandle handle)
+        private ComputePlatform(IntPtr handle)
         {
-            Handle = handle;
-            SetID(Handle.Value);
+            this.handle = handle;
 
-            name = GetStringInfo(Handle, ComputePlatformInfo.Name, CL10.GetPlatformInfo);
-            version = GetStringInfo(Handle, ComputePlatformInfo.Version, CL10.GetPlatformInfo);
+            name = GetStringInfo(handle, ComputePlatformInfo.Name, CL10.GetPlatformInfo);
+            version = GetStringInfo(handle, ComputePlatformInfo.Version, CL10.GetPlatformInfo);
             QueryDevices();
         }
 
         public ReadOnlyCollection<ComputeDevice> QueryDevices()
         {
             int handlesLength = 0;
-            ComputeErrorCode error = CL10.GetDeviceIDs(Handle, ComputeDeviceTypes.All, 0, null, out handlesLength);
-            ComputeException.ThrowOnError(error);
+            CL10.GetDeviceIDs(handle, ComputeDeviceTypes.All, 0, null, out handlesLength);
 
-            CLDeviceHandle[] handles = new CLDeviceHandle[handlesLength];
-            error = CL10.GetDeviceIDs(Handle, ComputeDeviceTypes.All, handlesLength, handles, out handlesLength);
-            ComputeException.ThrowOnError(error);
+            IntPtr[] handles = new IntPtr[handlesLength];
+            CL10.GetDeviceIDs(handle, ComputeDeviceTypes.All, handlesLength, handles, out handlesLength);
 
             ComputeDevice[] devices = new ComputeDevice[handlesLength];
 

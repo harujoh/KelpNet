@@ -37,6 +37,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -52,6 +55,20 @@
     <Compile Include="Common\Functions\Interface\ICompressibleFunction.cs" />
     <Compile Include="Common\Functions\Interface\IParallelizable.cs" />
     <Compile Include="Common\OpenCL.cs" />
+    <Compile Include="Common\OpenCL\Bindings\CL10.cs" />
+    <Compile Include="Common\OpenCL\Bindings\CL11.cs" />
+    <Compile Include="Common\OpenCL\Bindings\Enums.cs" />
+    <Compile Include="Common\OpenCL\ComputeBuffer.cs" />
+    <Compile Include="Common\OpenCL\ComputeCommandQueue.cs" />
+    <Compile Include="Common\OpenCL\ComputeContext.cs" />
+    <Compile Include="Common\OpenCL\ComputeContextPropertyList.cs" />
+    <Compile Include="Common\OpenCL\ComputeDevice.cs" />
+    <Compile Include="Common\OpenCL\ComputeEvent.cs" />
+    <Compile Include="Common\OpenCL\ComputeKernel.cs" />
+    <Compile Include="Common\OpenCL\ComputeObject.cs" />
+    <Compile Include="Common\OpenCL\ComputePlatform.cs" />
+    <Compile Include="Common\OpenCL\ComputeProgram.cs" />
+    <Compile Include="Common\OpenCL\ComputeTools.cs" />
     <Compile Include="Common\Tools\ModelIO.cs" />
     <Compile Include="Functions\Activations\LeakyReLU.cs" />
     <Compile Include="Functions\Activations\ReLU.cs" />
@@ -80,6 +97,7 @@
     <None Include="OpenCL\Connections\Linear.cl" />
     <None Include="OpenCL\Noise\Dropout.cl" />
     <None Include="OpenCL\Poolings\MaxPooling2D.cl" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -88,14 +106,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cloo\Cloo.csproj">
-      <Project>{6ec82c77-96ba-4102-9589-ad89e3f4e068}</Project>
-      <Name>Cloo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\KelpNet\KelpNet.csproj">
       <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
       <Name>KelpNet</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

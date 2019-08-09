@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Cloo
+namespace KelpNet.CL.Common.OpenCL
 {
     public abstract class ComputeObject : IEquatable<ComputeObject>
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private IntPtr handle;
+        public IntPtr handle;
 
         public bool Equals(ComputeObject obj)
         {
@@ -28,15 +28,13 @@ namespace Cloo
         protected QueriedType[] GetArrayInfo<HandleType, InfoType, QueriedType>(HandleType handle, InfoType paramName, GetInfoDelegate<HandleType, InfoType> getInfoDelegate)
         {
             IntPtr bufferSizeRet;
-            var error = getInfoDelegate(handle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
-            ComputeException.ThrowOnError(error);
+            getInfoDelegate(handle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
             var buffer = new QueriedType[bufferSizeRet.ToInt64() / Marshal.SizeOf(typeof(QueriedType))];
             GCHandle gcHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
             try
             {
-                error = getInfoDelegate(handle, paramName, bufferSizeRet, gcHandle.AddrOfPinnedObject(), out bufferSizeRet);
-                ComputeException.ThrowOnError(error);
+                getInfoDelegate(handle, paramName, bufferSizeRet, gcHandle.AddrOfPinnedObject(), out bufferSizeRet);
             }
             finally
             {
@@ -49,15 +47,13 @@ namespace Cloo
         protected QueriedType[] GetArrayInfo<MainHandleType, SecondHandleType, InfoType, QueriedType>(MainHandleType mainHandle, SecondHandleType secondHandle, InfoType paramName, GetInfoDelegateEx<MainHandleType, SecondHandleType, InfoType> getInfoDelegate)
         {
             IntPtr bufferSizeRet;
-            var error = getInfoDelegate(mainHandle, secondHandle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
-            ComputeException.ThrowOnError(error);
+            getInfoDelegate(mainHandle, secondHandle, paramName, IntPtr.Zero, IntPtr.Zero, out bufferSizeRet);
             var buffer = new QueriedType[bufferSizeRet.ToInt64() / Marshal.SizeOf(typeof(QueriedType))];
             GCHandle gcHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
             try
             {
-                error = getInfoDelegate(mainHandle, secondHandle, paramName, bufferSizeRet, gcHandle.AddrOfPinnedObject(), out bufferSizeRet);
-                ComputeException.ThrowOnError(error);
+                getInfoDelegate(mainHandle, secondHandle, paramName, bufferSizeRet, gcHandle.AddrOfPinnedObject(), out bufferSizeRet);
             }
             finally
             {
@@ -74,9 +70,7 @@ namespace Cloo
 
             try
             {
-                IntPtr sizeRet;
-                ComputeErrorCode error = getInfoDelegate(handle, paramName, (IntPtr)Marshal.SizeOf(result), gcHandle.AddrOfPinnedObject(), out sizeRet);
-                ComputeException.ThrowOnError(error);
+                getInfoDelegate(handle, paramName, (IntPtr)Marshal.SizeOf(result), gcHandle.AddrOfPinnedObject(), out _);
             }
             finally
             {
@@ -103,13 +97,8 @@ namespace Cloo
             return new string(chars).TrimEnd('\0');
         }
 
-        protected void SetID(IntPtr id)
-        {
-            handle = id;
-        }
+        protected delegate int GetInfoDelegate<HandleType, InfoType>(HandleType objectHandle, InfoType paramName, IntPtr paramValueSize, IntPtr paramValue, out IntPtr paramValueSizeRet);
 
-        protected delegate ComputeErrorCode GetInfoDelegate<HandleType, InfoType>(HandleType objectHandle, InfoType paramName, IntPtr paramValueSize, IntPtr paramValue, out IntPtr paramValueSizeRet);
-
-        protected delegate ComputeErrorCode GetInfoDelegateEx<MainHandleType, SecondHandleType, InfoType>(MainHandleType mainObjectHandle, SecondHandleType secondaryObjectHandle, InfoType paramName, IntPtr paramValueSize, IntPtr paramValue, out IntPtr paramValueSizeRet);
+        protected delegate int GetInfoDelegateEx<MainHandleType, SecondHandleType, InfoType>(MainHandleType mainObjectHandle, SecondHandleType secondaryObjectHandle, InfoType paramName, IntPtr paramValueSize, IntPtr paramValue, out IntPtr paramValueSizeRet);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using Cloo;
+using KelpNet.CL.Common.OpenCL;
+using KelpNet.CL.Common.OpenCL.Bindings;
 using KelpNet.CL.Properties;
 
 namespace KelpNet.CL

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using Cloo;
+using KelpNet.CL.Common.OpenCL;
 using KelpNet.CL.Properties;
 
 namespace KelpNet.CL

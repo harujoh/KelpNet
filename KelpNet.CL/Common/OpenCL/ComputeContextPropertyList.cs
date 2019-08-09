@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using KelpNet.CL.Common.OpenCL.Bindings;
 
-namespace Cloo
+namespace KelpNet.CL.Common.OpenCL
 {
     public class ComputeContextPropertyList: ICollection<ComputeContextProperty>
     {
@@ -13,7 +14,7 @@ namespace Cloo
         public ComputeContextPropertyList(ComputePlatform platform)
         {
             properties = new List<ComputeContextProperty>();
-            properties.Add(new ComputeContextProperty(ComputeContextPropertyName.Platform, platform.Handle.Value));
+            properties.Add(new ComputeContextProperty(ComputeContextPropertyName.Platform, platform.handle));
         }
 
         internal IntPtr[] ToIntPtrArray()
@@ -74,6 +75,25 @@ namespace Cloo
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)properties).GetEnumerator();
+        }
+    }
+
+    public class ComputeContextProperty
+    {
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private readonly ComputeContextPropertyName name;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private readonly IntPtr value;
+
+        public ComputeContextPropertyName Name { get { return name; } }
+
+        public IntPtr Value { get { return value; } }
+
+        public ComputeContextProperty(ComputeContextPropertyName name, IntPtr value)
+        {
+            this.name = name;
+            this.value = value;
         }
     }
 }

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cloo.Bindings;
 
-namespace Cloo
+namespace KelpNet.CL.Common.OpenCL
 {
     public class ComputeTools
     {
@@ -30,7 +29,7 @@ namespace Cloo
             return result;
         }
 
-        internal static CLDeviceHandle[] ExtractHandles(ICollection<ComputeDevice> computeObjects, out int handleCount)
+        internal static IntPtr[] ExtractHandles(ICollection<ComputeDevice> computeObjects, out int handleCount)
         {
             if (computeObjects == null || computeObjects.Count == 0)
             {
@@ -38,12 +37,12 @@ namespace Cloo
                 return null;
             }
 
-            CLDeviceHandle[] result = new CLDeviceHandle[computeObjects.Count];
+            IntPtr[] result = new IntPtr[computeObjects.Count];
             int i = 0;
 
             foreach (ComputeDevice computeObj in computeObjects)
             {
-                result[i] = computeObj.Handle;
+                result[i] = computeObj.handle;
                 i++;
             }
 
@@ -52,7 +51,7 @@ namespace Cloo
             return result;
         }
 
-        internal static CLEventHandle[] ExtractHandles(ICollection<ComputeEventBase> computeObjects, out int handleCount)
+        internal static IntPtr[] ExtractHandles(ICollection<ComputeEvent> computeObjects, out int handleCount)
         {
             if (computeObjects == null || computeObjects.Count == 0)
             {
@@ -60,12 +59,12 @@ namespace Cloo
                 return null;
             }
 
-            CLEventHandle[] result = new CLEventHandle[computeObjects.Count];
+            IntPtr[] result = new IntPtr[computeObjects.Count];
             int i = 0;
 
-            foreach (ComputeEventBase computeObj in computeObjects)
+            foreach (ComputeEvent computeObj in computeObjects)
             {
-                result[i] = computeObj.Handle;
+                result[i] = computeObj.handle;
                 i++;
             }
 

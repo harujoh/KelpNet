@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
-using Cloo.Bindings;
+using KelpNet.CL.Common.OpenCL.Bindings;
 
-namespace Cloo
+namespace KelpNet.CL.Common.OpenCL
 {
-    public abstract class ComputeEventBase : ComputeResource
+    public class ComputeEvent : ComputeObject, IDisposable
     {
         private event ComputeCommandStatusChanged aborted;
         private event ComputeCommandStatusChanged completed;
@@ -48,33 +49,14 @@ namespace Cloo
             }
         }
 
-        public CLEventHandle Handle
-        {
-            get;
-            protected set;
-        }
-
         public ComputeContext Context { get; protected set; }
 
         public ComputeCommandType Type { get; protected set; }
 
-        protected override void Dispose(bool manual)
-        {
-            if (Handle.IsValid)
-            {
-#if DEBUG
-                Trace.WriteLine("Dispose " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
-#endif
-                CL10.ReleaseEvent(Handle);
-                Handle.Invalidate();
-            }
-        }
-
         protected void HookNotifier()
         {
             statusNotify = StatusNotify;
-            ComputeErrorCode error = CL11.SetEventCallback(Handle, (int)ComputeCommandExecutionStatus.Complete, statusNotify, IntPtr.Zero);
-            ComputeException.ThrowOnError(error);
+            CL11.SetEventCallback(handle, (int)ComputeCommandExecutionStatus.Complete, statusNotify, IntPtr.Zero);
         }
 
         protected virtual void OnCompleted(object sender, ComputeCommandStatusArgs evArgs)
@@ -99,7 +81,7 @@ namespace Cloo
             }
         }
 
-        private void StatusNotify(CLEventHandle eventHandle, int cmdExecStatusOrErr, IntPtr userData)
+        private void StatusNotify(IntPtr eventHandle, int cmdExecStatusOrErr, IntPtr userData)
         {
             status = new ComputeCommandStatusArgs(this, (ComputeCommandExecutionStatus)cmdExecStatusOrErr);
 
@@ -114,15 +96,78 @@ namespace Cloo
                     break;
             }
         }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private GCHandle gcHandle;
+
+        public ComputeCommandQueue CommandQueue { get; private set; }
+
+        internal ComputeEvent(IntPtr handle, ComputeCommandQueue queue)
+        {
+
+            CommandQueue = queue;
+            Type = (ComputeCommandType)GetInfo<IntPtr, ComputeEventInfo, int>(handle, ComputeEventInfo.CommandType, CL10.GetEventInfo);
+            Context = queue.Context;
+
+            if (ComputeTools.ParseVersionString(CommandQueue.Device.Platform.Version, 1) > new Version(1, 0))
+            {
+                HookNotifier();
+            }
+
+#if DEBUG
+            Trace.WriteLine("Create " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
+#endif
+        }
+
+        internal void TrackGCHandle(GCHandle handle)
+        {
+            gcHandle = handle;
+
+            Completed += Cleanup;
+            Aborted += Cleanup;
+        }
+
+        public void Dispose()
+        {
+            FreeGCHandle();
+#if DEBUG
+            Trace.WriteLine("Dispose " + this + " in Thread(" + Thread.CurrentThread.ManagedThreadId + ").", "Information");
+#endif
+            CL10.ReleaseKernel(handle);
+        }
+
+        private void Cleanup(object sender, ComputeCommandStatusArgs e)
+        {
+            lock (CommandQueue.Events)
+            {
+                if (CommandQueue.Events.Contains(this))
+                {
+                    CommandQueue.Events.Remove(this);
+                    Dispose();
+                }
+                else
+                {
+                    FreeGCHandle();
+                }
+            }
+        }
+
+        private void FreeGCHandle()
+        {
+            if (gcHandle.IsAllocated && gcHandle.Target != null)
+            {
+                gcHandle.Free();
+            }
+        }
     }
 
     public class ComputeCommandStatusArgs : EventArgs
     {
-        public ComputeEventBase Event { get; private set; }
+        public ComputeEvent Event { get; private set; }
 
         public ComputeCommandExecutionStatus Status { get; private set; }
 
-        public ComputeCommandStatusArgs(ComputeEventBase ev, ComputeCommandExecutionStatus status)
+        public ComputeCommandStatusArgs(ComputeEvent ev, ComputeCommandExecutionStatus status)
         {
             Event = ev;
             Status = status;

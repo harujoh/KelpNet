@@ -1,4 +1,4 @@
-﻿using Cloo;
+﻿using KelpNet.CL.Common.OpenCL;
 
 namespace KelpNet.CL
 {
