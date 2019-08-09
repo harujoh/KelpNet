@@ -1,9 +1,17 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace KelpNet
 {
+    public class RealTool
+    {
+        [SuppressUnmanagedCodeSecurity]
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, int count);
+    }
+
     [Serializable]
     public struct Real<T> : IComparable<Real<T>> where T : unmanaged, IComparable<T>
     {
@@ -283,7 +291,7 @@ namespace KelpNet
             }
         }
 
-        public static unsafe Real<T>[] GetArray(Array data)
+        public static Real<T>[] GetArray(Array data)
         {
             Type arrayType = data.GetType().GetElementType();
             Real<T>[] resultData = new Real<T>[data.Length];
@@ -303,12 +311,11 @@ namespace KelpNet
             }
 
             //データを叩き込む
-            int size = sizeof(T) * data.Length;
-            GCHandle gchObj = GCHandle.Alloc(data, GCHandleType.Pinned);
-            GCHandle gchBytes = GCHandle.Alloc(resultData, GCHandleType.Pinned);
-            Buffer.MemoryCopy((void*)gchObj.AddrOfPinnedObject(), (void*)gchBytes.AddrOfPinnedObject(), size, size);
-            gchObj.Free();
-            gchBytes.Free();
+            GCHandle source = GCHandle.Alloc(data, GCHandleType.Pinned);
+            GCHandle dest = GCHandle.Alloc(resultData, GCHandleType.Pinned);
+            RealTool.CopyMemory(dest.AddrOfPinnedObject(), source.AddrOfPinnedObject(), Unsafe.SizeOf<T>() * data.Length);
+            source.Free();
+            dest.Free();
 
             return resultData;
         }
