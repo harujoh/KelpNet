@@ -1,7 +1,7 @@
 # KelpNet : Pure C# deep learning framework
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Build status](https://ci.appveyor.com/api/projects/status/a51hnuaat3ldsdmo?svg=true)](https://ci.appveyor.com/project/harujoh/kelpnet) [![codecov](https://codecov.io/gh/harujoh/KelpNet/branch/master/graph/badge.svg)](https://codecov.io/gh/harujoh/KelpNet)
 
-```java
+```csharp
 /* SampleCode */
 FunctionStack<float> nn = new FunctionStack<float>(
     new Convolution2D<float>(1, 32, 5, pad: 2, name: "l1 Conv2D"),
