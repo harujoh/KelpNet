@@ -3,17 +3,17 @@
 
 ```java
 /* SampleCode */
-FunctionStack nn = new FunctionStack(
-    new Convolution2D(1, 32, 5, pad: 2, name: "l1 Conv2D"),
-    new ReLU(name: "l1 ReLU"),
-    new MaxPooling(2, 2, name: "l1 MaxPooling"),
-    new Convolution2D(32, 64, 5, pad: 2, name: "l2 Conv2D"),
-    new ReLU(name: "l2 ReLU"),
-    new MaxPooling(2, 2, name: "l2 MaxPooling"),
-    new Linear(7 * 7 * 64, 1024, name: "l3 Linear"),
-    new ReLU(name: "l3 ReLU"),
-    new Dropout(name: "l3 DropOut"),
-    new Linear(1024, 10, name: "l4 Linear")
+FunctionStack<float> nn = new FunctionStack<float>(
+    new Convolution2D<float>(1, 32, 5, pad: 2, name: "l1 Conv2D"),
+    new ReLU<float>(name: "l1 ReLU"),
+    new MaxPooling<float>(2, 2, name: "l1 MaxPooling"),
+    new Convolution2D<float>(32, 64, 5, pad: 2, name: "l2 Conv2D"),
+    new ReLU<float>(name: "l2 ReLU"),
+    new MaxPooling<float>(2, 2, name: "l2 MaxPooling"),
+    new Linear<float>(7 * 7 * 64, 1024, name: "l3 Linear"),
+    new ReLU<float>(name: "l3 ReLU"),
+    new Dropout<float>(name: "l3 DropOut"),
+    new Linear<float>(1024, 10, name: "l4 Linear")
 );
 ```
 
