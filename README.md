@@ -58,8 +58,8 @@ FunctionStack<float> nn = new FunctionStack<float>(
 Twitter: https://twitter.com/harujoh
 
 ## 動作環境
-Libraries: .NET Standard 2.0
-Samples: .NET Framework 4.6.1
+Libraries: .NET Standard 2.0  
+Samples: .NET Framework 4.6.1  
 
 ## 実装済み関数
 - Connections:
