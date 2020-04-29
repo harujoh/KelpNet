@@ -26,6 +26,7 @@ FunctionStack nn = new FunctionStack(
 ・[**Others**](https://github.com/harujoh/KelpNet/tree/master/KelpNet.Sample)
 - SampleData:
 ・MNIST
+・FashionMNIST
 ・CIFAR 10/100
 - Importable:
 ・CaffeModel
