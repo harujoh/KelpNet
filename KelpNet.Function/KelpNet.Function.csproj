@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="KelpNet.Function.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\KelpNet.Common\KelpNet.Common.csproj" />
     <ProjectReference Include="..\KelpNet.Function.Double\KelpNet.Function.Double.csproj" />
   </ItemGroup>

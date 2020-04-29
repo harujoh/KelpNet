@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="KelpNet.Common.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Functions\Container\" />
     <Folder Include="Functions\Interface\" />
     <Folder Include="Optimizers\" />

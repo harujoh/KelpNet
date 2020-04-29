@@ -15,6 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="KelpNet.Function.Double.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\KelpNet.Function\Common\Broth.cs" Link="Common\Broth.cs" />
     <Compile Include="..\KelpNet.Function\Common\Functions\Interface\ICompressibleActivation.cs" Link="Common\Functions\Interface\ICompressibleActivation.cs" />
     <Compile Include="..\KelpNet.Function\Common\NdArray.cs" Link="Common\NdArray.cs" />

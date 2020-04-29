@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="KelpNet.CL.Common.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\KelpNet.Common\KelpNet.Common.csproj" />
     <ProjectReference Include="..\KelpNet.Function\KelpNet.Function.csproj" />
   </ItemGroup>

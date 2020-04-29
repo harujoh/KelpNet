@@ -15,6 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="KelpNet.CL.Function.Double.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\KelpNet.CL.Function\Common\Functions\Interface\ICompressibleActivation.cs" Link="Common\Functions\Interface\ICompressibleActivation.cs" />
     <Compile Include="..\KelpNet.CL.Function\Functions\Connections\Convolution2D.cs" Link="Functions\Connections\Convolution2D.cs" />
     <Compile Include="..\KelpNet.CL.Function\Functions\Connections\Deconvolution2D.cs" Link="Functions\Connections\Deconvolution2D.cs" />
