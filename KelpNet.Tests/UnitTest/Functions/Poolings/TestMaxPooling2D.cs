@@ -4,6 +4,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
 
+//using Real = System.Double;
+using Real = System.Single;
+
 namespace KelpNet.Tests
 {
     [TestClass]
@@ -59,9 +62,9 @@ namespace KelpNet.Tests
                 (int)Math.Floor((wideSize - kWidth + padX * 2.0 + strideX - 1) / strideX) + 1 :
                 (int)Math.Floor((wideSize - kWidth + padX * 2.0) / strideX) + 1;
 
-            Real[,,,] input = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, heightSize, wideSize });
+            Real[,,,] input = Initializer.GetRandomValues<Real[,,,]>(new[] { batchCount, chCount, heightSize, wideSize });
 
-            Real[,,,] dummyGy = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, chCount, outputHeight, outputWidth });
+            Real[,,,] dummyGy = Initializer.GetRandomValues<Real[,,,]>(new[] { batchCount, chCount, outputHeight, outputWidth });
 
             //Chainer
             NChainer.MaxPooling2D<Real> cMaxPooling2D = new NChainer.MaxPooling2D<Real>(
@@ -70,30 +73,30 @@ namespace KelpNet.Tests
                 new[] { padY, padX }
             );
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cMaxPooling2D.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
 
             //KelpNet
-            KelpNet.CL.MaxPooling2D maxPooling2D = new KelpNet.CL.MaxPooling2D(
+            KelpNet.CL.MaxPooling2D<Real> maxPooling2D = new KelpNet.CL.MaxPooling2D<Real>(
                 new[] { kWidth, kHeight },
                 new[] { strideX, strideY },
                 new[] { padX, padY },
                 gpuEnable: gpuEnable);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { chCount, heightSize, wideSize }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = maxPooling2D.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = maxPooling2D.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
-            Real[] cYdata = Real.ToRealArray((Real[,,,])cY.Data.Copy());
-            Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad.Copy());
+            Real[] cYdata = ((Real[,,,])cY.Data.Copy()).Flatten();
+            Real[] cXgrad = ((Real[,,,])cX.Grad.Copy()).Flatten();
 
             //許容範囲を算出
             double delta = 0.00001;

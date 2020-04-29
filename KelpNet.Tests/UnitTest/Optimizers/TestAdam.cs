@@ -2,6 +2,9 @@
 using NChainer;
 using NConstrictor;
 
+//using Real = System.Double;
+using Real = System.Single;
+
 namespace KelpNet.Tests
 {
     [TestClass]
@@ -17,10 +20,10 @@ namespace KelpNet.Tests
             int outputCount = Mother.Dice.Next(2, 50);
             int batchCount = Mother.Dice.Next(1, 5);
 
-            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
-            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
-            Real[,] w = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
-            Real[] b = Initializer.GetRealArray(outputCount);
+            Real[,] input = Initializer.GetRandomValues<Real[,]>(batchCount, inputCount);
+            Real[,] dummyGy = Initializer.GetRandomValues<Real[,]>(batchCount, outputCount);
+            Real[,] w = Initializer.GetRandomValues<Real[,]>(outputCount, inputCount);
+            Real[] b = Initializer.GetRandomValues<Real[]>(outputCount);
 
 
             float alpha = (float)Mother.Dice.NextDouble(); //0.001f
@@ -30,35 +33,35 @@ namespace KelpNet.Tests
             float eta = (float)Mother.Dice.NextDouble(); //1.0f;
 
             //Chainer
-            NChainer.Linear<Real> cLinear = new NChainer.Linear<Real>(inputCount, outputCount, false, Real.ToBaseNdArray(w), Real.ToBaseArray(b));
+            NChainer.Linear<Real> cLinear = new NChainer.Linear<Real>(inputCount, outputCount, false, w, b);
             NChainer.Adam<Real> cAdam = new NChainer.Adam<Real>(alpha, beta1, beta2, eps, eta);
             cAdam.Setup(cLinear);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cLinear.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
             cAdam.Update();
 
             //KelpNet
-            KelpNet.CL.Linear linear = new KelpNet.CL.Linear(inputCount, outputCount, false, w, b);
-            KelpNet.Adam adam = new Adam(alpha, beta1, beta2, eps, eta);
+            KelpNet.CL.Linear<Real> linear = new KelpNet.CL.Linear<Real>(inputCount, outputCount, false, w, b);
+            KelpNet.Adam<Real> adam = new Adam<Real>(alpha, beta1, beta2, eps, eta);
             adam.SetUp(linear);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = linear.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = linear.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
             adam.Update();
 
 
-            Real[] cW = Real.ToRealArray((Real[,])cLinear.W.Data);
+            Real[] cW = ((Real[,])cLinear.W.Data).Flatten();
             Real[] cb = (Real[])cLinear.b.Data;
 
             //許容範囲を算出

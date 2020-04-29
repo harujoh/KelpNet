@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -18,8 +20,8 @@ namespace KelpNet.Tests
             int width = Mother.Dice.Next(1, 16);
             int height = Mother.Dice.Next(1, 16);
 
-            Real[,,,] inputA = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, width });
-            Real[,,,] inputB = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, width });
+            Real[,,,] inputA = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, width);
+            Real[,,,] inputB = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, width);
 
             for (int i = 0; i < inputB.GetLength(0); i++)
             {
@@ -29,7 +31,7 @@ namespace KelpNet.Tests
                     {
                         for (int l = 0; l < inputB.GetLength(3); l++)
                         {
-                            inputB[i, j, k, l] *= 3.1415;
+                            inputB[i, j, k, l] *= (Real)3.1415f;
                         }
                     }
                 }
@@ -38,23 +40,23 @@ namespace KelpNet.Tests
             //chainer
             NChainer.MeanSquaredError<Real> cMeanSquaredError = new NChainer.MeanSquaredError<Real>();
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(inputA));
-            Variable<Real> cY = new Variable<Real>(Real.ToBaseNdArray(inputB));
+            Variable<Real> cX = new Variable<Real>(inputA);
+            Variable<Real> cY = new Variable<Real>(inputB);
 
             Variable<Real> cZ = cMeanSquaredError.Forward(cX, cY);
 
             cZ.Backward();
 
-            Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad);
+            Real[] cXgrad = ((Real[,,,])cX.Grad).Flatten();
 
             //KelpNet
-            KelpNet.MeanSquaredError meanSquaredError = new KelpNet.MeanSquaredError();
+            KelpNet.MeanSquaredError<Real> meanSquaredError = new KelpNet.MeanSquaredError<Real>();
 
-            NdArray x = new NdArray(Real.ToRealArray(inputA), new[] { ch, height, width }, batchCount);
-            NdArray y = new NdArray(Real.ToRealArray(inputB), new[] { ch, height, width }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(inputA, asBatch: true);
+            NdArray<Real> y = new NdArray<Real>(inputB, asBatch: true);
 
             //KelpNetはBackwaward側のみEvaluateで実行される
-            NdArray z = meanSquaredError.Evaluate(x, y);
+            NdArray<Real> z = meanSquaredError.Evaluate(x, y);
 
 
             //許容範囲を算出(内部の割引順が違うため誤差が大きい)

@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -38,39 +40,39 @@ namespace KelpNet.Tests
             int outputCount = Mother.Dice.Next(1, 50);
             int batchCount = Mother.Dice.Next(1, 5);
 
-            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
+            Real[,] input = Initializer.GetRandomValues<Real[,]>(batchCount, inputCount);
 
-            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
-            Real[,] w = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
+            Real[,] dummyGy = Initializer.GetRandomValues<Real[,]>(batchCount, outputCount);
+            Real[,] w = Initializer.GetRandomValues<Real[,]>(outputCount, inputCount);
 
-            Real[] b = Initializer.GetRealArray(outputCount);
+            Real[] b = Initializer.GetRandomValues<Real[]>(outputCount);
 
             //Chainer
-            NChainer.Linear<Real> cLinear = new NChainer.Linear<Real>(inputCount, outputCount, false, Real.ToBaseNdArray(w), Real.ToBaseArray(b));
+            NChainer.Linear<Real> cLinear = new NChainer.Linear<Real>(inputCount, outputCount, false, w, b);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cLinear.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
 
             //KelpNet
-            KelpNet.CL.Linear linear = new KelpNet.CL.Linear(inputCount, outputCount, false, w, b, gpuEnable: gpuEnable);
+            CL.Linear<Real> linear = new CL.Linear<Real>(inputCount, outputCount, false, w, b, gpuEnable: gpuEnable);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = linear.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = linear.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
 
-            Real[] cYdata = Real.ToRealArray((Real[,])cY.Data);
-            Real[] cXgrad = Real.ToRealArray((Real[,])cX.Grad);
+            Real[] cYdata = ((Real[,])cY.Data).Flatten();
+            Real[] cXgrad = ((Real[,])cX.Grad).Flatten();
 
-            Real[] cWgrad = Real.ToRealArray((Real[,])cLinear.W.Grad);
+            Real[] cWgrad = ((Real[,])cLinear.W.Grad).Flatten();
             Real[] cbgrad = (Real[])cLinear.b.Grad;
 
             //許容範囲を算出

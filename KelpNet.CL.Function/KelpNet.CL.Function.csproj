@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>KelpNet.CL</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KelpNet.CL.Common\KelpNet.CL.Common.csproj" />
+    <ProjectReference Include="..\KelpNet.CL.Function.Double\KelpNet.CL.Function.Double.csproj" />
+    <ProjectReference Include="..\KelpNet.Common\KelpNet.Common.csproj" />
+    <ProjectReference Include="..\KelpNet.Function\KelpNet.Function.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="CLSource\Activations\" />
+    <Folder Include="CLSource\Connections\" />
+    <Folder Include="CLSource\Noise\" />
+    <Folder Include="CLSource\Poolings\" />
+    <Folder Include="Functions\Activations\" />
+    <Folder Include="Functions\Connections\" />
+    <Folder Include="Functions\Noise\" />
+    <Folder Include="Functions\Poolings\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -1,15 +1,53 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 
+#if DOUBLE
+using Real = System.Double;
+#else
+using Real = System.Single;
+#endif
+
 namespace KelpNet.Tools
 {
+#if !DOUBLE
     public class BitmapConverter
+    {
+        public static NdArray<T> Image2NdArray<T>(Bitmap input, bool isNorm = true, bool isToBgrArray = false, T[] bias = null) where T : unmanaged, IComparable<T>
+        {
+            if (typeof(T) == typeof(float)) return (NdArray<T>)(object)BitmapConverterF.Image2NdArray(input, isNorm, isToBgrArray, (float[])(object)bias);
+            if (typeof(T) == typeof(double)) return (NdArray<T>)(object)BitmapConverterD.Image2NdArray(input, isNorm, isToBgrArray, (double[])(object)bias);
+            throw new Exception();
+        }
+
+        public static Bitmap[] NdArray2Image<T>(NdArray<T> input, bool isNorm = true, bool isFromBgrArray = false) where T : unmanaged, IComparable<T>
+        {
+            if (input is NdArray<float> inputF) return BitmapConverterF.NdArray2Image(inputF, isNorm, isFromBgrArray);
+            if (input is NdArray<double> inputD) return BitmapConverterD.NdArray2Image(inputD, isNorm, isFromBgrArray);
+            throw new Exception();
+        }
+
+        public static T[] Image2RealArray<T>(Bitmap input, bool isNorm = true, bool isToBgrArray = false, T[] bias = null) where T : unmanaged, IComparable<T>
+        {
+            if (typeof(T) == typeof(float)) return (T[])(object)BitmapConverterF.Image2RealArray(input, isNorm, isToBgrArray);
+            if (typeof(T) == typeof(double)) return (T[])(object)BitmapConverterD.Image2RealArray(input, isNorm, isToBgrArray);
+            throw new Exception();
+        }
+    }
+
+#endif
+
+#if DOUBLE
+    public static class BitmapConverterD
+#else
+    public static class BitmapConverterF
+#endif
     {
         //Bitmapは [RGBRGB...]でデータが格納されているが多くの機械学習は[RR..GG..BB..]を前提にしているため入れ替えを行っている
         //Biasのチャンネル順は入力イメージに準ずる
-        public static NdArray Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, Real[] bias = null)
+        public static NdArray<Real> Image2NdArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false, Real[] bias = null)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
 
@@ -20,7 +58,7 @@ namespace KelpNet.Tools
 
             Real norm = isNorm ? 255 : 1;
 
-            NdArray result = new NdArray(bitcount, input.Height, input.Width);
+            NdArray<Real> result = new NdArray<Real>(bitcount, input.Height, input.Width);
 
             BitmapData bmpdat = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly, input.PixelFormat);
             byte[] imageData = new byte[bmpdat.Stride * bmpdat.Height];
@@ -61,7 +99,7 @@ namespace KelpNet.Tools
             return result;
         }
 
-        public static Real[] Image2RealArray(Bitmap input, bool isToBgrArray = false, bool isNorm = true)
+        public static Real[] Image2RealArray(Bitmap input, bool isNorm = true, bool isToBgrArray = false)
         {
             int bitcount = Image.GetPixelFormatSize(input.PixelFormat) / 8;
 
@@ -106,13 +144,13 @@ namespace KelpNet.Tools
             return result;
         }
 
-        public static Bitmap[] NdArray2Image(NdArray input, bool isNorm = true, bool isFromBgrArray = false)
+        public static Bitmap[] NdArray2Image(NdArray<Real> input, bool isNorm = true, bool isFromBgrArray = false)
         {
             Bitmap[] result = new Bitmap[input.BatchCount];
 
             for (int i = 0; i < result.Length; i++)
             {
-                NdArray tmp = input.GetSingleArray(i);
+                NdArray<Real> tmp = input.GetSingleArray(i);
 
                 if (input.Shape.Length == 2)
                 {
@@ -159,8 +197,8 @@ namespace KelpNet.Tools
                     for (int x = 0; x < result.Width; x++)
                     {
                         resultData[y * bmpdat.Stride + x] = data[y * width + x] > 0
-                            ? (byte) (data[y * width + x] / datamax * norm)
-                            : (byte) 0;
+                            ? (byte)(data[y * width + x] / datamax * norm)
+                            : (byte)0;
                     }
                 }
             }

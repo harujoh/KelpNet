@@ -1,90 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{74F187E5-0E1E-400B-9381-426CCC0F453B}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KelpNet.Tools</RootNamespace>
-    <AssemblyName>KelpNet.Tools</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\packages\protobuf-net.2.4.0\lib\net40\protobuf-net.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="protobuf-net" Version="2.4.6" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="DataImporter\Models\Caffe\CaffemodelDataLoader.cs" />
-    <Compile Include="DataImporter\Models\Caffe\CaffeProto.cs" />
-    <Compile Include="DataImporter\Models\Caffe\Eltwise.cs" />
-    <Compile Include="DataImporter\Models\Chainer\ChainerModelDataLoader.cs" />
-    <Compile Include="DataImporter\Models\Chainer\NpyFormat.cs" />
-    <Compile Include="DataImporter\Models\Chainer\NpzDictionary.cs" />
-    <Compile Include="DataImporter\Models\Chainer\NpzFormat.cs" />
-    <Compile Include="DataImporter\TestDatas\CIFAR\CifarData.cs" />
-    <Compile Include="DataImporter\TestDatas\CIFAR\CIFARDataLoader.cs" />
-    <Compile Include="DataImporter\TestDatas\CIFAR\Common\HeaderBlock.cs" />
-    <Compile Include="DataImporter\TestDatas\CIFAR\Common\TarEntryType.cs" />
-    <Compile Include="DataImporter\TestDatas\CIFAR\Extensions.cs" />
-    <Compile Include="DataImporter\TestDatas\CIFAR\RawSerializer.cs" />
-    <Compile Include="DataImporter\TestDatas\CIFAR\Tar.cs" />
-    <Compile Include="DataImporter\TestDatas\FashionMNIST\FashionMnistData.cs" />
-    <Compile Include="DataImporter\TestDatas\FashionMNIST\FashionMnistDataLoader.cs" />
-    <Compile Include="DataImporter\TestDatas\MNIST\BinaryReaderBE.cs" />
-    <Compile Include="DataImporter\TestDatas\MNIST\MnistData.cs" />
-    <Compile Include="DataImporter\TestDatas\MNIST\MnistDataLoader.cs" />
-    <Compile Include="DataImporter\TestDatas\MNIST\MnistImageLoader.cs" />
-    <Compile Include="DataImporter\TestDatas\MNIST\MnistLabelLoader.cs" />
-    <Compile Include="DeepCopyHelper.cs" />
-    <Compile Include="InternetFileDownloader.cs" />
-    <Compile Include="BitmapConverter.cs" />
-    <Compile Include="LabeledDataMaker.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\KelpNet.Common\KelpNet.Common.csproj" />
+    <ProjectReference Include="..\KelpNet.Function\KelpNet.Function.csproj" />
+    <ProjectReference Include="..\KelpNet.Tools.Double\KelpNet.Tools.Double.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KelpNet\KelpNet.csproj">
-      <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
-      <Name>KelpNet</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

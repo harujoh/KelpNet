@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -23,56 +25,56 @@ namespace KelpNet.Tests
             int batchCount = Mother.Dice.Next(1, 50);
             int ioCount = Mother.Dice.Next(1, 50);
 
-            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, ioCount });
+            Real[,] input = Initializer.GetRandomValues<Real[,]>(batchCount, ioCount);
 
-            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, ioCount });
+            Real[,] dummyGy = Initializer.GetRandomValues<Real[,]>(batchCount, ioCount);
 
-            Real[] gamma = Initializer.GetRealArray(ioCount);
-            Real[] beta = Initializer.GetRealArray(ioCount);
+            Real[] gamma = Initializer.GetRandomValues<Real[]>(ioCount);
+            Real[] beta = Initializer.GetRandomValues<Real[]>(ioCount);
 
-            Real[] avgMean = Initializer.GetRealArray(ioCount);
-            Real[] avgVar = Initializer.GetRealArray(ioCount);
+            Real[] avgMean = Initializer.GetRandomValues<Real[]>(ioCount);
+            Real[] avgVar = Initializer.GetRandomValues<Real[]>(ioCount);
 
             //Chainer
             Chainer.Config["train"] = isTtrain;
 
-            NChainer.BatchNormalization<Real> cBatchNormalization = new NChainer.BatchNormalization<Real>(ioCount, dtype: Real.Type);
+            NChainer.BatchNormalization<Real> cBatchNormalization = new NChainer.BatchNormalization<Real>(ioCount, dtype: typeof(Real));
 
-            cBatchNormalization.gamma = new Variable<Real>(Real.ToBaseNdArray(gamma));
-            cBatchNormalization.beta = new Variable<Real>(Real.ToBaseNdArray(beta));
+            cBatchNormalization.gamma = new Variable<Real>(gamma);
+            cBatchNormalization.beta = new Variable<Real>(beta);
 
-            cBatchNormalization.avgMean = Real.ToBaseNdArray(avgMean);
-            cBatchNormalization.avgVar = Real.ToBaseNdArray(avgVar);
+            cBatchNormalization.avgMean = avgMean;
+            cBatchNormalization.avgVar = avgVar;
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cBatchNormalization.Forward(cX, finetune);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
             //KelpNet
-            KelpNet.BatchNormalization batchNormalization = new BatchNormalization(ioCount, train: isTtrain, finetune: finetune);
+            KelpNet.BatchNormalization<Real> batchNormalization = new BatchNormalization<Real>(ioCount, train: isTtrain, finetune: finetune);
 
-            batchNormalization.Gamma.Data = Real.ToRealArray(gamma);
-            batchNormalization.Beta.Data = Real.ToRealArray(beta);
+            batchNormalization.Gamma.Data = gamma;
+            batchNormalization.Beta.Data = beta;
 
-            batchNormalization.AvgMean.Data = Real.ToRealArray(avgMean);
-            batchNormalization.AvgVar.Data = Real.ToRealArray(avgVar);
+            batchNormalization.AvgMean.Data = avgMean;
+            batchNormalization.AvgVar.Data = avgVar;
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { ioCount }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = batchNormalization.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = batchNormalization.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
 
-            Real[] cYdata = Real.ToRealArray((Real[,])cY.Data);
-            Real[] cXgrad = Real.ToRealArray((Real[,])cX.Grad);
+            Real[] cYdata = ((Real[,])cY.Data).Flatten();
+            Real[] cXgrad = ((Real[,])cX.Grad).Flatten();
 
-            Real[] cGammaGrad = Real.ToRealArray((Real[])cBatchNormalization.gamma.Grad);
-            Real[] cBetaGrad = Real.ToRealArray((Real[])cBatchNormalization.beta.Grad);
+            Real[] cGammaGrad = (Real[])cBatchNormalization.gamma.Grad;
+            Real[] cBetaGrad = (Real[])cBatchNormalization.beta.Grad;
 
             //許容範囲を算出
             double delta = 0.00001;

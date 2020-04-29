@@ -9,32 +9,32 @@ namespace KelpNet.Tools
     public class CaffemodelDataLoader
     {
         //binaryprotoを読み込む
-        public static NdArray ReadBinary(string path)
+        public static NdArray<T> ReadBinary<T>(string path) where T : unmanaged, IComparable<T>
         {
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
                 BlobProto bp = Serializer.Deserialize<BlobProto>(stream);
 
-                NdArray result = new NdArray(new[] { bp.Channels, bp.Height, bp.Width }, bp.Num);
+                NdArray<T> result = new NdArray<T>(new[] { bp.Channels, bp.Height, bp.Width }, bp.Num);
 
                 if (bp.Datas != null)
                 {
-                    result.Data = Real.ToRealArray(bp.Datas);
+                    Array.Copy(bp.Datas, 0, result.Data, 0, bp.Datas.Length);
                 }
 
                 if (bp.DoubleDatas != null)
                 {
-                    result.Data = Real.ToRealArray(bp.DoubleDatas);
+                    Array.Copy(bp.DoubleDatas, 0, result.Data, 0, bp.DoubleDatas.Length);
                 }
 
                 if (bp.Diffs != null)
                 {
-                    result.Grad = Real.ToRealArray(bp.Diffs);
+                    Array.Copy(bp.Diffs, 0, result.Grad, 0, bp.Diffs.Length);
                 }
 
                 if (bp.DoubleDiffs != null)
                 {
-                    result.Grad = Real.ToRealArray(bp.DoubleDiffs);
+                    Array.Copy(bp.DoubleDiffs, 0, result.Grad, 0, bp.DoubleDiffs.Length);
                 }
 
                 return result;
@@ -42,9 +42,9 @@ namespace KelpNet.Tools
         }
 
         //分岐ありモデル用関数
-        public static FunctionDictionary LoadNetWork(string path)
+        public static FunctionDictionary<T> LoadNetWork<T>(string path) where T : unmanaged, IComparable<T>
         {
-            FunctionDictionary functionDictionary = new FunctionDictionary();
+            FunctionDictionary<T> functionDictionary = new FunctionDictionary<T>();
 
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
@@ -52,7 +52,7 @@ namespace KelpNet.Tools
 
                 foreach (V1LayerParameter layer in netparam.Layers)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction<T>(layer);
 
                     if (func != null)
                     {
@@ -62,7 +62,7 @@ namespace KelpNet.Tools
 
                 foreach (LayerParameter layer in netparam.Layer)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction<T>(layer);
 
                     if (func != null)
                     {
@@ -75,9 +75,9 @@ namespace KelpNet.Tools
         }
 
         //分岐なしモデル用関数
-        public static List<Function> ModelLoad(string path)
+        public static List<Function<T>> ModelLoad<T>(string path) where T : unmanaged, IComparable<T>
         {
-            List<Function> result = new List<Function>();
+            List<Function<T>> result = new List<Function<T>>();
 
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
@@ -85,7 +85,7 @@ namespace KelpNet.Tools
 
                 foreach (V1LayerParameter layer in netparam.Layers)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction<T>(layer);
 
                     if (func != null)
                     {
@@ -95,7 +95,7 @@ namespace KelpNet.Tools
 
                 foreach (LayerParameter layer in netparam.Layer)
                 {
-                    Function func = CreateFunction(layer);
+                    Function<T> func = CreateFunction<T>(layer);
 
                     if (func != null)
                     {
@@ -107,48 +107,48 @@ namespace KelpNet.Tools
             return result;
         }
 
-        static Function CreateFunction(LayerParameter layer)
+        static Function<T> CreateFunction<T>(LayerParameter layer) where T : unmanaged, IComparable<T>
         {
             switch (layer.Type)
             {
                 case "Scale":
-                    return SetupScale(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupScale<T>(layer.ScaleParam, layer.Blobs, layer.Bottoms, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Split":
-                    return new SplitFunction(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new SplitFunction<T>(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Slice":
-                    return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupSlice<T>(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "LRN":
-                    return SetupLRN(layer.LrnParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupLRN<T>(layer.LrnParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Concat":
-                    return SetupConcat(layer.ConcatParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupConcat<T>(layer.ConcatParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Eltwise":
-                    return SetupEltwise(layer.EltwiseParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupEltwise<T>(layer.EltwiseParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "BatchNorm":
-                    return SetupBatchnorm(layer.BatchNormParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupBatchnorm<T>(layer.BatchNormParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Convolution":
-                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupConvolution<T>(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Dropout":
-                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Dropout<T>(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Pooling":
-                    return SetupPooling(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupPooling<T>(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "ReLU":
-                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "InnerProduct":
-                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupInnerProduct<T>(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Softmax":
-                    return new Softmax(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Softmax<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Data":
                     return null; //読み飛ばし
@@ -162,42 +162,42 @@ namespace KelpNet.Tools
             return null;
         }
 
-        static Function CreateFunction(V1LayerParameter layer)
+        static Function<T> CreateFunction<T>(V1LayerParameter layer) where T : unmanaged, IComparable<T>
         {
             switch (layer.Type)
             {
                 case V1LayerParameter.LayerType.Split:
-                    return new SplitFunction(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new SplitFunction<T>(layer.Tops.Count, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Slice:
-                    return SetupSlice(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupSlice<T>(layer.SliceParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Concat:
-                    return SetupConcat(layer.ConcatParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupConcat<T>(layer.ConcatParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Lrn:
-                    return SetupLRN(layer.LrnParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupLRN<T>(layer.LrnParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Eltwise:
-                    return SetupEltwise(layer.EltwiseParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupEltwise<T>(layer.EltwiseParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Convolution:
-                    return SetupConvolution(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupConvolution<T>(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Dropout:
-                    return new Dropout(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Dropout<T>(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Pooling:
-                    return SetupPooling(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupPooling<T>(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Relu:
-                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new LeakyReLU(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function)new ReLU(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.InnerProduct:
-                    return SetupInnerProduct(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return SetupInnerProduct<T>(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Softmax:
-                    return new Softmax();
+                    return new Softmax<T>();
 
                 case V1LayerParameter.LayerType.Data:
                     return null; //読み飛ばし
@@ -211,7 +211,7 @@ namespace KelpNet.Tools
             return null;
         }
 
-        static Function SetupScale(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name, string[] inputNames, string[] outputNames)
+        static Function<T> SetupScale<T>(ScaleParameter param, List<BlobProto> blobs, List<string> bottoms, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
             int axis = param.Axis - 1;
@@ -227,7 +227,7 @@ namespace KelpNet.Tools
                     wShape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                return new MultiplyScale(axis, wShape, biasTerm, blobs[0].Datas, blobs[1].Datas, name, inputNames, outputNames);
+                return new MultiplyScale<T>(axis, wShape, biasTerm, blobs[0].Datas, blobs[1].Datas, name, inputNames, outputNames);
             }
             else
             {
@@ -239,11 +239,11 @@ namespace KelpNet.Tools
                     shape[i] = (int)blobs[0].Shape.Dims[i];
                 }
 
-                return new AddBias(axis, shape, blobs[0].Datas, name);
+                return new AddBias<T>(axis, shape, blobs[0].Datas, name);
             }
         }
 
-        static Function SetupSlice(SliceParameter param, string name, string[] inputNames, string[] outputNames)
+        static Function<T> SetupSlice<T>(SliceParameter param, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             int[] slicePoints = new int[param.SlicePoints.Length];
 
@@ -253,10 +253,10 @@ namespace KelpNet.Tools
             }
 
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
-            return new SplitAxis(slicePoints, param.Axis - 1, name, inputNames, outputNames);
+            return new SplitAxis<T>(slicePoints, param.Axis - 1, name, inputNames, outputNames);
         }
 
-        static Function SetupPooling(PoolingParameter param, string name, string[] inputNames, string[] outputNames)
+        static Function<T> SetupPooling<T>(PoolingParameter param, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             int[] ksize = GetKernelSize(param);
             int[] stride = GetKernelStride(param);
@@ -265,16 +265,16 @@ namespace KelpNet.Tools
             switch (param.Pool)
             {
                 case PoolingParameter.PoolMethod.Max:
-                    return new MaxPooling2D(ksize, stride, pad, name: name, inputNames: inputNames, outputNames: outputNames);
+                    return new MaxPooling2D<T>(ksize, stride, pad, name: name, inputNames: inputNames, outputNames: outputNames);
 
                 case PoolingParameter.PoolMethod.Ave:
-                    return new AveragePooling2D(ksize, stride, pad, name, inputNames, outputNames);
+                    return new AveragePooling2D<T>(ksize, stride, pad, name, inputNames, outputNames);
             }
 
             return null;
         }
 
-        static BatchNormalization SetupBatchnorm(BatchNormParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
+        static BatchNormalization<T> SetupBatchnorm<T>(BatchNormParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             double decay = param.MovingAverageFraction;
             double eps = param.Eps;
@@ -298,14 +298,14 @@ namespace KelpNet.Tools
                 }
             }
 
-            BatchNormalization batchNormalization = new BatchNormalization(size, decay, eps, name: name, inputNames: inputNames, outputNames: outputNames);
-            batchNormalization.AvgMean.Data = Real.ToRealArray(avgMean);
-            batchNormalization.AvgVar.Data = Real.ToRealArray(avgVar);
+            BatchNormalization<T> batchNormalization = new BatchNormalization<T>(size, decay, eps, name: name, inputNames: inputNames, outputNames: outputNames);
+            Array.Copy(avgMean, batchNormalization.AvgMean.Data, avgMean.Length);
+            Array.Copy(avgVar, batchNormalization.AvgVar.Data, avgVar.Length);
 
             return batchNormalization;
         }
 
-        static Convolution2D SetupConvolution(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
+        static Convolution2D<T> SetupConvolution<T>(ConvolutionParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             int[] ksize = GetKernelSize(param);
             int[] stride = GetKernelStride(param);
@@ -319,13 +319,13 @@ namespace KelpNet.Tools
             if (param.BiasTerm)
             {
                 float[] b = blobs[1].Datas;
-                return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b, name: name, inputNames: inputNames, outputNames: outputNames);
+                return new Convolution2D<T>(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, b, name: name, inputNames: inputNames, outputNames: outputNames);
             }
 
-            return new Convolution2D(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, name: name, inputNames: inputNames, outputNames: outputNames);
+            return new Convolution2D<T>(nIn, nOut, ksize, stride, pad, !param.BiasTerm, w, name: name, inputNames: inputNames, outputNames: outputNames);
         }
 
-        static Linear SetupInnerProduct(InnerProductParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames)
+        static Linear<T> SetupInnerProduct<T>(InnerProductParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             if (param.Axis != 1)
             {
@@ -338,30 +338,30 @@ namespace KelpNet.Tools
 
             if (param.BiasTerm)
             {
-                return new Linear(width, height, !param.BiasTerm, w, blobs[1].Datas, name: name, inputNames: inputNames, outputNames: outputNames);
+                return new Linear<T>(width, height, !param.BiasTerm, w, blobs[1].Datas, name: name, inputNames: inputNames, outputNames: outputNames);
             }
 
-            return new Linear(width, height, !param.BiasTerm, w, name: name);
+            return new Linear<T>(width, height, !param.BiasTerm, w, name: name);
         }
 
-        static LRN SetupLRN(LRNParameter param, string name, string[] inputNames, string[] outputNames)
+        static LRN<T> SetupLRN<T>(LRNParameter param, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
-            return new LRN((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name, inputNames, outputNames);
+            return new LRN<T>((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name, inputNames, outputNames);
         }
 
-        static Eltwise SetupEltwise(EltwiseParameter param, string name, string[] inputNames, string[] outputNames)
+        static Eltwise<T> SetupEltwise<T>(EltwiseParameter param, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             if (param != null)
             {
-                return new Eltwise(param.Operation, param.Coeffs, name, inputNames, outputNames);
+                return new Eltwise<T>(param.Operation, param.Coeffs, name, inputNames, outputNames);
             }
             else
             {
-                return new Eltwise(EltwiseParameter.EltwiseOp.Sum, null, name, inputNames, outputNames);
+                return new Eltwise<T>(EltwiseParameter.EltwiseOp.Sum, null, name, inputNames, outputNames);
             }
         }
 
-        static Concat SetupConcat(ConcatParameter param, string name, string[] inputNames, string[] outputNames)
+        static Concat<T> SetupConcat<T>(ConcatParameter param, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
             int axis = param.Axis;
 
@@ -371,7 +371,7 @@ namespace KelpNet.Tools
             }
 
             //Caffe及びChainerは暗黙的に1次元目をBacthとして利用しているため補正を行う
-            return new Concat(axis - 1, name, inputNames, outputNames);
+            return new Concat<T>(axis - 1, name, inputNames, outputNames);
         }
 
         static int GetHeight(BlobProto blob)
@@ -406,55 +406,55 @@ namespace KelpNet.Tools
         {
             if (param.KernelH > 0)
             {
-                return new []{ (int)param.KernelW, (int)param.KernelH };
+                return new[] { (int)param.KernelW, (int)param.KernelH };
             }
 
             if (param.KernelSizes.Length == 1)
             {
-                return new []{(int)param.KernelSizes[0], (int)param.KernelSizes[0]};
+                return new[] { (int)param.KernelSizes[0], (int)param.KernelSizes[0] };
             }
 
-            return new []{(int)param.KernelSizes[1], (int)param.KernelSizes[0]};
+            return new[] { (int)param.KernelSizes[1], (int)param.KernelSizes[0] };
         }
 
         static int[] GetKernelSize(PoolingParameter param)
         {
             if (param.KernelH > 0)
             {
-                return new []{(int)param.KernelW, (int)param.KernelH};
+                return new[] { (int)param.KernelW, (int)param.KernelH };
             }
 
-            return new []{(int)param.KernelSize, (int)param.KernelSize};
+            return new[] { (int)param.KernelSize, (int)param.KernelSize };
         }
 
         static int[] GetKernelStride(ConvolutionParameter param)
         {
             if (param.StrideH > 0)
             {
-                return new []{(int)param.StrideW, (int)param.StrideH};
+                return new[] { (int)param.StrideW, (int)param.StrideH };
             }
 
             if (param.Strides == null || param.Strides.Length == 0)
             {
-                return new []{1, 1};
+                return new[] { 1, 1 };
             }
 
             if (param.Strides.Length == 1)
             {
-                return new []{(int)param.Strides[0], (int)param.Strides[0]};
+                return new[] { (int)param.Strides[0], (int)param.Strides[0] };
             }
 
-            return new []{(int)param.Strides[1], (int)param.Strides[0]};
+            return new[] { (int)param.Strides[1], (int)param.Strides[0] };
         }
 
         static int[] GetKernelStride(PoolingParameter param)
         {
             if (param.StrideH > 0)
             {
-                return new []{(int)param.StrideW, (int)param.StrideH};
+                return new[] { (int)param.StrideW, (int)param.StrideH };
             }
 
-            return new []{(int)param.Stride, (int)param.Stride};
+            return new[] { (int)param.Stride, (int)param.Stride };
         }
 
 
@@ -462,30 +462,30 @@ namespace KelpNet.Tools
         {
             if (param.PadH > 0)
             {
-                return new []{(int)param.PadW, (int)param.PadH};
+                return new[] { (int)param.PadW, (int)param.PadH };
             }
 
             if (param.Pads == null || param.Pads.Length == 0)
             {
-                return new []{1, 1};
+                return new[] { 1, 1 };
             }
 
             if (param.Pads.Length == 1)
             {
-                return new []{(int)param.Pads[0], (int)param.Pads[0]};
+                return new[] { (int)param.Pads[0], (int)param.Pads[0] };
             }
 
-            return new []{(int)param.Pads[1], (int)param.Pads[0]};
+            return new[] { (int)param.Pads[1], (int)param.Pads[0] };
         }
 
         static int[] GetKernelPad(PoolingParameter param)
         {
             if (param.PadH > 0)
             {
-                return new []{(int)param.PadW, (int)param.PadH};
+                return new[] { (int)param.PadW, (int)param.PadH };
             }
 
-            return new []{(int)param.Pad, (int)param.Pad};
+            return new[] { (int)param.Pad, (int)param.Pad };
         }
 
         static int GetNum(BlobProto brob)

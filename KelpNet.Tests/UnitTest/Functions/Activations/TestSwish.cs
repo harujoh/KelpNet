@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -16,36 +18,36 @@ namespace KelpNet.Tests
             int ioCount = Mother.Dice.Next(1, 50);
             int batchCount = Mother.Dice.Next(1, 5);
 
-            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, ioCount });
+            Real[,] input = Initializer.GetRandomValues<Real[,]>(batchCount, ioCount);
 
-            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, ioCount });
+            Real[,] dummyGy = Initializer.GetRandomValues<Real[,]>(batchCount, ioCount);
 
-            Real beta = Mother.Dice.NextDouble();
+            Real beta = (Real)Mother.Dice.NextDouble();
 
             //Chainer
             NChainer.Swish<Real> cSwish = new NChainer.Swish<Real>(new[] { ioCount }, beta);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cSwish.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
 
             //KelpNet
-            KelpNet.Swish swish = new KelpNet.Swish(new[] { ioCount }, beta);
+            Swish<Real> swish = new Swish<Real>(new[] { ioCount }, beta);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { ioCount }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = swish.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = swish.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
 
-            Real[] cYdata = Real.ToRealArray((Real[,])cY.Data);
-            Real[] cXgrad = Real.ToRealArray((Real[,])cX.Grad);
+            Real[] cYdata = ((Real[,])cY.Data).Flatten();
+            Real[] cXgrad = ((Real[,])cX.Grad).Flatten();
 
             Real[] cbgrad = (Real[])cSwish.beta.Grad;
 

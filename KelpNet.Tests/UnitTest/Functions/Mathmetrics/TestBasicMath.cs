@@ -3,6 +3,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
 
+//using Real = System.Double;
+using Real = System.Single;
+
 namespace KelpNet.Tests
 {
     [TestClass]
@@ -18,7 +21,7 @@ namespace KelpNet.Tests
             Real[] val = { 1 + Mother.Dice.Next() };
 
             //Chainer
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseArray(val));
+            Variable<Real> cX = new Variable<Real>(val);
 
             //Add
             Variable<Real> cAdd = 2 + cX + cX + 2;
@@ -46,28 +49,28 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            NdArray x = new NdArray(val);
+            NdArray<Real> x = new NdArray<Real>(val);
 
             //Add
-            NdArray add = 2 + x + x + 2;
+            NdArray<Real> add = 2 + x + x + 2;
 
             add.Backward();
             Real[] gadd = x.Grad.ToArray(); //このToArrayはコピーのため
 
             //mul
-            NdArray mul = 2 * x * x * 3;
+            NdArray<Real> mul = 2 * x * x * 3;
 
             mul.Backward();
             Real[] gmul = x.Grad.ToArray();
 
             //sub
-            NdArray sub = 30 - x - x - 2;
+            NdArray<Real> sub = 30 - x - x - 2;
 
             sub.Backward();
             Real[] gsub = x.Grad.ToArray();
 
             //mul
-            NdArray div = 50 / x / x / 2;
+            NdArray<Real> div = 50 / x / x / 2;
 
             div.Backward();
             Real[] gdiv = x.Grad.ToArray();

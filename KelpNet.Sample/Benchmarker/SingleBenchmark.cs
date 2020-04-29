@@ -2,6 +2,9 @@
 using System.Diagnostics;
 using KelpNet.CL;
 
+using Real = System.Single;
+//using Real = System.Double;
+
 namespace KelpNet.Sample
 {
     class SingleBenchmark
@@ -12,17 +15,19 @@ namespace KelpNet.Sample
 
         public static void Run()
         {
+            Console.WriteLine("Bench data initializing...");
+
             Stopwatch sw = new Stopwatch();
 
-            NdArray inputArrayCpu = new NdArray(Initializer.GetRealArray(INPUT_SIZE));
-            NdArray inputArrayGpu = new NdArray(Initializer.GetRealArray(INPUT_SIZE));
+            NdArray<Real> inputArrayCpu = new NdArray<Real>(Initializer.GetRandomValues<Real[]>(INPUT_SIZE));
+            NdArray<Real> inputArrayGpu = new NdArray<Real>(Initializer.GetRandomValues<Real[]>(INPUT_SIZE));
 
             //Linear
-            Linear linear = new Linear(INPUT_SIZE, OUTPUT_SIZE);
+            Linear<Real> linear = new Linear<Real>(INPUT_SIZE, OUTPUT_SIZE);
             Console.WriteLine("◆" + linear.Name);
 
             sw.Restart();
-            NdArray[] gradArrayCpu = linear.Forward(inputArrayCpu);
+            NdArray<Real>[] gradArrayCpu = linear.Forward(inputArrayCpu);
             sw.Stop();
             Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -36,7 +41,7 @@ namespace KelpNet.Sample
             if (linear.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradArrayGpu = linear.Forward(inputArrayGpu);
+                NdArray<Real>[] gradArrayGpu = linear.Forward(inputArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -50,7 +55,7 @@ namespace KelpNet.Sample
 
 
             //Tanh
-            TanhActivation tanh = new TanhActivation();
+            TanhActivation<Real> tanh = new TanhActivation<Real>();
             Console.WriteLine("\n◆" + tanh.Name);
 
             sw.Restart();
@@ -68,7 +73,7 @@ namespace KelpNet.Sample
             if (tanh.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradArrayGpu = tanh.Forward(inputArrayGpu);
+                NdArray<Real>[] gradArrayGpu = tanh.Forward(inputArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -82,7 +87,7 @@ namespace KelpNet.Sample
 
 
             //Sigmoid
-            Sigmoid sigmoid = new Sigmoid();
+            Sigmoid<Real> sigmoid = new Sigmoid<Real>();
             Console.WriteLine("\n◆" + sigmoid.Name);
 
             sw.Restart();
@@ -100,7 +105,7 @@ namespace KelpNet.Sample
             if (sigmoid.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradArrayGpu = sigmoid.Forward(inputArrayGpu);
+                NdArray<Real>[] gradArrayGpu = sigmoid.Forward(inputArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -114,7 +119,7 @@ namespace KelpNet.Sample
 
 
             //ReLU
-            ReLU relu = new ReLU();
+            ReLU<Real> relu = new ReLU<Real>();
             Console.WriteLine("\n◆" + relu.Name);
 
             sw.Restart();
@@ -132,7 +137,7 @@ namespace KelpNet.Sample
             if (relu.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradArrayGpu = relu.Forward(inputArrayGpu);
+                NdArray<Real>[] gradArrayGpu = relu.Forward(inputArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -146,7 +151,7 @@ namespace KelpNet.Sample
 
 
             //LeakyReLU
-            LeakyReLU leakyRelu = new LeakyReLU();
+            LeakyReLU<Real> leakyRelu = new LeakyReLU<Real>();
             Console.WriteLine("\n◆" + leakyRelu.Name);
 
             sw.Restart();
@@ -165,7 +170,7 @@ namespace KelpNet.Sample
             if (leakyRelu.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradArrayGpu = leakyRelu.Forward(inputArrayGpu);
+                NdArray<Real>[] gradArrayGpu = leakyRelu.Forward(inputArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -178,16 +183,16 @@ namespace KelpNet.Sample
             }
 
 
-            NdArray inputImageArrayGpu = new NdArray(Initializer.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
-            NdArray inputImageArrayCpu = new NdArray(Initializer.GetRealArray(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
+            NdArray<Real> inputImageArrayCpu = new NdArray<Real>(Initializer.GetRandomValues<Real[]>(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
+            NdArray<Real> inputImageArrayGpu = new NdArray<Real>(Initializer.GetRandomValues<Real[]>(3 * 256 * 256 * 5), new[] { 3, 256, 256 }, 5);
 
 
             //MaxPooling
-            MaxPooling2D maxPooling2D = new MaxPooling2D(3);
+            MaxPooling2D<Real> maxPooling2D = new MaxPooling2D<Real>(3);
             Console.WriteLine("\n◆" + maxPooling2D.Name);
 
             sw.Restart();
-            NdArray[] gradImageArrayCpu = maxPooling2D.Forward(inputImageArrayCpu);
+            NdArray<Real>[] gradImageArrayCpu = maxPooling2D.Forward(inputImageArrayCpu);
             sw.Stop();
             Console.WriteLine("Forward [Cpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -211,7 +216,7 @@ namespace KelpNet.Sample
 
 
             //Conv2D
-            Convolution2D conv2d = new Convolution2D(3, 3, 3);
+            Convolution2D<Real> conv2d = new Convolution2D<Real>(3, 3, 3);
             Console.WriteLine("\n◆" + conv2d.Name);
 
             sw.Restart();
@@ -229,7 +234,7 @@ namespace KelpNet.Sample
             if (conv2d.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradImageArrayGpu = conv2d.Forward(inputImageArrayGpu);
+                NdArray<Real>[] gradImageArrayGpu = conv2d.Forward(inputImageArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -243,7 +248,7 @@ namespace KelpNet.Sample
 
 
             //Deconv2D
-            Deconvolution2D deconv2d = new Deconvolution2D(3, 3, 3);
+            Deconvolution2D<Real> deconv2d = new Deconvolution2D<Real>(3, 3, 3);
             Console.WriteLine("\n◆" + deconv2d.Name);
 
             sw.Restart();
@@ -261,7 +266,7 @@ namespace KelpNet.Sample
             if (deconv2d.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradImageArrayGpu = deconv2d.Forward(inputImageArrayGpu);
+                NdArray<Real>[] gradImageArrayGpu = deconv2d.Forward(inputImageArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 
@@ -274,7 +279,7 @@ namespace KelpNet.Sample
             }
 
             //Dropout
-            Dropout dropout = new Dropout();
+            Dropout<Real> dropout = new Dropout<Real>();
             Console.WriteLine("\n◆" + dropout.Name);
 
             sw.Restart();
@@ -292,7 +297,7 @@ namespace KelpNet.Sample
             if (dropout.SetParallel(true))
             {
                 sw.Restart();
-                NdArray[] gradArrayGpu = dropout.Forward(inputArrayGpu);
+                NdArray<Real>[] gradArrayGpu = dropout.Forward(inputArrayGpu);
                 sw.Stop();
                 Console.WriteLine("Forward [Gpu] : " + (sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L))).ToString("n0") + "μｓ");
 

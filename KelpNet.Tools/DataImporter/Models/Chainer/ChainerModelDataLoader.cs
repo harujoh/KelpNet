@@ -5,7 +5,7 @@ namespace KelpNet.Tools
 {
     public class ChainerModelDataLoader
     {
-        public static void ModelLoad(string path, FunctionStack model)
+        public static void ModelLoad<T>(string path, FunctionStack<T> model) where T : unmanaged, IComparable<T>
         {
             var modelData = new NpzDictionary(path);
 
@@ -15,82 +15,77 @@ namespace KelpNet.Tools
             }
         }
 
-        static void SetParams(Function func, NpzDictionary modelData)
+        static void SetParams<T>(Function<T> func, NpzDictionary modelData) where T : unmanaged, IComparable<T>
         {
-            if (func is Linear)
+            if (func is Linear<T>)
             {
-                Linear linear = (Linear)func;
+                Linear<T> linear = (Linear<T>)func;
 
-                Array.Copy(Real.ToRealArray(modelData[func.Name + "/W.npy"]), linear.Weight.Data, linear.Weight.Data.Length);
+                linear.Weight.Data = modelData[func.Name + "/W.npy"].FlattenEx<T>();
 
                 if (!linear.NoBias)
                 {
-                    Array.Copy(Real.ToRealArray(modelData[func.Name + "/b.npy"]), linear.Bias.Data, linear.Bias.Data.Length);
+                    linear.Bias.Data = modelData[func.Name + "/b.npy"].FlattenEx<T>();
                 }
             }
-            else if (func is Convolution2D)
+            else if (func is Convolution2D<T>)
             {
-                Convolution2D conv2D = (Convolution2D)func;
+                Convolution2D<T> conv2D = (Convolution2D<T>)func;
 
-                Array.Copy(Real.ToRealArray(modelData[func.Name + "/W.npy"]), conv2D.Weight.Data, conv2D.Weight.Data.Length);
+                conv2D.Weight.Data = modelData[func.Name + "/W.npy"].FlattenEx<T>();
 
                 if (!conv2D.NoBias)
                 {
-                    Array.Copy(Real.ToRealArray(modelData[func.Name + "/b.npy"]), conv2D.Bias.Data, conv2D.Bias.Data.Length);
+                    conv2D.Bias.Data = modelData[func.Name + "/b.npy"].FlattenEx<T>();
                 }
             }
-            else if (func is Deconvolution2D)
+            else if (func is Deconvolution2D<T>)
             {
-                Deconvolution2D deconv2D = (Deconvolution2D)func;
+                Deconvolution2D<T> deconv2D = (Deconvolution2D<T>)func;
 
-                Array.Copy(Real.ToRealArray(modelData[func.Name + "/W.npy"]), deconv2D.Weight.Data, deconv2D.Weight.Data.Length);
+                deconv2D.Weight.Data = modelData[func.Name + "/W.npy"].FlattenEx<T>();
 
                 if (!deconv2D.NoBias)
                 {
-                    Array.Copy(Real.ToRealArray(modelData[func.Name + "/b.npy"]), deconv2D.Bias.Data, deconv2D.Bias.Data.Length);
+                    deconv2D.Bias.Data = modelData[func.Name + "/b.npy"].FlattenEx<T>();
                 }
             }
-            else if (func is EmbedID)
+            else if (func is EmbedID<T>)
             {
-                EmbedID embed = (EmbedID)func;
-
-                Array.Copy(Real.ToRealArray(modelData[func.Name + "/W.npy"]), embed.Weight.Data, embed.Weight.Data.Length);
+                EmbedID<T> embed = (EmbedID<T>)func;
+                embed.Weight.Data = modelData[func.Name + "/W.npy"].FlattenEx<T>();
             }
-            else if (func is BatchNormalization)
+            else if (func is BatchNormalization<T>)
             {
-                BatchNormalization bn = (BatchNormalization)func;
+                BatchNormalization<T> bn = (BatchNormalization<T>)func;
 
-                Array.Copy(Real.ToRealArray(modelData[func.Name + "/beta.npy"]), bn.Beta.Data, bn.Beta.Data.Length);
-                Array.Copy(Real.ToRealArray(modelData[func.Name + "/gamma.npy"]), bn.Gamma.Data, bn.Gamma.Data.Length);
+                bn.Beta.Data = modelData[func.Name + "/beta.npy"].FlattenEx<T>();
+                bn.Gamma.Data = modelData[func.Name + "/gamma.npy"].FlattenEx<T>();
 
                 if (bn.Train)
                 {
-                    if (modelData.ContainsKey(func.Name + "/avg_mean.npy")) Array.Copy(Real.ToRealArray(modelData[func.Name + "/avg_mean.npy"]), bn.AvgMean.Data, bn.AvgMean.Data.Length);
-                    if (modelData.ContainsKey(func.Name + "/avg_var.npy")) Array.Copy(Real.ToRealArray(modelData[func.Name + "/avg_var.npy"]), bn.AvgVar.Data, bn.AvgVar.Data.Length);
+                    if (modelData.ContainsKey(func.Name + "/avg_mean.npy")) bn.AvgMean.Data = modelData[func.Name + "/avg_mean.npy"].FlattenEx<T>();
+                    if (modelData.ContainsKey(func.Name + "/avg_var.npy")) bn.AvgVar.Data = modelData[func.Name + "/avg_var.npy"].FlattenEx<T>();
                 }
             }
-            else if (func is MultiplyScale)
+            else if (func is MultiplyScale<T>)
             {
-                MultiplyScale scale = (MultiplyScale)func;
+                MultiplyScale<T> scale = (MultiplyScale<T>)func;
 
-                Array.Copy(Real.ToRealArray(modelData[func.Name + "/W.npy"]), scale.Weight.Data, scale.Weight.Data.Length);
+                scale.Weight.Data = modelData[func.Name + "/W.npy"].FlattenEx<T>();
 
                 if (scale.BiasTerm)
                 {
-                    Array.Copy(Real.ToRealArray(modelData[func.Name + "/bias/b.npy"]), scale.Bias.Data, scale.Bias.Data.Length);
+                    scale.Bias.Data = modelData[func.Name + "/bias/b.npy"].FlattenEx<T>();
                 }
             }
-            else if (func is LSTM)
+            else if (func is LSTM<T>)
             {
-                LSTM lstm = (LSTM)func;
+                LSTM<T> lstm = (LSTM<T>)func;
 
-                Real[] lateral = Real.ToRealArray(modelData[func.Name + "/lateral/W.npy"]);
-                Real[] upwardW = Real.ToRealArray(modelData[func.Name + "/upward/W.npy"]);
-                Real[] upwardb = Real.ToRealArray(modelData[func.Name + "/upward/b.npy"]);
-
-                Array.Copy(lateral, 0, lstm.lateral.Weight.Data, 0, lstm.lateral.Weight.Data.Length);
-                Array.Copy(upwardW, 0, lstm.upward.Weight.Data, 0, lstm.upward.Weight.Data.Length);
-                Array.Copy(upwardb, 0, lstm.upward.Bias.Data, 0, lstm.upward.Bias.Data.Length);
+                lstm.lateral.Weight.Data = modelData[func.Name + "/lateral/W.npy"].FlattenEx<T>();
+                lstm.upward.Weight.Data = modelData[func.Name + "/upward/W.npy"].FlattenEx<T>();
+                lstm.upward.Bias.Data = modelData[func.Name + "/upward/b.npy"].FlattenEx<T>();
             }
         }
     }

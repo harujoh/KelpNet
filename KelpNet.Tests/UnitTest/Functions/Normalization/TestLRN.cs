@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -21,34 +23,34 @@ namespace KelpNet.Tests
             int width = Mother.Dice.Next(1, 16);
             int height = Mother.Dice.Next(1, 16);
 
-            Real[,,,] input = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, width });
-            Real[,,,] dummyGy = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, width });
+            Real[,,,] input = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, width);
+            Real[,,,] dummyGy = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, width);
 
 
             //chainer
-            NChainer.LocalResponseNormalization<Real> cLocalResponseNormalization = new NChainer.LocalResponseNormalization<Real>(n, k);
+            LocalResponseNormalization<Real> cLocalResponseNormalization = new LocalResponseNormalization<Real>(n, k);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cLocalResponseNormalization.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
 
             //kelpnet
-            KelpNet.LRN lrn = new LRN(n, k);
+            LRN<Real> lrn = new LRN<Real>(n, k);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { ch, height, width }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = lrn.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = lrn.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
 
-            Real[] cYdata = Real.ToRealArray((Real[,,,])cY.Data);
-            Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad);
+            Real[] cYdata = ((Real[,,,])cY.Data).Flatten();
+            Real[] cXgrad = ((Real[,,,])cX.Grad).Flatten();
 
             //許容範囲を算出
             double delta = 0.00001;

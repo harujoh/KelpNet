@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -17,43 +19,43 @@ namespace KelpNet.Tests
             int outputCount = Mother.Dice.Next(2, 50);
             int batchCount = Mother.Dice.Next(1, 5);
 
-            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
+            Real[,] input = Initializer.GetRandomValues<Real[,]>(batchCount, inputCount);
 
-            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
-            Real[,] w = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
+            Real[,] dummyGy = Initializer.GetRandomValues<Real[,]>(batchCount, outputCount);
+            Real[,] w = Initializer.GetRandomValues<Real[,]>(outputCount, inputCount);
 
-            Real[] b = Initializer.GetRealArray(outputCount);
+            Real[] b = Initializer.GetRandomValues<Real[]>(outputCount);
 
             //Chainer
-            NChainer.Linear<Real> cLinear = new NChainer.Linear<Real>(inputCount, outputCount, false, Real.ToBaseNdArray(w), Real.ToBaseArray(b));
+            Linear<Real> cLinear = new Linear<Real>(inputCount, outputCount, false, w, b);
             NChainer.SGD<Real> cSgd = new NChainer.SGD<Real>();
             cSgd.Setup(cLinear);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cLinear.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
             cSgd.Update();
 
             //KelpNet
-            KelpNet.CL.Linear linear = new KelpNet.CL.Linear(inputCount, outputCount, false, w, b);
-            KelpNet.SGD sgd = new SGD();
+            CL.Linear<Real> linear = new CL.Linear<Real>(inputCount, outputCount, false, w, b);
+            KelpNet.SGD<Real> sgd = new SGD<Real>();
             sgd.SetUp(linear);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = linear.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = linear.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
             sgd.Update();
 
 
-            Real[] cW = Real.ToRealArray((Real[,])cLinear.W.Data);
+            Real[] cW = ((Real[,])cLinear.W.Data).Flatten();
             Real[] cb = (Real[])cLinear.b.Data;
 
             //許容範囲を算出

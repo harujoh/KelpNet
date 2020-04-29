@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -20,40 +22,40 @@ namespace KelpNet.Tests
             int height = Mother.Dice.Next(1, 16);
             int axis = 3;
 
-            Real[,,,] inputA = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthA });
-            Real[,,,] inputB = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthB });
-            Real[,,,] dummyGy = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthA + widthB });
+            Real[,,,] inputA = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, widthA);
+            Real[,,,] inputB = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, widthB);
+            Real[,,,] dummyGy = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, widthA + widthB);
 
             //chainer
             NChainer.Concat<Real> cConcat = new NChainer.Concat<Real>(axis);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(inputA));
-            Variable<Real> cY = new Variable<Real>(Real.ToBaseNdArray(inputB));
+            Variable<Real> cX = new Variable<Real>(inputA);
+            Variable<Real> cY = new Variable<Real>(inputB);
 
             Variable<Real> cZ = cConcat.Forward(cX, cY);
 
-            cZ.Grad = Real.ToBaseNdArray(dummyGy);
+            cZ.Grad = dummyGy;
 
             cZ.Backward();
 
 
             //KelpNet
-            KelpNet.Concat concat = new Concat(axis - 1);//Chainerと異なり1次元目を暗黙的にBatchとみなさないため
+            Concat<Real> concat = new Concat<Real>(axis - 1);//Chainerと異なり1次元目を暗黙的にBatchとみなさないため
 
-            NdArray x = new NdArray(Real.ToRealArray(inputA), new[] { ch, height, widthA }, batchCount);
-            NdArray y = new NdArray(Real.ToRealArray(inputB), new[] { ch, height, widthB }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(inputA, asBatch: true);
+            NdArray<Real> y = new NdArray<Real>(inputB, asBatch: true);
 
-            NdArray z = concat.Forward(x, y)[0];
-            z.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> z = concat.Forward(x, y)[0];
+            z.Grad = dummyGy.Flatten();
 
             z.Backward();
 
 
-            Real[] cZdata = Real.ToRealArray((Real[,,,])cZ.Data);
+            Real[] cZdata = ((Real[,,,])cZ.Data).Flatten();
 
             //Copyが必要
-            Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad.Copy());
-            Real[] cYgrad = Real.ToRealArray((Real[,,,])cY.Grad.Copy());
+            Real[] cXgrad = ((Real[,,,])cX.Grad.Copy()).Flatten();
+            Real[] cYgrad = ((Real[,,,])cY.Grad.Copy()).Flatten();
 
             //許容範囲を算出
             double delta = 0.00001;

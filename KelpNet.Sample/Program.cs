@@ -5,13 +5,13 @@ using KelpNet.CL.Common;
 namespace KelpNet.Sample
 {
     //実行したいテストのコメントを外して下さい
-    class Program
+    static class Program
     {
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
-            OpenCL.Initialize();
+            //OpenCL.Initialize();
             //OpenCL.Initialize(ComputeDeviceTypes.Cpu); //複数の種類のデバイスがある場合はデバイスタイプを指定
             //OpenCL.Initialize(ComputeDeviceTypes.Gpu, 1); //同じ種類のGPUやCPUが複数ある場合は添字を使用
 
@@ -39,7 +39,7 @@ namespace KelpNet.Sample
             //Sample07.Run();
 
             //LSTMによるSin関数の学習
-            //Sample08.Run();
+            Sample08.Run();
 
             //SimpleなRNNによるRNNLM
             //Sample09.Run();
@@ -78,7 +78,7 @@ namespace KelpNet.Sample
             //SampleX.Run();
 
             //ベンチマーク
-            SingleBenchmark.Run();
+            //SingleBenchmark.Run();
 
             Console.WriteLine("Done...");
             Console.Read();

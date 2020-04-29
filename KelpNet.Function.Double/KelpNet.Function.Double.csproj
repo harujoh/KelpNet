@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>KelpNet</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DOUBLE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;DOUBLE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\KelpNet.Function\Common\Broth.cs" Link="Common\Broth.cs" />
+    <Compile Include="..\KelpNet.Function\Common\Functions\Interface\ICompressibleActivation.cs" Link="Common\Functions\Interface\ICompressibleActivation.cs" />
+    <Compile Include="..\KelpNet.Function\Common\NdArray.cs" Link="Common\NdArray.cs" />
+    <Compile Include="..\KelpNet.Function\Common\Optimizer\Optimizer.cs" Link="Common\Optimizer\Optimizer.cs" />
+    <Compile Include="..\KelpNet.Function\Common\Tools\Initializer.cs" Link="Common\Tools\Initializer.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\ELU.cs" Link="Functions\Activations\ELU.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\LeakyReLU.cs" Link="Functions\Activations\LeakyReLU.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\ReLU.cs" Link="Functions\Activations\ReLU.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\Sigmoid.cs" Link="Functions\Activations\Sigmoid.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\Softmax.cs" Link="Functions\Activations\Softmax.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\Softplus.cs" Link="Functions\Activations\Softplus.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\Swish.cs" Link="Functions\Activations\Swish.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\TanhActivation.cs" Link="Functions\Activations\TanhActivation.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Arrays\Broadcast.cs" Link="Functions\Arrays\Broadcast.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Arrays\Concat.cs" Link="Functions\Arrays\Concat.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Arrays\Reshape.cs" Link="Functions\Arrays\Reshape.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Arrays\SplitAxis.cs" Link="Functions\Arrays\SplitAxis.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Connections\Convolution2D.cs" Link="Functions\Connections\Convolution2D.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Connections\Deconvolution2D.cs" Link="Functions\Connections\Deconvolution2D.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Connections\EmbedID.cs" Link="Functions\Connections\EmbedID.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Connections\Linear.cs" Link="Functions\Connections\Linear.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Connections\LSTM.cs" Link="Functions\Connections\LSTM.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\ArcCos.cs" Link="Functions\Mathmetrics\Trigonometric\ArcCos.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\ArcSin.cs" Link="Functions\Mathmetrics\Trigonometric\ArcSin.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\ArcTan.cs" Link="Functions\Mathmetrics\Trigonometric\ArcTan.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\Cos.cs" Link="Functions\Mathmetrics\Trigonometric\Cos.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\Cosh.cs" Link="Functions\Mathmetrics\Trigonometric\Cosh.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\Sin.cs" Link="Functions\Mathmetrics\Trigonometric\Sin.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\Sinh.cs" Link="Functions\Mathmetrics\Trigonometric\Sinh.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\Tan.cs" Link="Functions\Mathmetrics\Trigonometric\Tan.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\Tanh.cs" Link="Functions\Mathmetrics\Trigonometric\Tanh.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Noise\Dropout.cs" Link="Functions\Noise\Dropout.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Noise\StochasticDepth.cs" Link="Functions\Noise\StochasticDepth.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Normalization\BatchNormalization.cs" Link="Functions\Normalization\BatchNormalization.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Normalization\LRN.cs" Link="Functions\Normalization\LRN.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Poolings\AveragePooling2D.cs" Link="Functions\Poolings\AveragePooling2D.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Poolings\MaxPooling2D.cs" Link="Functions\Poolings\MaxPooling2D.cs" />
+    <Compile Include="..\KelpNet.Function\Loss\MeanSquaredError.cs" Link="Loss\MeanSquaredError.cs" />
+    <Compile Include="..\KelpNet.Function\Loss\SoftmaxCrossEntropy.cs" Link="Loss\SoftmaxCrossEntropy.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\AdaBound.cs" Link="Optimizer\AdaBound.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\AdaDelta.cs" Link="Optimizer\AdaDelta.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\AdaGrad.cs" Link="Optimizer\AdaGrad.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\Adam.cs" Link="Optimizer\Adam.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\AdamW.cs" Link="Optimizer\AdamW.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\AmsBound.cs" Link="Optimizer\AmsBound.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\AmsGrad.cs" Link="Optimizer\AmsGrad.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\GradientClipping.cs" Link="Optimizer\GradientClipping.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\MomentumSGD.cs" Link="Optimizer\MomentumSGD.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\RMSprop.cs" Link="Optimizer\RMSprop.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\SGD.cs" Link="Optimizer\SGD.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\Functions\Interface\" />
+    <Folder Include="Common\Tools\" />
+    <Folder Include="Common\Optimizer\" />
+    <Folder Include="Functions\Connections\" />
+    <Folder Include="Functions\Mathmetrics\Trigonometric\" />
+    <Folder Include="Functions\Noise\" />
+    <Folder Include="Functions\Poolings\" />
+    <Folder Include="Functions\Arrays\" />
+    <Folder Include="Functions\Normalization\" />
+    <Folder Include="Loss\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KelpNet.Common\KelpNet.Common.csproj" />
+  </ItemGroup>
+
+</Project>

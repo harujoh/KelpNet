@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -21,34 +23,34 @@ namespace KelpNet.Tests
             int[,] input = (int[,])Enumerable.Repeat(0, batchCount * inputCount).ToNdArray(batchCount, inputCount);
             input[0, 0] = 1;
 
-            Real[,,] dummyGy = (Real[,,])Initializer.GetRealNdArray(new[] { batchCount, inputCount, outputCount });
-            Real[,] w = (Real[,])Initializer.GetRealNdArray(new[] { inputCount, outputCount });
+            Real[,,] dummyGy = Initializer.GetRandomValues<Real[,,]>(batchCount, inputCount, outputCount);
+            Real[,] w = Initializer.GetRandomValues<Real[,]>(inputCount, outputCount);
 
             //Chainer
-            NChainer.EmbedID<Real> cEmbedId = new NChainer.EmbedID<Real>(inputCount, outputCount, Real.ToBaseNdArray(w));
+            NChainer.EmbedID<Real> cEmbedId = new NChainer.EmbedID<Real>(inputCount, outputCount, w);
 
             Variable<int> cX = new Variable<int>(input);
 
             Variable<Real> cY = cEmbedId.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
 
             //KelpNet
-            KelpNet.EmbedID embedId = new KelpNet.EmbedID(inputCount, outputCount, w);
+            EmbedID<Real> embedId = new EmbedID<Real>(inputCount, outputCount, w);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = embedId.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = embedId.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
 
-            Real[] cYdata = Real.ToRealArray((Real[,,])cY.Data);
+            Real[] cYdata = ((Real[,,])cY.Data).Flatten();
 
-            Real[] cWgrad = Real.ToRealArray((Real[,])cEmbedId.W.Grad);
+            Real[] cWgrad = ((Real[,])cEmbedId.W.Grad).Flatten();
 
             //許容範囲を算出
             double delta = 0.00001;

@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KelpNet.Tests</RootNamespace>
     <AssemblyName>KelpNet.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
@@ -86,16 +86,23 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\KelpNet.CL\KelpNet.CL.csproj">
-      <Project>{bcadef3a-a9bb-464f-972d-886581995bf1}</Project>
-      <Name>KelpNet.CL</Name>
+    <ProjectReference Include="..\KelpNet.CL.Common\KelpNet.CL.Common.csproj">
+      <Project>{aa8514b0-2469-44db-a43b-76ccf171c9d6}</Project>
+      <Name>KelpNet.CL.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\KelpNet\KelpNet.csproj">
-      <Project>{750bb541-bf90-471d-a93f-54230b6fb07d}</Project>
-      <Name>KelpNet</Name>
+    <ProjectReference Include="..\KelpNet.CL.Function\KelpNet.CL.Function.csproj">
+      <Project>{13f2daeb-9e54-4b7d-a6d5-945e7dd92be0}</Project>
+      <Name>KelpNet.CL.Function</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KelpNet.Common\KelpNet.Common.csproj">
+      <Project>{e1c9115b-6157-4077-a2f0-60fe6f0c1fe2}</Project>
+      <Name>KelpNet.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KelpNet.Function\KelpNet.Function.csproj">
+      <Project>{3096530d-b48b-4c0d-a23f-bcb8f7b7ae06}</Project>
+      <Name>KelpNet.Function</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

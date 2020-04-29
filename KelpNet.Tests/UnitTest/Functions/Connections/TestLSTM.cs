@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -13,45 +15,45 @@ namespace KelpNet.Tests
             Python.Initialize();
             Chainer.Initialize();
 
-            int batchCount = Mother.Dice.Next(1,5);
+            int batchCount = Mother.Dice.Next(1, 5);
             int inputCount = Mother.Dice.Next(1, 5);
             int outputCount = Mother.Dice.Next(1, 5);
 
-            Real[,] input = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
-            Real[,] dummyGy = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
+            Real[,] input = Initializer.GetRandomValues<Real[,]>(batchCount, inputCount);
+            Real[,] dummyGy = Initializer.GetRandomValues<Real[,]>(batchCount, outputCount);
 
-            Real[,] upwardInit = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, inputCount });
-            Real[,] lateralInit = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, outputCount });
-            Real[,,] biasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, outputCount, 1 });
-            Real[,,] forgetBiasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, outputCount, 1 });
+            Real[,] upwardInit = Initializer.GetRandomValues<Real[,]>(outputCount, inputCount);
+            Real[,] lateralInit = Initializer.GetRandomValues<Real[,]>(outputCount, outputCount);
+            Real[,,] biasInit = Initializer.GetRandomValues<Real[,,]>(1, outputCount, 1);
+            Real[,,] forgetBiasInit = Initializer.GetRandomValues<Real[,,]>(1, outputCount, 1);
 
             //Chainer
-            NChainer.LSTM<Real> clstm = new NChainer.LSTM<Real>(inputCount, outputCount, Real.ToBaseNdArray(lateralInit), Real.ToBaseNdArray(upwardInit), Real.ToBaseNdArray(biasInit), Real.ToBaseNdArray(forgetBiasInit));
+            NChainer.LSTM<Real> clstm = new NChainer.LSTM<Real>(inputCount, outputCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
             Variable<Real> cY = clstm.Forward(cX);
 
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
             //KelpNet
-            KelpNet.LSTM lstm = new KelpNet.LSTM(inputCount, outputCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
+            LSTM<Real> lstm = new LSTM<Real>(inputCount, outputCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inputCount }, batchCount);
-            NdArray y = lstm.Forward(x)[0];
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
+            NdArray<Real> y = lstm.Forward(x)[0];
 
-            y.Grad = Real.ToRealArray(dummyGy);
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
             //許容範囲を算出
             double delta = 0.00001;
 
-            Real[] cYdata = Real.ToRealArray((Real[,])cY.Data);
-            Real[] cXgrad = Real.ToRealArray((Real[,])cX.Grad);
+            Real[] cYdata = ((Real[,])cY.Data).Flatten();
+            Real[] cXgrad = ((Real[,])cX.Grad).Flatten();
 
-            Real[] cupwardWGrad = Real.ToRealArray((Real[,])clstm.upward.W.Grad);
+            Real[] cupwardWGrad = ((Real[,])clstm.upward.W.Grad).Flatten();
             Real[] cupwardbGrad = (Real[])clstm.upward.b.Grad;
 
 
@@ -101,31 +103,31 @@ namespace KelpNet.Tests
             ///////////
             //２周目 //
             ///////////
-            Real[,] input2 = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, inputCount });
-            Real[,] dummyGy2 = (Real[,])Initializer.GetRealNdArray(new[] { batchCount, outputCount });
+            Real[,] input2 = Initializer.GetRandomValues<Real[,]>(batchCount, inputCount);
+            Real[,] dummyGy2 = Initializer.GetRandomValues<Real[,]>(batchCount, outputCount);
 
             //Chainer
-            Variable<Real> cX2 = new Variable<Real>(Real.ToBaseNdArray(input2));
+            Variable<Real> cX2 = new Variable<Real>(input2);
             Variable<Real> cY2 = clstm.Forward(cX2);
 
-            cY2.Grad = Real.ToBaseNdArray(dummyGy2);
+            cY2.Grad = dummyGy2;
 
             cY2.Backward();
 
             //KelpNet
-            NdArray x2 = new NdArray(Real.ToRealArray(input2), new[] { inputCount }, batchCount);
-            NdArray y2 = lstm.Forward(x2)[0];
+            NdArray<Real> x2 = new NdArray<Real>(input2, asBatch: true);
+            NdArray<Real> y2 = lstm.Forward(x2)[0];
 
-            y2.Grad = Real.ToRealArray(dummyGy2);
+            y2.Grad = dummyGy2.Flatten();
 
             y2.Backward();
 
-            Real[] cYdata2 = Real.ToRealArray((Real[,])cY2.Data);
-            Real[] cXgrad2 = Real.ToRealArray((Real[,])cX2.Grad);
+            Real[] cYdata2 = ((Real[,])cY2.Data).Flatten();
+            Real[] cXgrad2 = ((Real[,])cX2.Grad).Flatten();
 
-            Real[] cupwardWGrad2 = Real.ToRealArray((Real[,])clstm.upward.W.Grad);
+            Real[] cupwardWGrad2 = ((Real[,])clstm.upward.W.Grad).Flatten();
             Real[] cupwardbGrad2 = (Real[])clstm.upward.b.Grad;
-            Real[] clateralWGrad = Real.ToRealArray((Real[,])clstm.lateral.W.Grad);
+            Real[] clateralWGrad = ((Real[,])clstm.lateral.W.Grad).Flatten();
 
             //y
             Assert.AreEqual(cYdata2.Length, y2.Data.Length);

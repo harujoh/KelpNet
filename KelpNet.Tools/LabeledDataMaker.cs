@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -22,10 +23,10 @@ namespace KelpNet.Tools
         //    ├ ImageC1.jpg
         //    └ ImageC1.jpg
 
-        public static LabeledDataSet MakeFromFolder(string foldersPath, int width = -1, int height = -1, bool eraseAlphaCh = true, bool makeValidData = false, bool makeTrainIndex = true)
+        public static LabeledDataSet<T> MakeFromFolder<T>(string foldersPath, int width = -1, int height = -1, bool eraseAlphaCh = true, bool makeValidData = false, bool makeTrainIndex = true) where T : unmanaged, IComparable<T>
         {
-            List<Real[]> data = new List<Real[]>();
-            List<Real> dataLabel = new List<Real>();
+            List<T[]> data = new List<T[]>();
+            List<int> dataLabel = new List<int>();
             List<string> labelName = new List<string>();
 
             string[] folders = Directory.GetDirectories(foldersPath);
@@ -66,10 +67,10 @@ namespace KelpNet.Tools
                 }
             }
 
-            return new LabeledDataSet(data.ToArray(), dataLabel.ToArray(), new[] { bitcount, height, width }, labelName.ToArray(), makeValidData, makeTrainIndex, 9);
+            return new LabeledDataSet<T>(data.ToArray(), dataLabel.ToArray(), new[] { bitcount, height, width }, labelName.ToArray(), makeValidData, makeTrainIndex, 9);
         }
 
-        static void SetResizedBmp(List<Real[]> data, List<Real> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex)
+        static void SetResizedBmp<T>(List<T[]> data, List<int> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex) where T : unmanaged, IComparable<T>
         {
             Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
             Graphics g = Graphics.FromImage(resultBmp);
@@ -77,12 +78,12 @@ namespace KelpNet.Tools
             g.DrawImage(baseBmp, 0, 0, width, height);
             g.Dispose();
 
-            data.Add(BitmapConverter.Image2RealArray(resultBmp));
+            data.Add(BitmapConverter.Image2RealArray<T>(resultBmp));
             label.Add(labelIndex);
         }
 
         //SizeRatioは100分率で指定 10を指定した場合10%縮めた範囲を9回切り抜いて出力する
-        static void SetAugmentatedBmp(List<Real[]> data, List<Real> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex, int sizeRatio = 10)
+        static void SetAugmentatedBmp<T>(List<T[]> data, List<int> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex, int sizeRatio = 10) where T : unmanaged, IComparable<T>
         {
             Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
             Rectangle desRect = new Rectangle(0, 0, width, height);
@@ -101,27 +102,27 @@ namespace KelpNet.Tools
                     g.DrawImage(baseBmp, desRect, srcRect, GraphicsUnit.Pixel);
                     g.Dispose();
 
-                    data.Add(BitmapConverter.Image2RealArray(resultBmp));
+                    data.Add(BitmapConverter.Image2RealArray<T>(resultBmp));
                     label.Add(labelIndex);
                 }
             }
         }
 
-        static void SetRotateImage(List<Real[]> data, List<Real> label, Bitmap baseBmp, int labelIndex)
+        static void SetRotateImage<T>(List<T[]> data, List<int> label, Bitmap baseBmp, int labelIndex) where T : unmanaged, IComparable<T>
         {
             //90
             baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            data.Add(BitmapConverter.Image2RealArray(baseBmp));
+            data.Add(BitmapConverter.Image2RealArray<T>(baseBmp));
             label.Add(labelIndex);
 
             //180
             baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            data.Add(BitmapConverter.Image2RealArray(baseBmp));
+            data.Add(BitmapConverter.Image2RealArray<T>(baseBmp));
             label.Add(labelIndex);
 
             //270
             baseBmp.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            data.Add(BitmapConverter.Image2RealArray(baseBmp));
+            data.Add(BitmapConverter.Image2RealArray<T>(baseBmp));
             label.Add(labelIndex);
 
             //もとに戻す

@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -20,22 +22,22 @@ namespace KelpNet.Tests
             int height = Mother.Dice.Next(1, 16);
             int axis = 3;
 
-            Real[,,,] input = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthA + widthB });
+            Real[,,,] input = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, widthA + widthB);
 
-            Real[,,,] dummyGyA = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthA });
-            Real[,,,] dummyGyB = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, ch, height, widthB });
+            Real[,,,] dummyGyA = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, widthA);
+            Real[,,,] dummyGyB = Initializer.GetRandomValues<Real[,,,]>(batchCount, ch, height, widthB);
 
             //chainer
             NChainer.SplitAxis<Real> cSplitAxis = new NChainer.SplitAxis<Real>();
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
             PyObject[] cY = cSplitAxis.Forward(cX, new[] { widthA }, axis);
 
             Variable<Real> cY0 = cY[0];
             Variable<Real> cY1 = cY[1];
 
-            cY0.Grad = Real.ToBaseNdArray(dummyGyA);
-            cY1.Grad = Real.ToBaseNdArray(dummyGyB);
+            cY0.Grad = dummyGyA;
+            cY1.Grad = dummyGyB;
 
             //Chainerはどちらか一方で両方分のBackwardが走る
             cY0.Backward();
@@ -43,23 +45,23 @@ namespace KelpNet.Tests
 
 
             //KelpNet
-            KelpNet.SplitAxis splitAxis = new SplitAxis(new[] { widthA }, axis - 1);//Chainerと異なり1次元目を暗黙的にBatchとみなさないため
+            SplitAxis<Real> splitAxis = new SplitAxis<Real>(new[] { widthA }, axis - 1);//Chainerと異なり1次元目を暗黙的にBatchとみなさないため
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { ch, height, widthA + widthB }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);// new NdArray(Real.ToRealArray(), new[] { ch, height, widthA + widthB }, batchCount);
 
-            NdArray[] y = splitAxis.Forward(x);
-            y[0].Grad = Real.ToRealArray(dummyGyA);
-            y[1].Grad = Real.ToRealArray(dummyGyB);
+            NdArray<Real>[] y = splitAxis.Forward(x);
+            y[0].Grad = dummyGyA.Flatten();
+            y[1].Grad = dummyGyB.Flatten();
 
             //KelpNetは出力した両方からBackwardしないと処理が走らない
             y[0].Backward();
             y[1].Backward();
 
             //Copyが必要
-            Real[] cY0data = Real.ToRealArray((Real[,,,])cY0.Data.Copy());
-            Real[] cY1data = Real.ToRealArray((Real[,,,])cY1.Data.Copy());
+            Real[] cY0data = ((Real[,,,])cY0.Data.Copy()).Flatten();
+            Real[] cY1data = ((Real[,,,])cY1.Data.Copy()).Flatten();
 
-            Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad);
+            Real[] cXgrad = ((Real[,,,])cX.Grad).Flatten();
 
             //許容範囲を算出
             double delta = 0.00001;

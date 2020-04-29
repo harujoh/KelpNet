@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests.JoinTest
 {
@@ -13,63 +15,63 @@ namespace KelpNet.Tests.JoinTest
             Python.Initialize();
             Chainer.Initialize();
 
-            Real[,] input = { { 1.0 }, { 3.0 }, { 5.0 }, { 7.0 }, { 9.0 } };
-            Real[,] teach = { { 3.0 }, { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 } };
+            Real[,] input = { { 1.0f }, { 3.0f }, { 5.0f }, { 7.0f }, { 9.0f } };
+            Real[,] teach = { { 3.0f }, { 5.0f }, { 7.0f }, { 9.0f }, { 11.0f } };
 
-            Real[,] input2 = { { 3.0 }, { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 } };
-            Real[,] teach2 = { { 5.0 }, { 7.0 }, { 9.0 }, { 11.0 }, { 13.0 } };
+            Real[,] input2 = { { 3.0f }, { 5.0f }, { 7.0f }, { 9.0f }, { 11.0f } };
+            Real[,] teach2 = { { 5.0f }, { 7.0f }, { 9.0f }, { 11.0f }, { 13.0f } };
 
             int outputCount = 1;
             int inputCount = 1;
             int hiddenCount = 2;
 
-            Real[,] upwardInit = (Real[,])Initializer.GetRealNdArray(new[] { hiddenCount, hiddenCount });
-            Real[,] lateralInit = (Real[,])Initializer.GetRealNdArray(new[] { hiddenCount, hiddenCount });
-            Real[,,] biasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, hiddenCount, 1 });
-            Real[,,] forgetBiasInit = (Real[,,])Initializer.GetRealNdArray(new[] { 1, hiddenCount, 1 });
+            Real[,] upwardInit = Initializer.GetRandomValues<Real[,]>(hiddenCount, hiddenCount);
+            Real[,] lateralInit = Initializer.GetRandomValues<Real[,]>(hiddenCount, hiddenCount);
+            Real[,,] biasInit = Initializer.GetRandomValues<Real[,,]>(1, hiddenCount, 1);
+            Real[,,] forgetBiasInit = Initializer.GetRandomValues<Real[,,]>(1, hiddenCount, 1);
 
             //Chainer
-            Real[,] w1 = (Real[,])Initializer.GetRealNdArray(new[] { hiddenCount, inputCount });
-            Real[] b1 = Initializer.GetRealArray(hiddenCount);
+            Real[,] w1 = Initializer.GetRandomValues<Real[,]>(hiddenCount, inputCount);
+            Real[] b1 = Initializer.GetRandomValues<Real[]>(hiddenCount);
 
             //Chainer
-            NChainer.Linear<Real> cLinear1 = new NChainer.Linear<Real>(inputCount, hiddenCount, false, Real.ToBaseNdArray(w1), Real.ToBaseArray(b1));
-            NChainer.LSTM<Real> cLstm = new NChainer.LSTM<Real>(hiddenCount, hiddenCount, Real.ToBaseNdArray(lateralInit), Real.ToBaseNdArray(upwardInit), Real.ToBaseNdArray(biasInit), Real.ToBaseNdArray(forgetBiasInit));
+            Linear<Real> cLinear1 = new Linear<Real>(inputCount, hiddenCount, false, w1, b1);
+            NChainer.LSTM<Real> cLstm = new NChainer.LSTM<Real>(hiddenCount, hiddenCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
 
-            Real[,] w2 = (Real[,])Initializer.GetRealNdArray(new[] { outputCount, hiddenCount });
-            Real[] b2 = Initializer.GetRealArray(outputCount);
-            NChainer.Linear<Real> cLinear2 = new NChainer.Linear<Real>(hiddenCount, outputCount, false, Real.ToBaseNdArray(w2), Real.ToBaseArray(b2));
+            Real[,] w2 = Initializer.GetRandomValues<Real[,]>(outputCount, hiddenCount);
+            Real[] b2 = Initializer.GetRandomValues<Real[]>(outputCount);
+            Linear<Real> cLinear2 = new Linear<Real>(hiddenCount, outputCount, false, w2, b2);
 
-            Variable<Real> cX1 = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX1 = new Variable<Real>(input);
             Variable<Real> cY11 = cLinear1.Forward(cX1);
             Variable<Real> cY12 = cLstm.Forward(cY11);
             Variable<Real> cY13 = cLinear2.Forward(cY12);
-            Variable<Real> cT = new Variable<Real>(Real.ToBaseNdArray(teach));
+            Variable<Real> cT = new Variable<Real>(teach);
 
             Variable<Real> cLoss = new NChainer.MeanSquaredError<Real>().Forward(cY13, cT);
             cLoss.Backward();
 
 
             //KelpNet
-            KelpNet.CL.Linear linear1 = new KelpNet.CL.Linear(inputCount, hiddenCount, false, w1, b1);
-            KelpNet.LSTM lstm = new KelpNet.LSTM(hiddenCount, hiddenCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
-            KelpNet.CL.Linear linear2 = new KelpNet.CL.Linear(hiddenCount, outputCount, false, w2, b2);
+            CL.Linear<Real> linear1 = new CL.Linear<Real>(inputCount, hiddenCount, false, w1, b1);
+            LSTM<Real> lstm = new LSTM<Real>(hiddenCount, hiddenCount, lateralInit, upwardInit, biasInit, forgetBiasInit);
+            CL.Linear<Real> linear2 = new CL.Linear<Real>(hiddenCount, outputCount, false, w2, b2);
 
-            NdArray x1 = new NdArray(Real.ToRealArray(input), new[] { 1 }, 5);
-            NdArray y11 = linear1.Forward(x1)[0];
-            NdArray y12 = lstm.Forward(y11)[0];
-            NdArray y13 = linear2.Forward(y12)[0];
-            NdArray t = new NdArray(Real.ToRealArray(teach), new[] { 1 }, 5);
+            NdArray<Real> x1 = new NdArray<Real>(input, asBatch: true);
+            NdArray<Real> y11 = linear1.Forward(x1)[0];
+            NdArray<Real> y12 = lstm.Forward(y11)[0];
+            NdArray<Real> y13 = linear2.Forward(y12)[0];
+            NdArray<Real> t = new NdArray<Real>(teach, asBatch: true);
 
-            NdArray loss = new KelpNet.MeanSquaredError().Evaluate(y13, t);
+            NdArray<Real> loss = new MeanSquaredError<Real>().Evaluate(y13, t);
             y13.Backward();
 
-            Real[] cY11data = Real.ToRealArray((Real[,])cY11.Data);
-            Real[] cY12data = Real.ToRealArray((Real[,])cY12.Data);
-            Real[] cY13data = Real.ToRealArray((Real[,])cY13.Data);
-            Real[] cXgrad = Real.ToRealArray((Real[,])cX1.Grad);
+            Real[] cY11data = ((Real[,])cY11.Data).Flatten();
+            Real[] cY12data = ((Real[,])cY12.Data).Flatten();
+            Real[] cY13data = ((Real[,])cY13.Data).Flatten();
+            Real[] cXgrad = ((Real[,])cX1.Grad).Flatten();
 
-            Real[] cupwardWGrad = Real.ToRealArray((Real[,])cLstm.upward.W.Grad);
+            Real[] cupwardWGrad = ((Real[,])cLstm.upward.W.Grad).Flatten();
             Real[] cupwardbGrad = (Real[])cLstm.upward.b.Grad;
 
 
@@ -110,7 +112,7 @@ namespace KelpNet.Tests.JoinTest
                 Assert.AreEqual(cXgrad[i], x1.Grad[i], delta);
             }
 
-            Real[] cWgrad11 = Real.ToRealArray((Real[,])cLinear1.W.Grad);
+            Real[] cWgrad11 = ((Real[,])cLinear1.W.Grad).Flatten();
             Real[] cbgrad11 = (Real[])cLinear1.b.Grad;
 
             //W.grad
@@ -128,7 +130,7 @@ namespace KelpNet.Tests.JoinTest
             }
 
 
-            Real[] cWgrad12 = Real.ToRealArray((Real[,])cLinear2.W.Grad);
+            Real[] cWgrad12 = ((Real[,])cLinear2.W.Grad).Flatten();
             Real[] cbgrad12 = (Real[])cLinear2.b.Grad;
 
 
@@ -165,22 +167,22 @@ namespace KelpNet.Tests.JoinTest
 
 
             //２周目
-            Variable<Real> cX2 = new Variable<Real>(Real.ToBaseNdArray(input2));
+            Variable<Real> cX2 = new Variable<Real>(input2);
             Variable<Real> cY21 = cLinear1.Forward(cX2);
             Variable<Real> cY22 = cLstm.Forward(cY21);
             Variable<Real> cY23 = cLinear2.Forward(cY22);
-            Variable<Real> cT2 = new Variable<Real>(Real.ToBaseNdArray(teach2));
+            Variable<Real> cT2 = new Variable<Real>(teach2);
 
             Variable<Real> cLoss2 = new NChainer.MeanSquaredError<Real>().Forward(cY23, cT2);
 
             //KelpNet
-            NdArray x2 = new NdArray(Real.ToRealArray(input2), new[] { 1 }, 5);
-            NdArray y21 = linear1.Forward(x2)[0];
-            NdArray y22 = lstm.Forward(y21)[0];
-            NdArray y23 = linear2.Forward(y22)[0];
-            NdArray t2 = new NdArray(Real.ToRealArray(teach2), new[] { 1 }, 5);
+            NdArray<Real> x2 = new NdArray<Real>(input2, asBatch: true);
+            NdArray<Real> y21 = linear1.Forward(x2)[0];
+            NdArray<Real> y22 = lstm.Forward(y21)[0];
+            NdArray<Real> y23 = linear2.Forward(y22)[0];
+            NdArray<Real> t2 = new NdArray<Real>(teach2, asBatch: true);
 
-            NdArray loss2 = new KelpNet.MeanSquaredError().Evaluate(y23, t2);
+            NdArray<Real> loss2 = new MeanSquaredError<Real>().Evaluate(y23, t2);
 
             Assert.AreEqual(cLoss2.Data[0], loss2.Data[0], delta);
 
@@ -189,14 +191,14 @@ namespace KelpNet.Tests.JoinTest
             y23.Backward();
 
 
-            Real[] cYdata21 = Real.ToRealArray((Real[,])cY21.Data);
-            Real[] cYdata22 = Real.ToRealArray((Real[,])cY22.Data);
-            Real[] cYdata23 = Real.ToRealArray((Real[,])cY23.Data);
-            Real[] cXgrad2 = Real.ToRealArray((Real[,])cX2.Grad);
+            Real[] cYdata21 = ((Real[,])cY21.Data).Flatten();
+            Real[] cYdata22 = ((Real[,])cY22.Data).Flatten();
+            Real[] cYdata23 = ((Real[,])cY23.Data).Flatten();
+            Real[] cXgrad2 = ((Real[,])cX2.Grad).Flatten();
 
-            Real[] cupwardWGrad2 = Real.ToRealArray((Real[,])cLstm.upward.W.Grad);
+            Real[] cupwardWGrad2 = ((Real[,])cLstm.upward.W.Grad).Flatten();
             Real[] cupwardbGrad2 = (Real[])cLstm.upward.b.Grad;
-            Real[] clateralWGrad = Real.ToRealArray((Real[,])cLstm.lateral.W.Grad);
+            Real[] clateralWGrad = ((Real[,])cLstm.lateral.W.Grad).Flatten();
 
             //y21
             Assert.AreEqual(cYdata21.Length, y21.Data.Length);
@@ -229,7 +231,7 @@ namespace KelpNet.Tests.JoinTest
             //経由が多くかなり誤差が大きい為
             delta = 1.0;
 
-            Real[] cWgrad22 = Real.ToRealArray((Real[,])cLinear2.W.Grad);
+            Real[] cWgrad22 = ((Real[,])cLinear2.W.Grad).Flatten();
             Real[] cbgrad22 = (Real[])cLinear2.b.Grad;
 
             //W.grad
@@ -270,7 +272,7 @@ namespace KelpNet.Tests.JoinTest
 
             delta = 20.0;
 
-            Real[] cWgrad21 = Real.ToRealArray((Real[,])cLinear1.W.Grad);
+            Real[] cWgrad21 = ((Real[,])cLinear1.W.Grad).Flatten();
             Real[] cbgrad21 = (Real[])cLinear1.b.Grad;
 
             //W.grad

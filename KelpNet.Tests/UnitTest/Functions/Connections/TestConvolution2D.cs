@@ -1,8 +1,10 @@
 ﻿using System;
+using KelpNet.CL;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NChainer;
 using NConstrictor;
-using KelpNet.CL;
+//using Real = System.Double;
+using Real = System.Single;
 
 namespace KelpNet.Tests
 {
@@ -53,12 +55,12 @@ namespace KelpNet.Tests
             int outputHeight = (int)Math.Floor((heightSize - kHeight + padY * 2.0) / strideY) + 1;
             int outputWidth = (int)Math.Floor((wideSize - kWidth + padX * 2.0) / strideX) + 1;
 
-            Real[,,,] input = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, inChCount, heightSize, wideSize });
+            Real[,,,] input = Initializer.GetRandomValues<Real[,,,]>(batchCount, inChCount, heightSize, wideSize);
 
-            Real[,,,] dummyGy = (Real[,,,])Initializer.GetRealNdArray(new[] { batchCount, outChCount, outputHeight, outputWidth });
-            Real[,,,] w = (Real[,,,])Initializer.GetRealNdArray(new[] { outChCount, inChCount, kHeight, kWidth });
+            Real[,,,] dummyGy = Initializer.GetRandomValues<Real[,,,]>(batchCount, outChCount, outputHeight, outputWidth);
+            Real[,,,] w = Initializer.GetRandomValues<Real[,,,]>(outChCount, inChCount, kHeight, kWidth);
 
-            Real[] b = Initializer.GetRealArray(outChCount);
+            Real[] b = Initializer.GetRandomValues<Real[]>(outChCount);
 
             //Chainer
             NChainer.Convolution2D<Real> cConvolotion2D = new NChainer.Convolution2D<Real>(
@@ -67,37 +69,37 @@ namespace KelpNet.Tests
                 new[] { strideY, strideX },
                 new[] { padY, padX },
                 false,
-                Real.ToBaseNdArray(w),
-                Real.ToBaseArray(b));
+                w,
+                b);
 
-            Variable<Real> cX = new Variable<Real>(Real.ToBaseNdArray(input));
+            Variable<Real> cX = new Variable<Real>(input);
 
             Variable<Real> cY = cConvolotion2D.Forward(cX);
-            cY.Grad = Real.ToBaseNdArray(dummyGy);
+            cY.Grad = dummyGy;
 
             cY.Backward();
 
 
             //KelpNet
-            KelpNet.CL.Convolution2D convolution2D = new KelpNet.CL.Convolution2D(
+            CL.Convolution2D<Real> convolution2D = new CL.Convolution2D<Real>(
                 inChCount, outChCount,
                 new[] { kWidth, kHeight },
                 new[] { strideX, strideY },
                 new[] { padX, padY },
                 false, w, b, gpuEnable: gpuEnable);
 
-            NdArray x = new NdArray(Real.ToRealArray(input), new[] { inChCount, heightSize, wideSize }, batchCount);
+            NdArray<Real> x = new NdArray<Real>(input, asBatch: true);
 
-            NdArray y = convolution2D.Forward(x)[0];
-            y.Grad = Real.ToRealArray(dummyGy);
+            NdArray<Real> y = convolution2D.Forward(x)[0];
+            y.Grad = dummyGy.Flatten();
 
             y.Backward();
 
 
-            Real[] cYdata = Real.ToRealArray((Real[,,,])cY.Data.Copy());
-            Real[] cXgrad = Real.ToRealArray((Real[,,,])cX.Grad.Copy());
+            Real[] cYdata = ((Real[,,,])cY.Data.Copy()).Flatten();
+            Real[] cXgrad = ((Real[,,,])cX.Grad.Copy()).Flatten();
 
-            Real[] cWgrad = Real.ToRealArray((Real[,,,])cConvolotion2D.W.Grad);
+            Real[] cWgrad = ((Real[,,,])cConvolotion2D.W.Grad).Flatten();
             Real[] cbgrad = (Real[])cConvolotion2D.b.Grad;
 
             //許容範囲を算出

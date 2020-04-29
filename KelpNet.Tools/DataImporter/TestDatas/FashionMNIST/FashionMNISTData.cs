@@ -1,53 +1,58 @@
-﻿namespace KelpNet.Tools
+﻿using System;
+
+namespace KelpNet.Tools
 {
-    public class FashionMnistData
+    public class FashionMnistData<T> where T : unmanaged, IComparable<T>
     {
         //訓練データ
-        public LabeledDataSet Train;
+        public LabeledDataSet<T> Train;
 
         //評価データ
-        public LabeledDataSet Eval;
+        public LabeledDataSet<T> Eval;
 
         public FashionMnistData()
         {
             FashionMnistDataLoader fashionMnistDataLoader = new FashionMnistDataLoader();
 
-            //訓練用データ
-            Real[][] x = new Real[fashionMnistDataLoader.TrainData.Length][];
-            Real[] xLabel = new Real[fashionMnistDataLoader.TrainData.Length];
+            this.Train = createLabeledDataSet(fashionMnistDataLoader.TrainData, fashionMnistDataLoader.TrainLabel);
+            this.Eval = createLabeledDataSet(fashionMnistDataLoader.TeachData, fashionMnistDataLoader.TeachLabel);
+        }
 
-            for (int i = 0; i < fashionMnistDataLoader.TrainData.Length; i++)
+        LabeledDataSet<T> createLabeledDataSet(byte[][] data, byte[] label)
+        {
+            T[][] x = new T[data.Length][];
+            int[] xLabel = new int[label.Length];
+
+            //型を判定し画素を0.0～1.0にノーマライズ
+            switch (x)
             {
-                x[i] = new Real[1 * 28 * 28];
+                case float[][] xF:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        xF[i] = new float[1 * 28 * 28];
 
-                for (int j = 0; j < fashionMnistDataLoader.TrainData[i].Length; j++)
-                {
-                    x[i][j] = fashionMnistDataLoader.TrainData[i][j] / 255.0;
-                }
+                        for (int j = 0; j < data[i].Length; j++)
+                        {
+                            xF[i][j] = data[i][j] / 255.0f;
+                        }
+                    }
+                    break;
 
-                xLabel[i] = fashionMnistDataLoader.TrainLabel[i];
+                case double[][] xD:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        xD[i] = new double[1 * 28 * 28];
+
+                        for (int j = 0; j < data[i].Length; j++)
+                        {
+                            xD[i][j] = data[i][j] / 255.0;
+                        }
+                    }
+                    break;
             }
 
-            this.Train = new LabeledDataSet(x, xLabel, new[] { 1, 28, 28 });
-
-
-            //評価用データ
-            Real[][] y = new Real[fashionMnistDataLoader.TeachData.Length][];
-            Real[] yLabel = new Real[fashionMnistDataLoader.TeachData.Length];
-
-            for (int i = 0; i < fashionMnistDataLoader.TeachData.Length; i++)
-            {
-                y[i] = new Real[1 * 28 * 28];
-
-                for (int j = 0; j < fashionMnistDataLoader.TeachData[i].Length; j++)
-                {
-                    y[i][j] = fashionMnistDataLoader.TeachData[i][j] / 255.0;
-                }
-
-                yLabel[i] = fashionMnistDataLoader.TeachLabel[i];
-            }
-
-            this.Eval = new LabeledDataSet(y, yLabel, new[] { 1, 28, 28 });
+            Array.Copy(label, xLabel, label.Length);
+            return new LabeledDataSet<T>(x, xLabel, new[] { 1, 28, 28 });
         }
 
     }

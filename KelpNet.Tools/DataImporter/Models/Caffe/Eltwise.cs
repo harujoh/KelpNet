@@ -1,9 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using KelpNet.CPU;
+#if DOUBLE
+using Real = System.Double;
+#else
+using Real = System.Single;
+#endif
 
 namespace KelpNet.Tools
 {
-    public class Eltwise : MultiInputFunction
+#if !DOUBLE
+    public class Eltwise<T> : MultiInputFunction<T> where T : unmanaged, IComparable<T>
     {
         private const string FUNCTION_NAME = "Eltwise";
 
@@ -16,13 +24,39 @@ namespace KelpNet.Tools
         {
             this._operation = operation;
             this._coeffs = coeffs;
+            InitFunc(new StreamingContext());
         }
 
-        protected override NdArray MultiInputForward(params NdArray[] xs)
+        [OnDeserializing]
+        void InitFunc(StreamingContext sc)
+        {
+            switch (this)
+            {
+                case Eltwise<float> eltwiseF:
+                    eltwiseF.MultiInputForward = x => EltwiseF.MultiInputForward(x, eltwiseF._operation, eltwiseF._coeffs, eltwiseF.PrevOutputIndex, eltwiseF);
+                    eltwiseF.MultiOutputBackward = (y, x) => EltwiseF.MultiOutputBackward(y, x, eltwiseF._operation, eltwiseF.PrevOutputIndex);
+                    break;
+
+                case Eltwise<double> eltwiseD:
+                    eltwiseD.MultiInputForward = x => EltwiseD.MultiInputForward(x, eltwiseD._operation, eltwiseD._coeffs, eltwiseD.PrevOutputIndex, eltwiseD);
+                    eltwiseD.MultiOutputBackward = (y, x) => EltwiseD.MultiOutputBackward(y, x, eltwiseD._operation, eltwiseD.PrevOutputIndex);
+                    break;
+            }
+        }
+    }
+#endif
+
+#if DOUBLE
+    public static class EltwiseD
+#else
+    public static class EltwiseF
+#endif
+    {
+        public static NdArray<Real>[] MultiInputForward(NdArray<Real>[] xs, EltwiseParameter.EltwiseOp operation, float[] coeffs, List<int[]> PrevOutputIndex,IFunction<Real> eltwise)
         {
             Real[] result = new Real[xs[0].Data.Length];
 
-            switch (_operation)
+            switch (operation)
             {
                 case EltwiseParameter.EltwiseOp.Prod:
                     Array.Copy(xs[0].Data, result, result.Length);
@@ -36,13 +70,13 @@ namespace KelpNet.Tools
                     break;
 
                 case EltwiseParameter.EltwiseOp.Sum:
-                    if (this._coeffs != null)
+                    if (coeffs != null)
                     {
                         for (int i = 0; i < xs.Length; i++)
                         {
                             for (int j = 0; j < result.Length; j++)
                             {
-                                result[j] += xs[i].Data[j] * _coeffs[i];
+                                result[j] += xs[i].Data[j] * coeffs[i];
                             }
                         }
                     }
@@ -78,10 +112,10 @@ namespace KelpNet.Tools
                     break;
             }
 
-            return NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount, this);
+            return new []{NdArray.Convert(result, xs[0].Shape, xs[0].BatchCount, eltwise) };
         }
 
-        protected override void MultiOutputBackward(NdArray y, params NdArray[] xs)
+        public static void MultiOutputBackward(NdArray<Real> y, NdArray<Real>[] xs, EltwiseParameter.EltwiseOp operation, List<int[]> PrevOutputIndex)
         {
             Real[][] result = new Real[xs.Length][];
             for (int i = 0; i < result.Length; i++)
@@ -89,7 +123,7 @@ namespace KelpNet.Tools
                 result[i] = new Real[xs[i].Data.Length];
             }
 
-            switch (_operation)
+            switch (operation)
             {
                 case EltwiseParameter.EltwiseOp.Prod:
                     for (int i = 0; i < result.Length; i++)

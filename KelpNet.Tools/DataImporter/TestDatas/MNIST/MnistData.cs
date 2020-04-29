@@ -1,53 +1,59 @@
-﻿namespace KelpNet.Tools
+﻿using System;
+
+namespace KelpNet.Tools
 {
-    public class MnistData
+    //元データはbyte配列なのでこれをT配列に変換しつつノーマライズをかける
+    public class MnistData<T> where T : unmanaged, IComparable<T>
     {
         //訓練データ
-        public LabeledDataSet Train;
+        public LabeledDataSet<T> Train;
 
         //評価データ
-        public LabeledDataSet Eval;
+        public LabeledDataSet<T> Eval;
 
         public MnistData()
         {
             MnistDataLoader mnistDataLoader = new MnistDataLoader();
 
-            //訓練用データ
-            Real[][] x = new Real[mnistDataLoader.TrainData.Length][];
-            Real[] xLabel = new Real[mnistDataLoader.TrainData.Length];
+            this.Train = createLabeledDataSet(mnistDataLoader.TrainData, mnistDataLoader.TrainLabel);
+            this.Eval = createLabeledDataSet(mnistDataLoader.TeachData, mnistDataLoader.TeachLabel);
+        }
 
-            for (int i = 0; i < mnistDataLoader.TrainData.Length; i++)
+        LabeledDataSet<T> createLabeledDataSet(byte[][] data, byte[] label)
+        {
+            T[][] x = new T[data.Length][];
+            int[] xLabel = new int[label.Length];
+
+            //型を判定し画素を0.0～1.0にノーマライズ
+            switch (x)
             {
-                x[i] = new Real[1 * 28 * 28];
+                case float[][] xF:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        xF[i] = new float[1 * 28 * 28];
 
-                for (int j = 0; j < mnistDataLoader.TrainData[i].Length; j++)
-                {
-                    x[i][j] = mnistDataLoader.TrainData[i][j] / 255.0;
-                }
+                        for (int j = 0; j < data[i].Length; j++)
+                        {
+                            xF[i][j] = data[i][j] / 255.0f;
+                        }
+                    }
+                    break;
 
-                xLabel[i] = mnistDataLoader.TrainLabel[i];
+                case double[][] xD:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        xD[i] = new double[1 * 28 * 28];
+
+                        for (int j = 0; j < data[i].Length; j++)
+                        {
+                            xD[i][j] = data[i][j] / 255.0;
+                        }
+                    }
+                    break;
             }
 
-            this.Train = new LabeledDataSet(x, xLabel, new[] { 1, 28, 28 });
-
-
-            //評価用データ
-            Real[][] y = new Real[mnistDataLoader.TeachData.Length][];
-            Real[] yLabel = new Real[mnistDataLoader.TeachData.Length];
-
-            for (int i = 0; i < mnistDataLoader.TeachData.Length; i++)
-            {
-                y[i] = new Real[1 * 28 * 28];
-
-                for (int j = 0; j < mnistDataLoader.TeachData[i].Length; j++)
-                {
-                    y[i][j] = mnistDataLoader.TeachData[i][j] / 255.0;
-                }
-
-                yLabel[i] = mnistDataLoader.TeachLabel[i];
-            }
-
-            this.Eval = new LabeledDataSet(y, yLabel, new[] { 1, 28, 28 });
+            Array.Copy(label,xLabel,label.Length);
+            return new LabeledDataSet<T>(x, xLabel, new[] { 1, 28, 28 });
         }
     }
 }
