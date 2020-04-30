@@ -13,14 +13,14 @@ namespace KelpNet
             StepSize = stepSize;
         }
 
-        public override T[] StepFunc(T[] Params)
+        public override T[] StepFunc(T[] inputParams)
         {
             if (Epoch == 0 || Epoch % StepSize != 0)
             {
-                return Params;
+                return inputParams;
             }
 
-            T[] results = Params;
+            T[] results = inputParams;
 
             switch (results)
             {

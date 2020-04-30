@@ -68,7 +68,7 @@ namespace KelpNet
     public static class SoftplusF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real Beta, Real BetaInv, IFunction<Real> softplus)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real beta, Real betaInv, IFunction<Real> softplus)
         {
             Real[] y = new Real[x.Data.Length];
 
@@ -76,7 +76,7 @@ namespace KelpNet
             {
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = x.Data[i + b * x.Length] * Beta;
+                    y[i + b * x.Length] = x.Data[i + b * x.Length] * beta;
                 }
 
                 Real maxval = y[b * x.Length];
@@ -90,7 +90,7 @@ namespace KelpNet
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = (maxval + KelpMath.Log(1.0f + KelpMath.Exp(-KelpMath.Abs(x.Data[i + b * x.Length] * Beta)))) * BetaInv;
+                    y[i + b * x.Length] = (maxval + KelpMath.Log(1.0f + KelpMath.Exp(-KelpMath.Abs(x.Data[i + b * x.Length] * beta)))) * betaInv;
                 }
 
             }
@@ -98,11 +98,11 @@ namespace KelpNet
             return NdArray.Convert(y, x.Shape, x.BatchCount, softplus);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, Real Beta)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, Real beta)
         {
             for (int i = 0; i < x.Grad.Length; i++)
             {
-                x.Grad[i] += (1.0f - 1.0f / (1.0f + KelpMath.Exp(Beta * y.Data[i]))) * y.Grad[i];
+                x.Grad[i] += (1.0f - 1.0f / (1.0f + KelpMath.Exp(beta * y.Data[i]))) * y.Grad[i];
             }
 
         }

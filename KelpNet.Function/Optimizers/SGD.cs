@@ -66,11 +66,11 @@ namespace KelpNet
     public static class SGDParameterF
 #endif
     { 
-        public static void UpdateFunctionParameters(Real LearningRate, NdArray<Real> FunctionParameter)
+        public static void UpdateFunctionParameters(Real learningRate, NdArray<Real> functionParameter)
         {
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                FunctionParameter.Data[i] -= LearningRate * FunctionParameter.Grad[i];
+                functionParameter.Data[i] -= learningRate * functionParameter.Grad[i];
             }
         }
     }

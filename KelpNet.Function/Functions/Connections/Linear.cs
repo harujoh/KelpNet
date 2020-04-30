@@ -111,30 +111,30 @@ namespace KelpNet.CPU
     public static class LinearF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real[] Weight, NdArray<Real> Bias, bool NoBias, int OutputCount, int InputCount, ICompressibleActivation<Real> Activation, IFunction<Real> linear)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real[] weight, NdArray<Real> bias, bool noBias, int outputCount, int inputCount, ICompressibleActivation<Real> activation, IFunction<Real> linear)
         {
-            Real[] y = NoBias ? new Real[OutputCount * x.BatchCount] : GetBiasedValue(x.BatchCount, OutputCount, Bias.Data);
+            Real[] y = noBias ? new Real[outputCount * x.BatchCount] : GetBiasedValue(x.BatchCount, outputCount, bias.Data);
 
             for (int batchCount = 0; batchCount < x.BatchCount; batchCount++)
             {
-                for (int i = 0; i < OutputCount; i++)
+                for (int i = 0; i < outputCount; i++)
                 {
-                    for (int j = 0; j < InputCount; j++)
+                    for (int j = 0; j < inputCount; j++)
                     {
-                        y[batchCount * OutputCount + i] += x.Data[batchCount * InputCount + j] * Weight[i * InputCount + j];
+                        y[batchCount * outputCount + i] += x.Data[batchCount * inputCount + j] * weight[i * inputCount + j];
                     }
                 }
             }
 
-            if (Activation != null)
+            if (activation != null)
             {
                 for (int i = 0; i < y.Length; i++)
                 {
-                    y[i] = Activation.ForwardActivate(y[i]);
+                    y[i] = activation.ForwardActivate(y[i]);
                 }
             }
 
-            return NdArray.Convert(y, new[] { OutputCount }, x.BatchCount, linear);
+            return NdArray.Convert(y, new[] { outputCount }, x.BatchCount, linear);
         }
 
         public static Real[] GetBiasedValue(int batchCount, int outputCount, Real[] bias)
@@ -149,21 +149,21 @@ namespace KelpNet.CPU
             return y;
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> Weight, NdArray<Real> bias, bool NoBias, int OutputCount, int InputCount, ICompressibleActivation<Real> activation)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, bool noBias, int outputCount, int inputCount, ICompressibleActivation<Real> activation)
         {
             Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
-            if (!NoBias) CalcBiasGrad(activatedgy, y.BatchCount, OutputCount, bias.Grad);
+            if (!noBias) CalcBiasGrad(activatedgy, y.BatchCount, outputCount, bias.Grad);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)
             {
-                for (int i = 0; i < OutputCount; i++)
+                for (int i = 0; i < outputCount; i++)
                 {
-                    Real gyData = activatedgy[i + batchCount * OutputCount];
+                    Real gyData = activatedgy[i + batchCount * outputCount];
 
-                    for (int j = 0; j < InputCount; j++)
+                    for (int j = 0; j < inputCount; j++)
                     {
-                        Weight.Grad[i * InputCount + j] += x.Data[batchCount * InputCount + j] * gyData;
-                        x.Grad[batchCount * InputCount + j] += Weight.Data[i * InputCount + j] * gyData;
+                        weight.Grad[i * inputCount + j] += x.Data[batchCount * inputCount + j] * gyData;
+                        x.Grad[batchCount * inputCount + j] += weight.Data[i * inputCount + j] * gyData;
                     }
                 }
             }

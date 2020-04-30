@@ -104,23 +104,23 @@ namespace KelpNet.CL
     public static class LinearF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real[] Weight, Real[] bias, bool noBias, int inputCount, int outputCount, ComputeKernel ForwardKernel, Func<int, int, Real[], Real[]> GetBiasedValue, IFunction<Real> linear)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real[] weight, Real[] bias, bool noBias, int inputCount, int outputCount, ComputeKernel forwardKernel, Func<int, int, Real[], Real[]> getBiasedValue, IFunction<Real> linear)
         {
-            Real[] y = noBias ? new Real[outputCount * x.BatchCount] : GetBiasedValue(x.BatchCount, outputCount, bias);
+            Real[] y = noBias ? new Real[outputCount * x.BatchCount] : getBiasedValue(x.BatchCount, outputCount, bias);
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
-            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, Weight))
+            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, weight))
             using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, y))
             {
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuW);
-                ForwardKernel.SetMemoryArgument(2, gpuY);
-                ForwardKernel.SetValueArgument(3, outputCount);
-                ForwardKernel.SetValueArgument(4, inputCount);
+                forwardKernel.SetMemoryArgument(0, gpuX);
+                forwardKernel.SetMemoryArgument(1, gpuW);
+                forwardKernel.SetMemoryArgument(2, gpuY);
+                forwardKernel.SetValueArgument(3, outputCount);
+                forwardKernel.SetValueArgument(4, inputCount);
 
                 OpenCL.CommandQueue.Execute
                     (
-                        ForwardKernel,
+                        forwardKernel,
                         null,
                         new long[] { outputCount, x.BatchCount },
                         null,
@@ -134,13 +134,13 @@ namespace KelpNet.CL
             return NdArray.Convert(y, new[] { outputCount }, x.BatchCount, linear);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, Real[] biasGrad, bool noBias, int inputCount, int outputCount, ComputeKernel BackwardgWKernel, ComputeKernel BackwardgXKernel, Action<Real[], int, int, Real[]> CalcBiasGrad, KelpNet.ICompressibleActivation<Real> Activation)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, Real[] biasGrad, bool noBias, int inputCount, int outputCount, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, Action<Real[], int, int, Real[]> calcBiasGrad, KelpNet.ICompressibleActivation<Real> activation)
         {
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = Activation != null ? Activation.GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
             if (!noBias)
             {
-                CalcBiasGrad(activatedgy, y.BatchCount, outputCount, biasGrad);
+                calcBiasGrad(activatedgy, y.BatchCount, outputCount, biasGrad);
             }
 
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, activatedgy))
@@ -148,16 +148,16 @@ namespace KelpNet.CL
                 using (ComputeBuffer<Real> gpugW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, weight.Grad))
                 using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
                 {
-                    BackwardgWKernel.SetMemoryArgument(0, gpugY);
-                    BackwardgWKernel.SetMemoryArgument(1, gpuX);
-                    BackwardgWKernel.SetMemoryArgument(2, gpugW);
-                    BackwardgWKernel.SetValueArgument(3, y.BatchCount);
-                    BackwardgWKernel.SetValueArgument(4, outputCount);
-                    BackwardgWKernel.SetValueArgument(5, inputCount);
+                    backwardgWKernel.SetMemoryArgument(0, gpugY);
+                    backwardgWKernel.SetMemoryArgument(1, gpuX);
+                    backwardgWKernel.SetMemoryArgument(2, gpugW);
+                    backwardgWKernel.SetValueArgument(3, y.BatchCount);
+                    backwardgWKernel.SetValueArgument(4, outputCount);
+                    backwardgWKernel.SetValueArgument(5, inputCount);
 
                     OpenCL.CommandQueue.Execute
                     (
-                        BackwardgWKernel,
+                        backwardgWKernel,
                         null,
                         new long[] { inputCount, outputCount },
                         null,
@@ -171,16 +171,16 @@ namespace KelpNet.CL
                 using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, gx.Length))
                 using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, weight.Data))
                 {
-                    BackwardgXKernel.SetMemoryArgument(0, gpugY);
-                    BackwardgXKernel.SetMemoryArgument(1, gpuW);
-                    BackwardgXKernel.SetMemoryArgument(2, gpugX);
-                    BackwardgXKernel.SetValueArgument(3, y.BatchCount);
-                    BackwardgXKernel.SetValueArgument(4, outputCount);
-                    BackwardgXKernel.SetValueArgument(5, inputCount);
+                    backwardgXKernel.SetMemoryArgument(0, gpugY);
+                    backwardgXKernel.SetMemoryArgument(1, gpuW);
+                    backwardgXKernel.SetMemoryArgument(2, gpugX);
+                    backwardgXKernel.SetValueArgument(3, y.BatchCount);
+                    backwardgXKernel.SetValueArgument(4, outputCount);
+                    backwardgXKernel.SetValueArgument(5, inputCount);
 
                     OpenCL.CommandQueue.Execute
                     (
-                        BackwardgXKernel,
+                        backwardgXKernel,
                         null,
                         new long[] { inputCount, y.BatchCount },
                         null,

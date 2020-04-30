@@ -83,20 +83,20 @@ namespace KelpNet
     public static class AdaDeltaParameterF
 #endif
     {
-        public static void UpdateFunctionParameters(Real[] msg, Real[] msdx, Real Rho, Real Epsilon, NdArray<Real> FunctionParameter)
+        public static void UpdateFunctionParameters(Real[] msg, Real[] msdx, Real rho, Real epsilon, NdArray<Real> functionParameter)
         {
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                Real grad = FunctionParameter.Grad[i];
-                msg[i] *= Rho;
-                msg[i] += (1 - Rho) * grad * grad;
+                Real grad = functionParameter.Grad[i];
+                msg[i] *= rho;
+                msg[i] += (1 - rho) * grad * grad;
 
-                Real dx = KelpMath.Sqrt((msdx[i] + Epsilon) / (msg[i] + Epsilon)) * grad;
+                Real dx = KelpMath.Sqrt((msdx[i] + epsilon) / (msg[i] + epsilon)) * grad;
 
-                msdx[i] *= Rho;
-                msdx[i] += (1 - Rho) * dx * dx;
+                msdx[i] *= rho;
+                msdx[i] += (1 - rho) * dx * dx;
 
-                FunctionParameter.Data[i] -= dx;
+                functionParameter.Data[i] -= dx;
             }
         }
     }

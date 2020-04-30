@@ -72,14 +72,14 @@ namespace KelpNet
     public static class MomentumSGDParameterF
 #endif
     {
-        public static void UpdateFunctionParameters(Real LearningRate, Real Momentum, Real[] v, NdArray<Real> FunctionParameter)
+        public static void UpdateFunctionParameters(Real learningRate, Real momentum, Real[] v, NdArray<Real> functionParameter)
         {
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                v[i] *= Momentum;
-                v[i] -= LearningRate * FunctionParameter.Grad[i];
+                v[i] *= momentum;
+                v[i] -= learningRate * functionParameter.Grad[i];
 
-                FunctionParameter.Data[i] += v[i];
+                functionParameter.Data[i] += v[i];
             }
         }
     }

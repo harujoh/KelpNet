@@ -90,7 +90,7 @@ namespace KelpNet.CL
     public static class MaxPooling2DF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> input, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, bool coverAll, List<int[]> outputIndicesList, Func<NdArray<Real>, int[], int, int, List<int[]>, IFunction<Real>, NdArray<Real>> GetForwardResult, ComputeKernel ForwardKernel, IFunction<Real> maxPooling2d)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> input, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, bool coverAll, List<int[]> outputIndicesList, Func<NdArray<Real>, int[], int, int, List<int[]>, IFunction<Real>, NdArray<Real>> getForwardResult, ComputeKernel forwardKernel, IFunction<Real> maxPooling2d)
         {
             int outputHeight = coverAll ?
                 (int)Math.Floor((input.Shape[1] - kernelHeight + padY * 2.0 + strideY - 1.0) / strideY) + 1 :
@@ -103,23 +103,23 @@ namespace KelpNet.CL
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
             using (ComputeBuffer<int> gpuYIndex = new ComputeBuffer<int>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, outputIndices.Length))
             {
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuYIndex);
-                ForwardKernel.SetValueArgument(2, outputHeight);
-                ForwardKernel.SetValueArgument(3, outputWidth);
-                ForwardKernel.SetValueArgument(4, input.Shape[0]);
-                ForwardKernel.SetValueArgument(5, input.Shape[1]);
-                ForwardKernel.SetValueArgument(6, input.Shape[2]);
-                ForwardKernel.SetValueArgument(7, kernelHeight);
-                ForwardKernel.SetValueArgument(8, kernelWidth);
-                ForwardKernel.SetValueArgument(9, strideX);
-                ForwardKernel.SetValueArgument(10, strideY);
-                ForwardKernel.SetValueArgument(11, padY);
-                ForwardKernel.SetValueArgument(12, padX);
+                forwardKernel.SetMemoryArgument(0, gpuX);
+                forwardKernel.SetMemoryArgument(1, gpuYIndex);
+                forwardKernel.SetValueArgument(2, outputHeight);
+                forwardKernel.SetValueArgument(3, outputWidth);
+                forwardKernel.SetValueArgument(4, input.Shape[0]);
+                forwardKernel.SetValueArgument(5, input.Shape[1]);
+                forwardKernel.SetValueArgument(6, input.Shape[2]);
+                forwardKernel.SetValueArgument(7, kernelHeight);
+                forwardKernel.SetValueArgument(8, kernelWidth);
+                forwardKernel.SetValueArgument(9, strideX);
+                forwardKernel.SetValueArgument(10, strideY);
+                forwardKernel.SetValueArgument(11, padY);
+                forwardKernel.SetValueArgument(12, padX);
 
                 OpenCL.CommandQueue.Execute
                 (
-                    ForwardKernel,
+                    forwardKernel,
                     null,
                     new long[] { input.BatchCount * input.Shape[0], outputHeight, outputWidth },
                     null,
@@ -130,7 +130,7 @@ namespace KelpNet.CL
                 OpenCL.CommandQueue.ReadFromBuffer(gpuYIndex, ref outputIndices, true, null);
             }
 
-            return GetForwardResult(input, outputIndices, outputWidth, outputHeight, outputIndicesList, maxPooling2d);
+            return getForwardResult(input, outputIndices, outputWidth, outputHeight, outputIndicesList, maxPooling2d);
         }
     }
 }

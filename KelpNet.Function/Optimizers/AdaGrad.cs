@@ -79,15 +79,15 @@ namespace KelpNet
     public static class AdaGradParameterF
 #endif
     {
-        public static void UpdateFunctionParameters(Real LearningRate, Real Epsilon, Real[] h, NdArray<Real> FunctionParameter)
+        public static void UpdateFunctionParameters(Real learningRate, Real epsilon, Real[] h, NdArray<Real> functionParameter)
         {
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                Real grad = FunctionParameter.Grad[i];
+                Real grad = functionParameter.Grad[i];
 
                 h[i] += grad * grad;
 
-                FunctionParameter.Data[i] -= LearningRate * grad / (KelpMath.Sqrt(h[i]) + Epsilon);
+                functionParameter.Data[i] -= learningRate * grad / (KelpMath.Sqrt(h[i]) + epsilon);
             }
         }
     }

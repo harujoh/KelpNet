@@ -113,27 +113,27 @@ namespace KelpNet
     public static class AmsBoundParameterF
 #endif
     {
-        public static void UpdateFunctionParameters(Real Alpha, Real InitialAlpha, Real Gamma, Real Beta1, Real Beta2, Real Epsilon, Real Eta, long UpdateCount, NdArray<Real> FunctionParameter, Real[] m, Real[] v, Real[] vhat, ref Real FinalLr, out Real Lower, out Real Upper, Func<Real, Real> Clip)
+        public static void UpdateFunctionParameters(Real alpha, Real initialAlpha, Real gamma, Real beta1, Real beta2, Real epsilon, Real eta, long updateCount, NdArray<Real> functionParameter, Real[] m, Real[] v, Real[] vhat, ref Real finalLr, out Real lower, out Real upper, Func<Real, Real> clip)
         {
-            Real alphaT = AdamParameter.GetAlphaT(Alpha, Beta1, Beta2, UpdateCount);
+            Real alphaT = AdamParameter.GetAlphaT(alpha, beta1, beta2, updateCount);
 
-            AmsBound.UpdateBound(Alpha, InitialAlpha, Gamma, UpdateCount, ref FinalLr, out Lower, out Upper);
+            AmsBound.UpdateBound(alpha, initialAlpha, gamma, updateCount, ref finalLr, out lower, out upper);
 
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                Real grad = FunctionParameter.Grad[i];
+                Real grad = functionParameter.Grad[i];
 
-                m[i] += (1 - Beta1) * (grad - m[i]);
-                v[i] += (1 - Beta2) * (grad * grad - v[i]);
+                m[i] += (1 - beta1) * (grad - m[i]);
+                v[i] += (1 - beta2) * (grad * grad - v[i]);
 
                 if (vhat[i] < v[i])
                 {
                     vhat[i] = v[i];
                 }
 
-                Real step = Clip(alphaT / (KelpMath.Sqrt(vhat[i]) + Epsilon));
+                Real step = clip(alphaT / (KelpMath.Sqrt(vhat[i]) + epsilon));
 
-                FunctionParameter.Data[i] -= Eta * step * m[i];
+                functionParameter.Data[i] -= eta * step * m[i];
             }
         }
     }

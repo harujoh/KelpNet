@@ -124,12 +124,12 @@ namespace KelpNet
             {
                 case LSTM<float> lstmF:
                     lstmF.SingleInputForward = (x) => LSTMF.SingleInputForward(x, lstmF.upward, lstmF.lateral, lstmF.aParam, lstmF.iParam, lstmF.fParam, lstmF.oParam, lstmF.cNextParam, lstmF.cPrevParam, lstmF.hPrevParams, ref lstmF.hParam,ref lstmF.cPrev, lstmF.OutputCount, lstmF);
-                    lstmF.SingleOutputBackward = (y, x) => LSTMF.SingleOutputBackward(y, x, lstmF.upward, lstmF.lateral, lstmF.aParam, lstmF.iParam, lstmF.fParam, lstmF.oParam, lstmF.cNextParam, lstmF.cPrevParam, lstmF.hPrevParams, lstmF.aUsedParam, lstmF.iUsedParam, lstmF.fUsedParam, lstmF.oUsedParam, lstmF.cUsedNextParam, lstmF.cUsedPrevParam, lstmF.hUsedPrevParams, lstmF.gxPrevGrads, lstmF.OutputCount, lstmF.Backward);
+                    lstmF.SingleOutputBackward = (y, x) => LSTMF.SingleOutputBackward(y, lstmF.upward, lstmF.lateral, lstmF.aParam, lstmF.iParam, lstmF.fParam, lstmF.oParam, lstmF.cNextParam, lstmF.cPrevParam, lstmF.hPrevParams, lstmF.aUsedParam, lstmF.iUsedParam, lstmF.fUsedParam, lstmF.oUsedParam, lstmF.cUsedNextParam, lstmF.cUsedPrevParam, lstmF.hUsedPrevParams, lstmF.gxPrevGrads, lstmF.OutputCount, lstmF.Backward);
                     break;
 
                 case LSTM<double> lstmD:
                     lstmD.SingleInputForward = (x) => LSTMD.SingleInputForward(x, lstmD.upward, lstmD.lateral, lstmD.aParam, lstmD.iParam, lstmD.fParam, lstmD.oParam, lstmD.cNextParam, lstmD.cPrevParam, lstmD.hPrevParams, ref lstmD.hParam,ref lstmD.cPrev, lstmD.OutputCount, lstmD);
-                    lstmD.SingleOutputBackward = (y, x) => LSTMD.SingleOutputBackward(y, x, lstmD.upward, lstmD.lateral, lstmD.aParam, lstmD.iParam, lstmD.fParam, lstmD.oParam, lstmD.cNextParam, lstmD.cPrevParam, lstmD.hPrevParams, lstmD.aUsedParam, lstmD.iUsedParam, lstmD.fUsedParam, lstmD.oUsedParam, lstmD.cUsedNextParam, lstmD.cUsedPrevParam, lstmD.hUsedPrevParams, lstmD.gxPrevGrads, lstmD.OutputCount, lstmD.Backward);
+                    lstmD.SingleOutputBackward = (y, x) => LSTMD.SingleOutputBackward(y, lstmD.upward, lstmD.lateral, lstmD.aParam, lstmD.iParam, lstmD.fParam, lstmD.oParam, lstmD.cNextParam, lstmD.cPrevParam, lstmD.hPrevParams, lstmD.aUsedParam, lstmD.iUsedParam, lstmD.fUsedParam, lstmD.oUsedParam, lstmD.cUsedNextParam, lstmD.cUsedPrevParam, lstmD.hUsedPrevParams, lstmD.gxPrevGrads, lstmD.OutputCount, lstmD.Backward);
                     break;
             }
         }
@@ -166,11 +166,11 @@ namespace KelpNet
     public static class LSTMF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, IFunction<Real> upward, IFunction<Real> lateral, List<Real[]> aParam, List<Real[]> iParam, List<Real[]> fParam, List<Real[]> oParam, List<Real[]> cNextParam, List<Real[]> cPrevParam, List<NdArray<Real>> hPrevParams, ref NdArray<Real> hParam,ref Real[] cPrev, int OutputCount, IFunction<Real> lstm)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, IFunction<Real> upward, IFunction<Real> lateral, List<Real[]> aParam, List<Real[]> iParam, List<Real[]> fParam, List<Real[]> oParam, List<Real[]> cNextParam, List<Real[]> cPrevParam, List<NdArray<Real>> hPrevParams, ref NdArray<Real> hParam,ref Real[] cPrev, int outputCount, IFunction<Real> lstm)
         {
             NdArray<Real> lstmIn = upward.Forward(x)[0];
 
-            int outputDataSize = x.BatchCount * OutputCount;
+            int outputDataSize = x.BatchCount * outputCount;
 
             if (hParam == null)
             {
@@ -195,9 +195,9 @@ namespace KelpNet
             {
                 int index = b * lstmIn.Length;
 
-                for (int i = 0; i < OutputCount; i++)
+                for (int i = 0; i < outputCount; i++)
                 {
-                    int outIndex = b * OutputCount + i;
+                    int outIndex = b * outputCount + i;
 
                     la[outIndex] = KelpMath.Tanh(lstmIn.Data[index++]);
                     li[outIndex] = Sigmoid(lstmIn.Data[index++]);
@@ -220,15 +220,15 @@ namespace KelpNet
             //Backwardで消えないように別で保管
             cPrev = cNext;
 
-            hParam = new NdArray<Real>(lhParam, new[] { OutputCount }, x.BatchCount, lstm);
+            hParam = new NdArray<Real>(lhParam, new[] { outputCount }, x.BatchCount, lstm);
             return hParam;
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, IFunction<Real> upward, IFunction<Real> lateral, List<Real[]> aParam, List<Real[]> iParam, List<Real[]> fParam, List<Real[]> oParam, List<Real[]> cNextParam, List<Real[]> cPrevParam, List<NdArray<Real>> hPrevParams, List<Real[]> aUsedParam, List<Real[]> iUsedParam, List<Real[]> fUsedParam, List<Real[]> oUsedParam, List<Real[]> cUsedNextParam, List<Real[]> cUsedPrevParam, List<NdArray<Real>> hUsedPrevParams, List<Real[]> gxPrevGrads, int OutputCount, ActionOptional<Real> Backward)
+        public static void SingleOutputBackward(NdArray<Real> y, IFunction<Real> upward, IFunction<Real> lateral, List<Real[]> aParam, List<Real[]> iParam, List<Real[]> fParam, List<Real[]> oParam, List<Real[]> cNextParam, List<Real[]> cPrevParam, List<NdArray<Real>> hPrevParams, List<Real[]> aUsedParam, List<Real[]> iUsedParam, List<Real[]> fUsedParam, List<Real[]> oUsedParam, List<Real[]> cUsedNextParam, List<Real[]> cUsedPrevParam, List<NdArray<Real>> hUsedPrevParams, List<Real[]> gxPrevGrads, int outputCount, ActionOptional<Real> backward)
         {
-            Real[] gxPrevGrad = new Real[y.BatchCount * OutputCount * 4];
+            Real[] gxPrevGrad = new Real[y.BatchCount * outputCount * 4];
 
-            Real[] gcPrev = new Real[y.BatchCount * OutputCount];
+            Real[] gcPrev = new Real[y.BatchCount * outputCount];
 
             Real[] lcNextParam = cNextParam[cPrevParam.Count - 1];
             cNextParam.RemoveAt(cNextParam.Count - 1);
@@ -256,11 +256,11 @@ namespace KelpNet
 
             for (int b = 0; b < y.BatchCount; b++)
             {
-                int index = b * OutputCount * 4;
+                int index = b * outputCount * 4;
 
-                for (int i = 0; i < OutputCount; i++)
+                for (int i = 0; i < outputCount; i++)
                 {
-                    int prevOutputIndex = b * OutputCount + i;
+                    int prevOutputIndex = b * outputCount + i;
 
                     Real co = KelpMath.Tanh(lcNextParam[prevOutputIndex]);
 
@@ -280,7 +280,7 @@ namespace KelpNet
             //gxPrevをlateralとupwardに渡すことでaddのBackwardを兼ねる
             if (hPrevParams.Count > 0)
             {
-                NdArray<Real> gxPrev = new NdArray<Real>(new[] { OutputCount * 4 }, y.BatchCount);
+                NdArray<Real> gxPrev = new NdArray<Real>(new[] { outputCount * 4 }, y.BatchCount);
                 gxPrev.Grad = gxPrevGrad;
                 lateral.Backward(gxPrev);
 
@@ -289,7 +289,7 @@ namespace KelpNet
                 hUsedPrevParams.Add(hPrevParam);
 
                 //hのBakckward
-                Backward(hPrevParam);
+                backward(hPrevParam);
 
                 //使い切ったら戻す
                 if (hPrevParams.Count == 0)
@@ -299,7 +299,7 @@ namespace KelpNet
                 }
             }
 
-            NdArray<Real> gy = new NdArray<Real>(new[] { OutputCount * 4 }, y.BatchCount);
+            NdArray<Real> gy = new NdArray<Real>(new[] { outputCount * 4 }, y.BatchCount);
             gy.Grad = gxPrevGrads[0];
             gxPrevGrads.RemoveAt(0);
             upward.Backward(gy);
