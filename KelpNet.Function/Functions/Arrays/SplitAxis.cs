@@ -28,7 +28,7 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.SingleInputForward = this.SingleInputForward;
+            base.SingleInputForward = this.SplitAxisForward;
 
             switch (this)
             {
@@ -41,7 +41,7 @@ namespace KelpNet
             }
         }
 
-        protected NdArray<T>[] SingleInputForward(NdArray<T> x)
+        protected NdArray<T>[] SplitAxisForward(NdArray<T> x)
         {
             NdArray<T>[] resultArrays = NdArray.Split(x, Indices, Axis);
 

@@ -17,12 +17,12 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.Forward = this.Forward;
-            base.Backward = this.Backward;
+            base.Forward = this.ForwardBase;
+            base.Backward = this.BackwardBase;
             this.Predict = xs => new[] { SingleInputForward(xs[0]) };
         }
 
-        public NdArray<T>[] Forward(params NdArray<T>[] xs)
+        public NdArray<T>[] ForwardBase(params NdArray<T>[] xs)
         {
             PrevInputs.Add(xs);
 
@@ -31,7 +31,7 @@ namespace KelpNet
             return new[] { SingleInputForward(xs[0]) };
         }
 
-        public void Backward(params NdArray<T>[] ys)
+        public void BackwardBase(params NdArray<T>[] ys)
         {
             NdArray<T>[] xs = PrevInputs[PrevInputs.Count - 1];
             PrevInputs.RemoveAt(PrevInputs.Count - 1);

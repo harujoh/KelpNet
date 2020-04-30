@@ -116,7 +116,7 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.Predict = this.Predict;
+            base.Predict = this.BatchNormalizationPredict;
 
             switch (this)
             {
@@ -131,7 +131,7 @@ namespace KelpNet
             }
         }
 
-        public NdArray<T>[] Predict(params NdArray<T>[] input)
+        public NdArray<T>[] BatchNormalizationPredict(params NdArray<T>[] input)
         {
             NdArray<T> result;
 

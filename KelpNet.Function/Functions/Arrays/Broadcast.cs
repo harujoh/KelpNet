@@ -27,7 +27,7 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.SingleInputForward = this.SingleInputForward;
+            base.SingleInputForward = this.BroadcastForward;
 
             switch (this)
             {
@@ -40,7 +40,7 @@ namespace KelpNet
             }
         }
 
-        public NdArray<T> SingleInputForward(NdArray<T> val)
+        public NdArray<T> BroadcastForward(NdArray<T> val)
         {
             int[] resultShape;
 
