@@ -73,11 +73,11 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.SingleInputForward = this.SingleInputForward;
+            base.SingleInputForward = this.MultiplyScaleForward;
             base.SingleOutputBackward = (y, x) => { };//MultiplyScaleとして必要な処理はない
         }
 
-        public NdArray<T> SingleInputForward(NdArray<T> x)
+        public NdArray<T> MultiplyScaleForward(NdArray<T> x)
         {
             int[] inputShape = x.Shape;
             int[] outputShape = this.Weight.Shape;

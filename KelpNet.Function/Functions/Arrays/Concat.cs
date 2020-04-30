@@ -27,7 +27,7 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.MultiInputForward = this.MultiInputForward;
+            base.MultiInputForward = this.ConcatForward;
 
             switch (this)
             {
@@ -41,7 +41,7 @@ namespace KelpNet
             }
         }
 
-        protected NdArray<T>[] MultiInputForward(params NdArray<T>[] xs)
+        protected NdArray<T>[] ConcatForward(params NdArray<T>[] xs)
         {
             int[] sections = new int[xs.Length - 1];
             int sizeOffset = xs[0].Shape[Axis];

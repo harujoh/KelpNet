@@ -31,11 +31,11 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.SingleInputForward = this.SingleInputForward;
+            base.SingleInputForward = this.AddBiasForward;
             base.SingleOutputBackward = (y, x) => { };//AddBiasとして必要な処理はない
         }
 
-        public NdArray<T> SingleInputForward(NdArray<T> x)
+        public NdArray<T> AddBiasForward(NdArray<T> x)
         {
             int[] inputShape = x.Shape;
             int[] outputShape = this.Bias.Shape;

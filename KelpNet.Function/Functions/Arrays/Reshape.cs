@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace KelpNet
 {
-    class Reshape<T> : SingleInputFunction<T> where T:unmanaged,IComparable<T>
+    class Reshape<T> : SingleInputFunction<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "Reshape";
         public int[] Shape;
@@ -19,11 +19,11 @@ namespace KelpNet
         [OnDeserializing]
         void InitFunc(StreamingContext sc)
         {
-            base.SingleInputForward = this.SingleInputForward;
-            base.SingleOutputBackward = this.SingleOutputBackward;
+            base.SingleInputForward = this.ReshapeForward;
+            base.SingleOutputBackward = this.ReshapeBackward;
         }
 
-        public NdArray<T> SingleInputForward(NdArray<T> val)
+        public NdArray<T> ReshapeForward(NdArray<T> val)
         {
             NdArray<T> result = val.Clone();
             result.ParentFunc = this;
@@ -32,7 +32,7 @@ namespace KelpNet
             return result;
         }
 
-        public void SingleOutputBackward(NdArray<T> y, NdArray<T> x)
+        public void ReshapeBackward(NdArray<T> y, NdArray<T> x)
         {
             y.Grad = x.Grad.ToArray();
         }
