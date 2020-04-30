@@ -57,7 +57,7 @@ namespace KelpNet
                 }
 
                 this.Shape = resultShape;
-                this.Length = NdArray.ShapeToArrayLength(this.Shape);
+                this.Length = NdArray.ShapeToLength(this.Shape);
             }
             else
             {
@@ -77,7 +77,7 @@ namespace KelpNet
 
         public NdArray(params int[] shape)
         {
-            this.Data = new T[NdArray.ShapeToArrayLength(shape)];
+            this.Data = new T[NdArray.ShapeToLength(shape)];
             this.Shape = shape.ToArray();
             this.Length = Data.Length;
         }
@@ -94,7 +94,7 @@ namespace KelpNet
         public NdArray(int[] shape, int batchCount, IFunction<T> parentFunc = null)
         {
             this.Shape = shape.ToArray();
-            this.Length = NdArray.ShapeToArrayLength(this.Shape);
+            this.Length = NdArray.ShapeToLength(this.Shape);
             this.BatchCount = batchCount;
             this.Data = new T[this.Length * batchCount];
             this.ParentFunc = parentFunc;
@@ -153,7 +153,7 @@ namespace KelpNet
                 shape[minusIndex] = dimension;
             }
 #if DEBUG
-            else if (Length != NdArray.ShapeToArrayLength(shape)) throw new Exception("指定されたShapeのサイズが現在のData.Lengthと等しくありません");
+            else if (Length != NdArray.ShapeToLength(shape)) throw new Exception("指定されたShapeのサイズが現在のData.Lengthと等しくありません");
 #endif
 
             Shape = shape.ToArray();
@@ -537,7 +537,7 @@ namespace KelpNet
 
     public static class NdArray
     {
-        public static int ShapeToArrayLength(params int[] shapes)
+        public static int ShapeToLength(params int[] shapes)
         {
             int result = 1;
 

@@ -231,7 +231,7 @@ namespace KelpNet
 
         private TestDataSet<T> GetRandomData(int batchCount, Func<int> getIndexFunc)
         {
-            T[] data = new T[NdArray.ShapeToArrayLength(Shape) * batchCount];
+            T[] data = new T[NdArray.ShapeToLength(Shape) * batchCount];
             int[] label = new int[batchCount];
 
             for (int i = 0; i < batchCount; i++)
