@@ -117,7 +117,7 @@ namespace KelpNet.CPU
 
             if (initialW == null)
             {
-                Initializer.InitWeight(this.Weight);
+                Initializer.InitHeNorm(this.Weight);
             }
             else
             {

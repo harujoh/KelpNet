@@ -7,7 +7,7 @@ namespace KelpNet
 {
     public static class ArrayConverter
     {
-        public static Array ToNdArray<T>(this IEnumerable<T> iEnum, params int[] shape)
+        public static Array ToNdArray<T>(this IEnumerable<T> iEnum, params int[] shape) where T : unmanaged, IComparable<T>
         {
             T[] array = iEnum.ToArray();
             Array result = Array.CreateInstance(array.GetType().GetElementType(), shape);
@@ -21,22 +21,22 @@ namespace KelpNet
             return result;
         }
 
-        public static T[] Flatten<T>(this T[,] data) where T : unmanaged
+        public static T[] Flatten<T>(this T[,] data) where T : unmanaged, IComparable<T>
         {
             return FlattenEx<T>(data);
         }
 
-        public static T[] Flatten<T>(this T[,,] data) where T : unmanaged
+        public static T[] Flatten<T>(this T[,,] data) where T : unmanaged, IComparable<T>
         {
             return FlattenEx<T>(data);
         }
 
-        public static T[] Flatten<T>(this T[,,,] data) where T : unmanaged
+        public static T[] Flatten<T>(this T[,,,] data) where T : unmanaged, IComparable<T>
         {
             return FlattenEx<T>(data);
         }
 
-        public static T[] FlattenEx<T>(this Array data) where T : unmanaged
+        public static T[] FlattenEx<T>(this Array data) where T : unmanaged, IComparable<T>
         {
             Type arrayType = data.GetType().GetElementType();
             T[] result = new T[data.Length];
