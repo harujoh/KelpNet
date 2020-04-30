@@ -59,9 +59,9 @@ namespace KelpNet
 
         public override void Step()
         {
-            for (int i = 0; i < Schedulers.Count; i++)
+            for (int i = 0; i < this.Schedulers.Count; i++)
             {
-                Alpha = Schedulers[i].Step(Alpha);
+                this.Alpha = this.Schedulers[i].Step(this.Alpha);
             }
         }
     }
@@ -98,12 +98,12 @@ namespace KelpNet
     //外部公開しないため型スイッチを必要としない
     internal static class AdamParameter
     {
-        public static Real GetAlphaT(Real Alpha, Real Beta1, Real Beta2, long UpdateCount)
+        public static Real GetAlphaT(Real alpha, Real beta1, Real beta2, long updateCount)
         {
-            Real fix1 = 1 - KelpMath.Pow(Beta1, UpdateCount);
-            Real fix2 = 1 - KelpMath.Pow(Beta2, UpdateCount);
+            Real fix1 = 1 - KelpMath.Pow(beta1, updateCount);
+            Real fix2 = 1 - KelpMath.Pow(beta2, updateCount);
 
-            return Alpha * KelpMath.Sqrt(fix2) / fix1;
+            return alpha * KelpMath.Sqrt(fix2) / fix1;
         }
     }
 
@@ -113,20 +113,20 @@ namespace KelpNet
     public static class AdamParameterF
 #endif
     {
-        public static void UpdateFunctionParameters(Real Alpha, Real Beta1, Real Beta2, Real Epsilon, Real Eta, long UpdateCount, NdArray<Real> FunctionParameter, Real[] m, Real[] v)
+        public static void UpdateFunctionParameters(Real alpha, Real beta1, Real beta2, Real epsilon, Real eta, long updateCount, NdArray<Real> functionParameter, Real[] m, Real[] v)
         {
-            Real alphaT = AdamParameter.GetAlphaT(Alpha, Beta1, Beta2, UpdateCount);
+            Real alphaT = AdamParameter.GetAlphaT(alpha, beta1, beta2, updateCount);
 
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                Real grad = FunctionParameter.Grad[i];
+                Real grad = functionParameter.Grad[i];
 
-                m[i] += (1 - Beta1) * (grad - m[i]);
-                v[i] += (1 - Beta2) * (grad * grad - v[i]);
+                m[i] += (1 - beta1) * (grad - m[i]);
+                v[i] += (1 - beta2) * (grad * grad - v[i]);
 
-                Real step = alphaT / (KelpMath.Sqrt(v[i]) + Epsilon);
+                Real step = alphaT / (KelpMath.Sqrt(v[i]) + epsilon);
 
-                FunctionParameter.Data[i] -= Eta * step * m[i];
+                functionParameter.Data[i] -= eta * step * m[i];
             }
         }
     }

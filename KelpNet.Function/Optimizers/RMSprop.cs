@@ -82,15 +82,15 @@ namespace KelpNet
     public static class RMSpropParameterF
 #endif
     {
-        public static void UpdateFunctionParameters(Real LearningRate, Real Alpha, Real Epsilon, NdArray<Real> FunctionParameter, Real[] ms)
+        public static void UpdateFunctionParameters(Real learningRate, Real alpha, Real epsilon, NdArray<Real> functionParameter, Real[] ms)
         {
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                Real grad = FunctionParameter.Grad[i];
-                ms[i] *= Alpha;
-                ms[i] += (1 - Alpha) * grad * grad;
+                Real grad = functionParameter.Grad[i];
+                ms[i] *= alpha;
+                ms[i] += (1 - alpha) * grad * grad;
 
-                FunctionParameter.Data[i] -= LearningRate * grad / (KelpMath.Sqrt(ms[i]) + Epsilon);
+                functionParameter.Data[i] -= learningRate * grad / (KelpMath.Sqrt(ms[i]) + epsilon);
             }
         }
     }

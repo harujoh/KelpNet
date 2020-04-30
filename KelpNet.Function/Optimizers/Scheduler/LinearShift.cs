@@ -15,7 +15,7 @@ namespace KelpNet
         }
 
         //LinearShiftでは元のパラメータを考慮しない
-        public override T[] StepFunc(T[] Params)
+        public override T[] StepFunc(T[] inputParams)
         {
             t++;
             T result = default;
@@ -43,7 +43,7 @@ namespace KelpNet
                 }
             }
 
-            T[] realts = new T[Params.Length];
+            T[] realts = new T[inputParams.Length];
 
             for (int i = 0; i < realts.Length; i++)
             {

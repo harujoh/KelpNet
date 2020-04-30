@@ -57,12 +57,12 @@ namespace KelpNet
             switch (this)
             {
                 case LRN<float> lrnF:
-                    lrnF.SingleInputForward = (x) => LRNF.SingleInputForward(x, lrnF.n, ref lrnF.unitScale, ref lrnF.scale, lrnF.k, lrnF.alpha, lrnF.beta, lrnF);
+                    lrnF.SingleInputForward = (x) => LRNF.SingleInputForward(x, lrnF.n, out lrnF.unitScale, out lrnF.scale, lrnF.k, lrnF.alpha, lrnF.beta, lrnF);
                     lrnF.SingleOutputBackward = (y, x) => LRNF.SingleOutputBackward(y, x, lrnF.n, lrnF.unitScale, lrnF.scale, lrnF.alpha, lrnF.beta);
                     break;
 
                 case LRN<double> lrnD:
-                    lrnD.SingleInputForward = (x) => LRND.SingleInputForward(x, lrnD.n, ref lrnD.unitScale, ref lrnD.scale, lrnD.k, lrnD.alpha, lrnD.beta, lrnD);
+                    lrnD.SingleInputForward = (x) => LRND.SingleInputForward(x, lrnD.n, out lrnD.unitScale, out lrnD.scale, lrnD.k, lrnD.alpha, lrnD.beta, lrnD);
                     lrnD.SingleOutputBackward = (y, x) => LRND.SingleOutputBackward(y, x, lrnD.n, lrnD.unitScale, lrnD.scale, lrnD.alpha, lrnD.beta);
                     break;
             }
@@ -76,7 +76,7 @@ namespace KelpNet
     public static class LRNF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> input, int n, ref Real[] unitScale, ref Real[] scale, Real k, Real alpha, Real beta, IFunction<Real> lrn)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> input, int n, out Real[] unitScale, out Real[] scale, Real k, Real alpha, Real beta, IFunction<Real> lrn)
         {
             int nHalf = n / 2;
             Real[] result = new Real[input.Data.Length];

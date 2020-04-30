@@ -70,7 +70,7 @@ namespace KelpNet
     public static class SwishF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> Beta,IFunction<Real> swish)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> beta,IFunction<Real> swish)
         {
             Real[] result = new Real[x.Data.Length];
 
@@ -79,25 +79,25 @@ namespace KelpNet
                 for (int i = 0; i < x.Length; i++)
                 {
                     int offsetedIndex = b * x.Length + i;
-                    result[offsetedIndex] = x.Data[offsetedIndex] * (KelpMath.Tanh(x.Data[offsetedIndex] * Beta.Data[i] * 0.5f) * 0.5f + 0.5f);
+                    result[offsetedIndex] = x.Data[offsetedIndex] * (KelpMath.Tanh(x.Data[offsetedIndex] * beta.Data[i] * 0.5f) * 0.5f + 0.5f);
                 }
             }
 
             return NdArray.Convert(result, x.Shape, x.BatchCount, swish);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> Beta)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> beta)
         {
             for (int b = 0; b < y.BatchCount; b++)
             {
                 for (int i = 0; i < y.Length; i++)
                 {
                     int offsetedIndex = b * x.Length + i;
-                    Real sig = KelpMath.Tanh(Beta.Data[i] * x.Data[offsetedIndex] * 0.5f) * 0.5f + 0.5f;
-                    Real by = Beta.Data[i] * x.Data[offsetedIndex] * sig;
+                    Real sig = KelpMath.Tanh(beta.Data[i] * x.Data[offsetedIndex] * 0.5f) * 0.5f + 0.5f;
+                    Real by = beta.Data[i] * x.Data[offsetedIndex] * sig;
 
                     x.Grad[offsetedIndex] += y.Grad[offsetedIndex] * (by + sig * (1 - by));
-                    Beta.Grad[i] += y.Grad[offsetedIndex] * y.Data[offsetedIndex] * (x.Data[offsetedIndex] - y.Data[offsetedIndex]);
+                    beta.Grad[i] += y.Grad[offsetedIndex] * y.Data[offsetedIndex] * (x.Data[offsetedIndex] - y.Data[offsetedIndex]);
                 }
             }
         }

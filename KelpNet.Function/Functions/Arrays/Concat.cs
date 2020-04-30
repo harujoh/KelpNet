@@ -72,12 +72,12 @@ namespace KelpNet
     public static class ConcatF
 #endif
     {
-        public static void MultiOutputBackward(NdArray<Real> y, NdArray<Real>[] xs, int Axis, List<int[]> prevInputSections)
+        public static void MultiOutputBackward(NdArray<Real> y, NdArray<Real>[] xs, int axis, List<int[]> prevInputSections)
         {
             int[] prevInputShapes = prevInputSections[prevInputSections.Count - 1];
             prevInputSections.RemoveAt(prevInputSections.Count - 1);
 
-            NdArray<Real>[] result = NdArray.Split(y, prevInputShapes, Axis);
+            NdArray<Real>[] result = NdArray.Split(y, prevInputShapes, axis);
 
             for (int i = 0; i < xs.Length; i++)
             {

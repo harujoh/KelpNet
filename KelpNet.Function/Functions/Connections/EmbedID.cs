@@ -66,33 +66,33 @@ namespace KelpNet
         public static class EmbedIDF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> Weight, int OutputCount, IFunction<Real> embedID)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> weight, int outputCount, IFunction<Real> embedID)
         {
-            Real[] result = new Real[x.Data.Length * OutputCount];
+            Real[] result = new Real[x.Data.Length * outputCount];
 
             for (int b = 0; b < x.BatchCount; b++)
             {
                 for (int i = 0; i < x.Length; i++)
                 {
-                    for (int j = 0; j < OutputCount; j++)
+                    for (int j = 0; j < outputCount; j++)
                     {
-                        result[i * OutputCount + j + b * x.Length * OutputCount] = Weight.Data[(int)x.Data[b * x.Length + i] * OutputCount + j];
+                        result[i * outputCount + j + b * x.Length * outputCount] = weight.Data[(int)x.Data[b * x.Length + i] * outputCount + j];
                     }
                 }
             }
 
-            return NdArray.Convert(result, new[] { x.Length, OutputCount }, x.BatchCount, embedID);
+            return NdArray.Convert(result, new[] { x.Length, outputCount }, x.BatchCount, embedID);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> Weight, int OutputCount)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, int outputCount)
         {
             for (int b = 0; b < y.BatchCount; b++)
             {
                 for (int i = 0; i < x.Length; i++)
                 {
-                    for (int j = 0; j < OutputCount; j++)
+                    for (int j = 0; j < outputCount; j++)
                     {
-                        Weight.Grad[(int)x.Data[b * x.Length + i] * OutputCount + j] += y.Grad[i * OutputCount + j + b * x.Length * OutputCount];
+                        weight.Grad[(int)x.Data[b * x.Length + i] * outputCount + j] += y.Grad[i * outputCount + j + b * x.Length * outputCount];
                     }
                 }
             }

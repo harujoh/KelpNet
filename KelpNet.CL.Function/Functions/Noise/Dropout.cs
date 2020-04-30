@@ -87,23 +87,23 @@ namespace KelpNet.CL
     public static class DropOutF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Func<int, Real, List<Real[]>, Real[]> MakeMask, Real dropoutRatio, List<Real[]> maskStack, ComputeKernel ForwardKernel, IFunction<Real> dropout)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Func<int, Real, List<Real[]>, Real[]> makeMask, Real dropoutRatio, List<Real[]> maskStack, ComputeKernel forwardKernel, IFunction<Real> dropout)
         {
             Real[] result = new Real[x.Data.Length];
-            Real[] mask = MakeMask(x.Length, dropoutRatio, maskStack);
+            Real[] mask = makeMask(x.Length, dropoutRatio, maskStack);
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
             using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, mask))
             using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
             {
-                ForwardKernel.SetMemoryArgument(0, gpuX);
-                ForwardKernel.SetMemoryArgument(1, gpuMask);
-                ForwardKernel.SetMemoryArgument(2, gpuY);
-                ForwardKernel.SetValueArgument(3, mask.Length);
+                forwardKernel.SetMemoryArgument(0, gpuX);
+                forwardKernel.SetMemoryArgument(1, gpuMask);
+                forwardKernel.SetMemoryArgument(2, gpuY);
+                forwardKernel.SetValueArgument(3, mask.Length);
 
                 OpenCL.CommandQueue.Execute
                 (
-                    ForwardKernel,
+                    forwardKernel,
                     null,
                     new long[] { x.Data.Length },
                     null,
@@ -117,7 +117,7 @@ namespace KelpNet.CL
             return NdArray.Convert(result, x.Shape, x.BatchCount, dropout);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, List<Real[]> maskStack, ComputeKernel BackwardKernel)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, List<Real[]> maskStack, ComputeKernel backwardKernel)
         {
             Real[] result = y.Grad.ToArray();
             Real[] mask = maskStack[maskStack.Count - 1];
@@ -126,13 +126,13 @@ namespace KelpNet.CL
             using (ComputeBuffer<Real> gpuMask = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, mask))
             using (ComputeBuffer<Real> gpugX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, result))
             {
-                BackwardKernel.SetMemoryArgument(0, gpuMask);
-                BackwardKernel.SetMemoryArgument(1, gpugX);
-                BackwardKernel.SetValueArgument(2, y.Length);
+                backwardKernel.SetMemoryArgument(0, gpuMask);
+                backwardKernel.SetMemoryArgument(1, gpugX);
+                backwardKernel.SetValueArgument(2, y.Length);
 
                 OpenCL.CommandQueue.Execute
                 (
-                    BackwardKernel,
+                    backwardKernel,
                     null,
                     new long[] { mask.Length, y.BatchCount },
                     null,

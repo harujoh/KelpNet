@@ -67,24 +67,24 @@ namespace KelpNet
     public static class GradientClippingParameterF
 #endif
     {
-        public static void UpdateFunctionParameters(Real Threshold, NdArray<Real> FunctionParameter)
+        public static void UpdateFunctionParameters(Real threshold, NdArray<Real> functionParameter)
         {
             //_sum_sqnorm
             Real s = 0;
 
-            for (int i = 0; i < FunctionParameter.Data.Length; i++)
+            for (int i = 0; i < functionParameter.Data.Length; i++)
             {
-                s += FunctionParameter.Grad[i] * FunctionParameter.Grad[i];
+                s += functionParameter.Grad[i] * functionParameter.Grad[i];
             }
 
             Real norm = KelpMath.Sqrt(s);
-            Real rate = Threshold / norm;
+            Real rate = threshold / norm;
 
             if (rate < 1)
             {
-                for (int i = 0; i < FunctionParameter.Data.Length; i++)
+                for (int i = 0; i < functionParameter.Data.Length; i++)
                 {
-                    FunctionParameter.Grad[i] *= rate;
+                    functionParameter.Grad[i] *= rate;
                 }
             }
         }

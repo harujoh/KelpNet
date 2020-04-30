@@ -62,13 +62,13 @@ namespace KelpNet
     public static class SplitAxisF
 #endif
     {
-        public static void MultiOutputBackward(NdArray<Real>[] ys, NdArray<Real> x, int Axis)
+        public static void MultiOutputBackward(NdArray<Real>[] ys, NdArray<Real> x, int axis)
         {
             NdArray<Real> resultNdArray = ys[0].Clone();
 
             for (int i = 1; i < ys.Length; i++)
             {
-                resultNdArray = NdArray.Concatenate(resultNdArray, ys[i], Axis);
+                resultNdArray = NdArray.Concatenate(resultNdArray, ys[i], axis);
             }
 
             for (int i = 0; i < x.Grad.Length; i++)

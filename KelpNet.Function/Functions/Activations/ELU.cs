@@ -66,7 +66,7 @@ namespace KelpNet
     public static class ELUF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real Alpha, IFunction<Real> elu)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real alpha, IFunction<Real> elu)
         {
             Real[] result = new Real[x.Data.Length];
 
@@ -78,14 +78,14 @@ namespace KelpNet
                 }
                 else
                 {
-                    result[i] = Alpha * (KelpMath.Exp(x.Data[i]) - 1);
+                    result[i] = alpha * (KelpMath.Exp(x.Data[i]) - 1);
                 }
             }
 
             return NdArray.Convert(result, x.Shape, x.BatchCount, elu);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, Real Alpha)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, Real alpha)
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
@@ -95,7 +95,7 @@ namespace KelpNet
                 }
                 else
                 {
-                    x.Grad[i] += y.Grad[i] * Alpha * KelpMath.Exp(x.Data[i]);
+                    x.Grad[i] += y.Grad[i] * alpha * KelpMath.Exp(x.Data[i]);
                 }
             }
         }

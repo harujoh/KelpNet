@@ -121,11 +121,11 @@ namespace KelpNet
             switch (this)
             {
                 case BatchNormalization<float> batchNormalizationF:
-                    batchNormalizationF.SingleInputForward = (x) => BatchNormalizationF.SingleInputForward(x, batchNormalizationF.Train, batchNormalizationF.Gamma, batchNormalizationF.Beta, batchNormalizationF.AvgMean, batchNormalizationF.AvgVar, ref batchNormalizationF.N, batchNormalizationF.Finetune, ref batchNormalizationF.Decay, batchNormalizationF.Eps, ref batchNormalizationF.Std, ref batchNormalizationF.Xhat, batchNormalizationF.ChannelSize, batchNormalizationF);
+                    batchNormalizationF.SingleInputForward = (x) => BatchNormalizationF.SingleInputForward(x, batchNormalizationF.Train, batchNormalizationF.Gamma, batchNormalizationF.Beta, batchNormalizationF.AvgMean, batchNormalizationF.AvgVar, ref batchNormalizationF.N, batchNormalizationF.Finetune, ref batchNormalizationF.Decay, batchNormalizationF.Eps, out batchNormalizationF.Std, out batchNormalizationF.Xhat, batchNormalizationF.ChannelSize, batchNormalizationF);
                     batchNormalizationF.SingleOutputBackward = (y, x) => BatchNormalizationF.SingleOutputBackward(y, x, batchNormalizationF.Train, batchNormalizationF.Gamma, batchNormalizationF.Beta, batchNormalizationF.AvgMean, batchNormalizationF.AvgVar, batchNormalizationF.Std, batchNormalizationF.Xhat, batchNormalizationF.ChannelSize);
                     break;
                 case BatchNormalization<double> batchNormalizationD:
-                    batchNormalizationD.SingleInputForward = (x) => BatchNormalizationD.SingleInputForward(x, batchNormalizationD.Train, batchNormalizationD.Gamma, batchNormalizationD.Beta, batchNormalizationD.AvgMean, batchNormalizationD.AvgVar, ref batchNormalizationD.N, batchNormalizationD.Finetune, ref batchNormalizationD.Decay, batchNormalizationD.Eps, ref batchNormalizationD.Std, ref batchNormalizationD.Xhat, batchNormalizationD.ChannelSize, batchNormalizationD);
+                    batchNormalizationD.SingleInputForward = (x) => BatchNormalizationD.SingleInputForward(x, batchNormalizationD.Train, batchNormalizationD.Gamma, batchNormalizationD.Beta, batchNormalizationD.AvgMean, batchNormalizationD.AvgVar, ref batchNormalizationD.N, batchNormalizationD.Finetune, ref batchNormalizationD.Decay, batchNormalizationD.Eps, out batchNormalizationD.Std, out batchNormalizationD.Xhat, batchNormalizationD.ChannelSize, batchNormalizationD);
                     batchNormalizationD.SingleOutputBackward = (y, x) => BatchNormalizationD.SingleOutputBackward(y, x, batchNormalizationD.Train, batchNormalizationD.Gamma, batchNormalizationD.Beta, batchNormalizationD.AvgMean, batchNormalizationD.AvgVar, batchNormalizationD.Std, batchNormalizationD.Xhat, batchNormalizationD.ChannelSize);
                     break;
             }
@@ -161,27 +161,27 @@ namespace KelpNet
     public static class BatchNormalizationF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, bool Train, NdArray<Real> Gamma, NdArray<Real> Beta, NdArray<Real> AvgMean, NdArray<Real> AvgVar, ref Real N, bool Finetune, ref Real Decay, Real Eps, ref Real[] Std, ref Real[] Xhat, int ChannelSize, IFunction<Real> batchNorm)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, bool train, NdArray<Real> gamma, NdArray<Real> beta, NdArray<Real> avgMean, NdArray<Real> avgVar, ref Real n, bool finetune, ref Real decay, Real Eps, out Real[] std, out Real[] xhat, int channelSize, IFunction<Real> batchNorm)
         {
             Real[] Mean;
             Real[] Variance;
 
-            if (Finetune)
+            if (finetune)
             {
-                N++;
-                Decay = 1 - 1 / N;
+                n++;
+                decay = 1 - 1 / n;
             }
 
-            int dataSize = x.Length / ChannelSize;
+            int dataSize = x.Length / channelSize;
 
             //計算用パラメータの取得
-            if (Train)
+            if (train)
             {
                 //メンバのMeanとVarianceを設定する
-                Variance = new Real[ChannelSize];
-                Mean = new Real[ChannelSize];
+                Variance = new Real[channelSize];
+                Mean = new Real[channelSize];
 
-                for (int i = 0; i < ChannelSize; i++)
+                for (int i = 0; i < channelSize; i++)
                 {
                     for (int b = 0; b < x.BatchCount; b++)
                     {
@@ -206,87 +206,87 @@ namespace KelpNet
             }
             else
             {
-                Mean = AvgMean.Data;
-                Variance = AvgVar.Data;
+                Mean = avgMean.Data;
+                Variance = avgVar.Data;
             }
 
-            Std = new Real[ChannelSize];
-            for (int i = 0; i < Std.Length; i++)
+            std = new Real[channelSize];
+            for (int i = 0; i < std.Length; i++)
             {
-                Std[i] = KelpMath.Sqrt(Variance[i] + Eps);
+                std[i] = KelpMath.Sqrt(Variance[i] + Eps);
             }
 
             //結果を計算
-            Xhat = new Real[x.Data.Length];
+            xhat = new Real[x.Data.Length];
 
             Real[] y = new Real[x.Data.Length];
 
-            for (int i = 0; i < ChannelSize; i++)
+            for (int i = 0; i < channelSize; i++)
             {
                 for (int b = 0; b < x.BatchCount; b++)
                 {
                     for (int location = 0; location < dataSize; location++)
                     {
                         int index = b * x.Length + i * dataSize + location;
-                        Xhat[index] = (x.Data[index] - Mean[i]) / Std[i];
-                        y[index] = Gamma.Data[i] * Xhat[index] + Beta.Data[i];
+                        xhat[index] = (x.Data[index] - Mean[i]) / std[i];
+                        y[index] = gamma.Data[i] * xhat[index] + beta.Data[i];
                     }
                 }
             }
 
             //パラメータを更新
-            if (Train)
+            if (train)
             {
                 Real adjust = x.BatchCount / KelpMath.Max(x.BatchCount - 1, 1.0f); // unbiased estimation
 
-                for (int i = 0; i < AvgMean.Data.Length; i++)
+                for (int i = 0; i < avgMean.Data.Length; i++)
                 {
-                    AvgMean.Data[i] *= Decay;
-                    Mean[i] *= 1 - Decay; // reuse buffer as a temporary
-                    AvgMean.Data[i] += Mean[i];
+                    avgMean.Data[i] *= decay;
+                    Mean[i] *= 1 - decay; // reuse buffer as a temporary
+                    avgMean.Data[i] += Mean[i];
 
-                    AvgVar.Data[i] *= Decay;
-                    Variance[i] *= (1 - Decay) * adjust; // reuse buffer as a temporary
-                    AvgVar.Data[i] += Variance[i];
+                    avgVar.Data[i] *= decay;
+                    Variance[i] *= (1 - decay) * adjust; // reuse buffer as a temporary
+                    avgVar.Data[i] += Variance[i];
                 }
             }
 
             return NdArray.Convert(y, x.Shape, x.BatchCount, batchNorm);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, bool Train, NdArray<Real> Gamma, NdArray<Real> Beta, NdArray<Real> AvgMean, NdArray<Real> AvgVar, Real[] Std, Real[] Xhat, int ChannelSize)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, bool train, NdArray<Real> gamma, NdArray<Real> beta, NdArray<Real> avgMean, NdArray<Real> avgVar, Real[] std, Real[] xhat, int channelSize)
         {
-            Beta.InitGrad();
-            Gamma.InitGrad();
+            beta.InitGrad();
+            gamma.InitGrad();
 
-            int dataSize = x.Length / ChannelSize;
+            int dataSize = x.Length / channelSize;
 
-            for (int i = 0; i < ChannelSize; i++)
+            for (int i = 0; i < channelSize; i++)
             {
                 for (int b = 0; b < x.BatchCount; b++)
                 {
                     for (int location = 0; location < dataSize; location++)
                     {
                         int index = b * y.Length + i * dataSize + location;
-                        Beta.Grad[i] += y.Grad[index];
-                        Gamma.Grad[i] += y.Grad[index] * Xhat[index];
+                        beta.Grad[i] += y.Grad[index];
+                        gamma.Grad[i] += y.Grad[index] * xhat[index];
                     }
                 }
             }
 
-            if (Train)
+            if (train)
             {
                 // 学習あり
-                for (int i = 0; i < ChannelSize; i++)
+                for (int i = 0; i < channelSize; i++)
                 {
-                    Real gs = Gamma.Data[i] / Std[i];
+                    Real gs = gamma.Data[i] / std[i];
 
                     for (int b = 0; b < y.BatchCount; b++)
                     {
                         for (int location = 0; location < dataSize; location++)
                         {
                             int index = b * y.Length + i * dataSize + location;
-                            Real val = (Xhat[index] * Gamma.Grad[i] + Beta.Grad[i]) / (y.BatchCount * dataSize);
+                            Real val = (xhat[index] * gamma.Grad[i] + beta.Grad[i]) / (y.BatchCount * dataSize);
                             x.Grad[index] += gs * (y.Grad[index] - val);
                         }
                     }
@@ -295,11 +295,11 @@ namespace KelpNet
             else
             {
                 // 学習なし
-                for (int i = 0; i < ChannelSize; i++)
+                for (int i = 0; i < channelSize; i++)
                 {
-                    Real gs = Gamma.Data[i] / Std[i];
-                    AvgMean.Grad[i] = -gs * Beta.Grad[i];
-                    AvgVar.Grad[i] = -0.5f * Gamma.Data[i] / AvgVar.Data[i] * Gamma.Grad[i];
+                    Real gs = gamma.Data[i] / std[i];
+                    avgMean.Grad[i] = -gs * beta.Grad[i];
+                    avgVar.Grad[i] = -0.5f * gamma.Data[i] / avgVar.Data[i] * gamma.Grad[i];
 
                     for (int b = 0; b < y.BatchCount; b++)
                     {
