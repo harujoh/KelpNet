@@ -11,8 +11,8 @@ namespace KelpNet.Sample
         static void Main()
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
-            //OpenCL.Initialize();
-            OpenCL.Initialize(ComputeDeviceTypes.Cpu); //複数の種類のデバイスがある場合はデバイスタイプを指定
+            OpenCL.Initialize();
+            //OpenCL.Initialize(ComputeDeviceTypes.Cpu); //複数の種類のデバイスがある場合はデバイスタイプを指定
             //OpenCL.Initialize(ComputeDeviceTypes.Gpu, 1); //同じ種類のGPUやCPUが複数ある場合は添字を使用
 
             Console.WriteLine("Running on " + OpenCL.InfoString);
@@ -60,7 +60,7 @@ namespace KelpNet.Sample
             //Sample14.Run();
 
             //CaffeモデルのVGGを読み込んで画像分類をさせるテスト
-            Sample15.Run(Sample15.VGGModel.VGG16); //VGG16またはVGG19を選択してください
+            //Sample15.Run(Sample15.VGGModel.VGG16); //VGG16またはVGG19を選択してください
 
             //ChainerモデルのTest5と同じ内容を読み込んで実行
             //Sample16.Run();

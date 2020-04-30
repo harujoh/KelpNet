@@ -77,7 +77,7 @@ namespace KelpNet.Tests
             Real[] cBetaGrad = (Real[])cBatchNormalization.beta.Grad;
 
             //許容範囲を算出
-            double delta = 0.00001;
+            double delta = 0.00005;
 
             //y
             Assert.AreEqual(cYdata.Length, y.Data.Length);
