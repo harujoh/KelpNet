@@ -5,9 +5,11 @@ using KelpNet.CL.Common;
 
 #if DOUBLE
 using Real = System.Double;
+using LinearFunc = KelpNet.CPU.LinearD;
 #else
-using Real = System.Single;
 using KelpNet.CL.Properties;
+using Real = System.Single;
+using LinearFunc = KelpNet.CPU.LinearF;
 #endif
 
 namespace KelpNet.CL
@@ -55,11 +57,6 @@ namespace KelpNet.CL
 
         public Linear(CPU.Linear<T> linear) : base(linear.Name, linear.InputNames, linear.OutputNames)
         {
-            this.OutputCount = linear.OutputCount;
-            this.InputCount = linear.InputCount;
-
-            this.NoBias = linear.NoBias;
-
             this.Weight = linear.Weight;
             this.Bias = linear.Bias;
 
@@ -79,13 +76,13 @@ namespace KelpNet.CL
                 switch (this)
                 {
                     case Linear<float> linearF:
-                        linearF.SingleInputForward = x => LinearF.SingleInputForward(x, linearF.Weight.Data, linearF.Bias.Data, linearF.NoBias, linearF.InputCount, linearF.OutputCount, linearF.ForwardKernel, CPU.LinearF.GetBiasedValue, linearF);
-                        linearF.SingleOutputBackward = (y, x) => LinearF.SingleOutputBackward(y, x, linearF.Weight, linearF.Bias.Grad, linearF.NoBias, linearF.InputCount, linearF.OutputCount, linearF.BackwardgWKernel, linearF.BackwardgXKernel, CPU.LinearF.CalcBiasGrad, linearF.Activation);
+                        linearF.SingleInputForward = x => LinearF.SingleInputForward(x, linearF.Weight, linearF.Bias, linearF.ForwardKernel, linearF);
+                        linearF.SingleOutputBackward = (y, x) => LinearF.SingleOutputBackward(y, x, linearF.Weight, linearF.Bias, linearF.BackwardgWKernel, linearF.BackwardgXKernel, linearF.Activation);
                         break;
 
                     case Linear<double> linearD:
-                        linearD.SingleInputForward = x => LinearD.SingleInputForward(x, linearD.Weight.Data, linearD.Bias.Data, linearD.NoBias, linearD.InputCount, linearD.OutputCount, linearD.ForwardKernel, CPU.LinearD.GetBiasedValue, linearD);
-                        linearD.SingleOutputBackward = (y, x) => LinearD.SingleOutputBackward(y, x, linearD.Weight, linearD.Bias.Grad, linearD.NoBias, linearD.InputCount, linearD.OutputCount, linearD.BackwardgWKernel, linearD.BackwardgXKernel, CPU.LinearD.CalcBiasGrad, linearD.Activation);
+                        linearD.SingleInputForward = x => LinearD.SingleInputForward(x, linearD.Weight, linearD.Bias, linearD.ForwardKernel, linearD);
+                        linearD.SingleOutputBackward = (y, x) => LinearD.SingleOutputBackward(y, x, linearD.Weight, linearD.Bias, linearD.BackwardgWKernel, linearD.BackwardgXKernel, linearD.Activation);
                         break;
                 }
             }
@@ -96,6 +93,19 @@ namespace KelpNet.CL
             return new Convolution2D<T>(this);
         }
     }
+
+    public partial class Function
+    {
+        public static NdArray<float> Linear(NdArray<float> x, NdArray<float> weight, NdArray<float> bias, ComputeKernel forwardKernel, ICompressibleActivation<float> activation = null)
+        {
+            return LinearF.SingleInputForward(x, weight, bias, forwardKernel, new Linear<float>(weight.Shape[0], weight.Shape[1], bias != null, weight.Data, bias?.Data, activation));
+        }
+
+        public static NdArray<double> Linear(NdArray<double> x, NdArray<double> weight, NdArray<double> bias, ComputeKernel forwardKernel, ICompressibleActivation<double> activation = null)
+        {
+            return LinearD.SingleInputForward(x, weight, bias, forwardKernel, new Linear<double>(weight.Shape[0], weight.Shape[1], bias != null, weight.Data, bias?.Data, activation));
+        }
+    }
 #endif
 
 #if DOUBLE
@@ -104,12 +114,15 @@ namespace KelpNet.CL
     public static class LinearF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, Real[] weight, Real[] bias, bool noBias, int inputCount, int outputCount, ComputeKernel forwardKernel, Func<int, int, Real[], Real[]> getBiasedValue, IFunction<Real> linear)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, ComputeKernel forwardKernel, IFunction<Real> linear)
         {
-            Real[] y = noBias ? new Real[outputCount * x.BatchCount] : getBiasedValue(x.BatchCount, outputCount, bias);
+            int outputCount = weight.Shape[0];
+            int inputCount = weight.Shape[1];
+
+            Real[] y = bias == null ? new Real[outputCount * x.BatchCount] : LinearFunc.GetBiasedValue(x.BatchCount, outputCount, bias.Data);
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, x.Data))
-            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, weight))
+            using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, weight.Data))
             using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer, y))
             {
                 forwardKernel.SetMemoryArgument(0, gpuX);
@@ -134,13 +147,16 @@ namespace KelpNet.CL
             return NdArray.Convert(y, new[] { outputCount }, x.BatchCount, linear);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, Real[] biasGrad, bool noBias, int inputCount, int outputCount, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, Action<Real[], int, int, Real[]> calcBiasGrad, KelpNet.ICompressibleActivation<Real> activation)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, KelpNet.ICompressibleActivation<Real> activation)
         {
+            int outputCount = weight.Shape[0];
+            int inputCount = weight.Shape[1];
+
             Real[] gx = new Real[x.Data.Length];
             Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
-            if (!noBias)
+            if (bias != null)
             {
-                calcBiasGrad(activatedgy, y.BatchCount, outputCount, biasGrad);
+                LinearFunc.CalcBiasGrad(activatedgy, y.BatchCount, outputCount, bias.Grad);
             }
 
             using (ComputeBuffer<Real> gpugY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, activatedgy))

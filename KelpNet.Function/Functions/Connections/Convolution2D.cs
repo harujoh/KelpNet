@@ -121,7 +121,6 @@ namespace KelpNet.CPU
             this.Weight = linear.Weight;
             this.Weight.Reshape(OutputCount, InputCount, this.KernelHeight, this.KernelWidth);
             this.Bias = linear.Bias;
-            this.NoBias = linear.NoBias;
             this.Activation = linear.Activation;
         }
 
