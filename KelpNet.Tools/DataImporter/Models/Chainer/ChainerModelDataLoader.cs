@@ -23,7 +23,7 @@ namespace KelpNet.Tools
 
                 linear.Weight.Data = modelData[func.Name + "/W.npy"].FlattenEx<T>();
 
-                if (!linear.NoBias)
+                if (linear.Bias != null)
                 {
                     linear.Bias.Data = modelData[func.Name + "/b.npy"].FlattenEx<T>();
                 }
