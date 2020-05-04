@@ -34,7 +34,7 @@ namespace KelpNet.Tools
 
                 conv2D.Weight.Data = modelData[func.Name + "/W.npy"].FlattenEx<T>();
 
-                if (!conv2D.NoBias)
+                if (conv2D.Bias != null)
                 {
                     conv2D.Bias.Data = modelData[func.Name + "/b.npy"].FlattenEx<T>();
                 }
