@@ -161,7 +161,7 @@ namespace KelpNet.CPU
 
     public partial class Function
     {
-        public static NdArray<T>[] Convolution2D<T>(NdArray<T> x, NdArray<T> weight, NdArray<T> bias, int strideX, int strideY, int padX, int padY, ICompressibleActivation<T> activation = null) where T : unmanaged, IComparable<T>
+        public static NdArray<T>[] Convolution2D<T>(NdArray<T> x, NdArray<T> weight, NdArray<T> bias = null, int strideX = 1, int strideY = 1, int padX = 0, int padY = 0, ICompressibleActivation<T> activation = null) where T : unmanaged, IComparable<T>
         {
             return new Convolution2D<T>(weight.Shape[0], weight.Shape[1], new[] { weight.Shape[2], weight.Shape[3] }, new[] { strideX, strideY }, new[] { padX, padY }, bias != null, weight.Data, bias?.Data, activation).Forward(x);
         }
