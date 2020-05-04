@@ -13,9 +13,11 @@ using KelpMath = KelpNet.MathF;
 
 #if DOUBLE
 using Real = System.Double;
+using Convolution2DFunc = KelpNet.CPU.Convolution2DD;
 #else
-using Real = System.Single;
 using KelpNet.CL.Properties;
+using Real = System.Single;
+using Convolution2DFunc = KelpNet.CPU.Convolution2DF;
 #endif
 
 namespace KelpNet.CL
@@ -76,16 +78,10 @@ namespace KelpNet.CL
         //Convert
         public Convolution2D(CPU.Convolution2D<T> conv2d) : base(conv2d.Name, conv2d.InputNames, conv2d.OutputNames)
         {
-            this.KernelWidth = conv2d.KernelWidth;
-            this.KernelHeight = conv2d.KernelHeight;
             this.StrideX = conv2d.StrideX;
             this.StrideY = conv2d.StrideY;
             this.PadX = conv2d.PadX;
             this.PadY = conv2d.PadY;
-            this.NoBias = conv2d.NoBias;
-
-            this.OutputCount = conv2d.OutputCount;
-            this.InputCount = conv2d.InputCount;
 
             this.Weight = conv2d.Weight;
             this.Bias = conv2d.Bias;
@@ -106,16 +102,24 @@ namespace KelpNet.CL
                 switch (this)
                 {
                     case Convolution2D<float> convolution2DF:
-                        convolution2DF.SingleInputForward = x => Convolution2DF.SingleInputForward(x, convolution2DF.Weight, convolution2DF.Bias, convolution2DF.NoBias, convolution2DF.InputCount, convolution2DF.OutputCount, convolution2DF.KernelWidth, convolution2DF.KernelHeight, convolution2DF.StrideX, convolution2DF.StrideY, convolution2DF.PadX, convolution2DF.PadY, convolution2DF.ForwardKernel, convolution2DF);
-                        convolution2DF.SingleOutputBackward = (y, x) => Convolution2DF.SingleOutputBackward(y, x, convolution2DF.Weight, convolution2DF.Bias, convolution2DF.NoBias, convolution2DF.InputCount, convolution2DF.OutputCount, convolution2DF.KernelWidth, convolution2DF.KernelHeight, convolution2DF.StrideX, convolution2DF.StrideY, convolution2DF.PadX, convolution2DF.PadY, convolution2DF.BackwardgWKernel, convolution2DF.BackwardgXKernel, CPU.Convolution2DF.CalcBiasGrad, convolution2DF.Activation);
+                        convolution2DF.SingleInputForward = x => Convolution2DF.SingleInputForward(x, convolution2DF.Weight, convolution2DF.Bias, convolution2DF.StrideX, convolution2DF.StrideY, convolution2DF.PadX, convolution2DF.PadY, convolution2DF.ForwardKernel, convolution2DF);
+                        convolution2DF.SingleOutputBackward = (y, x) => Convolution2DF.SingleOutputBackward(y, x, convolution2DF.Weight, convolution2DF.Bias, convolution2DF.StrideX, convolution2DF.StrideY, convolution2DF.PadX, convolution2DF.PadY, convolution2DF.BackwardgWKernel, convolution2DF.BackwardgXKernel, convolution2DF.Activation);
                         break;
 
                     case Convolution2D<double> convolution2DD:
-                        convolution2DD.SingleInputForward = x => Convolution2DD.SingleInputForward(x, convolution2DD.Weight, convolution2DD.Bias, convolution2DD.NoBias, convolution2DD.InputCount, convolution2DD.OutputCount, convolution2DD.KernelWidth, convolution2DD.KernelHeight, convolution2DD.StrideX, convolution2DD.StrideY, convolution2DD.PadX, convolution2DD.PadY, convolution2DD.ForwardKernel, convolution2DD);
-                        convolution2DD.SingleOutputBackward = (y, x) => Convolution2DD.SingleOutputBackward(y, x, convolution2DD.Weight, convolution2DD.Bias, convolution2DD.NoBias, convolution2DD.InputCount, convolution2DD.OutputCount, convolution2DD.KernelWidth, convolution2DD.KernelHeight, convolution2DD.StrideX, convolution2DD.StrideY, convolution2DD.PadX, convolution2DD.PadY, convolution2DD.BackwardgWKernel, convolution2DD.BackwardgXKernel, CPU.Convolution2DD.CalcBiasGrad, convolution2DD.Activation);
+                        convolution2DD.SingleInputForward = x => Convolution2DD.SingleInputForward(x, convolution2DD.Weight, convolution2DD.Bias, convolution2DD.StrideX, convolution2DD.StrideY, convolution2DD.PadX, convolution2DD.PadY, convolution2DD.ForwardKernel, convolution2DD);
+                        convolution2DD.SingleOutputBackward = (y, x) => Convolution2DD.SingleOutputBackward(y, x, convolution2DD.Weight, convolution2DD.Bias, convolution2DD.StrideX, convolution2DD.StrideY, convolution2DD.PadX, convolution2DD.PadY, convolution2DD.BackwardgWKernel, convolution2DD.BackwardgXKernel, convolution2DD.Activation);
                         break;
                 }
             }
+        }
+    }
+
+    public partial class Function
+    {
+        public static NdArray<T>[] Convolution2D<T>(NdArray<T> x, NdArray<T> weight, NdArray<T> bias, int strideX, int strideY, int padX, int padY, ICompressibleActivation<T> activation = null, bool gpuEnable = false) where T : unmanaged, IComparable<T>
+        {
+            return new Convolution2D<T>(weight.Shape[0], weight.Shape[1], new[] { weight.Shape[2], weight.Shape[3] }, new[] { strideX, strideY }, new[] { padX, padY }, bias != null, weight.Data, bias?.Data, activation, gpuEnable: gpuEnable).Forward(x);
         }
     }
 #endif
@@ -126,8 +130,13 @@ namespace KelpNet.CL
     public static class Convolution2DF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> input, NdArray<Real> weight, NdArray<Real> bias, bool noBias, int inputCount, int outputCount, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, ComputeKernel forwardKernel, IFunction<Real> conv2d)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> input, NdArray<Real> weight, NdArray<Real> bias, int strideX, int strideY, int padX, int padY, ComputeKernel forwardKernel, IFunction<Real> conv2d)
         {
+            int outputCount = weight.Shape[0];
+            int inputCount = weight.Shape[1];
+            int kernelHeight = weight.Shape[2];
+            int kernelWidth = weight.Shape[3];
+
             int outputHeight = (int)KelpMath.Floor((input.Shape[1] - kernelHeight + padY * 2.0f) / strideY) + 1;
             int outputWidth = (int)KelpMath.Floor((input.Shape[2] - kernelWidth + padX * 2.0f) / strideX) + 1;
 
@@ -135,7 +144,7 @@ namespace KelpNet.CL
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
             using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, weight.Data))
-            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, noBias ? new Real[outputCount] : bias.Data))
+            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, bias == null ? new Real[outputCount] : bias.Data))
             using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
             {
                 forwardKernel.SetMemoryArgument(0, gpuX);
@@ -172,14 +181,19 @@ namespace KelpNet.CL
             return NdArray.Convert(result, new[] { outputCount, outputHeight, outputWidth }, input.BatchCount, conv2d);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, bool noBias, int inputCount, int outputCount, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, Action<Real[], int[], int, Real[]> calcBiasGrad, KelpNet.ICompressibleActivation<Real> activation)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, int strideX, int strideY, int padX, int padY, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, KelpNet.ICompressibleActivation<Real> activation)
         {
+            int outputCount = weight.Shape[0];
+            int inputCount = weight.Shape[1];
+            int kernelHeight = weight.Shape[2];
+            int kernelWidth = weight.Shape[3];
+
             Real[] gx = new Real[x.Data.Length];
             Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
 
-            if (!noBias)
+            if (bias != null)
             {
-                calcBiasGrad(activatedgy, y.Shape, y.BatchCount, bias.Grad);
+                Convolution2DFunc.CalcBiasGrad(activatedgy, y.Shape, y.BatchCount, bias.Grad);
             }
 
             int kyStartPrevOffset = kernelHeight - padY - x.Shape[1];

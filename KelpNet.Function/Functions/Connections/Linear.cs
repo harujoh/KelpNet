@@ -90,17 +90,11 @@ namespace KelpNet.CPU
 
     public partial class Function
     {
-        public static NdArray<float> Linear(NdArray<float> x, NdArray<float> weight, NdArray<float> bias = null, ICompressibleActivation<float> activation = null)
+        public static NdArray<T>[] Linear<T>(NdArray<T> x, NdArray<T> weight, NdArray<T> bias = null, ICompressibleActivation<T> activation = null) where T : unmanaged, IComparable<T>
         {
-            return LinearF.SingleInputForward(x, weight, bias, activation, new Linear<float>(weight.Shape[0], weight.Shape[1], bias != null, weight.Data, bias?.Data, activation));
-        }
-
-        public static NdArray<double> Linear(NdArray<double> x, NdArray<double> weight, NdArray<double> bias = null, ICompressibleActivation<double> activation = null)
-        {
-            return LinearD.SingleInputForward(x, weight, bias, activation, new Linear<double>(weight.Shape[0], weight.Shape[1], bias != null, weight.Data, bias?.Data, activation));
+            return new Linear<T>(weight.Shape[0], weight.Shape[1], bias != null, weight.Data, bias?.Data, activation).Forward(x);
         }
     }
-
 #endif
 
 #if DOUBLE
