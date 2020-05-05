@@ -87,14 +87,6 @@ namespace KelpNet.CPU
             return new Convolution2D<T>(this);
         }
     }
-
-    public partial class Function
-    {
-        public static NdArray<T>[] Linear<T>(NdArray<T> x, NdArray<T> weight, NdArray<T> bias = null, ICompressibleActivation<T> activation = null) where T : unmanaged, IComparable<T>
-        {
-            return new Linear<T>(weight.Shape[0], weight.Shape[1], bias != null, weight.Data, bias?.Data, activation).Forward(x);
-        }
-    }
 #endif
 
 #if DOUBLE
