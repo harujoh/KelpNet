@@ -5,9 +5,11 @@ using KelpNet.CL.Common;
 
 #if DOUBLE
 using Real = System.Double;
+using Deconvolution2DFunc = KelpNet.CPU.Deconvolution2DD;
 #else
-using Real = System.Single;
 using KelpNet.CL.Properties;
+using Real = System.Single;
+using Deconvolution2DFunc = KelpNet.CPU.Deconvolution2DF;
 #endif
 
 namespace KelpNet.CL
@@ -61,16 +63,10 @@ namespace KelpNet.CL
 
         public Deconvolution2D(CPU.Deconvolution2D<T> deconv2D) : base(deconv2D.Name, deconv2D.InputNames, deconv2D.OutputNames)
         {
-            this.KernelWidth = deconv2D.KernelWidth;
-            this.KernelHeight = deconv2D.KernelHeight;
             this.PadX = deconv2D.PadX;
             this.PadY = deconv2D.PadY;
             this.StrideX = deconv2D.StrideX;
             this.StrideY = deconv2D.StrideY;
-            this.NoBias = deconv2D.NoBias;
-
-            this.OutputCount = deconv2D.OutputCount;
-            this.InputCount = deconv2D.InputCount;
 
             this.Weight = deconv2D.Weight;
             this.Bias = deconv2D.Bias;
@@ -91,13 +87,13 @@ namespace KelpNet.CL
                 switch (this)
                 {
                     case Deconvolution2D<float> deconvolution2DF:
-                        deconvolution2DF.SingleInputForward = x => Deconvolution2DF.SingleInputForward(x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.NoBias, deconvolution2DF.InputCount, deconvolution2DF.OutputCount, deconvolution2DF.KernelWidth, deconvolution2DF.KernelHeight, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF.ForwardKernel, deconvolution2DF);
-                        deconvolution2DF.SingleOutputBackward = (y, x) => Deconvolution2DF.SingleOutputBackward(y, x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.NoBias, deconvolution2DF.InputCount, deconvolution2DF.OutputCount, deconvolution2DF.KernelWidth, deconvolution2DF.KernelHeight, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF.BackwardgWKernel, deconvolution2DF.BackwardgXKernel, CPU.Deconvolution2DF.CalcBiasGrad, deconvolution2DF.Activation);
+                        deconvolution2DF.SingleInputForward = x => Deconvolution2DF.SingleInputForward(x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF.ForwardKernel, deconvolution2DF);
+                        deconvolution2DF.SingleOutputBackward = (y, x) => Deconvolution2DF.SingleOutputBackward(y, x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF.BackwardgWKernel, deconvolution2DF.BackwardgXKernel, deconvolution2DF.Activation);
                         break;
 
                     case Deconvolution2D<double> deconvolution2DD:
-                        deconvolution2DD.SingleInputForward = x => Deconvolution2DD.SingleInputForward(x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.NoBias, deconvolution2DD.InputCount, deconvolution2DD.OutputCount, deconvolution2DD.KernelWidth, deconvolution2DD.KernelHeight, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD.ForwardKernel, deconvolution2DD);
-                        deconvolution2DD.SingleOutputBackward = (y, x) => Deconvolution2DD.SingleOutputBackward(y, x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.NoBias, deconvolution2DD.InputCount, deconvolution2DD.OutputCount, deconvolution2DD.KernelWidth, deconvolution2DD.KernelHeight, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD.BackwardgWKernel, deconvolution2DD.BackwardgXKernel, CPU.Deconvolution2DD.CalcBiasGrad, deconvolution2DD.Activation);
+                        deconvolution2DD.SingleInputForward = x => Deconvolution2DD.SingleInputForward(x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD.ForwardKernel, deconvolution2DD);
+                        deconvolution2DD.SingleOutputBackward = (y, x) => Deconvolution2DD.SingleOutputBackward(y, x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD.BackwardgWKernel, deconvolution2DD.BackwardgXKernel, deconvolution2DD.Activation);
                         break;
                 }
             }
@@ -111,8 +107,13 @@ namespace KelpNet.CL
     public static class Deconvolution2DF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> input, NdArray<Real> weight, NdArray<Real> bias, bool noBias, int inputCount, int outputCount, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, ComputeKernel forwardKernel, IFunction<Real> deconv2d)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> input, NdArray<Real> weight, NdArray<Real> bias, int strideX, int strideY, int padX, int padY, ComputeKernel forwardKernel, IFunction<Real> deconv2d)
         {
+            int inputCount = weight.Shape[0];
+            int outputCount = weight.Shape[1];
+            int kernelHeight = weight.Shape[2];
+            int kernelWidth = weight.Shape[3];
+
             int outputHeight = (input.Shape[1] - 1) * strideY + kernelHeight - padY * 2;
             int outputWidth = (input.Shape[2] - 1) * strideX + kernelWidth - padX * 2;
 
@@ -120,7 +121,7 @@ namespace KelpNet.CL
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))
             using (ComputeBuffer<Real> gpuW = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, weight.Data))
-            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, noBias ? new Real[outputCount] : bias.Data))
+            using (ComputeBuffer<Real> gpub = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, bias == null ? new Real[outputCount] : bias.Data))
             using (ComputeBuffer<Real> gpuY = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.AllocateHostPointer, result.Length))
             {
                 forwardKernel.SetMemoryArgument(0, gpuX);
@@ -157,13 +158,18 @@ namespace KelpNet.CL
             return NdArray.Convert(result, new[] { outputCount, outputHeight, outputWidth }, input.BatchCount, deconv2d);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, bool noBias, int inputCount, int outputCount, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, Action<Real[], Real[], int[], int> calcBiasGrad, KelpNet.ICompressibleActivation<Real> activation)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, int strideX, int strideY, int padX, int padY, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, KelpNet.ICompressibleActivation<Real> activation)
         {
+            int inputCount = weight.Shape[0];
+            int outputCount = weight.Shape[1];
+            int kernelHeight = weight.Shape[2];
+            int kernelWidth = weight.Shape[3];
+
             Real[] gx = new Real[x.Data.Length];
             Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
-            if (!noBias)
+            if (bias != null)
             {
-                calcBiasGrad(activatedgy, bias.Grad, y.Shape, y.BatchCount);
+                Deconvolution2DFunc.CalcBiasGrad(activatedgy, bias.Grad, y.Shape, y.BatchCount);
             }
 
             //gyは共通で使用

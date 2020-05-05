@@ -23,16 +23,6 @@ namespace KelpNet.CPU
 
 
         [DataMember]
-        public bool NoBias;
-
-
-        [DataMember]
-        public int KernelWidth;
-
-        [DataMember]
-        public int KernelHeight;
-
-        [DataMember]
         public int StrideX;
 
         [DataMember]
@@ -46,13 +36,6 @@ namespace KelpNet.CPU
 
 
         [DataMember]
-        public int InputCount;
-
-        [DataMember]
-        public int OutputCount;
-
-
-        [DataMember]
         public ICompressibleActivation<T> Activation { get; set; }
 
 
@@ -63,18 +46,15 @@ namespace KelpNet.CPU
 
         public Deconvolution2D(int inputChannels, int outputChannels, int kernelSize, int stride = 1, int pad = 0, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this.KernelWidth = kernelSize;
-            this.KernelHeight = kernelSize;
             this.PadX = pad;
             this.PadY = pad;
             this.StrideX = stride;
             this.StrideY = stride;
-            this.NoBias = noBias;
+
+            this.Weight = new NdArray<T>(inputChannels, outputChannels, kernelSize, kernelSize);
+            if (!noBias) this.Bias = new NdArray<T>(outputChannels);
 
             this.Parameters = new NdArray<T>[noBias ? 1 : 2];
-
-            this.OutputCount = outputChannels;
-            this.InputCount = inputChannels;
 
             this.Activation = activation;
 
@@ -90,19 +70,16 @@ namespace KelpNet.CPU
             if (trim == null)
                 trim = new[] { 0, 0 };
 
-            this.KernelWidth = kernelSize[0];
-            this.KernelHeight = kernelSize[1];
             this.PadX = trim[0];
             this.PadY = trim[1];
-            this.NoBias = noBias;
 
             this.StrideX = subSample[0];
             this.StrideY = subSample[1];
 
-            this.Parameters = new NdArray<T>[noBias ? 1 : 2];
+            this.Weight = new NdArray<T>(inputChannels, outputChannels, kernelSize[1], kernelSize[0]);
+            if (!noBias) this.Bias = new NdArray<T>(outputChannels);
 
-            this.OutputCount = outputChannels;
-            this.InputCount = inputChannels;
+            this.Parameters = new NdArray<T>[noBias ? 1 : 2];
 
             this.Activation = activation;
 
@@ -112,7 +89,6 @@ namespace KelpNet.CPU
 
         void Initialize(Array initialW = null, Array initialb = null)
         {
-            this.Weight = new NdArray<T>(InputCount, OutputCount, this.KernelHeight, this.KernelWidth);
             this.Weight.Name = this.Name + " Weight";
 
             if (initialW == null)
@@ -127,9 +103,8 @@ namespace KelpNet.CPU
             this.Parameters[0] = this.Weight;
 
 
-            if (!NoBias)
+            if (this.Bias != null)
             {
-                this.Bias = new NdArray<T>(OutputCount);
                 this.Bias.Name = this.Name + " Bias";
 
                 if (initialb != null)
@@ -147,13 +122,13 @@ namespace KelpNet.CPU
             switch (this)
             {
                 case Deconvolution2D<float> deconvolution2DF:
-                    deconvolution2DF.SingleInputForward = x => Deconvolution2DF.SingleInputForward(x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.NoBias, deconvolution2DF.OutputCount, deconvolution2DF.KernelWidth, deconvolution2DF.KernelHeight, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF, deconvolution2DF.Activation);
-                    deconvolution2DF.SingleOutputBackward = (y, x) => Deconvolution2DF.SingleOutputBackward(y, x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.NoBias, deconvolution2DF.InputCount, deconvolution2DF.OutputCount, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF.Activation);
+                    deconvolution2DF.SingleInputForward = x => Deconvolution2DF.SingleInputForward(x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF.Activation, deconvolution2DF);
+                    deconvolution2DF.SingleOutputBackward = (y, x) => Deconvolution2DF.SingleOutputBackward(y, x, deconvolution2DF.Weight, deconvolution2DF.Bias, deconvolution2DF.StrideX, deconvolution2DF.StrideY, deconvolution2DF.PadX, deconvolution2DF.PadY, deconvolution2DF.Activation);
                     break;
 
                 case Deconvolution2D<double> deconvolution2DD:
-                    deconvolution2DD.SingleInputForward = x => Deconvolution2DD.SingleInputForward(x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.NoBias, deconvolution2DD.OutputCount, deconvolution2DD.KernelWidth, deconvolution2DD.KernelHeight, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD, deconvolution2DD.Activation);
-                    deconvolution2DD.SingleOutputBackward = (y, x) => Deconvolution2DD.SingleOutputBackward(y, x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.NoBias, deconvolution2DD.InputCount, deconvolution2DD.OutputCount, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD.Activation);
+                    deconvolution2DD.SingleInputForward = x => Deconvolution2DD.SingleInputForward(x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD.Activation, deconvolution2DD);
+                    deconvolution2DD.SingleOutputBackward = (y, x) => Deconvolution2DD.SingleOutputBackward(y, x, deconvolution2DD.Weight, deconvolution2DD.Bias, deconvolution2DD.StrideX, deconvolution2DD.StrideY, deconvolution2DD.PadX, deconvolution2DD.PadY, deconvolution2DD.Activation);
                     break;
             }
         }
@@ -166,8 +141,13 @@ namespace KelpNet.CPU
     public static class Deconvolution2DF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> input, NdArray<Real> weight, NdArray<Real> bias, bool noBias, int outputCount, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, IFunction<Real> deconv2d, ICompressibleActivation<Real> activation)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> input, NdArray<Real> weight, NdArray<Real> bias, int strideX, int strideY, int padX, int padY, ICompressibleActivation<Real> activation, IFunction<Real> deconv2d)
         {
+            int inputCount = weight.Shape[0];
+            int outputCount = weight.Shape[1];
+            int kernelHeight = weight.Shape[2];
+            int kernelWidth = weight.Shape[3];
+
             int outputHeight = (input.Shape[1] - 1) * strideY + kernelHeight - padY * 2;
             int outputWidth = (input.Shape[2] - 1) * strideX + kernelWidth - padX * 2;
 
@@ -215,7 +195,7 @@ namespace KelpNet.CPU
                 }
             }
 
-            if (activation != null && !noBias)
+            if (activation != null && bias != null)
             {
                 for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
                 {
@@ -234,7 +214,7 @@ namespace KelpNet.CPU
                     }
                 }
             }
-            else if (!noBias)
+            else if (bias != null)
             {
                 for (int batchCount = 0; batchCount < input.BatchCount; batchCount++)
                 {
@@ -291,10 +271,13 @@ namespace KelpNet.CPU
             }
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, bool noBias, int inputCount, int outputCount, int strideX, int strideY, int padX, int padY, ICompressibleActivation<Real> activation)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, int strideX, int strideY, int padX, int padY, ICompressibleActivation<Real> activation)
         {
+            int inputCount = weight.Shape[0];
+            int outputCount = weight.Shape[1];
+
             Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
-            if (!noBias)
+            if (bias != null)
             {
                 CalcBiasGrad(activatedgy, bias.Grad, y.Shape, y.BatchCount);
             }
