@@ -16,14 +16,8 @@ namespace KelpNet
 
         public NdArray<T> Weight;
 
-        public int InputCount;
-        public int OutputCount;
-
         public EmbedID(int inputCount, int outputCount, Array initialW = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            this.InputCount = inputCount;
-            this.OutputCount = outputCount;
-
             this.Weight = new NdArray<T>(inputCount, outputCount);
             this.Weight.Name = this.Name + " Weight";
 
@@ -47,13 +41,13 @@ namespace KelpNet
             switch (this)
             {
                 case EmbedID<float> embedIdF:
-                    embedIdF.SingleInputForward = (x) => EmbedIDF.SingleInputForward(x, embedIdF.Weight, embedIdF.OutputCount, embedIdF);
-                    embedIdF.SingleOutputBackward = (y, x) => EmbedIDF.SingleOutputBackward(y, x, embedIdF.Weight, embedIdF.OutputCount);
+                    embedIdF.SingleInputForward = (x) => EmbedIDF.SingleInputForward(x, embedIdF.Weight, embedIdF);
+                    embedIdF.SingleOutputBackward = (y, x) => EmbedIDF.SingleOutputBackward(y, x, embedIdF.Weight);
                     break;
 
                 case EmbedID<double> embedIdD:
-                    embedIdD.SingleInputForward = (x) => EmbedIDD.SingleInputForward(x, embedIdD.Weight, embedIdD.OutputCount, embedIdD);
-                    embedIdD.SingleOutputBackward = (y, x) => EmbedIDD.SingleOutputBackward(y, x, embedIdD.Weight, embedIdD.OutputCount);
+                    embedIdD.SingleInputForward = (x) => EmbedIDD.SingleInputForward(x, embedIdD.Weight, embedIdD);
+                    embedIdD.SingleOutputBackward = (y, x) => EmbedIDD.SingleOutputBackward(y, x, embedIdD.Weight);
                     break;
             }
         }
@@ -63,11 +57,13 @@ namespace KelpNet
 #if DOUBLE
     public static class EmbedIDD
 #else
-        public static class EmbedIDF
+    public static class EmbedIDF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> weight, int outputCount, IFunction<Real> embedID)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> weight, IFunction<Real> embedId)
         {
+            int outputCount = weight.Shape[1];
+
             Real[] result = new Real[x.Data.Length * outputCount];
 
             for (int b = 0; b < x.BatchCount; b++)
@@ -81,11 +77,13 @@ namespace KelpNet
                 }
             }
 
-            return NdArray.Convert(result, new[] { x.Length, outputCount }, x.BatchCount, embedID);
+            return NdArray.Convert(result, new[] { x.Length, outputCount }, x.BatchCount, embedId);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, int outputCount)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight)
         {
+            int outputCount = weight.Shape[1];
+
             for (int b = 0; b < y.BatchCount; b++)
             {
                 for (int i = 0; i < x.Length; i++)
