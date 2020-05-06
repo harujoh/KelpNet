@@ -5,7 +5,7 @@ namespace KelpNet
 {
     public static class MathF
     {
-        //public const float E = 2.71828183f;
+        public const float E = 2.71828183f;
 
         public const float PI = 3.14159265f;
 
@@ -44,6 +44,11 @@ namespace KelpNet
             return (float)Math.Sin(x);
         }
 
+        public static float Sinh(float x)
+        {
+            return (float)Math.Sinh(x);
+        }
+
         public static float Acos(float x)
         {
             return (float)Math.Acos(x);
@@ -74,19 +79,19 @@ namespace KelpNet
             return (float)Math.Tanh(x);
         }
 
-        public static float Floor(float x)
+        public static int Floor(float x)
         {
-            return (float)Math.Floor(x);
+            return (int)Math.Floor(x);
         }
 
-        public static float Ceiling(float x)
+        public static int Ceiling(float x)
         {
-            return (float)Math.Ceiling(x);
+            return (int)Math.Ceiling(x);
         }
 
-        public static float Round(float x)
+        public static int Round(float x)
         {
-            return (float)Math.Round(x);
+            return (int)Math.Round(x);
         }
 
         public static float Max(float x, float y)
@@ -100,6 +105,21 @@ namespace KelpNet
         }
 
         public static float Abs(float x)
+        {
+            return Math.Abs(x);
+        }
+
+        public static int Max(int x, int y)
+        {
+            return Math.Max(x, y);
+        }
+
+        public static int Min(int x, int y)
+        {
+            return Math.Min(x, y);
+        }
+
+        public static int Abs(int x)
         {
             return Math.Abs(x);
         }

@@ -66,7 +66,7 @@ namespace KelpNet
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                x.Grad[i] += (Real)Math.Sinh(x.Data[i]) * y.Grad[i];
+                x.Grad[i] += KelpMath.Sinh(x.Data[i]) * y.Grad[i];
             }
         }
     }

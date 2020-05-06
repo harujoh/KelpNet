@@ -57,7 +57,7 @@ namespace KelpNet
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = (Real)Math.Atan(x.Data[i]);
+                resultData[i] = KelpMath.Atan(x.Data[i]);
             }
 
             return new NdArray<Real>(resultData, x.Shape, x.BatchCount, arcTan);

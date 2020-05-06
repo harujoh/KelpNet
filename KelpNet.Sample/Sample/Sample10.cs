@@ -2,6 +2,14 @@
 using KelpNet.CL;
 using KelpNet.Tools;
 
+#if DOUBLE
+using KelpMath = System.Math;
+#elif NETSTANDARD2_1
+using KelpMath = System.MathF;
+#else
+using KelpMath = KelpNet.MathF;
+#endif
+
 //using Real = System.Double;
 using Real = System.Single;
 
@@ -72,7 +80,7 @@ namespace KelpNet.Sample
             sgd.SetUp(model);
 
             Real wholeLen = trainData.Length;
-            int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
+            int jump = (int)KelpMath.Floor(wholeLen / BATCH_SIZE);
             int epoch = 0;
 
             Console.WriteLine("Train Start.");
@@ -119,7 +127,7 @@ namespace KelpNet.Sample
             Console.WriteLine("test perplexity:" + Evaluate(model, testData));
         }
 
-        static double Evaluate(FunctionStack<Real> model, int[] dataset)
+        static Real Evaluate(FunctionStack<Real> model, int[] dataset)
         {
             FunctionStack<Real> predictModel = DeepCopyHelper<Real>.DeepCopy(model);
             predictModel.ResetState();
@@ -145,7 +153,7 @@ namespace KelpNet.Sample
             }
 
             //calc perplexity
-            return Math.Exp(totalLoss / (totalLossCount - 1));
+            return KelpMath.Exp(totalLoss / (totalLossCount - 1));
         }
     }
 }
