@@ -84,7 +84,7 @@ Samples: .NET Framework 4.6.1
 　・BatchNormalization
 　・LRN
 - Noise:
-　・DropOut
+　・Dropout
 　・StochasticDepth
 - LossFunctions:
 　・MeanSquaredError
