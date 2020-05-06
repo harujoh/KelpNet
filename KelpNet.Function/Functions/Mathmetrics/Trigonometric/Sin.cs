@@ -56,7 +56,7 @@ namespace KelpNet
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = (Real)Math.Sin(x.Data[i]);
+                resultData[i] = KelpMath.Sin(x.Data[i]);
             }
 
             return new NdArray<Real>(resultData, x.Shape, x.BatchCount, sin);
@@ -66,7 +66,7 @@ namespace KelpNet
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                x.Grad[i] += (Real)Math.Cos(x.Data[i]) * y.Grad[i];
+                x.Grad[i] += KelpMath.Cos(x.Data[i]) * y.Grad[i];
             }
         }
     }

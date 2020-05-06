@@ -57,7 +57,7 @@ namespace KelpNet
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = (Real)Math.Tan(x.Data[i]);
+                resultData[i] = KelpMath.Tan(x.Data[i]);
             }
 
             return new NdArray<Real>(resultData, x.Shape, x.BatchCount, tan);
@@ -67,7 +67,7 @@ namespace KelpNet
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                Real gx = (Real)Math.Cos(x.Data[i]);
+                Real gx = KelpMath.Cos(x.Data[i]);
                 x.Grad[i] += 1 / (gx * gx) * y.Grad[i];
             }
         }

@@ -4,6 +4,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
+#if DOUBLE
+using KelpMath = System.Math;
+#elif NETSTANDARD2_1
+using KelpMath = System.MathF;
+#elif NETSTANDARD2_0
+using KelpMath = KelpNet.MathF;
+#endif
+
+
 namespace KelpNet
 {
     [Serializable]
@@ -248,7 +257,7 @@ namespace KelpNet
             foreach (T data in datas)
             {
                 string[] divStr = data.ToString().Split('.');
-                intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
+                intMaxLength = KelpMath.Max(intMaxLength, divStr[0].Length);
 
                 if (divStr.Length > 1)
                 {
@@ -257,7 +266,7 @@ namespace KelpNet
 
                 if (realMaxLength != 8 && divStr.Length == 2)
                 {
-                    realMaxLength = Math.Max(realMaxLength, divStr[1].Length);
+                    realMaxLength = KelpMath.Max(realMaxLength, divStr[1].Length);
 
                     if (realMaxLength > 8)
                     {

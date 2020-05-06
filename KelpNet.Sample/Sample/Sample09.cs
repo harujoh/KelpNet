@@ -157,7 +157,7 @@ namespace KelpNet.Sample
                 }
             }
 
-            Console.WriteLine(Math.Pow(2.0, sum / wnum));
+            Console.WriteLine(KelpMath.Pow(2.0f, sum / wnum));
         }
 
         static Real CalPs(FunctionStack<Real> model, List<int> s)

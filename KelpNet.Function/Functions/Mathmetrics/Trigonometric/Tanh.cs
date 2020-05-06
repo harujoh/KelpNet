@@ -57,7 +57,7 @@ namespace KelpNet
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = (Real)Math.Tanh(x.Data[i]);
+                resultData[i] = KelpMath.Tanh(x.Data[i]);
             }
 
             return new NdArray<Real>(resultData, x.Shape, x.BatchCount, tanh);

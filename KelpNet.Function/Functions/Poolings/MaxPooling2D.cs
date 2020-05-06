@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 #if DOUBLE
+using KelpMath = System.Math;
+#elif NETSTANDARD2_1
+using KelpMath = System.MathF;
+#elif NETSTANDARD2_0
+using KelpMath = KelpNet.MathF;
+#endif
+
+#if DOUBLE
 using Real = System.Double;
 #else
 using Real = System.Single;
@@ -110,11 +118,11 @@ namespace KelpNet.CPU
         public static NdArray<Real> SingleInputForward(NdArray<Real> input, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, bool coverAll, List<int[]> outputIndicesList, IFunction<Real> maxPooling2d)
         {
             int outputHeight = coverAll ?
-                (int)Math.Floor((input.Shape[1] - kernelHeight + padY * 2.0 + strideY - 1.0) / strideY) + 1 :
-                (int)Math.Floor((input.Shape[1] - kernelHeight + padY * 2.0) / strideY) + 1;
+                (int)KelpMath.Floor((input.Shape[1] - kernelHeight + padY * 2.0 + strideY - 1.0) / strideY) + 1 :
+                (int)KelpMath.Floor((input.Shape[1] - kernelHeight + padY * 2.0) / strideY) + 1;
             int outputWidth = coverAll ?
-                (int)Math.Floor((input.Shape[2] - kernelWidth + padX * 2.0 + strideX - 1.0) / strideX) + 1 :
-                (int)Math.Floor((input.Shape[2] - kernelWidth + padX * 2.0) / strideX) + 1;
+                (int)KelpMath.Floor((input.Shape[2] - kernelWidth + padX * 2.0 + strideX - 1.0) / strideX) + 1 :
+                (int)KelpMath.Floor((input.Shape[2] - kernelWidth + padX * 2.0) / strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
 
             for (int i = 0; i < outputIndices.Length; i++)

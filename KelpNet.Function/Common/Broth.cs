@@ -1,6 +1,14 @@
 ﻿using System;
 
 #if DOUBLE
+using KelpMath = System.Math;
+#elif NETSTANDARD2_1
+using KelpMath = System.MathF;
+#elif NETSTANDARD2_0
+using KelpMath = KelpNet.MathF;
+#endif
+
+#if DOUBLE
 using Real = System.Double;
 #else
 using Real = System.Single;
@@ -12,28 +20,28 @@ namespace KelpNet
     internal class Broth
     {
         static bool _flip;
-        static double _beta;
-        static double _boxMuller1;
+        static Real _beta;
+        static Real _boxMuller1;
 
         // 平均mu, 標準偏差sigmaの正規分布乱数を得る。Box-Muller法による。
         public static Real RandomNormal(Real sigma = 1, Real mu = 0)
         {
-            double boxMuller2;
+            Real boxMuller2;
 
             if (!_flip)
             {
-                _beta = Mother.Dice.NextDouble() * Math.PI * 2;
-                _boxMuller1 = Math.Sqrt(-2 * Math.Log(Mother.Dice.NextDouble()));
-                boxMuller2 = Math.Sin(_beta);
+                _beta = Broth.Random() * KelpMath.PI * 2;
+                _boxMuller1 = KelpMath.Sqrt(-2 * KelpMath.Log(Broth.Random()));
+                boxMuller2 = KelpMath.Sin(_beta);
             }
             else
             {
-                boxMuller2 = Math.Cos(_beta);
+                boxMuller2 = KelpMath.Cos(_beta);
             }
 
             _flip = !_flip;
 
-            return sigma * (Real)(_boxMuller1 * boxMuller2) + mu;
+            return sigma * _boxMuller1 * boxMuller2 + mu;
         }
 
         public static Real Random()
@@ -41,19 +49,19 @@ namespace KelpNet
             return (Real)Mother.Dice.NextDouble();
         }
 
-        public static Real Next()
+        public static int Next()
         {
-            return (Real)Mother.Dice.Next();
+            return Mother.Dice.Next();
         }
 
-        public static Real Next(int maxValue)
+        public static int Next(int maxValue)
         {
-            return (Real)Mother.Dice.Next(maxValue);
+            return Mother.Dice.Next(maxValue);
         }
 
-        public static Real Next(int minValue, int maxValue)
+        public static int Next(int minValue, int maxValue)
         {
-            return (Real)Mother.Dice.Next(minValue, maxValue);
+            return Mother.Dice.Next(minValue, maxValue);
         }
     }
 }
