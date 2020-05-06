@@ -63,7 +63,7 @@ namespace KelpNet.Sample
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
                 //GPUを初期化
-                foreach (FunctionStack<Real> resNetFunctionBlock in nn.FunctionBlocks)
+                foreach (CPU.FunctionStack<Real> resNetFunctionBlock in nn.FunctionBlocks)
                 {
                     SwitchGPU(resNetFunctionBlock);
                 }
@@ -97,7 +97,7 @@ namespace KelpNet.Sample
             }
         }
 
-        static void SwitchGPU(FunctionStack<Real> functionStack)
+        static void SwitchGPU(CPU.FunctionStack<Real> functionStack)
         {
             for (int i = 0; i < functionStack.Functions.Length; i++)
             {
@@ -110,7 +110,7 @@ namespace KelpNet.Sample
                 {
                     for (int j = 0; j < splitFunction.SplitedFunctions.Length; j++)
                     {
-                        SwitchGPU((FunctionStack<Real>)splitFunction.SplitedFunctions[j]);
+                        SwitchGPU(splitFunction.SplitedFunctions[j]);
                     }
                 }
             }
