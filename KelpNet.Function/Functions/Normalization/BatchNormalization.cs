@@ -213,7 +213,7 @@ namespace KelpNet
             std = new Real[channelSize];
             for (int i = 0; i < std.Length; i++)
             {
-                std[i] = KelpMath.Sqrt(Variance[i]) + Eps;
+                std[i] = KelpMath.Sqrt(Variance[i] + Eps);
             }
 
             //結果を計算
