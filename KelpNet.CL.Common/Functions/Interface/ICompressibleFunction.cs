@@ -3,7 +3,7 @@ using KelpNet.CL.Common;
 
 namespace KelpNet.CL
 {
-    public interface ICompressibleFunction<T> : KelpNet.ICompressibleFunction<T>, IParallelizable where T : unmanaged, IComparable<T>
+    public interface ICompressibleFunction<T> : CPU.ICompressibleFunction<T>, IParallelizable where T : unmanaged, IComparable<T>
     {
         ComputeKernel ForwardKernel { get; set; }
         ComputeKernel BackwardgWKernel { get; set; }
@@ -12,6 +12,8 @@ namespace KelpNet.CL
         string ForwardKernelName { get; set; }
         string BackwardgWKernelName { get; set; }
         string BackwardgXKernelName { get; set; }
+
+        new ICompressibleActivation<T> Activation { get; set; }
     }
 
     public static class CompressibleFunction
