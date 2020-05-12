@@ -79,8 +79,9 @@ namespace KelpNet
                     y[i + b * x.Length] = x.Data[i + b * x.Length] * beta;
                 }
 
-                Real maxval = y[b * x.Length];
-                for (int i = 1; i < x.Length; i++)
+                //0との比較が必要
+                Real maxval = 0;
+                for (int i = 0; i < x.Length; i++)
                 {
                     if (maxval < y[i + b * x.Length])
                     {

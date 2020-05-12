@@ -42,6 +42,9 @@ namespace KelpNet.CL
         [DataMember]
         public bool IsParallel { get; set; }
 
+        [DataMember]
+        public new ICompressibleActivation<T> Activation { get; set; }
+
         public bool SetParallel(bool enable)
         {
             bool result = this.SetParallel<T>(enable);
@@ -134,7 +137,7 @@ namespace KelpNet.CL
             return NdArray.Convert(y, new[] { outputCount }, x.BatchCount, linear);
         }
 
-        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, KelpNet.ICompressibleActivation<Real> activation)
+        public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, ComputeKernel backwardgWKernel, ComputeKernel backwardgXKernel, ICompressibleActivation<Real> activation)
         {
             int outputCount = weight.Shape[0];
             int inputCount = weight.Shape[1];

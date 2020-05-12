@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KelpNet
+namespace KelpNet.CPU
 {
     public interface ICompressibleActivation<T> : IFunction<T> where T : unmanaged, IComparable<T>
     {
