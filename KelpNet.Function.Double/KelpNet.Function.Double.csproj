@@ -15,7 +15,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Common\Functions\Interface\.gitignore" />
+    <None Remove="Common\Optimizer\.gitignore" />
+    <None Remove="Common\Tools\.gitignore" />
+    <None Remove="Functions\Activations\.gitignore" />
+    <None Remove="Functions\Arrays\.gitignore" />
+    <None Remove="Functions\Connections\.gitignore" />
+    <None Remove="Functions\Mathmetrics\Trigonometric\.gitignore" />
+    <None Remove="Functions\Noise\.gitignore" />
+    <None Remove="Functions\Normalization\.gitignore" />
+    <None Remove="Functions\Poolings\.gitignore" />
     <None Remove="KelpNet.Function.Double.csproj.DotSettings" />
+    <None Remove="Loss\.gitignore" />
+    <None Remove="Optimizer\.gitignore" />
   </ItemGroup>
 
   <ItemGroup>
@@ -75,6 +87,7 @@
     <Folder Include="Common\Functions\Interface\" />
     <Folder Include="Common\Tools\" />
     <Folder Include="Common\Optimizer\" />
+    <Folder Include="Functions\Activations\" />
     <Folder Include="Functions\Connections\" />
     <Folder Include="Functions\Mathmetrics\Trigonometric\" />
     <Folder Include="Functions\Noise\" />

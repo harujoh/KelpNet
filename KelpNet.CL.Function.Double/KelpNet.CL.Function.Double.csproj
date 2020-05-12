@@ -15,6 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Common\Functions\Interface\.gitignore" />
+    <None Remove="Functions\Connections\.gitignore" />
+    <None Remove="Functions\Noise\.gitignore" />
+    <None Remove="Functions\Poolings\.gitignore" />
     <None Remove="KelpNet.CL.Function.Double.csproj.DotSettings" />
   </ItemGroup>
 
