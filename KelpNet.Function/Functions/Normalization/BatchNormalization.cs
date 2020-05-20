@@ -47,7 +47,7 @@ namespace KelpNet
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 2e-5, bool useGamma = true, bool useBeta = true, int initialGamma = 1, int initialBeta = 0, int? axis = null, int initialAvgMean = 0, int initialAvgVar = 1, bool train = true, bool finetune = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 2e-5, bool useGamma = true, bool useBeta = true, int initialGamma = 1, int initialBeta = 0, int[] axis = null, int initialAvgMean = 0, int initialAvgVar = 1, bool train = true, bool finetune = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Train = train;
@@ -104,6 +104,7 @@ namespace KelpNet
                     break;
             }
 
+            //自分で学習せずオプティマイザに任せる
             if (!this.Train)
             {
                 this.Parameters[paramIndex++] = this.AvgMean;

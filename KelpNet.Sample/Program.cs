@@ -74,6 +74,9 @@ namespace KelpNet.Sample
             //CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
             //Sample19.Run();
 
+            //ONNXモデルのVGGを読み込んで画像分類をさせるテスト
+            //Sample20.Run(Sample20.VGGModel.VGG16); //VGG16またはVGG19を選択してください
+
             //Linearの分割実行
             //SampleX.Run();
 

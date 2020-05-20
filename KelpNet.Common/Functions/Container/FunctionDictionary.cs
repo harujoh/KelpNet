@@ -71,6 +71,8 @@ namespace KelpNet
         //関数の追加
         public void Add(Function<T> function)
         {
+            if(function == null) return;
+
             if (_compress && //分岐毎のまとめを行うか
                 (function is SingleInputFunction<T> || function is MultiOutputFunction<T>)) //入力が一つの関数のみまとめられる
             {
