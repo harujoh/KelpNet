@@ -84,6 +84,7 @@
     <Compile Include="Sample\Sample17.cs" />
     <Compile Include="Sample\Sample18.cs" />
     <Compile Include="Sample\Sample19.cs" />
+    <Compile Include="Sample\Sample20.cs" />
     <Compile Include="Sample\SampleX.cs" />
   </ItemGroup>
   <ItemGroup>
