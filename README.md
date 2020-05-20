@@ -31,6 +31,7 @@ FunctionStack<float> nn = new FunctionStack<float>(
 - Importable:
 ・CaffeModel
 ・ChainerModel
+・ONNXModel
 
 
 ## 特徴
