@@ -76,7 +76,7 @@ namespace KelpNet.Tests.JoinTest
 
 
             //許容範囲を設定
-            double delta = 0.00001;
+            Real delta = 0.00001f;
 
             //y11
             Assert.AreEqual(cY11data.Length, y11.Data.Length);
@@ -100,7 +100,7 @@ namespace KelpNet.Tests.JoinTest
             }
 
             //許容範囲を設定
-            delta = 0.0001;
+            delta = 0.0001f;
 
             //loss
             Assert.AreEqual(cLoss.Data[0], loss.Data[0], delta);
@@ -229,7 +229,7 @@ namespace KelpNet.Tests.JoinTest
             }
 
             //経由が多くかなり誤差が大きい為
-            delta = 1.0;
+            delta = 1.0f;
 
             Real[] cWgrad22 = ((Real[,])cLinear2.W.Grad).Flatten();
             Real[] cbgrad22 = (Real[])cLinear2.b.Grad;
@@ -249,7 +249,7 @@ namespace KelpNet.Tests.JoinTest
             }
 
 
-            delta = 2.0;
+            delta = 2.0f;
 
             //W.grad
             Assert.AreEqual(clateralWGrad.Length, lstm.lateral.Weight.Grad.Length);
@@ -270,7 +270,7 @@ namespace KelpNet.Tests.JoinTest
             }
 
 
-            delta = 20.0;
+            delta = 20.0f;
 
             Real[] cWgrad21 = ((Real[,])cLinear1.W.Grad).Flatten();
             Real[] cbgrad21 = (Real[])cLinear1.b.Grad;

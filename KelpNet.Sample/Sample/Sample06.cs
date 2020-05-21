@@ -90,7 +90,7 @@ namespace KelpNet.Sample
                         TestDataSet<Real> datasetY = mnistData.Eval.GetRandomDataSet(TEACH_DATA_COUNT);
 
                         //テストを実行
-                        double accuracy = Trainer.Accuracy(nn, datasetY);
+                        Real accuracy = Trainer.Accuracy(nn, datasetY);
                         Console.WriteLine("accuracy " + accuracy);
                     }
                 }

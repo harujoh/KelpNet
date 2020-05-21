@@ -40,9 +40,6 @@ namespace KelpNet.Sample
                 new Linear<Real>(2, 2, name: "l2 Linear")
             );
 
-            //optimizerを宣言
-            //nn.SetOptimizer(new MomentumSGD<Real>());
-
             //訓練ループ
             Console.WriteLine("Training...");
             for (int i = 0; i < learningCount; i++)

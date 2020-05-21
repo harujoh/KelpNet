@@ -64,7 +64,7 @@ namespace KelpNet.Tests
             Real[] cXgrad = ((Real[,,,])cX.Grad).Flatten();
 
             //許容範囲を算出
-            double delta = 0.00001;
+            Real delta = 0.00001f;
 
             //y0
             Assert.AreEqual(cY0data.Length, y[0].Data.Length);

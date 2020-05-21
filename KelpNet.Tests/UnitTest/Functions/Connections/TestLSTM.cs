@@ -48,7 +48,7 @@ namespace KelpNet.Tests
             y.Backward();
 
             //許容範囲を算出
-            double delta = 0.00001;
+            Real delta = 0.00001f;
 
             Real[] cYdata = ((Real[,])cY.Data).Flatten();
             Real[] cXgrad = ((Real[,])cX.Grad).Flatten();
@@ -151,7 +151,7 @@ namespace KelpNet.Tests
             }
 
             //経由が多いため誤差が大きい
-            delta = 1.0;
+            delta = 1.0f;
             for (int i = 0; i < wLen; i++)
             {
                 Assert.AreEqual(cupwardWGrad2[i + wLen * 0], lstm.upward.Weight.Grad[i], delta);

@@ -58,7 +58,7 @@ namespace KelpNet.Tests
             Real[] cYgrad = ((Real[,,,])cY.Grad.Copy()).Flatten();
 
             //許容範囲を算出
-            double delta = 0.00001;
+            Real delta = 0.00001f;
 
             //z
             Assert.AreEqual(cZdata.Length, z.Data.Length);

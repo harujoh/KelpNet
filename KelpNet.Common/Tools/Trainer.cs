@@ -36,19 +36,19 @@ namespace KelpNet
         }
 
         //精度測定
-        public static double Accuracy<T>(FunctionStack<T> functionStack, T[][] x, int[][] y) where T : unmanaged, IComparable<T>
+        public static T Accuracy<T>(FunctionStack<T> functionStack, T[][] x, int[][] y) where T : unmanaged, IComparable<T>
         {
             return Accuracy(functionStack, NdArray.FromArrays(x), NdArray.FromArrays(y));
         }
 
-        public static double Accuracy<T>(FunctionStack<T> functionStack, TestDataSet<T> dataSet) where T : unmanaged, IComparable<T>
+        public static T Accuracy<T>(FunctionStack<T> functionStack, TestDataSet<T> dataSet) where T : unmanaged, IComparable<T>
         {
             return Accuracy(functionStack, dataSet.Data, dataSet.Label);
         }
 
-        public static double Accuracy<T>(FunctionStack<T> functionStack, NdArray<T> x, NdArray<int> y) where T : unmanaged, IComparable<T>
+        public static T Accuracy<T>(FunctionStack<T> functionStack, NdArray<T> x, NdArray<int> y) where T : unmanaged, IComparable<T>
         {
-            double matchCount = 0;
+            int matchCount = 0;
 
             NdArray<T> forwardResult = functionStack.Predict(x)[0];
 
@@ -72,7 +72,7 @@ namespace KelpNet
                 }
             }
 
-            return matchCount / x.BatchCount;
+            return (TVal<T>)matchCount / (TVal<T>)x.BatchCount;
         }
     }
 }

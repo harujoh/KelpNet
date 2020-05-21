@@ -59,7 +59,7 @@ namespace KelpNet.Tests
             Real[] cb = (Real[])cLinear.b.Data;
 
             //許容範囲を算出
-            double delta = 0.00001;
+            Real delta = 0.00001f;
 
             //W.grad
             Assert.AreEqual(cW.Length, linear.Weight.Data.Length);

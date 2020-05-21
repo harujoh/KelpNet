@@ -52,7 +52,7 @@ namespace KelpNet.Tests
             Real[] cbgrad = (Real[])cSwish.beta.Grad;
 
             //許容範囲を算出
-            double delta = 0.00001;
+            Real delta = 0.00001f;
 
             //y
             Assert.AreEqual(cYdata.Length, y.Data.Length);

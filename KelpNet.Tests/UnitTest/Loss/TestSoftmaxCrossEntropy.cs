@@ -53,7 +53,7 @@ namespace KelpNet.Tests
 
 
             //許容範囲を算出(内部の割引順が違うため誤差が大きい)
-            double delta = 0.00001;
+            Real delta = 0.00001f;
 
             //Loss
             Assert.AreEqual(cZ.Data[0], z.Data[0], delta);
