@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
@@ -39,14 +38,7 @@ namespace KelpNet
 
             if (initialW == null)
             {
-                if (typeof(T) == typeof(float))
-                {
-                    Array.Copy(Enumerable.Repeat(1.0f, Weight.Data.Length).ToArray(), this.Weight.Data, this.Weight.Data.Length);
-                }
-                else if (typeof(T) == typeof(double))
-                {
-                    Array.Copy(Enumerable.Repeat(1.0, Weight.Data.Length).ToArray(), this.Weight.Data, this.Weight.Data.Length);
-                }
+                this.Weight.Fill((TVal<T>)1.0);
             }
             else
             {
