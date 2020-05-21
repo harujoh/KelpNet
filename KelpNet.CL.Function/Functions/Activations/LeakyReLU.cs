@@ -41,7 +41,7 @@ namespace KelpNet.CL
             return result;
         }
 
-        public LeakyReLU(double slope = 0.2, string name = "LeakyReLU", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(slope, name, inputNames, outputNames)
+        public LeakyReLU(T? slope = null, string name = "LeakyReLU", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(slope, name, inputNames, outputNames)
         {
             this.SetParallel(gpuEnable, new[] { new KeyValuePair<string, string>(PARAM_NAME, this.Slope.ToString()) });
             this.InitFunc(new StreamingContext());

@@ -1,17 +1,13 @@
 ﻿using System;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -19,7 +15,7 @@ namespace KelpNet
 #if !DOUBLE
     public class AmsGrad<T> : Adam<T> where T : unmanaged, IComparable<T>
     {
-        public AmsGrad(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8,double eta = 1.0) : base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
+        public AmsGrad(T? alpha = null, T? beta1 = null, T? beta2 = null, T? epsilon = null, T? eta = null) : base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
         {
             switch (this)
             {
@@ -94,7 +90,7 @@ namespace KelpNet
                     vhat[i] = v[i];
                 }
 
-                Real step = alphaT / (KelpMath.Sqrt(vhat[i]) + epsilon);
+                Real step = alphaT / (Math.Sqrt(vhat[i]) + epsilon);
 
                 functionParameter.Data[i] -= eta * step * m[i];
             }

@@ -23,21 +23,11 @@ namespace KelpNet
         private readonly Function<T> _function; //確率でスキップされる
         private readonly Function<T> _resBlock; //必ず実行される
 
-        public StochasticDepth(Function<T> function, Function<T> resBlock = null, double pl = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public StochasticDepth(Function<T> function, Function<T> resBlock = null, T? pl = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this._function = function;
             this._resBlock = resBlock;
-
-            switch (this)
-            {
-                case StochasticDepth<float> stochasticDepthF:
-                    stochasticDepthF._pl = (float)pl;
-                    break;
-
-                case StochasticDepth<double> stochasticDepthD:
-                    stochasticDepthD._pl = pl;
-                    break;
-            }
+            this._pl = pl??(TVal<T>)0.5;
 
             InitFunc(new StreamingContext());
         }

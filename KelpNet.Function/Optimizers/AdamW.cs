@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
-
-#if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
 
 #if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -22,17 +17,17 @@ namespace KelpNet
     {
         public T WeightDecayRate;
 
-        public AdamW(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0, double weightDecayRate = 0) : base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
+        public AdamW(T? alpha = null, T? beta1 = null, T? beta2 = null, T? epsilon = null, T? eta = null, T weightDecayRate = default(T)) : base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
         {
+            WeightDecayRate = weightDecayRate;
+
             switch (this)
             {
                 case AdamW<float> adamWF:
-                    adamWF.WeightDecayRate = (float)weightDecayRate;
                     adamWF.Update = () => OptimizerF.Update(adamWF);
                     break;
 
                 case AdamW<double> adamWD:
-                    adamWD.WeightDecayRate = weightDecayRate;
                     adamWD.Update = () => OptimizerD.Update(adamWD);
                     break;
             }
@@ -92,7 +87,7 @@ namespace KelpNet
                 m[i] += (1 - beta1) * (grad - m[i]);
                 v[i] += (1 - beta2) * (grad * grad - v[i]);
 
-                Real step = alphaT / (KelpMath.Sqrt(v[i]) + epsilon);
+                Real step = alphaT / (Math.Sqrt(v[i]) + epsilon);
 
                 functionParameter.Data[i] -= eta * (step * m[i] + weightDecayRate * functionParameter.Data[i]);
             }

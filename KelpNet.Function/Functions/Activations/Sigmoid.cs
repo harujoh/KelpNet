@@ -2,17 +2,13 @@
 using System.Runtime.Serialization;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet.CPU
@@ -62,7 +58,7 @@ namespace KelpNet.CPU
     {
         public static Real ForwardActivate(Real x)
         {
-            return KelpMath.Tanh(x * 0.5f) * 0.5f + 0.5f;
+            return Math.Tanh(x * 0.5f) * 0.5f + 0.5f;
         }
 
         public static Real BackwardActivate(Real gy, Real y)

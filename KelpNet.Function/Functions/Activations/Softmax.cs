@@ -2,17 +2,13 @@
 using System.Runtime.Serialization;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -75,7 +71,7 @@ namespace KelpNet
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[indexOffset + i] = KelpMath.Exp(x.Data[indexOffset + i] - maxval);
+                    y[indexOffset + i] = Math.Exp(x.Data[indexOffset + i] - maxval);
                     sumval += y[indexOffset + i];
                 }
 

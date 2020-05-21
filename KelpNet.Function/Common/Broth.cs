@@ -1,17 +1,12 @@
-﻿using System;
-
-#if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
+﻿#if DOUBLE
+using System;
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -30,13 +25,13 @@ namespace KelpNet
 
             if (!_flip)
             {
-                _beta = Broth.Random() * KelpMath.PI * 2;
-                _boxMuller1 = KelpMath.Sqrt(-2 * KelpMath.Log(Broth.Random()));
-                boxMuller2 = KelpMath.Sin(_beta);
+                _beta = Broth.Random() * Math.PI * 2;
+                _boxMuller1 = Math.Sqrt(-2 * Math.Log(Broth.Random()));
+                boxMuller2 = Math.Sin(_beta);
             }
             else
             {
-                boxMuller2 = KelpMath.Cos(_beta);
+                boxMuller2 = Math.Cos(_beta);
             }
 
             _flip = !_flip;

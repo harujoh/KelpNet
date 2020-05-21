@@ -1,17 +1,13 @@
 ﻿using System;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -25,25 +21,21 @@ namespace KelpNet
         public T Epsilon;
         public T Eta;
 
-        public Adam(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double epsilon = 1e-8, double eta = 1.0)
+        public Adam(T? alpha = null, T? beta1 = null, T? beta2 = null, T? epsilon = null, T? eta = null)
         {
+            this.Alpha = alpha ?? (TVal<T>)0.001;
+            this.Beta1 = beta1 ?? (TVal<T>)0.9;
+            this.Beta2 = beta2 ?? (TVal<T>)0.999;
+            this.Epsilon = epsilon ?? (TVal<T>)1e-8;
+            this.Eta = eta ?? (TVal<T>)1.0;
+
             switch (this)
             {
                 case Adam<float> adamF:
-                    adamF.Alpha = (float)alpha;
-                    adamF.Beta1 = (float)beta1;
-                    adamF.Beta2 = (float)beta2;
-                    adamF.Epsilon = (float)epsilon;
-                    adamF.Eta = (float)eta;
                     adamF.Update = () => OptimizerF.Update(adamF);
                     break;
 
                 case Adam<double> adamD:
-                    adamD.Alpha = alpha;
-                    adamD.Beta1 = beta1;
-                    adamD.Beta2 = beta2;
-                    adamD.Epsilon = epsilon;
-                    adamD.Eta = eta;
                     adamD.Update = () => OptimizerD.Update(adamD);
                     break;
             }
@@ -100,10 +92,10 @@ namespace KelpNet
     {
         public static Real GetAlphaT(Real alpha, Real beta1, Real beta2, long updateCount)
         {
-            Real fix1 = 1 - KelpMath.Pow(beta1, updateCount);
-            Real fix2 = 1 - KelpMath.Pow(beta2, updateCount);
+            Real fix1 = 1 - Math.Pow(beta1, updateCount);
+            Real fix2 = 1 - Math.Pow(beta2, updateCount);
 
-            return alpha * KelpMath.Sqrt(fix2) / fix1;
+            return alpha * Math.Sqrt(fix2) / fix1;
         }
     }
 
@@ -124,7 +116,7 @@ namespace KelpNet
                 m[i] += (1 - beta1) * (grad - m[i]);
                 v[i] += (1 - beta2) * (grad * grad - v[i]);
 
-                Real step = alphaT / (KelpMath.Sqrt(v[i]) + epsilon);
+                Real step = alphaT / (Math.Sqrt(v[i]) + epsilon);
 
                 functionParameter.Data[i] -= eta * step * m[i];
             }

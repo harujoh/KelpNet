@@ -1,17 +1,13 @@
 ﻿using System;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -86,7 +82,7 @@ namespace KelpNet
                         for (int j = 0; j < dataLen; j++)
                         {
                             int dataIndex = b * input[k].Length + i * dataLen + j;
-                            y[dataIndex] = KelpMath.Exp(input[k].Data[dataIndex] - m[b * m.Length / input[k].BatchCount + j]);
+                            y[dataIndex] = Math.Exp(input[k].Data[dataIndex] - m[b * m.Length / input[k].BatchCount + j]);
                             s[b * m.Length / input[k].BatchCount + j] += y[dataIndex];
                         }
                     }
@@ -94,7 +90,7 @@ namespace KelpNet
 
                 for (int i = 0; i < s.Length; i++)
                 {
-                    m[i] += KelpMath.Log(s[i]);
+                    m[i] += Math.Log(s[i]);
                 }
 
                 for (int b = 0; b < input[k].BatchCount; b++)
@@ -136,7 +132,7 @@ namespace KelpNet
 
                 for (int i = 0; i < gx.Length; i++)
                 {
-                    gx[i] = KelpMath.Exp(y[i]) * coef;
+                    gx[i] = Math.Exp(y[i]) * coef;
                 }
 
                 for (int b = 0; b < teachSignal[k].BatchCount; b++)

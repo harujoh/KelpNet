@@ -25,18 +25,9 @@ namespace KelpNet.CPU
             InitFunc(new StreamingContext());
         }
 
-        public LeakyReLU(double slope = 0.2, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public LeakyReLU(T? slope = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            switch (this)
-            {
-                case LeakyReLU<float> leakyReLuF:
-                    leakyReLuF.Slope = (float)slope;
-                    break;
-
-                case LeakyReLU<double> leakyReLuD:
-                    leakyReLuD.Slope = slope;
-                    break;
-            }
+            this.Slope = slope??(TVal<T>)0.2;
 
             InitFunc(new StreamingContext());
         }

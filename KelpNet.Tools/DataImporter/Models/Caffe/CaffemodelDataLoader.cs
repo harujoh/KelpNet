@@ -136,13 +136,13 @@ namespace KelpNet.Tools
                     return SetupConvolution<T>(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Dropout":
-                    return new Dropout<T>(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Dropout<T>((TVal<T>)layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "Pooling":
                     return SetupPooling<T>(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "ReLU":
-                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>((TVal<T>)layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case "InnerProduct":
                     return SetupInnerProduct<T>(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
@@ -185,13 +185,13 @@ namespace KelpNet.Tools
                     return SetupConvolution<T>(layer.ConvolutionParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Dropout:
-                    return new Dropout<T>(layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return new Dropout<T>((TVal<T>)layer.DropoutParam.DropoutRatio, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Pooling:
                     return SetupPooling<T>(layer.PoolingParam, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.Relu:
-                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>(layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
+                    return layer.ReluParam != null ? layer.ReluParam.NegativeSlope == 0 ? (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new LeakyReLU<T>((TVal<T>)layer.ReluParam.NegativeSlope, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray()) : (Function<T>)new ReLU<T>(layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
 
                 case V1LayerParameter.LayerType.InnerProduct:
                     return SetupInnerProduct<T>(layer.InnerProductParam, layer.Blobs, layer.Name, layer.Bottoms.ToArray(), layer.Tops.ToArray());
@@ -276,8 +276,8 @@ namespace KelpNet.Tools
 
         static BatchNormalization<T> SetupBatchnorm<T>(BatchNormParameter param, List<BlobProto> blobs, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
-            double decay = param.MovingAverageFraction;
-            double eps = param.Eps;
+            TVal<T> decay = (TVal<T>)param.MovingAverageFraction;
+            TVal<T> eps = (TVal<T>)param.Eps;
             int size = (int)blobs[0].Shape.Dims[0];
 
             float[] avgMean = blobs[0].Datas;
@@ -346,7 +346,7 @@ namespace KelpNet.Tools
 
         static LRN<T> SetupLRN<T>(LRNParameter param, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>
         {
-            return new LRN<T>((int)param.LocalSize, param.K, param.Alpha / param.LocalSize, param.Beta, name, inputNames, outputNames);
+            return new LRN<T>((int)param.LocalSize, (TVal<T>)param.K, (TVal<T>)(param.Alpha / param.LocalSize), (TVal<T>)param.Beta, name, inputNames, outputNames);
         }
 
         static Eltwise<T> SetupEltwise<T>(EltwiseParameter param, string name, string[] inputNames, string[] outputNames) where T : unmanaged, IComparable<T>

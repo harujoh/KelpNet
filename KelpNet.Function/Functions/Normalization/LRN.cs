@@ -2,17 +2,13 @@
 using System.Runtime.Serialization;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -29,24 +25,12 @@ namespace KelpNet
         private T[] unitScale;
         private T[] scale;
 
-        public LRN(int n = 5, double k = 2, double alpha = 1e-4, double beta = 0.75, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public LRN(int n = 5, T? k = null, T? alpha = null, T? beta = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.n = n;
-
-            switch (this)
-            {
-                case LRN<float> lrnF:
-                    lrnF.k = (float)k;
-                    lrnF.alpha = (float)alpha;
-                    lrnF.beta = (float)beta;
-                    break;
-
-                case LRN<double> lrnD:
-                    lrnD.k = k;
-                    lrnD.alpha = alpha;
-                    lrnD.beta = beta;
-                    break;
-            }
+            this.k = k ?? (TVal<T>)2;
+            this.alpha = alpha ?? (TVal<T>)1e-4;
+            this.beta = beta ?? (TVal<T>)0.75;
 
             InitFunc(new StreamingContext());
         }
@@ -115,7 +99,7 @@ namespace KelpNet
             for (int i = 0; i < sumPart.Length; i++)
             {
                 unitScale[i] = k + alpha * sumPart[i];
-                scale[i] = KelpMath.Pow(unitScale[i], -beta);
+                scale[i] = Math.Pow(unitScale[i], -beta);
                 result[i] = input.Data[i] * scale[i];
             }
 

@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using KelpNet.CL;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETSTANDARD2_1
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #else
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
 
 //using Real = System.Double;
@@ -157,7 +156,7 @@ namespace KelpNet.Sample
                 {
                     for (int j = 0; j < this.stepsPerCycle; j++)
                     {
-                        result.Data[j + i * this.stepsPerCycle] = KelpMath.Sin(j * 2 * KelpMath.PI / this.stepsPerCycle);
+                        result.Data[j + i * this.stepsPerCycle] = Math.Sin(j * 2 * Math.PI / this.stepsPerCycle);
                     }
                 }
 

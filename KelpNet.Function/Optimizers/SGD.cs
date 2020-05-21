@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Runtime.Serialization;
+
 #if DOUBLE
 using Real = System.Double;
 #else
@@ -13,17 +13,17 @@ namespace KelpNet
     {
         public T LearningRate;
 
-        public SGD(double learningRate = 0.01)
+        public SGD(T? learningRate = null)
         {
+            this.LearningRate = learningRate ?? (TVal<T>)0.01;
+
             switch (this)
             {
                 case SGD<float> sgdF:
-                    sgdF.LearningRate = (float)learningRate;
                     sgdF.Update = () => OptimizerF.Update(sgdF);
                     break;
 
                 case SGD<double> sgdD:
-                    sgdD.LearningRate = learningRate;
                     sgdD.Update = () => OptimizerD.Update(sgdD);
                     break;
             }
@@ -65,7 +65,7 @@ namespace KelpNet
 #else
     public static class SGDParameterF
 #endif
-    { 
+    {
         public static void UpdateFunctionParameters(Real learningRate, NdArray<Real> functionParameter)
         {
             for (int i = 0; i < functionParameter.Data.Length; i++)

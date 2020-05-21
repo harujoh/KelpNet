@@ -1,17 +1,13 @@
 ﻿using System;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -27,21 +23,19 @@ namespace KelpNet
         public T FinalLr;
         public T Gamma;
 
-        public AdaBound(double alpha = 0.001, double beta1 = 0.9, double beta2 = 0.999, double finalLr = 0.1, double gamma = 1e-3, double epsilon = 1e-8, double eta = 1.0) : base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
+        public AdaBound(T? alpha = null, T? beta1 = null, T? beta2 = null, T? finalLr = null, T? gamma = null, T? epsilon = null, T? eta = null) : base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
         {
+            this.InitialAlpha = alpha??(TVal<T>)0.001;
+            this.FinalLr = finalLr??(TVal<T>)0.1;
+            this.Gamma = gamma??(TVal<T>)1e-3;
+
             switch (this)
             {
                 case AdaBound<float> adaBoundF:
-                    adaBoundF.InitialAlpha = (float)alpha;
-                    adaBoundF.FinalLr = (float)finalLr;
-                    adaBoundF.Gamma = (float)gamma;
                     adaBoundF.Update = () => OptimizerF.Update(adaBoundF);
                     break;
 
                 case AdaBound<double> adaBoundD:
-                    adaBoundD.InitialAlpha = alpha;
-                    adaBoundD.FinalLr = finalLr;
-                    adaBoundD.Gamma = gamma;
                     adaBoundD.Update = () => OptimizerD.Update(adaBoundD);
                     break;
             }
@@ -124,7 +118,7 @@ namespace KelpNet
                 m[i] += (1 - beta1) * (grad - m[i]);
                 v[i] += (1 - beta2) * (grad * grad - v[i]);
 
-                Real step = clip(alphaT / (KelpMath.Sqrt(v[i]) + epsilon));
+                Real step = clip(alphaT / (Math.Sqrt(v[i]) + epsilon));
 
                 functionParameter.Data[i] -= eta * step * m[i];
             }

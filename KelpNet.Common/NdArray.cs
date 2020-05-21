@@ -5,13 +5,11 @@ using System.Linq;
 using System.Text;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETSTANDARD2_1
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
-
 
 namespace KelpNet
 {
@@ -257,7 +255,7 @@ namespace KelpNet
             foreach (T data in datas)
             {
                 string[] divStr = data.ToString().Split('.');
-                intMaxLength = KelpMath.Max(intMaxLength, divStr[0].Length);
+                intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
 
                 if (divStr.Length > 1)
                 {
@@ -266,7 +264,7 @@ namespace KelpNet
 
                 if (realMaxLength != 8 && divStr.Length == 2)
                 {
-                    realMaxLength = KelpMath.Max(realMaxLength, divStr[1].Length);
+                    realMaxLength = Math.Max(realMaxLength, divStr[1].Length);
 
                     if (realMaxLength > 8)
                     {

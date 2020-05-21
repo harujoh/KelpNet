@@ -28,18 +28,9 @@ namespace KelpNet.CPU
             InitFunc(new StreamingContext());
         }
 
-        public Dropout(double dropoutRatio = 0.5, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public Dropout(T? dropoutRatio = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            switch (this)
-            {
-                case Dropout<float> dropOutF:
-                    dropOutF.DropoutRatio = (float)dropoutRatio;
-                    break;
-
-                case Dropout<double> dropOutD:
-                    dropOutD.DropoutRatio = dropoutRatio;
-                    break;
-            }
+            this.DropoutRatio = dropoutRatio??(TVal<T>)0.5;
 
             InitFunc(new StreamingContext());
         }

@@ -2,17 +2,13 @@
 using System.Threading.Tasks;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -24,19 +20,18 @@ namespace KelpNet
         public T Rho;
         public T Epsilon;
 
-        public AdaDelta(double rho = 0.95, double epsilon = 1e-6)
+        public AdaDelta(T? rho = null, T? epsilon = null)
         {
+            this.Rho = rho??(TVal<T>)0.95;
+            this.Epsilon = epsilon??(TVal<T>)1e-6;
+
             switch (this)
             {
                 case AdaDelta<float> adaDeltaF:
-                    adaDeltaF.Rho = (float)rho;
-                    adaDeltaF.Epsilon = (float)epsilon;
                     adaDeltaF.Update = () => OptimizerF.Update(adaDeltaF);
                     break;
 
                 case AdaDelta<double> adaDeltaD:
-                    adaDeltaD.Rho = rho;
-                    adaDeltaD.Epsilon = epsilon;
                     adaDeltaD.Update = () => OptimizerD.Update(adaDeltaD);
                     break;
             }
@@ -91,7 +86,7 @@ namespace KelpNet
                 msg[i] *= rho;
                 msg[i] += (1 - rho) * grad * grad;
 
-                Real dx = KelpMath.Sqrt((msdx[i] + epsilon) / (msg[i] + epsilon)) * grad;
+                Real dx = Math.Sqrt((msdx[i] + epsilon) / (msg[i] + epsilon)) * grad;
 
                 msdx[i] *= rho;
                 msdx[i] += (1 - rho) * dx * dx;

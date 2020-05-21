@@ -5,18 +5,15 @@ using KelpNet.CL.Common;
 using System.Collections.Generic;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETCOREAPP2_0
-using KelpMath = System.MathF;
-#else
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
-using Real = System.Single;
+#elif NETSTANDARD2_1
 using KelpNet.CL.Properties;
+using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using KelpNet.CL.Properties;
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet.CL
@@ -101,11 +98,11 @@ namespace KelpNet.CL
         public static NdArray<Real> SingleInputForward(NdArray<Real> input, int kernelWidth, int kernelHeight, int strideX, int strideY, int padX, int padY, bool coverAll, List<int[]> outputIndicesList, Func<NdArray<Real>, int[], int, int, List<int[]>, IFunction<Real>, NdArray<Real>> getForwardResult, ComputeKernel forwardKernel, IFunction<Real> maxPooling2d)
         {
             int outputHeight = coverAll ?
-                (int)KelpMath.Floor((input.Shape[1] - kernelHeight + padY * 2.0f + strideY - 1.0f) / strideY) + 1 :
-                (int)KelpMath.Floor((input.Shape[1] - kernelHeight + padY * 2.0f) / strideY) + 1;
+                (int)Math.Floor((input.Shape[1] - kernelHeight + padY * 2.0f + strideY - 1.0f) / strideY) + 1 :
+                (int)Math.Floor((input.Shape[1] - kernelHeight + padY * 2.0f) / strideY) + 1;
             int outputWidth = coverAll ?
-                (int)KelpMath.Floor((input.Shape[2] - kernelWidth + padX * 2.0f + strideX - 1.0f) / strideX) + 1 :
-                (int)KelpMath.Floor((input.Shape[2] - kernelWidth + padX * 2.0f) / strideX) + 1;
+                (int)Math.Floor((input.Shape[2] - kernelWidth + padX * 2.0f + strideX - 1.0f) / strideX) + 1 :
+                (int)Math.Floor((input.Shape[2] - kernelWidth + padX * 2.0f) / strideX) + 1;
             int[] outputIndices = new int[input.Shape[0] * outputHeight * outputWidth * input.BatchCount];
 
             using (ComputeBuffer<Real> gpuX = new ComputeBuffer<Real>(OpenCL.Context, ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer, input.Data))

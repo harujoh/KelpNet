@@ -2,17 +2,13 @@
 using System.Runtime.Serialization;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -25,18 +21,9 @@ namespace KelpNet
 
         public T Alpha;
 
-        public ELU(double alpha = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public ELU(T? alpha = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            switch (this)
-            {
-                case ELU<float> eluF:
-                    eluF.Alpha = (float)alpha;
-                    break;
-
-                case ELU<double> eluD:
-                    eluD.Alpha = alpha;
-                    break;
-            }
+            this.Alpha = alpha??(TVal<T>)1;
 
             InitFunc(new StreamingContext());
         }
@@ -78,7 +65,7 @@ namespace KelpNet
                 }
                 else
                 {
-                    result[i] = alpha * (KelpMath.Exp(x.Data[i]) - 1);
+                    result[i] = alpha * (Math.Exp(x.Data[i]) - 1);
                 }
             }
 
@@ -95,7 +82,7 @@ namespace KelpNet
                 }
                 else
                 {
-                    x.Grad[i] += y.Grad[i] * alpha * KelpMath.Exp(x.Data[i]);
+                    x.Grad[i] += y.Grad[i] * alpha * Math.Exp(x.Data[i]);
                 }
             }
         }
