@@ -24,13 +24,15 @@ namespace KelpNet.Tools
 
             using (FileStream stream = new FileStream(path, FileMode.Open))
             {
-                //ONNXはパラメータ値がごちゃ混ぜで入ってくるため、そのカウンター
+                //ONNXは各関数のパラメータ値が一箇所に順番に詰め込まれてくるため、そのカウンター
                 int initilizerIndex = 0;
 
                 ModelProto netparam = Serializer.Deserialize<ModelProto>(stream);
 
+                //OnnxmodelDataLoaderではデータの0次元目をミニバッチカウントとして扱う
                 List<TensorShapeProto.Dimension> dimension = netparam.Graph.Inputs[0].Type.TensorType.Shape.Dims;
-                int[] inputShape = new int[dimension.Count]; //ここでは0次元目をバッチカウントとして扱う
+
+                int[] inputShape = new int[dimension.Count]; 
                 for (int i = 0; i < inputShape.Length; i++)
                 {
                     inputShape[i] = (int)dimension[i].DimValue;
@@ -39,7 +41,18 @@ namespace KelpNet.Tools
                 foreach (NodeProto node in netparam.Graph.Nodes)
                 {
                     int[] outputShape;
-                    result.Add(CreateFunction<T>(node, netparam.OpsetImports[0].Version, netparam.Graph.Initializers, inputShape, ref initilizerIndex, out outputShape));
+                    Function<T> func = CreateFunction<T>(node, netparam.OpsetImports[0].Version, netparam.Graph.Initializers, inputShape, ref initilizerIndex, out outputShape);
+
+                    if (func != null)
+                    {
+                        result.Add(func);
+                    }
+                    else
+                    {
+                        //関数をスキップしたので前の関数の出力を今回の関数の出力として扱う
+                        result.Last().OutputNames = new[] { node.Outputs[0] };
+                    }
+
                     inputShape = outputShape;
                 }
             }
@@ -96,7 +109,7 @@ namespace KelpNet.Tools
                         if (node.GetAttribute("spatial").I != 1)
                         {
                             List<int> tmp = new List<int>();
-                            tmp.Add(0);//ここの次元指定はミニバッチ数に当たる
+                            tmp.Add(0); //ここの次元指定はミニバッチ数に当たる
                             tmp.AddRange(Enumerable.Range(2, inputShape.Length - 2));
                             axis = tmp.ToArray();
                         }

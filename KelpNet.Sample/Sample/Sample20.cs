@@ -20,7 +20,7 @@ namespace KelpNet.Sample
         private const string VGG16_MODEL_FILE = "vgg16-7.onnx";
         private const string VGG19_MODEL_FILE = "vgg19-7.onnx";
         private const string VGG16_MODEL_FILE_HASH = "a5a3fd73d345152852568509ebff19fc";
-        private const string VGG19_MODEL_FILE_HASH = "";
+        private const string VGG19_MODEL_FILE_HASH = "3ddcbebbe6c937d504b09c48bf0ba371";
         private const string CLASS_LIST_PATH = "Data/synset_words.txt";
 
         private static readonly string[] Urls = { DOWNLOAD_URL + VGG16_MODEL_FILE, DOWNLOAD_URL + VGG19_MODEL_FILE };
@@ -45,7 +45,6 @@ namespace KelpNet.Sample
                 string modelFilePath = InternetFileDownloader.Donwload(Urls[vggId], FileNames[vggId], Hashes[vggId]);
 
                 List<Function<Real>> vggNet = OnnxmodelDataLoader.LoadNetWork<Real>(modelFilePath);
-                while (vggNet.Remove(null)) { }
 
                 string[] classList = File.ReadAllLines(CLASS_LIST_PATH);
 
