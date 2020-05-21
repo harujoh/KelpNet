@@ -2,17 +2,13 @@
 using System.Runtime.Serialization;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -57,7 +53,7 @@ namespace KelpNet
 
             for (int i = 0; i < resultData.Length; i++)
             {
-                resultData[i] = KelpMath.Asin(x.Data[i]);
+                resultData[i] = Math.Asin(x.Data[i]);
             }
 
             return new NdArray<Real>(resultData, x.Shape, x.BatchCount, arcSin);
@@ -67,7 +63,7 @@ namespace KelpNet
         {
             for (int i = 0; i < y.Grad.Length; i++)
             {
-                x.Grad[i] += 1 / KelpMath.Sqrt(-x.Data[i] * x.Data[i] + 1) * y.Grad[i];
+                x.Grad[i] += 1 / Math.Sqrt(-x.Data[i] * x.Data[i] + 1) * y.Grad[i];
             }
         }
     }

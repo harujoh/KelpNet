@@ -2,17 +2,13 @@
 using System.Runtime.Serialization;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -25,20 +21,10 @@ namespace KelpNet
         public T Beta;
         public T BetaInv;
 
-        public Softplus(double beta = 1, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public Softplus(T? beta = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            switch (this)
-            {
-                case Softplus<float> softplusF:
-                    softplusF.Beta = (float)beta;
-                    softplusF.BetaInv = 1.0f / (float)beta;
-                    break;
-
-                case Softplus<double> softplusD:
-                    softplusD.Beta = beta;
-                    softplusD.BetaInv = 1.0 / beta;
-                    break;
-            }
+            this.Beta = beta??(TVal<T>)1.0;
+            this.BetaInv = (TVal<T>)1.0 / this.Beta;
 
             InitFunc(new StreamingContext());
         }
@@ -91,7 +77,7 @@ namespace KelpNet
 
                 for (int i = 0; i < x.Length; i++)
                 {
-                    y[i + b * x.Length] = (maxval + KelpMath.Log(1.0f + KelpMath.Exp(-KelpMath.Abs(x.Data[i + b * x.Length] * beta)))) * betaInv;
+                    y[i + b * x.Length] = (maxval + Math.Log(1.0f + Math.Exp(-Math.Abs(x.Data[i + b * x.Length] * beta)))) * betaInv;
                 }
 
             }
@@ -103,7 +89,7 @@ namespace KelpNet
         {
             for (int i = 0; i < x.Grad.Length; i++)
             {
-                x.Grad[i] += (1.0f - 1.0f / (1.0f + KelpMath.Exp(beta * y.Data[i]))) * y.Grad[i];
+                x.Grad[i] += (1.0f - 1.0f / (1.0f + Math.Exp(beta * y.Data[i]))) * y.Grad[i];
             }
 
         }

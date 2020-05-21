@@ -2,17 +2,13 @@
 using System.Runtime.Serialization;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -25,20 +21,10 @@ namespace KelpNet
 
         public NdArray<T> Beta;
 
-        public Swish(int[] betaShape, double beta = 1.0, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public Swish(int[] betaShape, T? beta = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Beta = new NdArray<T>(betaShape);
-
-            switch (this)
-            {
-                case Swish<float> swishF:
-                    swishF.Beta.Fill((float)beta);
-                    break;
-
-                case Swish<double> swishD:
-                    swishD.Beta.Fill(beta);
-                    break;
-            }
+            this.Beta.Fill(beta ?? (TVal<T>)1.0);
 
             this.Parameters = new[] { this.Beta };
 
@@ -70,7 +56,7 @@ namespace KelpNet
     public static class SwishF
 #endif
     {
-        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> beta,IFunction<Real> swish)
+        public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> beta, IFunction<Real> swish)
         {
             Real[] result = new Real[x.Data.Length];
 
@@ -79,7 +65,7 @@ namespace KelpNet
                 for (int i = 0; i < x.Length; i++)
                 {
                     int offsetedIndex = b * x.Length + i;
-                    result[offsetedIndex] = x.Data[offsetedIndex] * (KelpMath.Tanh(x.Data[offsetedIndex] * beta.Data[i] * 0.5f) * 0.5f + 0.5f);
+                    result[offsetedIndex] = x.Data[offsetedIndex] * (Math.Tanh(x.Data[offsetedIndex] * beta.Data[i] * 0.5f) * 0.5f + 0.5f);
                 }
             }
 
@@ -93,7 +79,7 @@ namespace KelpNet
                 for (int i = 0; i < y.Length; i++)
                 {
                     int offsetedIndex = b * x.Length + i;
-                    Real sig = KelpMath.Tanh(beta.Data[i] * x.Data[offsetedIndex] * 0.5f) * 0.5f + 0.5f;
+                    Real sig = Math.Tanh(beta.Data[i] * x.Data[offsetedIndex] * 0.5f) * 0.5f + 0.5f;
                     Real by = beta.Data[i] * x.Data[offsetedIndex] * sig;
 
                     x.Grad[offsetedIndex] += y.Grad[offsetedIndex] * (by + sig * (1 - by));

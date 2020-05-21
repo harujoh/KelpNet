@@ -2,11 +2,10 @@
 using KelpNet.CL;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETCOREAPP2_0
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #else
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
 
 //using Real = System.Double;
@@ -34,9 +33,9 @@ namespace KelpNet.Sample
             for (int i = 0; i < N; i++)
             {
                 //Sin波を一周期分用意
-                Real radian = -KelpMath.PI + KelpMath.PI * 2.0f * i / (N - 1);
+                Real radian = -Math.PI + Math.PI * 2.0f * i / (N - 1);
                 trainData[i] = new[] { radian };
-                trainLabel[i] = new Real[] { KelpMath.Sin(radian) };
+                trainLabel[i] = new Real[] { Math.Sin(radian) };
             }
 
             //ネットワークの構成を FunctionStack に書き連ねる
@@ -55,7 +54,7 @@ namespace KelpNet.Sample
                 for (int j = 0; j < N; j++)
                 {
                     //ネットワークは訓練を実行すると戻り値に誤差が返ってくる
-                    loss += Trainer.Train(nn, trainData[j], trainLabel[j], new MeanSquaredError<Real>(), new SGD<Real>(0.1));
+                    loss += Trainer.Train(nn, trainData[j], trainLabel[j], new MeanSquaredError<Real>(), new SGD<Real>(0.1f));
                 }
 
                 if (i % (EPOCH / 10) == 0)

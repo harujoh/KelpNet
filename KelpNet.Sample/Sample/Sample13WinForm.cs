@@ -5,11 +5,10 @@ using KelpNet.CL;
 using KelpNet.Tools;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETCOREAPP2_0
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #else
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
 
 //using Real = System.Double;
@@ -39,7 +38,7 @@ namespace KelpNet.Sample
 
             this.model = new Deconvolution2D<Real>(1, 1, 15, 1, 7, gpuEnable: true);
 
-            this.optimizer = new SGD<Real>(learningRate: 0.01);
+            this.optimizer = new SGD<Real>(learningRate: 0.01f);
             optimizer.SetUp(this.model);
         }
 
@@ -71,7 +70,7 @@ namespace KelpNet.Sample
                 for (int py = 0; py < max_xy; py++)
                 {
                     Real r2 = (px - c_xy) * (px - c_xy) + (py - c_xy) * (py - c_xy);
-                    core[py * max_xy + px] = KelpMath.Exp(-r2 / sig2) * 1;
+                    core[py * max_xy + px] = Math.Exp(-r2 / sig2) * 1;
                 }
             }
 

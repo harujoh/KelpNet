@@ -4,11 +4,10 @@ using KelpNet.CL;
 using KelpNet.Tools;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETSTANDARD2_1
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #else
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
 
 //using Real = System.Double;
@@ -157,7 +156,7 @@ namespace KelpNet.Sample
                 }
             }
 
-            Console.WriteLine(KelpMath.Pow(2.0f, sum / wnum));
+            Console.WriteLine(Math.Pow(2.0f, sum / wnum));
         }
 
         static Real CalPs(FunctionStack<Real> model, List<int> s)
@@ -184,7 +183,7 @@ namespace KelpNet.Sample
                 //l3 Softmax(l3 Linear)
                 NdArray<Real> yv = model.Functions[4].Forward(model.Functions[3].Forward(h))[0];
                 Real pi = yv.Data[s[i - 1]];
-                sum -= KelpMath.Log(pi, 2);
+                sum -= Math.Log(pi, 2);
             }
 
             return sum;

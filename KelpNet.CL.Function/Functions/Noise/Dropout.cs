@@ -30,7 +30,7 @@ namespace KelpNet.CL
         [DataMember]
         public bool IsParallel { get; set; }
 
-        public Dropout(double dropoutRatio = 0.5, string name = "Dropout", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(dropoutRatio, name, inputNames, outputNames)
+        public Dropout(T? dropoutRatio = null, string name = "Dropout", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(dropoutRatio, name, inputNames, outputNames)
         {
             this.SetParallel(gpuEnable);
         }

@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using KelpNet.CPU;
-#if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
 
 #if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -169,14 +166,14 @@ namespace KelpNet
             int index = 0;
             for (int outIndex = 0; outIndex < lhParam.Length; outIndex++)
             {
-                param[1][outIndex] = KelpMath.Tanh(lstmIn.Data[index++]);
+                param[1][outIndex] = Math.Tanh(lstmIn.Data[index++]);
                 param[2][outIndex] = Sigmoid(lstmIn.Data[index++]);
                 param[3][outIndex] = Sigmoid(lstmIn.Data[index++]);
                 param[4][outIndex] = Sigmoid(lstmIn.Data[index++]);
 
                 param[5][outIndex] = param[1][outIndex] * param[2][outIndex] + param[3][outIndex] * param[0][outIndex];
 
-                lhParam[outIndex] = param[4][outIndex] * KelpMath.Tanh(param[5][outIndex]);
+                lhParam[outIndex] = param[4][outIndex] * Math.Tanh(param[5][outIndex]);
             }
 
             paramList.Add(param);
@@ -201,7 +198,7 @@ namespace KelpNet
             int index = 0;
             for (int prevOutputIndex = 0; prevOutputIndex < gcPrev.Length; prevOutputIndex++)
             {
-                Real co = KelpMath.Tanh(param[5][prevOutputIndex]);
+                Real co = Math.Tanh(param[5][prevOutputIndex]);
 
                 gcPrev[prevOutputIndex] += y.Grad[prevOutputIndex] * param[4][prevOutputIndex] * GradTanh(co);
 
@@ -254,7 +251,7 @@ namespace KelpNet
 
         static Real Sigmoid(Real x)
         {
-            return 1 / (1 + KelpMath.Exp(-x));
+            return 1 / (1 + Math.Exp(-x));
         }
 
         static Real GradSigmoid(Real x)

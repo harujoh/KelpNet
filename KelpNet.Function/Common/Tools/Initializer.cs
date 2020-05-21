@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security;
-
-#if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
 
 #if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -79,7 +73,7 @@ namespace KelpNet
         //初期値が入力されなかった場合、この関数で初期化を行う
         public static void InitHeNorm(NdArray<Real> array, Real masterScale = 1)
         {
-            Real s = masterScale * KelpMath.Sqrt(2.0f / array.Length);
+            Real s = masterScale * Math.Sqrt(2.0f / array.Length);
 
             for (int i = 0; i < array.Data.Length; i++)
             {

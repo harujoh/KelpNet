@@ -1,17 +1,13 @@
 ﻿using System;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -23,21 +19,19 @@ namespace KelpNet
         public T Alpha;
         public T Epsilon;
 
-        public RMSprop(double learningRate = 0.01, double alpha = 0.99, double epsilon = 1e-8)
+        public RMSprop(T? learningRate = null, T? alpha = null, T? epsilon = null)
         {
+            this.LearningRate = learningRate??(TVal<T>)0.01;
+            this.Alpha = alpha?? (TVal<T>)0.99;
+            this.Epsilon = epsilon?? (TVal<T>)1e-8;
+
             switch (this)
             {
                 case RMSprop<float> rmsPropF:
-                    rmsPropF.LearningRate = (float)learningRate;
-                    rmsPropF.Alpha = (float)alpha;
-                    rmsPropF.Epsilon = (float)epsilon;
                     rmsPropF.Update = () => OptimizerF.Update(rmsPropF);
                     break;
 
                 case RMSprop<double> rmsPropD:
-                    rmsPropD.LearningRate = learningRate;
-                    rmsPropD.Alpha = alpha;
-                    rmsPropD.Epsilon = epsilon;
                     rmsPropD.Update = () => OptimizerD.Update(rmsPropD);
                     break;
             }
@@ -90,7 +84,7 @@ namespace KelpNet
                 ms[i] *= alpha;
                 ms[i] += (1 - alpha) * grad * grad;
 
-                functionParameter.Data[i] -= learningRate * grad / (KelpMath.Sqrt(ms[i]) + epsilon);
+                functionParameter.Data[i] -= learningRate * grad / (Math.Sqrt(ms[i]) + epsilon);
             }
         }
     }

@@ -5,11 +5,10 @@ using NChainer;
 using NConstrictor;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETCOREAPP2_0
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #else
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
 
 //using Real = System.Double;
@@ -63,12 +62,12 @@ namespace KelpNet.Tests
             bool coverAll = Mother.Dice.Next(1) == 0;
 
             int outputHeight = coverAll ?
-                (int)KelpMath.Floor((heightSize - kHeight + padY * 2.0f + strideY - 1) / strideY) + 1 :
-                (int)KelpMath.Floor((heightSize - kHeight + padY * 2.0f) / strideY) + 1;
+                (int)Math.Floor((heightSize - kHeight + padY * 2.0f + strideY - 1) / strideY) + 1 :
+                (int)Math.Floor((heightSize - kHeight + padY * 2.0f) / strideY) + 1;
 
             int outputWidth = coverAll ?
-                (int)KelpMath.Floor((wideSize - kWidth + padX * 2.0f + strideX - 1) / strideX) + 1 :
-                (int)KelpMath.Floor((wideSize - kWidth + padX * 2.0f) / strideX) + 1;
+                (int)Math.Floor((wideSize - kWidth + padX * 2.0f + strideX - 1) / strideX) + 1 :
+                (int)Math.Floor((wideSize - kWidth + padX * 2.0f) / strideX) + 1;
 
             Real[,,,] input = Initializer.GetRandomValues<Real[,,,]>(batchCount, chCount, heightSize, wideSize);
 

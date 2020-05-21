@@ -53,7 +53,7 @@ namespace KelpNet.Sample
             ChainerModelDataLoader.ModelLoad(MODEL_FILE_PATH, nn);
 
             //あとは通常通り使用する
-            SGD<Real> sgd = new SGD<Real>(0.1);
+            SGD<Real> sgd = new SGD<Real>(0.1f);
             sgd.SetUp(nn);
 
             //入力データ

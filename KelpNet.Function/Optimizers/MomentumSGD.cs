@@ -14,19 +14,18 @@ namespace KelpNet
         public T LearningRate;
         public T Momentum;
 
-        public MomentumSGD(double learningRate = 0.01, double momentum = 0.9)
+        public MomentumSGD(T? learningRate = null, T? momentum = null)
         {
+            this.LearningRate = learningRate??(TVal<T>)0.01;
+            this.Momentum = momentum?? (TVal<T>)0.9;
+
             switch (this)
             {
                 case MomentumSGD<float> momentumSgdF:
-                    momentumSgdF.LearningRate = (float)learningRate;
-                    momentumSgdF.Momentum = (float)momentum;
                     momentumSgdF.Update = () => OptimizerF.Update(momentumSgdF);
                     break;
 
                 case MomentumSGD<double> momentumSgdD:
-                    momentumSgdD.LearningRate = learningRate;
-                    momentumSgdD.Momentum = momentum;
                     momentumSgdD.Update = () => OptimizerD.Update(momentumSgdD);
                     break;
             }

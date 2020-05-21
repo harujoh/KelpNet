@@ -6,11 +6,10 @@ using KelpNet.CPU;
 using ProtoBuf;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETSTANDARD2_1
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet.Tools
@@ -76,11 +75,11 @@ namespace KelpNet.Tools
                             channelSize: bn_scale.FloatDatas.Length,
                             useGamma: true,
                             useBeta: true,
-                            eps: node.GetAttribute("epsilon").F,
+                            eps: (TVal<T>)node.GetAttribute("epsilon").F,
                             name: node.Name,
                             inputNames: new[] { node.Inputs[0] },
                             outputNames: new[] { node.Outputs[0] },
-                            decay: node.GetAttribute("momentum").F
+                            decay: (TVal<T>)node.GetAttribute("momentum").F
                         );
 
                         Array.Copy(bn_scale.FloatDatas, batchNormalization.Gamma.Data, bn_scale.FloatDatas.Length);
@@ -116,11 +115,11 @@ namespace KelpNet.Tools
 
                         BatchNormalization<T> batchNormalization = new BatchNormalization<T>(
                             channelSize: bn_scale.FloatDatas.Length,
-                            eps: node.GetAttribute("epsilon").F,
+                            eps: (TVal<T>)node.GetAttribute("epsilon").F,
                             name: node.Name,
                             inputNames: new[] { node.Inputs[0] },
                             outputNames: new[] { node.Outputs[0] },
-                            decay: node.GetAttribute("momentum").F,
+                            decay: (TVal<T>)node.GetAttribute("momentum").F,
                             axis: axis
                         );
 
@@ -192,7 +191,7 @@ namespace KelpNet.Tools
                     else if (version >= 7)
                     {
                         outputShape = inputShape;
-                        return new Dropout<T>(node.GetAttribute("ratio").F, name: node.Name, inputNames: new[] { node.Inputs[0] }, outputNames: new[] { node.Outputs[0] });
+                        return new Dropout<T>((TVal<T>)node.GetAttribute("ratio").F, name: node.Name, inputNames: new[] { node.Inputs[0] }, outputNames: new[] { node.Outputs[0] });
                     }
                     else if (version >= 6)
                     {
@@ -271,8 +270,8 @@ namespace KelpNet.Tools
                         List<int> tmpOutputShape = new List<int>();
                         tmpOutputShape.Add(inputShape[0]);//ミニバッチカウント
                         tmpOutputShape.Add(inputShape[1]);//チャンネル
-                        tmpOutputShape.Add((int)KelpMath.Floor((inputShape[2] - kernelSize[1] + pad[1] * 2.0f + stride[1] - 1.0f) / stride[1]) + 1);
-                        tmpOutputShape.Add((int)KelpMath.Floor((inputShape[3] - kernelSize[0] + pad[0] * 2.0f + stride[0] - 1.0f) / stride[0]) + 1);
+                        tmpOutputShape.Add((int)Math.Floor((inputShape[2] - kernelSize[1] + pad[1] * 2.0f + stride[1] - 1.0f) / stride[1]) + 1);
+                        tmpOutputShape.Add((int)Math.Floor((inputShape[3] - kernelSize[0] + pad[0] * 2.0f + stride[0] - 1.0f) / stride[0]) + 1);
                         outputShape = tmpOutputShape.ToArray();
 
                         return new MaxPooling2D<T>(

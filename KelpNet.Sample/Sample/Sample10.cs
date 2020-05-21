@@ -3,11 +3,10 @@ using KelpNet.CL;
 using KelpNet.Tools;
 
 #if DOUBLE
-using KelpMath = System.Math;
 #elif NETSTANDARD2_1
-using KelpMath = System.MathF;
+using Math = System.MathF;
 #else
-using KelpMath = KelpNet.MathF;
+using Math = KelpNet.MathF;
 #endif
 
 //using Real = System.Double;
@@ -75,12 +74,12 @@ namespace KelpNet.Sample
 
             //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
             GradientClipping<Real> gradientClipping = new GradientClipping<Real>(threshold: GRAD_CLIP);
-            SGD<Real> sgd = new SGD<Real>(learningRate: 0.1);
+            SGD<Real> sgd = new SGD<Real>(learningRate: 0.1f);
             gradientClipping.SetUp(model);
             sgd.SetUp(model);
 
             Real wholeLen = trainData.Length;
-            int jump = (int)KelpMath.Floor(wholeLen / BATCH_SIZE);
+            int jump = (int)Math.Floor(wholeLen / BATCH_SIZE);
             int epoch = 0;
 
             Console.WriteLine("Train Start.");
@@ -153,7 +152,7 @@ namespace KelpNet.Sample
             }
 
             //calc perplexity
-            return KelpMath.Exp(totalLoss / (totalLossCount - 1));
+            return Math.Exp(totalLoss / (totalLossCount - 1));
         }
     }
 }

@@ -4,19 +4,17 @@ using System.Runtime.Serialization;
 using KelpNet.CL.Common;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
 using Convolution2DFunc = KelpNet.CPU.Convolution2DD;
-#else
+#elif NETSTANDARD2_1
 using KelpNet.CL.Properties;
 using Real = System.Single;
+using Math = System.MathF;
+using Convolution2DFunc = KelpNet.CPU.Convolution2DF;
+#elif NETSTANDARD2_0
+using KelpNet.CL.Properties;
+using Real = System.Single;
+using Math = KelpNet.MathF;
 using Convolution2DFunc = KelpNet.CPU.Convolution2DF;
 #endif
 
@@ -132,8 +130,8 @@ namespace KelpNet.CL
             int kernelHeight = weight.Shape[2];
             int kernelWidth = weight.Shape[3];
 
-            int outputHeight = (int)KelpMath.Floor((input.Shape[1] - kernelHeight + padY * 2.0f) / strideY) + 1;
-            int outputWidth = (int)KelpMath.Floor((input.Shape[2] - kernelWidth + padX * 2.0f) / strideX) + 1;
+            int outputHeight = (int)Math.Floor((input.Shape[1] - kernelHeight + padY * 2.0f) / strideY) + 1;
+            int outputWidth = (int)Math.Floor((input.Shape[2] - kernelWidth + padX * 2.0f) / strideX) + 1;
 
             Real[] result = new Real[outputCount * outputHeight * outputWidth * input.BatchCount];
 

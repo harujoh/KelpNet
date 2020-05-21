@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.Serialization;
-#if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
 
 #if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -47,7 +44,7 @@ namespace KelpNet
 
         private readonly int ChannelSize;
 
-        public BatchNormalization(int channelSize, double decay = 0.9, double eps = 2e-5, bool useGamma = true, bool useBeta = true, int initialGamma = 1, int initialBeta = 0, int[] axis = null, int initialAvgMean = 0, int initialAvgVar = 1, bool train = true, bool finetune = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public BatchNormalization(int channelSize, T? decay = null, T? eps = null, bool useGamma = true, bool useBeta = true, int initialGamma = 1, int initialBeta = 0, int[] axis = null, int initialAvgMean = 0, int initialAvgVar = 1, bool train = true, bool finetune = false, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.ChannelSize = channelSize;
             this.Train = train;
@@ -79,30 +76,15 @@ namespace KelpNet
             this.AvgVar = new NdArray<T>(channelSize);
             this.AvgVar.Name = this.Name + " Variance";
 
-            switch (this)
-            {
-                case BatchNormalization<float> batchNormalizationF:
-                    batchNormalizationF.Decay = (float)decay;
-                    batchNormalizationF.Eps = (float)eps;
+            this.Decay = decay??(TVal<T>)0.9;
+            this.Eps = eps?? (TVal<T>)2e-5;
 
-                    batchNormalizationF.Gamma.Data = Enumerable.Repeat((float)initialGamma, batchNormalizationF.Gamma.Data.Length).ToArray();
-                    batchNormalizationF.Beta.Data = Enumerable.Repeat((float)initialBeta, batchNormalizationF.Beta.Data.Length).ToArray();
+            this.Gamma.Fill((TVal<T>)initialGamma);
+            this.Beta.Fill((TVal<T>)initialBeta);
 
-                    batchNormalizationF.AvgMean.Data = Enumerable.Repeat((float)initialAvgMean, batchNormalizationF.AvgMean.Data.Length).ToArray();
-                    batchNormalizationF.AvgVar.Data = Enumerable.Repeat((float)initialAvgVar, batchNormalizationF.AvgVar.Data.Length).ToArray();
-                    break;
+            this.AvgMean.Fill((TVal<T>)initialAvgMean);
+            this.AvgVar.Fill((TVal<T>)initialAvgVar);
 
-                case BatchNormalization<double> batchNormalizationD:
-                    batchNormalizationD.Decay = decay;
-                    batchNormalizationD.Eps = eps;
-
-                    batchNormalizationD.Gamma.Data = Enumerable.Repeat((double)initialGamma, batchNormalizationD.Gamma.Data.Length).ToArray();
-                    batchNormalizationD.Beta.Data = Enumerable.Repeat((double)initialBeta, batchNormalizationD.Beta.Data.Length).ToArray();
-
-                    batchNormalizationD.AvgMean.Data = Enumerable.Repeat((double)initialAvgMean, batchNormalizationD.AvgMean.Data.Length).ToArray();
-                    batchNormalizationD.AvgVar.Data = Enumerable.Repeat((double)initialAvgVar, batchNormalizationD.AvgVar.Data.Length).ToArray();
-                    break;
-            }
 
             //自分で学習せずオプティマイザに任せる
             if (!this.Train)
@@ -214,7 +196,7 @@ namespace KelpNet
             std = new Real[channelSize];
             for (int i = 0; i < std.Length; i++)
             {
-                std[i] = KelpMath.Sqrt(Variance[i] + Eps);
+                std[i] = Math.Sqrt(Variance[i] + Eps);
             }
 
             //結果を計算
@@ -238,7 +220,7 @@ namespace KelpNet
             //パラメータを更新
             if (train)
             {
-                Real adjust = x.BatchCount / KelpMath.Max(x.BatchCount - 1, 1.0f); // unbiased estimation
+                Real adjust = x.BatchCount / Math.Max(x.BatchCount - 1, 1.0f); // unbiased estimation
 
                 for (int i = 0; i < avgMean.Data.Length; i++)
                 {

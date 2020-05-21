@@ -1,17 +1,13 @@
 ﻿using System;
 
 #if DOUBLE
-using KelpMath = System.Math;
-#elif NETSTANDARD2_1
-using KelpMath = System.MathF;
-#elif NETSTANDARD2_0
-using KelpMath = KelpNet.MathF;
-#endif
-
-#if DOUBLE
 using Real = System.Double;
-#else
+#elif NETSTANDARD2_1
 using Real = System.Single;
+using Math = System.MathF;
+#elif NETSTANDARD2_0
+using Real = System.Single;
+using Math = KelpNet.MathF;
 #endif
 
 namespace KelpNet
@@ -22,19 +18,18 @@ namespace KelpNet
         public T LearningRate;
         public T Epsilon;
 
-        public AdaGrad(double learningRate = 0.01, double epsilon = 1e-8)
+        public AdaGrad(T? learningRate = null, T? epsilon = null)
         {
+            this.LearningRate = learningRate??(TVal<T>)0.01;
+            this.Epsilon = epsilon?? (TVal<T>)1e-8;
+
             switch (this)
             {
                 case AdaGrad<float> adagradF:
-                    adagradF.LearningRate = (float)learningRate;
-                    adagradF.Epsilon = (float)epsilon;
                     adagradF.Update = () => OptimizerF.Update(adagradF);
                     break;
 
                 case AdaGrad<double> adagradD:
-                    adagradD.LearningRate = learningRate;
-                    adagradD.Epsilon = epsilon;
                     adagradD.Update = () => OptimizerD.Update(adagradD);
                     break;
             }
@@ -87,7 +82,7 @@ namespace KelpNet
 
                 h[i] += grad * grad;
 
-                functionParameter.Data[i] -= learningRate * grad / (KelpMath.Sqrt(h[i]) + epsilon);
+                functionParameter.Data[i] -= learningRate * grad / (Math.Sqrt(h[i]) + epsilon);
             }
         }
     }
