@@ -36,8 +36,10 @@
     <Compile Include="..\KelpNet.Function\Common\NdArray.cs" Link="Common\NdArray.cs" />
     <Compile Include="..\KelpNet.Function\Common\Optimizer\Optimizer.cs" Link="Common\Optimizer\Optimizer.cs" />
     <Compile Include="..\KelpNet.Function\Common\Tools\Initializer.cs" Link="Common\Tools\Initializer.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\ClippedReLU.cs" Link="Functions\Activations\ClippedReLU.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Activations\ELU.cs" Link="Functions\Activations\ELU.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Activations\LeakyReLU.cs" Link="Functions\Activations\LeakyReLU.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Activations\Mish.cs" Link="Functions\Activations\Mish.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Activations\ReLU.cs" Link="Functions\Activations\ReLU.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Activations\Sigmoid.cs" Link="Functions\Activations\Sigmoid.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Activations\Softmax.cs" Link="Functions\Activations\Softmax.cs" />
@@ -87,7 +89,6 @@
     <Folder Include="Common\Functions\Interface\" />
     <Folder Include="Common\Tools\" />
     <Folder Include="Common\Optimizer\" />
-    <Folder Include="Functions\Activations\" />
     <Folder Include="Functions\Connections\" />
     <Folder Include="Functions\Mathmetrics\Trigonometric\" />
     <Folder Include="Functions\Noise\" />

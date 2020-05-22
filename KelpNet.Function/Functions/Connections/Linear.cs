@@ -141,7 +141,7 @@ namespace KelpNet.CPU
             int outputCount = weight.Shape[0];
             int inputCount = weight.Shape[1];
 
-            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y, x) : y.Grad;
             if (bias != null) CalcBiasGrad(activatedgy, y.BatchCount, outputCount, bias.Grad);
 
             for (int batchCount = 0; batchCount < y.BatchCount; batchCount++)

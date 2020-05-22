@@ -16,7 +16,7 @@ namespace KelpNet.CPU
         const string FUNCTION_NAME = "ReLU";
 
         public Func<T, T> ForwardActivate { get; set; }
-        public Func<T, T, T> BackwardActivate { get; set; }
+        public Func<T, T, T, T> BackwardActivate { get; set; }
 
         public ReLU(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
@@ -57,7 +57,7 @@ namespace KelpNet.CPU
             return x < 0 ? 0 : x;
         }
 
-        public static Real BackwardActivate(Real gy, Real y)
+        public static Real BackwardActivate(Real gy, Real y, Real x)
         {
             return y <= 0 ? 0 : gy;
         }

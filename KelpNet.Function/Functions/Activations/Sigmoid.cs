@@ -20,7 +20,7 @@ namespace KelpNet.CPU
         const string FUNCTION_NAME = "Sigmoid";
 
         public Func<T, T> ForwardActivate { get; set; }
-        public Func<T, T, T> BackwardActivate { get; set; }
+        public Func<T, T, T, T> BackwardActivate { get; set; }
 
         public Sigmoid(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
@@ -61,7 +61,7 @@ namespace KelpNet.CPU
             return Math.Tanh(x * 0.5f) * 0.5f + 0.5f;
         }
 
-        public static Real BackwardActivate(Real gy, Real y)
+        public static Real BackwardActivate(Real gy, Real y, Real x)
         {
             return gy * y * (1.0f - y);
         }
