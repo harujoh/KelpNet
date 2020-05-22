@@ -143,7 +143,7 @@ namespace KelpNet.CL
             int inputCount = weight.Shape[1];
 
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y, x) : y.Grad;
             if (bias != null)
             {
                 LinearFunc.CalcBiasGrad(activatedgy, y.BatchCount, outputCount, bias.Grad);

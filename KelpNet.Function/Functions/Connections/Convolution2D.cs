@@ -288,7 +288,7 @@ namespace KelpNet.CPU
             int kernelHeight = weight.Shape[2];
             int kernelWidth = weight.Shape[3];
 
-            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y, x) : y.Grad;
             if (bias != null) CalcBiasGrad(activatedgy, y.Shape, y.BatchCount, bias.Grad);
 
             for (int batchCounter = 0; batchCounter < y.BatchCount; batchCounter++)

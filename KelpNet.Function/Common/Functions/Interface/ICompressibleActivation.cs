@@ -30,17 +30,17 @@ namespace KelpNet
         {
             for (int i = 0; i < x.Grad.Length; i++)
             {
-                x.Grad[i] += compressibleActivation.BackwardActivate(y.Grad[i], y.Data[i]);
+                x.Grad[i] += compressibleActivation.BackwardActivate(y.Grad[i], y.Data[i], x.Data[i]);
             }
         }
 
-        public static Real[] GetActivatedgy(this ICompressibleActivation<Real> compressibleActivation, NdArray<Real> y)
+        public static Real[] GetActivatedgy(this ICompressibleActivation<Real> compressibleActivation, NdArray<Real> y, NdArray<Real> x)
         {
             Real[] activatedgy = new Real[y.Grad.Length];
 
             for (int i = 0; i < activatedgy.Length; i++)
             {
-                activatedgy[i] = compressibleActivation.BackwardActivate(y.Grad[i], y.Data[i]);
+                activatedgy[i] = compressibleActivation.BackwardActivate(y.Grad[i], y.Data[i], x.Data[i]);
             }
 
             return activatedgy;

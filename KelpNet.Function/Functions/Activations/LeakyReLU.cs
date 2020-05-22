@@ -15,7 +15,7 @@ namespace KelpNet.CPU
         const string FUNCTION_NAME = "LeakyReLU";
 
         public Func<T, T> ForwardActivate { get; set; }
-        public Func<T, T, T> BackwardActivate { get; set; }
+        public Func<T, T, T, T> BackwardActivate { get; set; }
 
         [DataMember]
         public T Slope;
@@ -41,14 +41,14 @@ namespace KelpNet.CPU
                     leakyReLuF.SingleInputForward = leakyReLuF.NeedPreviousForwardCpu;
                     leakyReLuF.SingleOutputBackward = leakyReLuF.NeedPreviousBackwardCpu;
                     leakyReLuF.ForwardActivate = (x) => LeakyReLUF.ForwardActivate(x, leakyReLuF.Slope);
-                    leakyReLuF.BackwardActivate = (gy, y) => LeakyReLUF.BackwardActivate(gy, y, leakyReLuF.Slope);
+                    leakyReLuF.BackwardActivate = (gy, y, x) => LeakyReLUF.BackwardActivate(gy, y, x, leakyReLuF.Slope);
                     break;
 
                 case LeakyReLU<double> leakyReLuD:
                     leakyReLuD.SingleInputForward = leakyReLuD.NeedPreviousForwardCpu;
                     leakyReLuD.SingleOutputBackward = leakyReLuD.NeedPreviousBackwardCpu;
                     leakyReLuD.ForwardActivate = (x) => LeakyReLUD.ForwardActivate(x, leakyReLuD.Slope);
-                    leakyReLuD.BackwardActivate = (gy, y) => LeakyReLUD.BackwardActivate(gy, y, leakyReLuD.Slope);
+                    leakyReLuD.BackwardActivate = (gy, y, x) => LeakyReLUD.BackwardActivate(gy, y, x, leakyReLuD.Slope);
                     break;
             }
         }
@@ -66,9 +66,11 @@ namespace KelpNet.CPU
             return x < 0 ? x * slope : x;
         }
 
-        public static Real BackwardActivate(Real gy, Real y, Real slope)
+        public static Real BackwardActivate(Real gy, Real y, Real x, Real slope)
         {
-            return y <= 0 ? y * slope : gy;
+            return slope >= 0 ?
+                    y <= 0 ? gy * slope : gy :
+                    x <= 0 ? gy * slope : gy;
         }
     }
 

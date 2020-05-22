@@ -182,7 +182,7 @@ namespace KelpNet.CL
             int kernelWidth = weight.Shape[3];
 
             Real[] gx = new Real[x.Data.Length];
-            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y) : y.Grad;
+            Real[] activatedgy = activation != null ? activation.GetActivatedgy(y, x) : y.Grad;
 
             if (bias != null)
             {
