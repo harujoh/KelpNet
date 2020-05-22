@@ -15,10 +15,10 @@ using Math = KelpNet.MathF;
 namespace KelpNet
 {
 #if !DOUBLE
-    [DataContract(Name = "ClippedReLU", Namespace = "KelpNet")]
+    [DataContract(Name = "Mish", Namespace = "KelpNet")]
     public class Mish<T> : SingleInputFunction<T>, ICompressibleActivation<T> where T : unmanaged, IComparable<T>
     {
-        const string FUNCTION_NAME = "LeakyReLU";
+        const string FUNCTION_NAME = "Mish";
 
         public Func<T, T> ForwardActivate { get; set; }
         public Func<T, T, T, T> BackwardActivate { get; set; }
