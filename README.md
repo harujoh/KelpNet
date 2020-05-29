@@ -78,6 +78,7 @@ Samples: .NET Framework 4.6.1
 　・Softmax
 　・Softplus
 　・Swish
+　・Mish
 - Poolings:
 　・AveragePooling2D
 　・MaxPooling2D
