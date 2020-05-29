@@ -73,6 +73,7 @@ Samples: .NET Framework 4.6.1
 　・ELU
 　・LeakyReLU
 　・ReLU
+　・ReLU6
 　・Sigmoid
 　・Tanh
 　・Softmax
