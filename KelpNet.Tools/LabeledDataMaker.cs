@@ -83,7 +83,7 @@ namespace KelpNet.Tools
         }
 
         //SizeRatioは100分率で指定 10を指定した場合10%縮めた範囲を9回切り抜いて出力する
-        static void SetAugmentatedBmp<T>(List<T[]> data, List<int> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex, int sizeRatio = 10) where T : unmanaged, IComparable<T>
+        public static void SetAugmentatedBmp<T>(List<T[]> data, List<int> label, Bitmap baseBmp, int width, int height, PixelFormat pixelFormat, int labelIndex, int sizeRatio = 10) where T : unmanaged, IComparable<T>
         {
             Bitmap resultBmp = new Bitmap(width, height, pixelFormat);
             Rectangle desRect = new Rectangle(0, 0, width, height);

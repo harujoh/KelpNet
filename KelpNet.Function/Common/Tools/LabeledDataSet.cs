@@ -11,12 +11,12 @@ namespace KelpNet
     {
         public static Type[] KnownTypes =
         {
-            typeof(int),
+            typeof(T[]),
             typeof(int[]),
             typeof(string[]),
         };
 
-        DataContractSerializer bf = new DataContractSerializer(typeof(T[]), KnownTypes);
+        DataContractSerializer bf = new DataContractSerializer(typeof(object), KnownTypes);
         private bool[] Loaded;
 
         private T[][] Data;
