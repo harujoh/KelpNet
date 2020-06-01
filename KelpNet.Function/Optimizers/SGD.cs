@@ -21,39 +21,12 @@ namespace KelpNet
             {
                 case SGD<float> sgdF:
                     sgdF.Update = () => OptimizerF.Update(sgdF);
+                    sgdF.UpdateFunctionParameters = (i) => SGDF.UpdateFunctionParameters(sgdF.LearningRate, sgdF.FunctionParameters[i]);
                     break;
 
                 case SGD<double> sgdD:
                     sgdD.Update = () => OptimizerD.Update(sgdD);
-                    break;
-            }
-        }
-
-        public override void AddFunctionParameters(NdArray<T>[] functionParameters)
-        {
-            foreach (NdArray<T> functionParameter in functionParameters)
-            {
-                this.OptimizerParameters.Add(new SGDParameter<T>(functionParameter, this));
-            }
-        }
-    }
-
-    public class SGDParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
-    {
-        private readonly SGD<T> optimizer;
-
-        public SGDParameter(NdArray<T> functionParameter, SGD<T> optimizer) : base(functionParameter)
-        {
-            this.optimizer = optimizer;
-
-            switch (this)
-            {
-                case SGDParameter<float> sgdParameterF:
-                    sgdParameterF.UpdateFunctionParameters = () => SGDParameterF.UpdateFunctionParameters(sgdParameterF.optimizer.LearningRate, sgdParameterF.FunctionParameter);
-                    break;
-
-                case SGDParameter<double> sgdParameterD:
-                    sgdParameterD.UpdateFunctionParameters = () => SGDParameterD.UpdateFunctionParameters(sgdParameterD.optimizer.LearningRate, sgdParameterD.FunctionParameter);
+                    sgdD.UpdateFunctionParameters = (i) => SGDD.UpdateFunctionParameters(sgdD.LearningRate, sgdD.FunctionParameters[i]);
                     break;
             }
         }
@@ -61,9 +34,9 @@ namespace KelpNet
 #endif
 
 #if DOUBLE
-    public static class SGDParameterD
+    public static class SGDD
 #else
-    public static class SGDParameterF
+    public static class SGDF
 #endif
     {
         public static void UpdateFunctionParameters(Real learningRate, NdArray<Real> functionParameter)

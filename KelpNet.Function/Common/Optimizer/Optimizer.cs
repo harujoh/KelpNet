@@ -14,21 +14,21 @@ namespace KelpNet
     {
         public static void Update(Optimizer<Real> optimizer)
         {
-            if (optimizer.OptimizerParameters[0].FunctionParameter.TrainCount > 0)
+            if (optimizer.FunctionParameters[0].TrainCount > 0)
             {
                 optimizer.UpdateCount++;
 
-                for (int i = 0; i < optimizer.OptimizerParameters.Count; i++)
+                for (int i = 0; i < optimizer.FunctionParameters.Count; i++)
                 {
                     //傾きの割引を実行
-                    optimizer.OptimizerParameters[i].FunctionParameter.Reduce();
+                    optimizer.FunctionParameters[i].Reduce();
 
-                    optimizer.OptimizerParameters[i].UpdateFunctionParameters();
+                    optimizer.UpdateFunctionParameters(i);
 
-                    optimizer.OptimizerParameters[i].FunctionParameter.InitGrad();
+                    optimizer.FunctionParameters[i].InitGrad();
 
                     //カウンタをリセット
-                    optimizer.OptimizerParameters[i].FunctionParameter.TrainCount = 0;
+                    optimizer.FunctionParameters[i].TrainCount = 0;
                 }
             }
 

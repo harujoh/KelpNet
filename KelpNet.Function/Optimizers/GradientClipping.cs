@@ -14,7 +14,6 @@ namespace KelpNet
 {
 #if !DOUBLE
     //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
-    [Serializable]
     public class GradientClipping<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
         public T Threshold;
@@ -22,50 +21,31 @@ namespace KelpNet
         public GradientClipping(T threshold)
         {
             this.Threshold = threshold;
-        }
-
-        public override void AddFunctionParameters(NdArray<T>[] functionParameters)
-        {
-            foreach (NdArray<T> functionParameter in functionParameters)
-            {
-                this.OptimizerParameters.Add(new GradientClippingParameter<T>(functionParameter, this));
-            }
-        }
-    }
-
-    [Serializable]
-    public class GradientClippingParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
-    {
-        private readonly GradientClipping<T> optimizer;
-
-        public GradientClippingParameter(NdArray<T> functionParameter, GradientClipping<T> optimizer) : base(functionParameter)
-        {
-            this.optimizer = optimizer;
 
             switch (this)
             {
-                case GradientClippingParameter<float> momentumSgdParameterF:
-                    momentumSgdParameterF.UpdateFunctionParameters = () => GradientClippingParameterF.UpdateFunctionParameters(momentumSgdParameterF.optimizer.Threshold, momentumSgdParameterF.FunctionParameter);
+                case GradientClipping<float> gradientClippingF:
+                    gradientClippingF.Update = () => OptimizerF.Update(gradientClippingF);
+                    gradientClippingF.UpdateFunctionParameters = (i) => GradientClippingF.UpdateFunctionParameters(gradientClippingF.Threshold, gradientClippingF.FunctionParameters[i]);
                     break;
 
-                case GradientClippingParameter<double> momentumSgdParameterD:
-                    momentumSgdParameterD.UpdateFunctionParameters = () => GradientClippingParameterD.UpdateFunctionParameters(momentumSgdParameterD.optimizer.Threshold, momentumSgdParameterD.FunctionParameter);
+                case GradientClipping<double> gradientClippingD:
+                    gradientClippingD.Update = () => OptimizerD.Update(gradientClippingD);
+                    gradientClippingD.UpdateFunctionParameters = (i) => GradientClippingD.UpdateFunctionParameters(gradientClippingD.Threshold, gradientClippingD.FunctionParameters[i]);
                     break;
             }
         }
-
     }
 #endif
 
 #if DOUBLE
-    public static class GradientClippingParameterD
+    public static class GradientClippingD
 #else
-    public static class GradientClippingParameterF
+    public static class GradientClippingF
 #endif
     {
         public static void UpdateFunctionParameters(Real threshold, NdArray<Real> functionParameter)
         {
-            //_sum_sqnorm
             Real s = 0;
 
             for (int i = 0; i < functionParameter.Data.Length; i++)

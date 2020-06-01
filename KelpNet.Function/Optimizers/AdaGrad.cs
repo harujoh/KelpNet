@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 #if DOUBLE
 using Real = System.Double;
 #elif NETSTANDARD2_1
@@ -18,6 +18,8 @@ namespace KelpNet
         public T LearningRate;
         public T Epsilon;
 
+        private List<T[]> h = new List<T[]>();
+
         public AdaGrad(T? learningRate = null, T? epsilon = null)
         {
             this.LearningRate = learningRate??(TVal<T>)0.01;
@@ -25,53 +27,32 @@ namespace KelpNet
 
             switch (this)
             {
-                case AdaGrad<float> adagradF:
-                    adagradF.Update = () => OptimizerF.Update(adagradF);
+                case AdaGrad<float> adaGradF:
+                    adaGradF.Update = () => OptimizerF.Update(adaGradF);
+                    adaGradF.UpdateFunctionParameters = (i) => AdaGradF.UpdateFunctionParameters(adaGradF.LearningRate, adaGradF.Epsilon, adaGradF.h[i], adaGradF.FunctionParameters[i]);
                     break;
 
-                case AdaGrad<double> adagradD:
-                    adagradD.Update = () => OptimizerD.Update(adagradD);
+                case AdaGrad<double> adaGradD:
+                    adaGradD.Update = () => OptimizerD.Update(adaGradD);
+                    adaGradD.UpdateFunctionParameters = (i) => AdaGradD.UpdateFunctionParameters(adaGradD.LearningRate, adaGradD.Epsilon, adaGradD.h[i], adaGradD.FunctionParameters[i]);
                     break;
             }
         }
 
-        public override void AddFunctionParameters(NdArray<T>[] functionParameters)
+        protected override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
             foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdaGradParameter<T>(functionParameter, this));
-            }
-        }
-    }
-
-    public class AdaGradParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
-    {
-        private readonly AdaGrad<T> optimizer;
-        private readonly T[] h;
-
-        public AdaGradParameter(NdArray<T> functionParameter, AdaGrad<T> optimizer) : base(functionParameter)
-        {
-            this.h = new T[functionParameter.Data.Length];
-            this.optimizer = optimizer;
-
-            switch (this)
-            {
-                case AdaGradParameter<float> adaGradParameterF:
-                    adaGradParameterF.UpdateFunctionParameters = () => AdaGradParameterF.UpdateFunctionParameters(adaGradParameterF.optimizer.LearningRate, adaGradParameterF.optimizer.Epsilon, adaGradParameterF.h, adaGradParameterF.FunctionParameter);
-                    break;
-
-                case AdaGradParameter<double> adaGradParameterD:
-                    adaGradParameterD.UpdateFunctionParameters = () => AdaGradParameterD.UpdateFunctionParameters(adaGradParameterD.optimizer.LearningRate, adaGradParameterD.optimizer.Epsilon, adaGradParameterD.h, adaGradParameterD.FunctionParameter);
-                    break;
+                this.h.Add(new T[functionParameter.Data.Length]);
             }
         }
     }
 #endif
 
 #if DOUBLE
-    public static class AdaGradParameterD
+    public static class AdaGradD
 #else
-    public static class AdaGradParameterF
+    public static class AdaGradF
 #endif
     {
         public static void UpdateFunctionParameters(Real learningRate, Real epsilon, Real[] h, NdArray<Real> functionParameter)

@@ -33,19 +33,13 @@ namespace KelpNet
             {
                 case AdaBound<float> adaBoundF:
                     adaBoundF.Update = () => OptimizerF.Update(adaBoundF);
+                    adaBoundF.UpdateFunctionParameters = (i) => AdaBoundF.UpdateFunctionParameters(adaBoundF.Alpha, adaBoundF.InitialAlpha, adaBoundF.Gamma, adaBoundF.Beta1, adaBoundF.Beta2, adaBoundF.Epsilon, adaBoundF.Eta, UpdateCount, adaBoundF.FunctionParameters[i], adaBoundF.m[i], adaBoundF.v[i], ref adaBoundF.FinalLr, out adaBoundF.Lower, out adaBoundF.Upper, adaBoundF.Clip);
                     break;
 
                 case AdaBound<double> adaBoundD:
                     adaBoundD.Update = () => OptimizerD.Update(adaBoundD);
+                    adaBoundD.UpdateFunctionParameters = (i) => AdaBoundD.UpdateFunctionParameters(adaBoundD.Alpha, adaBoundD.InitialAlpha, adaBoundD.Gamma, adaBoundD.Beta1, adaBoundD.Beta2, adaBoundD.Epsilon, adaBoundD.Eta, UpdateCount, adaBoundD.FunctionParameters[i], adaBoundD.m[i], adaBoundD.v[i], ref adaBoundD.FinalLr, out adaBoundD.Lower, out adaBoundD.Upper, adaBoundD.Clip);
                     break;
-            }
-        }
-
-        public override void AddFunctionParameters(NdArray<T>[] functionParameters)
-        {
-            foreach (NdArray<T> functionParameter in functionParameters)
-            {
-                this.OptimizerParameters.Add(new AdaBoundParameter<T>(functionParameter, this));
             }
         }
 
@@ -70,39 +64,10 @@ namespace KelpNet
         }
     }
 
-#if !DOUBLE
-    public class AdaBoundParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
-    {
-        private readonly AdaBound<T> _optimizer;
-
-        private readonly T[] m;
-        private readonly T[] v;
-
-        public AdaBoundParameter(NdArray<T> parameter, AdaBound<T> optimizer) : base(parameter)
-        {
-            this.m = new T[parameter.Data.Length];
-            this.v = new T[parameter.Data.Length];
-
-            this._optimizer = optimizer;
-
-            switch (this)
-            {
-                case AdaBoundParameter<float> adamParameterF:
-                    adamParameterF.UpdateFunctionParameters = () => AdaBoundParameterF.UpdateFunctionParameters(adamParameterF._optimizer.Alpha, adamParameterF._optimizer.InitialAlpha, adamParameterF._optimizer.Gamma, adamParameterF._optimizer.Beta1, adamParameterF._optimizer.Beta2, adamParameterF._optimizer.Epsilon, adamParameterF._optimizer.Eta, _optimizer.UpdateCount, adamParameterF.FunctionParameter, adamParameterF.m, adamParameterF.v, ref adamParameterF._optimizer.FinalLr, out adamParameterF._optimizer.Lower, out adamParameterF._optimizer.Upper, adamParameterF._optimizer.Clip);
-                    break;
-
-                case AdaBoundParameter<double> adamParameterD:
-                    adamParameterD.UpdateFunctionParameters = () => AdaBoundParameterD.UpdateFunctionParameters(adamParameterD._optimizer.Alpha, adamParameterD._optimizer.InitialAlpha, adamParameterD._optimizer.Gamma, adamParameterD._optimizer.Beta1, adamParameterD._optimizer.Beta2, adamParameterD._optimizer.Epsilon, adamParameterD._optimizer.Eta, _optimizer.UpdateCount, adamParameterD.FunctionParameter, adamParameterD.m, adamParameterD.v, ref adamParameterD._optimizer.FinalLr, out adamParameterD._optimizer.Lower, out adamParameterD._optimizer.Upper, adamParameterD._optimizer.Clip);
-                    break;
-            }
-        }
-    }
-#endif
-
 #if DOUBLE
-    public static class AdaBoundParameterD
+    public static class AdaBoundD
 #else
-    public static class AdaBoundParameterF
+    public static class AdaBoundF
 #endif
     {
         public static void UpdateFunctionParameters(Real alpha, Real initialAlpha, Real gamma, Real beta1, Real beta2, Real epsilon, Real eta, long updateCount, NdArray<Real> functionParameter, Real[] m, Real[] v, ref Real finalLr, out Real lower, out Real upper, Func<Real, Real> clip)

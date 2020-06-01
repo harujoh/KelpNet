@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 #if DOUBLE
 using Real = System.Double;
 #elif NETSTANDARD2_1
@@ -23,6 +23,8 @@ namespace KelpNet
         public T FinalLr;
         public T Gamma;
 
+        private List<T[]> vhat = new List<T[]>();
+
         public AmsBound(T? alpha = null, T? beta1 = null, T? beta2 = null, T? finalLr = null, T? gamma = null, T? epsilon = null, T? eta = null) : base(alpha: alpha, beta1: beta1, beta2: beta2, epsilon: epsilon, eta: eta)
         {
             this.InitialAlpha = alpha ?? (TVal<T>)0.001;
@@ -33,19 +35,23 @@ namespace KelpNet
             {
                 case AmsBound<float> amsBoundF:
                     amsBoundF.Update = () => OptimizerF.Update(amsBoundF);
+                    amsBoundF.UpdateFunctionParameters = (i) => AmsBoundF.UpdateFunctionParameters(amsBoundF.Alpha, amsBoundF.InitialAlpha, amsBoundF.Gamma, amsBoundF.Beta1, amsBoundF.Beta2, amsBoundF.Epsilon, amsBoundF.Eta, UpdateCount, amsBoundF.FunctionParameters[i], amsBoundF.m[i], amsBoundF.v[i], amsBoundF.vhat[i], ref amsBoundF.FinalLr, out amsBoundF.Lower, out amsBoundF.Upper, amsBoundF.Clip);
                     break;
 
                 case AmsBound<double> amsBoundD:
                     amsBoundD.Update = () => OptimizerD.Update(amsBoundD);
+                    amsBoundD.UpdateFunctionParameters = (i) => AmsBoundD.UpdateFunctionParameters(amsBoundD.Alpha, amsBoundD.InitialAlpha, amsBoundD.Gamma, amsBoundD.Beta1, amsBoundD.Beta2, amsBoundD.Epsilon, amsBoundD.Eta, UpdateCount, amsBoundD.FunctionParameters[i], amsBoundD.m[i], amsBoundD.v[i], amsBoundD.vhat[i], ref amsBoundD.FinalLr, out amsBoundD.Lower, out amsBoundD.Upper, amsBoundD.Clip);
                     break;
             }
         }
 
-        public override void AddFunctionParameters(NdArray<T>[] functionParameters)
+        protected override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
             foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AmsBoundParameter<T>(functionParameter, this));
+                this.m.Add(new T[functionParameter.Data.Length]);
+                this.v.Add(new T[functionParameter.Data.Length]);
+                this.vhat.Add(new T[functionParameter.Data.Length]);
             }
         }
 
@@ -61,50 +67,19 @@ namespace KelpNet
     //外部公開しないため型スイッチを必要としない
     internal static class AmsBound
     {
-        public static void UpdateBound(Real Alpha, Real InitialAlpha, Real Gamma, long UpdateCount, ref Real FinalLr, out Real Lower, out Real Upper)
+        public static void UpdateBound(Real alpha, Real initialAlpha, Real gamma, long updateCount, ref Real finalLr, out Real lower, out Real upper)
         {
-            FinalLr = FinalLr * Alpha / InitialAlpha;
+            finalLr = finalLr * alpha / initialAlpha;
 
-            Lower = FinalLr * (1.0f - 1.0f / (Gamma * UpdateCount + 1.0f));
-            Upper = FinalLr * (1.0f + 1.0f / (Gamma * UpdateCount));
+            lower = finalLr * (1.0f - 1.0f / (gamma * updateCount + 1.0f));
+            upper = finalLr * (1.0f + 1.0f / (gamma * updateCount));
         }
     }
-
-#if !DOUBLE
-    public class AmsBoundParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
-    {
-        private readonly AmsBound<T> _optimizer;
-
-        private readonly T[] m;
-        private readonly T[] v;
-        private readonly T[] vhat;
-
-        public AmsBoundParameter(NdArray<T> parameter, AmsBound<T> optimizer) : base(parameter)
-        {
-            this.m = new T[parameter.Data.Length];
-            this.v = new T[parameter.Data.Length];
-            this.vhat = new T[parameter.Data.Length];
-
-            this._optimizer = optimizer;
-
-            switch (this)
-            {
-                case AmsBoundParameter<float> amsBoundParameterF:
-                    amsBoundParameterF.UpdateFunctionParameters = () => AmsBoundParameterF.UpdateFunctionParameters(amsBoundParameterF._optimizer.Alpha, amsBoundParameterF._optimizer.InitialAlpha, amsBoundParameterF._optimizer.Gamma, amsBoundParameterF._optimizer.Beta1, amsBoundParameterF._optimizer.Beta2, amsBoundParameterF._optimizer.Epsilon, amsBoundParameterF._optimizer.Eta, _optimizer.UpdateCount, amsBoundParameterF.FunctionParameter, amsBoundParameterF.m, amsBoundParameterF.v, amsBoundParameterF.vhat, ref amsBoundParameterF._optimizer.FinalLr, out amsBoundParameterF._optimizer.Lower, out amsBoundParameterF._optimizer.Upper, amsBoundParameterF._optimizer.Clip);
-                    break;
-
-                case AmsBoundParameter<double> amsBoundParameterD:
-                    amsBoundParameterD.UpdateFunctionParameters = () => AmsBoundParameterD.UpdateFunctionParameters(amsBoundParameterD._optimizer.Alpha, amsBoundParameterD._optimizer.InitialAlpha, amsBoundParameterD._optimizer.Gamma, amsBoundParameterD._optimizer.Beta1, amsBoundParameterD._optimizer.Beta2, amsBoundParameterD._optimizer.Epsilon, amsBoundParameterD._optimizer.Eta, _optimizer.UpdateCount, amsBoundParameterD.FunctionParameter, amsBoundParameterD.m, amsBoundParameterD.v, amsBoundParameterD.vhat, ref amsBoundParameterD._optimizer.FinalLr, out amsBoundParameterD._optimizer.Lower, out amsBoundParameterD._optimizer.Upper, amsBoundParameterD._optimizer.Clip);
-                    break;
-            }
-        }
-    }
-#endif
 
 #if DOUBLE
-    public static class AmsBoundParameterD
+    public static class AmsBoundD
 #else
-    public static class AmsBoundParameterF
+    public static class AmsBoundF
 #endif
     {
         public static void UpdateFunctionParameters(Real alpha, Real initialAlpha, Real gamma, Real beta1, Real beta2, Real epsilon, Real eta, long updateCount, NdArray<Real> functionParameter, Real[] m, Real[] v, Real[] vhat, ref Real finalLr, out Real lower, out Real upper, Func<Real, Real> clip)
