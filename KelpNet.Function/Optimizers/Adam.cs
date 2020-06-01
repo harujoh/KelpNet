@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 #if DOUBLE
 using Real = System.Double;
 #elif NETSTANDARD2_1
@@ -21,6 +21,9 @@ namespace KelpNet
         public T Epsilon;
         public T Eta;
 
+        public List<T[]> m = new List<T[]>();
+        public List<T[]> v = new List<T[]>();
+
         public Adam(T? alpha = null, T? beta1 = null, T? beta2 = null, T? epsilon = null, T? eta = null)
         {
             this.Alpha = alpha ?? (TVal<T>)0.001;
@@ -33,19 +36,22 @@ namespace KelpNet
             {
                 case Adam<float> adamF:
                     adamF.Update = () => OptimizerF.Update(adamF);
+                    adamF.UpdateFunctionParameters = (i) => AdamF.UpdateFunctionParameters(adamF.Alpha, adamF.Beta1, adamF.Beta2, adamF.Epsilon, adamF.Eta, adamF.UpdateCount, adamF.FunctionParameters[i], adamF.m[i], adamF.v[i]);
                     break;
 
                 case Adam<double> adamD:
                     adamD.Update = () => OptimizerD.Update(adamD);
+                    adamD.UpdateFunctionParameters = (i) => AdamD.UpdateFunctionParameters(adamD.Alpha, adamD.Beta1, adamD.Beta2, adamD.Epsilon, adamD.Eta, UpdateCount, adamD.FunctionParameters[i], adamD.m[i], adamD.v[i]);
                     break;
             }
         }
 
-        public override void AddFunctionParameters(NdArray<T>[] functionParameters)
+        protected override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
             foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdamParameter<T>(functionParameter, this));
+                this.m.Add(new T[functionParameter.Data.Length]);
+                this.v.Add(new T[functionParameter.Data.Length]);
             }
         }
 
@@ -54,34 +60,6 @@ namespace KelpNet
             for (int i = 0; i < this.Schedulers.Count; i++)
             {
                 this.Alpha = this.Schedulers[i].Step(this.Alpha);
-            }
-        }
-    }
-
-    public class AdamParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
-    {
-        public readonly Adam<T> _optimizer;
-
-        public readonly T[] m;
-
-        public readonly T[] v;
-
-        public AdamParameter(NdArray<T> parameter, Adam<T> optimizer) : base(parameter)
-        {
-            this.m = new T[parameter.Data.Length];
-            this.v = new T[parameter.Data.Length];
-
-            this._optimizer = optimizer;
-
-            switch (this)
-            {
-                case AdamParameter<float> adamParameterF:
-                    adamParameterF.UpdateFunctionParameters = () => AdamParameterF.UpdateFunctionParameters(adamParameterF._optimizer.Alpha, adamParameterF._optimizer.Beta1, adamParameterF._optimizer.Beta2, adamParameterF._optimizer.Epsilon, adamParameterF._optimizer.Eta, _optimizer.UpdateCount, adamParameterF.FunctionParameter, adamParameterF.m, adamParameterF.v);
-                    break;
-
-                case AdamParameter<double> adamParameterD:
-                    adamParameterD.UpdateFunctionParameters = () => AdamParameterD.UpdateFunctionParameters(adamParameterD._optimizer.Alpha, adamParameterD._optimizer.Beta1, adamParameterD._optimizer.Beta2, adamParameterD._optimizer.Epsilon, adamParameterD._optimizer.Eta, _optimizer.UpdateCount, adamParameterD.FunctionParameter, adamParameterD.m, adamParameterD.v);
-                    break;
             }
         }
     }
@@ -100,9 +78,9 @@ namespace KelpNet
     }
 
 #if DOUBLE
-    public static class AdamParameterD
+    public static class AdamD
 #else
-    public static class AdamParameterF
+    public static class AdamF
 #endif
     {
         public static void UpdateFunctionParameters(Real alpha, Real beta1, Real beta2, Real epsilon, Real eta, long updateCount, NdArray<Real> functionParameter, Real[] m, Real[] v)

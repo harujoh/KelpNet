@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 #if DOUBLE
 using Real = System.Double;
@@ -20,6 +20,9 @@ namespace KelpNet
         public T Rho;
         public T Epsilon;
 
+        private List<T[]> msg = new List<T[]>();
+        private List<T[]> msdx = new List<T[]>();
+
         public AdaDelta(T? rho = null, T? epsilon = null)
         {
             this.Rho = rho??(TVal<T>)0.95;
@@ -29,53 +32,31 @@ namespace KelpNet
             {
                 case AdaDelta<float> adaDeltaF:
                     adaDeltaF.Update = () => OptimizerF.Update(adaDeltaF);
+                    adaDeltaF.UpdateFunctionParameters = (i) => AdaDeltaF.UpdateFunctionParameters(adaDeltaF.msg[i], adaDeltaF.msdx[i], adaDeltaF.Rho, adaDeltaF.Epsilon, adaDeltaF.FunctionParameters[i]);
                     break;
 
                 case AdaDelta<double> adaDeltaD:
                     adaDeltaD.Update = () => OptimizerD.Update(adaDeltaD);
+                    adaDeltaD.UpdateFunctionParameters = (i) => AdaDeltaD.UpdateFunctionParameters(adaDeltaD.msg[i], adaDeltaD.msdx[i], adaDeltaD.Rho, adaDeltaD.Epsilon, adaDeltaD.FunctionParameters[i]);
                     break;
             }
         }
 
-        public override void AddFunctionParameters(NdArray<T>[] functionParameters)
+        protected override void AddFunctionParameters(NdArray<T>[] functionParameters)
         {
             foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.OptimizerParameters.Add(new AdaDeltaParameter<T>(functionParameter, this));
-            }
-        }
-    }
-
-    public class AdaDeltaParameter<T> : OptimizerParameter<T> where T : unmanaged, IComparable<T>
-    {
-        private readonly T[] msg;
-        private readonly T[] msdx;
-        private readonly AdaDelta<T> optimizer;
-
-        public AdaDeltaParameter(NdArray<T> functionParameter, AdaDelta<T> optimizer) : base(functionParameter)
-        {
-            this.msg = new T[functionParameter.Data.Length];
-            this.msdx = new T[functionParameter.Data.Length];
-            this.optimizer = optimizer;
-
-            switch (this)
-            {
-                case AdaDeltaParameter<float> adaDeltaParameterF:
-                    adaDeltaParameterF.UpdateFunctionParameters = () => AdaDeltaParameterF.UpdateFunctionParameters(adaDeltaParameterF.msg, adaDeltaParameterF.msdx, adaDeltaParameterF.optimizer.Rho, adaDeltaParameterF.optimizer.Epsilon, adaDeltaParameterF.FunctionParameter);
-                    break;
-
-                case AdaDeltaParameter<double> adaDeltaParameterD:
-                    adaDeltaParameterD.UpdateFunctionParameters = () => AdaDeltaParameterD.UpdateFunctionParameters(adaDeltaParameterD.msg, adaDeltaParameterD.msdx, adaDeltaParameterD.optimizer.Rho, adaDeltaParameterD.optimizer.Epsilon, adaDeltaParameterD.FunctionParameter);
-                    break;
+                this.msg.Add(new T[functionParameter.Data.Length]);
+                this.msdx.Add(new T[functionParameter.Data.Length]);
             }
         }
     }
 #endif
 
 #if DOUBLE
-    public static class AdaDeltaParameterD
+    public static class AdaDeltaD
 #else
-    public static class AdaDeltaParameterF
+    public static class AdaDeltaF
 #endif
     {
         public static void UpdateFunctionParameters(Real[] msg, Real[] msdx, Real rho, Real epsilon, NdArray<Real> functionParameter)
