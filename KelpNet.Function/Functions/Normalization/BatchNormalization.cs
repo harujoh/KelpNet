@@ -76,8 +76,8 @@ namespace KelpNet
             this.AvgVar = new NdArray<T>(channelSize);
             this.AvgVar.Name = this.Name + " Variance";
 
-            this.Decay = decay??(TVal<T>)0.9;
-            this.Eps = eps?? (TVal<T>)2e-5;
+            this.Decay = decay ?? (TVal<T>)0.9;
+            this.Eps = eps ?? (TVal<T>)2e-5;
 
             this.Gamma.Fill((TVal<T>)initialGamma);
             this.Beta.Fill((TVal<T>)initialBeta);
@@ -204,9 +204,10 @@ namespace KelpNet
 
             Real[] y = new Real[x.Data.Length];
 
-            for (int i = 0; i < channelSize; i++)
+
+            for (int b = 0; b < x.BatchCount; b++)
             {
-                for (int b = 0; b < x.BatchCount; b++)
+                for (int i = 0; i < channelSize; i++)
                 {
                     for (int location = 0; location < dataSize; location++)
                     {
