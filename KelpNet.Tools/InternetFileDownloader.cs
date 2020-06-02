@@ -16,21 +16,22 @@ namespace KelpNet.Tools
 
             string savedPath = Path.Combine(saveFolder ?? TmpFolderPath, fileName);
 
+            if (saveFolder == null && File.Exists(fileName))
+            {
+                if (LoadFile(fileName, hash))
+                {
+                    return fileName;
+                }
+
+                //前回ダウンロードに失敗している
+                Console.WriteLine(fileName + "は破損しているためダウンロードを行います");
+            }
+
             if (File.Exists(savedPath))
             {
-                //ファイルを開く
-                using (FileStream fs = new FileStream(savedPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                if (LoadFile(savedPath, hash))
                 {
-                    //ハッシュ値を計算する
-                    byte[] bs = new MD5CryptoServiceProvider().ComputeHash(fs);
-
-                    string result = BitConverter.ToString(bs).ToLower().Replace("-", "");
-
-                    //読み込み成功
-                    if (hash == "" || result == hash)
-                    {
-                        return savedPath;
-                    }
+                    return savedPath;
                 }
 
                 //前回ダウンロードに失敗している
@@ -53,6 +54,23 @@ namespace KelpNet.Tools
             downloadClient.DownloadFileTaskAsync(new Uri(url), savedPath).Wait();
 
             return savedPath;
+        }
+
+        static bool LoadFile(string path, string hash)
+        {
+            //ファイルを開く
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                if (hash != string.Empty)
+                {
+                    //ハッシュ値を計算する
+                    byte[] bs = new MD5CryptoServiceProvider().ComputeHash(fs);
+
+                    return BitConverter.ToString(bs).ToLower().Replace("-", "") == hash;
+                }
+
+                return true;
+            }
         }
     }
 }

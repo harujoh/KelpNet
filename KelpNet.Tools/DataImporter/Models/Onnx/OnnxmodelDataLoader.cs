@@ -104,7 +104,7 @@ namespace KelpNet.Tools
                         // 真の場合は、活性化ごとに平均と分散を計算します。
                         // falseの場合は，ミニバッチごとに特徴量ごとの平均と分散を計算します．
 
-                        int[] axis = null;
+                        int[] axis = {0};
                         if (node.GetAttribute("spatial").I != 1)
                         {
                             List<int> tmp = new List<int>();

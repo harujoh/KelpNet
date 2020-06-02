@@ -16,21 +16,27 @@ namespace KelpNet.Sample
 {
     class Sample20
     {
-        private const string DOWNLOAD_URL = "https://github.com/onnx/models/blob/master/vision/classification/vgg/model/";
+        private const string DOWNLOAD_URL = "https://github.com/onnx/models/raw/master/vision/classification/vgg/model/";
         private const string VGG16_MODEL_FILE = "vgg16-7.onnx";
         private const string VGG19_MODEL_FILE = "vgg19-7.onnx";
+        private const string VGG16BN_MODEL_FILE = "vgg16-bn-7.onnx";
+        private const string VGG19BN_MODEL_FILE = "vgg19-bn-7.onnx";
         private const string VGG16_MODEL_FILE_HASH = "a5a3fd73d345152852568509ebff19fc";
         private const string VGG19_MODEL_FILE_HASH = "3ddcbebbe6c937d504b09c48bf0ba371";
+        private const string VGG16BN_MODEL_FILE_HASH = "fe75b896f4eaf071ff8460953ab7f4c6";
+        private const string VGG19BN_MODEL_FILE_HASH = "";
         private const string CLASS_LIST_PATH = "Data/synset_words.txt";
 
-        private static readonly string[] Urls = { DOWNLOAD_URL + VGG16_MODEL_FILE, DOWNLOAD_URL + VGG19_MODEL_FILE };
-        private static readonly string[] FileNames = { VGG16_MODEL_FILE, VGG19_MODEL_FILE };
-        private static readonly string[] Hashes = { VGG16_MODEL_FILE_HASH, VGG19_MODEL_FILE_HASH };
+        private static readonly string[] Urls = { DOWNLOAD_URL + VGG16_MODEL_FILE, DOWNLOAD_URL + VGG19_MODEL_FILE, DOWNLOAD_URL + VGG16BN_MODEL_FILE, DOWNLOAD_URL + VGG19BN_MODEL_FILE };
+        private static readonly string[] FileNames = { VGG16_MODEL_FILE, VGG19_MODEL_FILE, VGG16BN_MODEL_FILE, VGG19BN_MODEL_FILE };
+        private static readonly string[] Hashes = { VGG16_MODEL_FILE_HASH, VGG19_MODEL_FILE_HASH, VGG16BN_MODEL_FILE_HASH, VGG19BN_MODEL_FILE_HASH };
 
         public enum VGGModel
         {
             VGG16,
-            VGG19
+            VGG19,
+            VGG16BN,
+            VGG19NM
         }
 
         public static void Run(VGGModel modelType)
@@ -73,8 +79,18 @@ namespace KelpNet.Sample
                     g.DrawImage(baseImage, 0, 0, 224, 224);
                     g.Dispose();
 
-                    Real[] bias = new Real[] { -123.68f, -116.779f, -103.939f }; //補正値のチャンネル順は入力画像に従う(標準的なBitmapならRGB)
-                    NdArray<Real> imageArray = BitmapConverter.Image2NdArray<Real>(resultImage, false, true, bias);
+                    Real[] mean = new Real[]{ 0.485f, 0.456f, 0.406f };
+                    Real[] std = new Real[] { 0.229f, 0.224f, 0.225f };
+
+                    NdArray<Real> imageArray = BitmapConverter.Image2NdArray<Real>(resultImage);
+                    int dataSize = imageArray.Shape[1] * imageArray.Shape[2];
+                    for (int ch = 0; ch < imageArray.Shape[0]; ch++)
+                    {
+                        for (int i = 0; i < dataSize; i++)
+                        {
+                            imageArray.Data[ch * dataSize + i] = (imageArray.Data[ch * dataSize + i] - mean[ch]) / std[ch];
+                        }
+                    }
 
                     Console.WriteLine("Start predict.");
                     Stopwatch sw = Stopwatch.StartNew();
