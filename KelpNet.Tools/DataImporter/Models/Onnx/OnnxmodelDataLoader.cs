@@ -104,14 +104,15 @@ namespace KelpNet.Tools
                         // 真の場合は、活性化ごとに平均と分散を計算します。
                         // falseの場合は，ミニバッチごとに特徴量ごとの平均と分散を計算します．
 
-                        int[] axis = {0};
-                        if (node.GetAttribute("spatial").I != 1)
-                        {
-                            List<int> tmp = new List<int>();
-                            tmp.Add(0); //ここの次元指定はミニバッチ数に当たる
-                            tmp.AddRange(Enumerable.Range(2, inputShape.Length - 2));
-                            axis = tmp.ToArray();
-                        }
+                        //将来Axis対応することがあればコメントアウトを外す
+                        //int[] axis = {0};
+                        //if (node.GetAttribute("spatial").I != 1)
+                        //{
+                        //    List<int> tmp = new List<int>();
+                        //    tmp.Add(0); //ここの次元指定はミニバッチ数に当たる
+                        //    tmp.AddRange(Enumerable.Range(2, inputShape.Length - 2));
+                        //    axis = tmp.ToArray();
+                        //}
 
                         BatchNormalization<T> batchNormalization = new BatchNormalization<T>(
                             channelSize: bn_scale.FloatDatas.Length,
@@ -119,8 +120,8 @@ namespace KelpNet.Tools
                             name: node.Name,
                             inputNames: new[] { node.Inputs[0] },
                             outputNames: new[] { node.Outputs[0] },
-                            decay: (TVal<T>)node.GetAttribute("momentum").F,
-                            axis: axis
+                            decay: (TVal<T>)node.GetAttribute("momentum").F
+                            //axis: axis
                         );
 
                         Array.Copy(bn_scale.FloatDatas, batchNormalization.Gamma.Data, bn_scale.FloatDatas.Length);
