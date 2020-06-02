@@ -41,22 +41,22 @@ Deconvolution2Dのテスト(Winform)
 Test6を連結して実行
 
 ## Sample15
-CaffeモデルのVGGを読み込んで画像分類をさせるテスト
+CaffeモデルのVGGを読み込んで画像分類をする
 
 ## Sample16
 ChainerモデルのTest5と同じ内容を読み込んで実行
 
 ## Sample17
-CaffeモデルのRESNETを読み込んで画像分類をさせるテスト
+CaffeモデルのRESNETを読み込んで画像分類をする
 
 ## Sample18
 CIFAR-10を5層CNNを使って学習する
 
 ## Sample19
-CaffeモデルのAlexNetを読み込んで画像分類をさせるテスト
+CaffeモデルのAlexNetを読み込んで画像分類をする
 
 ## Sample20
-ONNXモデルのVGGを読み込んで画像分類をさせるテスト
+ONNXモデルのVGG-BNを読み込んで画像分類をする
 
 ## SampleX
 Linearの分割実行
