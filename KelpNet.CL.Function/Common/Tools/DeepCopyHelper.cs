@@ -15,7 +15,7 @@ namespace KelpNet.CL
 
             using (MemoryStream mem = new MemoryStream())
             {
-                DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), ModelIO<T>.KnownTypes);
+                DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), new DataContractSerializerSettings { KnownTypes = ModelIO<T>.KnownTypes, PreserveObjectReferences = true });
 
                 try
                 {

@@ -1,11 +1,16 @@
-﻿namespace KelpNet
+﻿using System;
+
+namespace KelpNet
 {
     //各パラメータのデフォルト値を設定するためのヘルパークラス
-    public class TVal<T>
+    public struct TVal<T>
     {
-        private T Val;
+        static T GenAdd(T x, T y) { return Operator<T>.Add(x, y); }
+        static T GenSub(T x, T y) { return Operator<T>.Subtract(x, y); }
+        static T GenMul(T x, T y) { return Operator<T>.Multiply(x, y); }
+        static T GenDiv(T x, T y) { return Operator<T>.Divide(x, y); }
 
-        TVal() { }
+        private T Val;
 
         TVal(T val)
         {
@@ -14,38 +19,16 @@
 
         public static explicit operator TVal<T>(float value)
         {
-            TVal<T> result = new TVal<T>();
-
-            switch (result)
-            {
-                case TVal<float> resultF:
-                    resultF.Val = value;
-                    break;
-
-                case TVal<double> resultF:
-                    resultF.Val = value;
-                    break;
-            }
-
-            return result;
+            if (typeof(T) == typeof(float)) return new TVal<T>((T)(object)value);
+            if (typeof(T) == typeof(double)) return new TVal<T>((T)(object)(double)value);
+            throw new Exception();
         }
 
         public static explicit operator TVal<T>(double value)
         {
-            TVal<T> result = new TVal<T>();
-
-            switch (result)
-            {
-                case TVal<float> resultF:
-                    resultF.Val = (float)value;
-                    break;
-
-                case TVal<double> resultF:
-                    resultF.Val = value;
-                    break;
-            }
-
-            return result;
+            if (typeof(T) == typeof(float)) return new TVal<T>((T)(object)(float)value);
+            if (typeof(T) == typeof(double)) return new TVal<T>((T)(object)value);
+            throw new Exception();
         }
 
         public static implicit operator TVal<T>(T real)
@@ -60,74 +43,22 @@
 
         public static TVal<T> operator +(TVal<T> a, TVal<T> b)
         {
-            TVal<T> result = new TVal<T>(a.Val);
-
-            switch (result)
-            {
-                case TVal<float> resultF:
-                    resultF.Val += (float)(object)b.Val;
-                    break;
-
-                case TVal<double> resultF:
-                    resultF.Val += (double)(object)b.Val; 
-                    break;
-            }
-
-            return result;
+            return new TVal<T>(GenAdd(a.Val, b.Val));
         }
 
         public static TVal<T> operator -(TVal<T> a, TVal<T> b)
         {
-            TVal<T> result = new TVal<T>(a.Val);
-
-            switch (result)
-            {
-                case TVal<float> resultF:
-                    resultF.Val -= (float)(object)b.Val;
-                    break;
-
-                case TVal<double> resultF:
-                    resultF.Val -= (double)(object)b.Val;
-                    break;
-            }
-
-            return result;
+            return new TVal<T>(GenSub(a.Val, b.Val));
         }
 
         public static TVal<T> operator *(TVal<T> a, TVal<T> b)
         {
-            TVal<T> result = new TVal<T>(a.Val);
-
-            switch (result)
-            {
-                case TVal<float> resultF:
-                    resultF.Val *= (float)(object)b.Val;
-                    break;
-
-                case TVal<double> resultF:
-                    resultF.Val *= (double)(object)b.Val;
-                    break;
-            }
-
-            return result;
+            return new TVal<T>(GenMul(a.Val, b.Val));
         }
 
         public static TVal<T> operator /(TVal<T> a, TVal<T> b)
         {
-            TVal<T> result = new TVal<T>(a.Val);
-
-            switch (result)
-            {
-                case TVal<float> resultF:
-                    resultF.Val /= (float)(object)b.Val;
-                    break;
-
-                case TVal<double> resultF:
-                    resultF.Val /= (double)(object)b.Val;
-                    break;
-            }
-
-            return result;
+            return new TVal<T>(GenDiv(a.Val, b.Val));
         }
     }
 }

@@ -11,14 +11,14 @@ namespace KelpNet.Sample
         static void Main()
         {
             //全て.Net Framework上で実行したい場合はこちらをコメントアウト
-            OpenCL.Initialize();
-            //OpenCL.Initialize(ComputeDeviceTypes.Cpu); //複数の種類のデバイスがある場合はデバイスタイプを指定
+            //OpenCL.Initialize();
+            OpenCL.Initialize(ComputeDeviceTypes.Cpu); //複数の種類のデバイスがある場合はデバイスタイプを指定
             //OpenCL.Initialize(ComputeDeviceTypes.Gpu, 1); //同じ種類のGPUやCPUが複数ある場合は添字を使用
 
             Console.WriteLine("Running on " + OpenCL.InfoString);
 
             //MLPによるXORの学習
-            //Sample01.Run();
+            Sample01.Run();
 
             //MLPによるXORの学習【回帰版】
             //Sample02.Run();
