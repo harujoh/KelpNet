@@ -15,13 +15,13 @@ namespace KelpNet.CPU
 
             using (MemoryStream mem = new MemoryStream())
             {
-                DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), ModelIO<T>.KnownTypes);
+                DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), new DataContractSerializerSettings { KnownTypes = ModelIO<T>.KnownTypes, PreserveObjectReferences = true });
 
                 try
                 {
                     bf.WriteObject(mem, target);
                     mem.Position = 0;
-                    result = (CopyType) bf.ReadObject(mem);
+                    result = (CopyType)bf.ReadObject(mem);
                 }
                 finally
                 {

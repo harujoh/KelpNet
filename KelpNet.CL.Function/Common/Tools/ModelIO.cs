@@ -41,7 +41,7 @@ namespace KelpNet.CL
 
         public static void Save(Function<T> function, string fileName)
         {
-            DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), KnownTypes);
+            DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), new DataContractSerializerSettings { KnownTypes = KnownTypes, PreserveObjectReferences = true });
 
             //ZIP書庫を作成
             if (File.Exists(fileName))
@@ -61,7 +61,7 @@ namespace KelpNet.CL
 
         public static Function<T> Load(string fileName)
         {
-            DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), KnownTypes);
+            DataContractSerializer bf = new DataContractSerializer(typeof(Function<T>), new DataContractSerializerSettings { KnownTypes = KnownTypes, PreserveObjectReferences = true });
 
             using (ZipArchive zipArchive = ZipFile.OpenRead(fileName))
             {
