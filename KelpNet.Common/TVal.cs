@@ -3,7 +3,7 @@
 namespace KelpNet
 {
     //各パラメータのデフォルト値を設定するためのヘルパークラス
-    public struct TVal<T>
+    public struct TVal<T> where T : unmanaged, IComparable<T>
     {
         static T GenAdd(T x, T y) { return Operator<T>.Add(x, y); }
         static T GenSub(T x, T y) { return Operator<T>.Subtract(x, y); }
