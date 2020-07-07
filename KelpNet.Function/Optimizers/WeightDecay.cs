@@ -13,7 +13,6 @@ using Math = KelpNet.MathF;
 namespace KelpNet
 {
 #if !DOUBLE
-    //与えられたthresholdで頭打ちではなく、全パラメータのL2Normからレートを取り補正を行う
     public class WeightDecay<T> : Optimizer<T> where T : unmanaged, IComparable<T>
     {
         public T Rate;
