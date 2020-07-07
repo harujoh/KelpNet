@@ -38,13 +38,8 @@ namespace KelpNet.Sample
         const int MASKUPDATE_BEGIN_STEP = 0;   // Step to begin mask updates.
         const int MASKUPDATE_END_STEP = 50000; // Step to end mask updates.
         const int MASKUPDATE_FREQUENCY = 100;  // Step interval between mask updates.
-        const int MASK_RECORD_FREQUENCY = 0;   // Step interval between mask logging.
 
-        const int PRUNE_BEGIN_STEP = 2000;     // step to begin pruning
-        const int PRUNE_END_STEP = 30000;      // step to end pruning
         const Real END_SPARSITY = 0.98f;       // desired sparsity of final model. //希望する最終モデルのまばら度
-        const int PRUNING_FREQUENCY = 500;     // how often to prune.
-        const Real THRESHOLD_DECAY = 0;        // threshold_decay for pruning.
 
         const Real L2_SCALE = 1e-4f;           //l2 loss scale
 
@@ -96,33 +91,28 @@ namespace KelpNet.Sample
             {
                 layer1.Mask.Data,
                 layer2.Mask.Data,
-                //layer3.Mask.Data
             };
 
             int[][] Shapes =
             {
                 layer1.Weight.Shape,
                 layer2.Weight.Shape,
-                //layer3.Weight.Shape
             };
 
             string[] Names =
             {
                 layer1.Name,
                 layer2.Name,
-                //layer3.Name
             };
 
             NdArray<Real>[] allWights =
             {
                 layer1.Weight,
                 layer2.Weight,
-                //layer3.Weight
             };
 
             //マスクの初期化
             SparseUtils.MaskInit(allMasks, Shapes, Names, "erdos_renyi", END_SPARSITY, customSparsities);
-            //Console.WriteLine("Sparsity " + GetWeightSparsity(allMasks).Sum() / allMasks.Length);
 
             Console.WriteLine("[Global sparsity] " + SparseUtils.CalculateSparsity(allMasks));
             var weightSparsity = GetWeightSparsity(allMasks);
@@ -130,14 +120,6 @@ namespace KelpNet.Sample
 
 
             Console.WriteLine("Training Start...");
-
-            //継続メモ
-            //Gradの扱いが上手く行っていないっぽい
-            //元実装だとMaskedWightとWeightにそれぞれ違う値のGradが入っている
-            //更新はWeightに走る
-
-            //枝刈りはFreqに従い100回に1回、それ迄は普通の更新が走り続ける
-            //枝刈り回のGradが残るのでリセットしたほうが良い
 
 
             //学習開始
@@ -153,7 +135,7 @@ namespace KelpNet.Sample
 
                 weightDecay.Update();
                 opt._optimizer.LearningRate = PiecewiseConstant(opt._optimizer.UpdateCount, boundaries, LEARNING_RATE);
-                //cond_mask_update_op
+
                 opt.condMaskUpdate(allMasks, allWights);
 
                 //20回に1回結果出力
@@ -222,8 +204,7 @@ namespace KelpNet.Sample
             for (int i = 0; i < scoreDrop.Length; i++)
             {
                 scoreDrop[i] = Math.Abs(mask[i] * weight.Data[i]);//マスク前の重みにマスクを掛ける　元の実装だとここに1e-5の正規乱数が足される
-                //scoreGrow[i] = mask[i] * weight.Grad[i];//gradはマスク済みの重みに行われた値
-                scoreGrow[i] = weight.Grad[i];
+                scoreGrow[i] = mask[i] * weight.Grad[i];//gradはマスク済みの重みに行われた値
             }
 
             //マスクと重みを更新
@@ -252,8 +233,6 @@ namespace KelpNet.Sample
     class SparseSETOptimizer
     {
         public MomentumOptimizer<Real> _optimizer;
-        //private string _growInit; // name of the method used to initialize new connections.
-        //private string _dropFractionAnneal; // if supplied used to anneal the drop fraction.
         private Real _dropFractionInitialValue; // of connections to drop during each update. //ドロップ率:各更新時にドロップする接続の割合
         private int _beginStep; // first iteration where masks are updated.
         private int _endStep; // iteration after which no mask is updated.
@@ -265,8 +244,6 @@ namespace KelpNet.Sample
         protected SparseSETOptimizer(MomentumOptimizer<Real> optimizer, int beginStep, int endStep, int frequency, Real dropFraction = 0.1f, string dropFractionAnneal = "constant", string growInit = "zeros")
         {
             this._optimizer = optimizer;
-            //this._growInit = growInit;
-            //this._dropFractionAnneal = dropFractionAnneal;
             this._dropFractionInitialValue = dropFraction;
             this._beginStep = beginStep;
             this._endStep = endStep;
@@ -334,19 +311,15 @@ namespace KelpNet.Sample
 
         public void Update(Real[] scoreDrop, Real[] scoreGrow, Real[] mask, NdArray<Real> weight)
         {
-            //int nTotal = scoreDrop.Length;
             int nOnes = (int)mask.Sum();
             int nPrune = (int)Math.Floor(nOnes * _dropFraction);//元実装はキャストで切り捨てしている
             int nKeep = nOnes - nPrune;
 
             int[] keepMask = new int[mask.Length];
-            //var sortedScoreDrop = scoreDrop.OrderBy(a => -a).ToArray();
             Real chackval = scoreDrop.OrderBy(a => -a).ElementAt(nKeep);
 
-            //int keepCount = 0;
             //mask1にScoreDropの大きい順の先頭nKeep個に1を入れる
             for (int i = 0, keepCount = 0; i < keepMask.Length && keepCount < nKeep; i++)
-            //for (int i = 0; i < mask1.Length && keepCount < nKeep; i++)
             {
                 if (scoreDrop[i] >= chackval)
                 {
@@ -355,9 +328,7 @@ namespace KelpNet.Sample
                 }
             }
 
-            //Real sum = mask1.Sum();
             Real[] scoreGrowLifted = new Real[scoreGrow.Length];
-            //Real minValue = scoreGrow.Min() - 1.0f;
 
             //有効になっている接続のスコアが最も低くなるようにする //元実装だとscoreGrow.Min() - 1.0f
             for (int i = 0; i < keepMask.Length; i++)
@@ -367,7 +338,6 @@ namespace KelpNet.Sample
 
             int[] growMask = new int[scoreGrowLifted.Length];
 
-            //var sortedScoreGrowLifted = scoreGrowLifted.OrderBy(a => -a).ToArray();
             chackval = scoreGrowLifted.OrderBy(a => -a).ElementAt(nPrune);
 
             //mask2にscoreGrowLiftedの大きい順の先頭nPrune個に1を入れる
