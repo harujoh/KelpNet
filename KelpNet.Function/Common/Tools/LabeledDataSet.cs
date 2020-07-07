@@ -249,6 +249,24 @@ namespace KelpNet
             return result;
         }
 
+        //全データを読み込む
+        public TestDataSet<T> GetAllDataSet()
+        {
+            int batchCount = Data.Length;
+
+            T[] data = new T[NdArray.ShapeToLength(Shape) * Data.Length];
+
+            for (int i = 0; i < batchCount; i++)
+            {
+                T[] labeledData = Get(i);
+                Array.Copy(labeledData, 0, data, i * labeledData.Length, labeledData.Length);
+            }
+
+            TestDataSet<T> result = new TestDataSet<T>(NdArray.Convert(data, Shape, batchCount), NdArray.Convert(DataLabel, new[] { 1 }, batchCount));
+
+            return result;
+        }
+
         public void Save(string savePath)
         {
             //ZIP書庫を作成

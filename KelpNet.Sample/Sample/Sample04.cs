@@ -32,21 +32,14 @@ namespace KelpNet.Sample
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack<Real> nn = new FunctionStack<Real>(
                 new Linear<Real>(28 * 28, 1024, name: "l1 Linear"),
-                new ReLU<Real>(name: "l1 Sigmoid"),
+                new ReLU<Real>(name: "l1 ReLU"),
                 new Linear<Real>(1024, 10, name: "l2 Linear")
             );
-
-            //optimizerを宣言
-            //nn.SetOptimizer(new MomentumSGD<Real>());
 
             //三世代学習
             for (int epoch = 0; epoch < 3; epoch++)
             {
                 Console.WriteLine("epoch " + (epoch + 1));
-
-                //全体での誤差を集計
-                Real totalLoss = 0;
-                long totalLossCount = 0;
 
                 //何回バッチを実行するか
                 for (int i = 1; i < TRAIN_DATA_COUNT + 1; i++)
@@ -54,17 +47,15 @@ namespace KelpNet.Sample
                     //訓練データからランダムにデータを取得
                     TestDataSet<Real> datasetX = mnistData.Train.GetRandomDataSet(BATCH_DATA_COUNT);
 
-                    //バッチ学習を並列実行する
+                    //バッチ学習を実行する
                     Real sumLoss = Trainer.Train(nn, datasetX, new SoftmaxCrossEntropy<Real>(), new MomentumSGD<Real>());
-                    totalLoss = sumLoss;
-                    totalLossCount++;
 
                     //20回バッチを動かしたら精度をテストする
                     if (i % 20 == 0)
                     {
                         Console.WriteLine("\nbatch count " + i + "/" + TRAIN_DATA_COUNT);
+
                         //結果出力
-                        Console.WriteLine("total loss " + totalLoss / totalLossCount);
                         Console.WriteLine("local loss " + sumLoss);
 
                         Console.WriteLine("\nTesting...");

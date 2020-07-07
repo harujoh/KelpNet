@@ -123,6 +123,21 @@ namespace KelpNet
         {
             return Math.Abs(x);
         }
+
+        public static long Max(long x, long y)
+        {
+            return Math.Max(x, y);
+        }
+
+        public static long Min(long x, long y)
+        {
+            return Math.Min(x, y);
+        }
+
+        public static long Abs(long x)
+        {
+            return Math.Abs(x);
+        }
     }
 }
 #endif

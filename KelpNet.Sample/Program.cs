@@ -77,6 +77,9 @@ namespace KelpNet.Sample
             //ONNXモデルのVGG-BN（VGGにBatchNormを追加したカスタム版）を読み込んで画像分類をさせるテスト
             //Sample20.Run(Sample20.VGGModel.VGG16BN); //VGG16、VGG19、またはVGG16BN、VGG19BNを選択してください
 
+            //Rigging the Lottery: Making All Tickets WinnersのFCN実装
+            //Sample21.Run();
+
             //Linearの分割実行
             //SampleX.Run();
 

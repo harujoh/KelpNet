@@ -23,7 +23,7 @@ namespace KelpNet
         }
 
         //個別にパラメータを追加する
-        public void AddParameters(NdArray<T>[] functionParameters)
+        public void AddParameters(params NdArray<T>[] functionParameters)
         {
             FunctionParameters.AddRange(functionParameters);
             AddFunctionParameters(functionParameters);

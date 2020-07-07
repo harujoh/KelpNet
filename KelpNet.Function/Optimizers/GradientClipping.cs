@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 #if DOUBLE
 using Real = System.Double;
 #elif NETSTANDARD2_1
@@ -25,13 +25,11 @@ namespace KelpNet
             switch (this)
             {
                 case GradientClipping<float> gradientClippingF:
-                    gradientClippingF.Update = () => OptimizerF.Update(gradientClippingF);
-                    gradientClippingF.UpdateFunctionParameters = (i) => GradientClippingF.UpdateFunctionParameters(gradientClippingF.Threshold, gradientClippingF.FunctionParameters[i]);
+                    gradientClippingF.Update = () => GradientClippingF.Update(gradientClippingF.Threshold, gradientClippingF.FunctionParameters);
                     break;
 
                 case GradientClipping<double> gradientClippingD:
-                    gradientClippingD.Update = () => OptimizerD.Update(gradientClippingD);
-                    gradientClippingD.UpdateFunctionParameters = (i) => GradientClippingD.UpdateFunctionParameters(gradientClippingD.Threshold, gradientClippingD.FunctionParameters[i]);
+                    gradientClippingD.Update = () => GradientClippingD.Update(gradientClippingD.Threshold, gradientClippingD.FunctionParameters);
                     break;
             }
         }
@@ -44,23 +42,26 @@ namespace KelpNet
     public static class GradientClippingF
 #endif
     {
-        public static void UpdateFunctionParameters(Real threshold, NdArray<Real> functionParameter)
+        public static void Update(Real threshold, List<NdArray<Real>> functionParameters)
         {
-            Real s = 0;
-
-            for (int i = 0; i < functionParameter.Data.Length; i++)
+            foreach (NdArray<Real> functionParameter in functionParameters)
             {
-                s += functionParameter.Grad[i] * functionParameter.Grad[i];
-            }
+                Real s = 0;
 
-            Real norm = Math.Sqrt(s);
-            Real rate = threshold / norm;
-
-            if (rate < 1)
-            {
                 for (int i = 0; i < functionParameter.Data.Length; i++)
                 {
-                    functionParameter.Grad[i] *= rate;
+                    s += functionParameter.Grad[i] * functionParameter.Grad[i];
+                }
+
+                Real norm = Math.Sqrt(s);
+                Real rate = threshold / norm;
+
+                if (rate < 1)
+                {
+                    for (int i = 0; i < functionParameter.Data.Length; i++)
+                    {
+                        functionParameter.Grad[i] *= rate;
+                    }
                 }
             }
         }
