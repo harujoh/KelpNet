@@ -12,8 +12,6 @@
 
   <ItemGroup>
     <Folder Include="Functions\Container\" />
-    <Folder Include="Functions\Interface\" />
-    <Folder Include="Optimizers\" />
   </ItemGroup>
 
 </Project>

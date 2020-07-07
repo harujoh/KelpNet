@@ -83,6 +83,7 @@
     <Compile Include="..\KelpNet.Function\Optimizers\MomentumSGD.cs" Link="Optimizer\MomentumSGD.cs" />
     <Compile Include="..\KelpNet.Function\Optimizers\RMSprop.cs" Link="Optimizer\RMSprop.cs" />
     <Compile Include="..\KelpNet.Function\Optimizers\SGD.cs" Link="Optimizer\SGD.cs" />
+    <Compile Include="..\KelpNet.Function\Optimizers\WeightDecay.cs" Link="Optimizer\WeightDecay.cs" />
   </ItemGroup>
 
   <ItemGroup>

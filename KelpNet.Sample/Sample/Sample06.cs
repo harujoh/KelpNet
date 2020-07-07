@@ -45,9 +45,6 @@ namespace KelpNet.Sample
                 new Linear<Real>(1024, 10, name: "l4 Linear", gpuEnable: true)
             );
 
-            //optimizerを宣言
-            //nn.SetOptimizer(new Adam<Real>());
-
             Console.WriteLine("Training Start...");
 
             //三世代学習

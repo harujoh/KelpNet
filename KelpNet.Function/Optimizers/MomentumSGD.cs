@@ -9,12 +9,9 @@ using Real = System.Single;
 namespace KelpNet
 {
 #if !DOUBLE
-    public class MomentumSGD<T> : Optimizer<T> where T : unmanaged, IComparable<T>
+    public class MomentumSGD<T> : MomentumOptimizer<T> where T : unmanaged, IComparable<T>
     {
-        public T LearningRate;
         public T Momentum;
-
-        private List<T[]> v = new List<T[]>();
 
         public MomentumSGD(T? learningRate = null, T? momentum = null)
         {
@@ -25,12 +22,12 @@ namespace KelpNet
             {
                 case MomentumSGD<float> momentumSgdF:
                     momentumSgdF.Update = () => OptimizerF.Update(momentumSgdF);
-                    momentumSgdF.UpdateFunctionParameters = (i) => MomentumSGDF.UpdateFunctionParameters(momentumSgdF.LearningRate, momentumSgdF.Momentum, momentumSgdF.v[i], momentumSgdF.FunctionParameters[i]);
+                    momentumSgdF.UpdateFunctionParameters = (i) => MomentumSGDF.UpdateFunctionParameters(momentumSgdF.LearningRate, momentumSgdF.Momentum, momentumSgdF.var[i], momentumSgdF.FunctionParameters[i]);
                     break;
 
                 case MomentumSGD<double> momentumSgdD:
                     momentumSgdD.Update = () => OptimizerD.Update(momentumSgdD);
-                    momentumSgdD.UpdateFunctionParameters = (i) => MomentumSGDD.UpdateFunctionParameters(momentumSgdD.LearningRate, momentumSgdD.Momentum, momentumSgdD.v[i], momentumSgdD.FunctionParameters[i]);
+                    momentumSgdD.UpdateFunctionParameters = (i) => MomentumSGDD.UpdateFunctionParameters(momentumSgdD.LearningRate, momentumSgdD.Momentum, momentumSgdD.var[i], momentumSgdD.FunctionParameters[i]);
                     break;
             }
         }
@@ -39,7 +36,7 @@ namespace KelpNet
         {
             foreach (NdArray<T> functionParameter in functionParameters)
             {
-                this.v.Add(new T[functionParameter.Data.Length]);
+                this.var.Add(new T[functionParameter.Data.Length]);
             }
         }
     }
