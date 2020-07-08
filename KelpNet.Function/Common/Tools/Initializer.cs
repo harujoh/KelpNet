@@ -32,6 +32,20 @@ namespace KelpNet
             }
         }
 
+        public static void InitXavier<T>(NdArray<T> array) where T : unmanaged, IComparable<T>
+        {
+            switch (array)
+            {
+                case NdArray<float> arrayF:
+                    InitializerF.InitXavier(arrayF);
+                    break;
+
+                case NdArray<double> arrayD:
+                    InitializerD.InitXavier(arrayD);
+                    break;
+            }
+        }
+
         //多次元配列を作る
         public static T GetRandomValues<T>(int[] shape, Real max, Real min = 0) where T : ICollection, IEnumerable, ICloneable, IList, IStructuralComparable, IStructuralEquatable
         {
@@ -70,6 +84,21 @@ namespace KelpNet
     public static class InitializerF
 #endif
     {
+        public static void InitXavier(NdArray<Real> array)
+        {
+            Real fanOut = array.Shape.Length > 1 ? array.Shape[array.Shape.Length - 2] : array.Shape[array.Shape.Length - 1];
+            Real fanIn = array.Shape[array.Shape.Length - 1];
+
+            Real n = (fanIn + fanOut) / 2.0f;
+
+            Real limit = Math.Sqrt(3.0f / n);
+
+            for (int i = 0; i < array.Data.Length; i++)
+            {
+                array.Data[i] = (limit * 2.0f) * Broth.Random() - limit;
+            }
+        }
+
         //初期値が入力されなかった場合、この関数で初期化を行う
         public static void InitHeNorm(NdArray<Real> array, Real masterScale = 1)
         {

@@ -66,7 +66,7 @@ namespace KelpNet.Sample
 
             var layer1 = new MaskedLinear<Real>(28 * 28, 300, name: "layer1");
             var layer2 = new MaskedLinear<Real>(300, 100, name: "layer2");
-            var layer3 = new Linear<Real>(100, 10, name: "layer3");
+            var layer3 = new MaskedLinear<Real>(100, 10, name: "layer3");
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack<Real> nn = new FunctionStack<Real>(
@@ -82,7 +82,7 @@ namespace KelpNet.Sample
             WeightDecay<Real> weightDecay = new WeightDecay<Real>(L2_SCALE);
             weightDecay.AddParameters(layer1.Weight, layer2.Weight, layer3.Weight);
 
-            MomentumSGD<Real> mSGD = new MomentumSGD<Real>();
+            MomentumSGD<Real> mSGD = new MomentumSGD<Real>(LEARNING_RATE);
             mSGD.SetUp(nn);
 
             var opt = new SparseRigLOptimizer(mSGD, MASKUPDATE_BEGIN_STEP, MASKUPDATE_END_STEP, MASKUPDATE_FREQUENCY, DROP_FRACTION, "cosine", "zeros", RIGL_ACC_SCALE);
@@ -91,24 +91,28 @@ namespace KelpNet.Sample
             {
                 layer1.Mask.Data,
                 layer2.Mask.Data,
+                layer3.Mask.Data,
             };
 
             int[][] Shapes =
             {
                 layer1.Weight.Shape,
                 layer2.Weight.Shape,
+                layer3.Weight.Shape,
             };
 
             string[] Names =
             {
                 layer1.Name,
                 layer2.Name,
+                layer3.Name,
             };
 
             NdArray<Real>[] allWights =
             {
                 layer1.Weight,
                 layer2.Weight,
+                layer3.Weight,
             };
 
             //マスクの初期化
@@ -118,9 +122,7 @@ namespace KelpNet.Sample
             var weightSparsity = GetWeightSparsity(allMasks);
             Console.WriteLine("[Sparsity] Layer0, Layer1 : " + weightSparsity[0] + ", " + weightSparsity[1]);
 
-
             Console.WriteLine("Training Start...");
-
 
             //学習開始
             for (int i = 0; i < NUM_EPOCHS * numBatches; i++)
