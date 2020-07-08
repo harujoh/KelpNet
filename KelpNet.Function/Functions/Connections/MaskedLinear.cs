@@ -44,7 +44,7 @@ namespace KelpNet
 
             if (initialW == null)
             {
-                Initializer.InitHeNorm(this.Weight);
+                Initializer.InitXavier(this.Weight);
             }
             else
             {
