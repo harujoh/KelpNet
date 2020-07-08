@@ -207,6 +207,7 @@ namespace KelpNet.Sample
             {
                 scoreDrop[i] = Math.Abs(mask[i] * weight.Data[i]);//マスク前の重みにマスクを掛ける　元の実装だとここに1e-5の正規乱数が足される
                 scoreGrow[i] = weight.Grad[i];
+                weight.Grad[i] *= mask[i];
             }
 
             //マスクと重みを更新
@@ -214,7 +215,7 @@ namespace KelpNet.Sample
         }
 
         //更新のあった値のモーメンタムをリセットする
-        public override void ResetMomentum(bool[] newConnections, Real[] mask, NdArray<Real> weight)
+        public override void ResetMomentum(bool[] newConnections, NdArray<Real> weight)
         {
             for (int i = 0; i < _optimizer.FunctionParameters.Count; i++)
             {
@@ -302,6 +303,14 @@ namespace KelpNet.Sample
             }
             else
             {
+                for (int i = 0; i < masks.Length; i++)
+                {
+                    for (int j = 0; j < masks[i].Length; j++)
+                    {
+                        weights[i].Grad[j] *= masks[i][j];
+                    }
+                }
+
                 _optimizer.Update();
             }
 
@@ -376,7 +385,7 @@ namespace KelpNet.Sample
                 }
             }
 
-            ResetMomentum(newConnections, mask, weight);
+            ResetMomentum(newConnections, scoreGrow);
 
             for (int i = 0; i < mask.Length; i++)
             {
@@ -385,7 +394,7 @@ namespace KelpNet.Sample
             }
         }
 
-        public virtual void ResetMomentum(bool[] newConnections, Real[] mask, NdArray<Real> weight)
+        public virtual void ResetMomentum(bool[] newConnections, NdArray<Real> weight)
         {
         }
     }
