@@ -206,7 +206,7 @@ namespace KelpNet.Sample
             for (int i = 0; i < scoreDrop.Length; i++)
             {
                 scoreDrop[i] = Math.Abs(mask[i] * weight.Data[i]);//マスク前の重みにマスクを掛ける　元の実装だとここに1e-5の正規乱数が足される
-                scoreGrow[i] = mask[i] * weight.Grad[i];//gradはマスク済みの重みに行われた値
+                scoreGrow[i] = weight.Grad[i];
             }
 
             //マスクと重みを更新
@@ -224,7 +224,7 @@ namespace KelpNet.Sample
                     {
                         if (newConnections[j])
                         {
-                            _optimizer.var[i][j] = mask[j] * weight.Grad[j] * _initialAccScale;
+                            _optimizer.var[i][j] = weight.Grad[j] * _initialAccScale;
                         }
                     }
                 }
