@@ -27,13 +27,13 @@
     <Compile Include="..\KelpNet.CL.Function\Functions\Connections\Convolution2D.cs" Link="Functions\Connections\Convolution2D.cs" />
     <Compile Include="..\KelpNet.CL.Function\Functions\Connections\Deconvolution2D.cs" Link="Functions\Connections\Deconvolution2D.cs" />
     <Compile Include="..\KelpNet.CL.Function\Functions\Connections\Linear.cs" Link="Functions\Connections\Linear.cs" />
+    <Compile Include="..\KelpNet.CL.Function\Functions\Connections\MaskedLinear.cs" Link="Functions\Connections\MaskedLinear.cs" />
     <Compile Include="..\KelpNet.CL.Function\Functions\Noise\Dropout.cs" Link="Functions\Noise\Dropout.cs" />
     <Compile Include="..\KelpNet.CL.Function\Functions\Poolings\MaxPooling2D.cs" Link="Functions\Poolings\MaxPooling2D.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Common\Functions\Interface\" />
-    <Folder Include="Functions\Connections\" />
     <Folder Include="Functions\Noise\" />
     <Folder Include="Functions\Poolings\" />
   </ItemGroup>

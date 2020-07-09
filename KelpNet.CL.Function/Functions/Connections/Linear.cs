@@ -45,17 +45,9 @@ namespace KelpNet.CL
         [DataMember]
         public new ICompressibleActivation<T> Activation { get; set; }
 
-        public bool SetParallel(bool enable)
-        {
-            bool result = this.SetParallel<T>(enable);
-            this.InitFunc(new StreamingContext());
-            return result;
-        }
-
         public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, T[] initialb = null, ICompressibleActivation<T> activation = null, string name = "Linear", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
             this.SetParallel(gpuEnable);
-            this.InitFunc(new StreamingContext());
         }
 
         public Linear(CPU.Linear<T> linear) : base(linear.Name, linear.InputNames, linear.OutputNames)
@@ -68,11 +60,17 @@ namespace KelpNet.CL
             this.Activation = (ICompressibleActivation<T>)CLConverter.Convert(linear.Activation);
 
             this.SetParallel(true);
+        }
+
+        public bool SetParallel(bool enable)
+        {
+            bool result = this.SetParallel<T>(enable);
             this.InitFunc(new StreamingContext());
+            return result;
         }
 
         [OnDeserializing]
-        public void InitFunc(StreamingContext sc)
+        protected override void InitFunc(StreamingContext sc)
         {
             if (IsParallel)
             {
@@ -99,9 +97,9 @@ namespace KelpNet.CL
 #endif
 
 #if DOUBLE
-    public static class LinearD
+    public static partial class LinearD
 #else
-    public static class LinearF
+    public static partial class LinearF
 #endif
     {
         public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, ComputeKernel forwardKernel, IFunction<Real> linear)
