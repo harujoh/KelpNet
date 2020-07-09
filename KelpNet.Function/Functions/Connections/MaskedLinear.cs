@@ -10,69 +10,30 @@ namespace KelpNet.CPU
 {
 #if !DOUBLE
     [DataContract(Name = "MaskedLinear", Namespace = "KelpNet")]
-    public class MaskedLinear<T> : SingleInputFunction<T>, ICompressibleFunction<T> where T : unmanaged, IComparable<T>
+    public class MaskedLinear<T> : Linear<T> where T : unmanaged, IComparable<T>
     {
         const string FUNCTION_NAME = "MaskedLinear";
 
         [DataMember]
-        public NdArray<T> Weight { get; set; }
-
-        [DataMember]
         public NdArray<T> Mask { get; set; }
-
-        [DataMember]
-        public NdArray<T> Bias { get; set; }
-
-
-        [DataMember]
-        public ICompressibleActivation<T> Activation { get; set; }
 
         public MaskedLinear(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
-            InitFunc(new StreamingContext());
         }
 
-        public MaskedLinear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public MaskedLinear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames)
         {
-            this.Weight = new NdArray<T>(outputCount, inputCount);
-            this.Weight.Name = this.Name + " Weight";
-
-            this.Parameters = new NdArray<T>[noBias ? 1 : 2];
-
-            this.Activation = activation;
-
             if (initialW == null)
             {
                 Initializer.InitXavier(this.Weight);
             }
-            else
-            {
-                this.Weight.Data = initialW.FlattenEx<T>();
-            }
 
             this.Mask = new NdArray<T>(outputCount, inputCount);
             this.Mask.InitGrad();//Maskは更新されない非パラメータなので自分で初期化する
-
-            this.Parameters[0] = this.Weight;
-
-            if (!noBias)
-            {
-                this.Bias = new NdArray<T>(outputCount);
-                this.Bias.Name = this.Name + " Bias";
-
-                if (initialb != null)
-                {
-                    this.Bias.Data = initialb.FlattenEx<T>();
-                }
-
-                this.Parameters[1] = this.Bias;
-            }
-
-            InitFunc(new StreamingContext());
         }
 
         [OnDeserializing]
-        void InitFunc(StreamingContext sc)
+        protected override void InitFunc(StreamingContext sc)
         {
             switch (this)
             {
@@ -103,7 +64,7 @@ namespace KelpNet.CPU
     {
         public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> mask, NdArray<Real> weight, NdArray<Real> bias, ICompressibleActivation<Real> activation, IFunction<Real> linear)
         {
-            return SingleInputForward(x, weight * mask, bias, activation,linear);
+            return SingleInputForward(x, weight * mask, bias, activation, linear);
         }
 
         public static void SingleOutputBackward(NdArray<Real> y, NdArray<Real> x, NdArray<Real> mask, NdArray<Real> weight, NdArray<Real> bias, ICompressibleActivation<Real> activation)

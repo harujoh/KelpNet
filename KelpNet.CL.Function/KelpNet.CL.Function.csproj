@@ -19,7 +19,6 @@
     <Folder Include="CLSource\Noise\" />
     <Folder Include="CLSource\Poolings\" />
     <Folder Include="Functions\Activations\" />
-    <Folder Include="Functions\Connections\" />
     <Folder Include="Functions\Noise\" />
     <Folder Include="Functions\Poolings\" />
   </ItemGroup>

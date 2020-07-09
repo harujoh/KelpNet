@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet.CPU;
+using KelpNet.CL;
 using KelpNet.Tools;
 
 #if DOUBLE
@@ -64,9 +64,9 @@ namespace KelpNet.Sample
                 { "layer3", END_SPARSITY * 0 }
             };
 
-            var layer1 = new MaskedLinear<Real>(28 * 28, 300, name: "layer1");
-            var layer2 = new MaskedLinear<Real>(300, 100, name: "layer2");
-            var layer3 = new MaskedLinear<Real>(100, 10, name: "layer3");
+            MaskedLinear<Real> layer1 = new MaskedLinear<Real>(28 * 28, 300, name: "layer1",gpuEnable:true);
+            MaskedLinear<Real> layer2 = new MaskedLinear<Real>(300, 100, name: "layer2", gpuEnable: true);
+            MaskedLinear<Real> layer3 = new MaskedLinear<Real>(100, 10, name: "layer3", gpuEnable: true);
 
             //ネットワークの構成を FunctionStack に書き連ねる
             FunctionStack<Real> nn = new FunctionStack<Real>(
@@ -133,12 +133,12 @@ namespace KelpNet.Sample
 
                 opt.condMaskUpdate(allMasks, allWights);
 
-                //10回毎に結果出力
-                if (i % 10 + 1 == 10)
-                {
-                    Console.WriteLine("\nbatch count:" + (i + 1) + " (lr:" + opt._optimizer.LearningRate + ")");
-                    Console.WriteLine("loss " + loss);
-                }
+                ////10回毎に結果出力
+                //if (i % 10 + 1 == 10)
+                //{
+                //    Console.WriteLine("\nbatch count:" + (i + 1) + " (lr:" + opt._optimizer.LearningRate + ")");
+                //    Console.WriteLine("loss " + loss);
+                //}
 
                 //精度をテストする
                 if (i % numBatches + 1 == numBatches)
