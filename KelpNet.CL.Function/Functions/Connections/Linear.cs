@@ -87,6 +87,10 @@ namespace KelpNet.CL
                         break;
                 }
             }
+            else
+            {
+                base.InitFunc(sc);
+            }
         }
 
         public override CPU.Convolution2D<T> AsConvolution2D()
