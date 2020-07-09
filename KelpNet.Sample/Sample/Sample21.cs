@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KelpNet.CL;
+using KelpNet.CPU;
 using KelpNet.Tools;
 
 #if DOUBLE
@@ -52,7 +52,7 @@ namespace KelpNet.Sample
             //テストデータから全データを取得
             TestDataSet<Real> datasetY = mnistData.Eval.GetAllDataSet();
 
-            Console.WriteLine("Network initializing...");
+            Console.WriteLine("\nNetwork initializing...");
 
             int numBatches = mnistData.Train.Length / BATCH_SIZE; // 600 = 60000 / 100
             int batchPerEpoch = mnistData.Train.Length / BATCH_SIZE;
@@ -87,21 +87,14 @@ namespace KelpNet.Sample
 
             var opt = new SparseRigLOptimizer(mSGD, MASKUPDATE_BEGIN_STEP, MASKUPDATE_END_STEP, MASKUPDATE_FREQUENCY, DROP_FRACTION, "cosine", "zeros", RIGL_ACC_SCALE);
 
-            Real[][] allMasks =
+            NdArray<Real>[] allMasks =
             {
-                layer1.Mask.Data,
-                layer2.Mask.Data,
-                layer3.Mask.Data,
+                layer1.Mask,
+                layer2.Mask,
+                layer3.Mask,
             };
 
-            int[][] Shapes =
-            {
-                layer1.Weight.Shape,
-                layer2.Weight.Shape,
-                layer3.Weight.Shape,
-            };
-
-            string[] Names =
+            string[] LayerNames =
             {
                 layer1.Name,
                 layer2.Name,
@@ -116,13 +109,13 @@ namespace KelpNet.Sample
             };
 
             //マスクの初期化
-            SparseUtils.MaskInit(allMasks, Shapes, Names, "erdos_renyi", END_SPARSITY, customSparsities);
+            SparseUtils.MaskInit(allMasks, LayerNames, "erdos_renyi", END_SPARSITY, customSparsities);
 
             Console.WriteLine("[Global sparsity] " + SparseUtils.CalculateSparsity(allMasks));
             var weightSparsity = GetWeightSparsity(allMasks);
             Console.WriteLine("[Sparsity] Layer0, Layer1 : " + weightSparsity[0] + ", " + weightSparsity[1]);
 
-            Console.WriteLine("Training Start...");
+            Console.WriteLine("\nTraining Start...");
 
             //学習開始
             for (int i = 0; i < NUM_EPOCHS * numBatches; i++)
@@ -140,7 +133,7 @@ namespace KelpNet.Sample
 
                 opt.condMaskUpdate(allMasks, allWights);
 
-                //20回に1回結果出力
+                //10回毎に結果出力
                 if (i % 10 + 1 == 10)
                 {
                     Console.WriteLine("\nbatch count:" + (i + 1) + " (lr:" + opt._optimizer.LearningRate + ")");
@@ -150,13 +143,13 @@ namespace KelpNet.Sample
                 //精度をテストする
                 if (i % numBatches + 1 == numBatches)
                 {
-                    Console.WriteLine("\nTesting...");
+                    Console.WriteLine("\nEpoch:" + Math.Floor((i + 1) / (Real)numBatches) + " Iteration:" + (i + 1) + " Testing... ");
 
                     //テストを実行
                     Real accuracy = Trainer.Accuracy(nn, datasetY, new SoftmaxCrossEntropy<Real>(), out loss);
 
-                    Console.WriteLine("Epoch, Iteration, loss, accuracy");
-                    Console.WriteLine(Math.Floor((i + 1) / (Real)numBatches) + ", " + (i + 1) + ", " + loss + ", " + accuracy);
+                    Console.WriteLine("loss: " + loss);
+                    Console.WriteLine("accuracy: " + accuracy);
                 }
             }
         }
@@ -176,13 +169,13 @@ namespace KelpNet.Sample
             return result;
         }
 
-        static Real[] GetWeightSparsity(Real[][] mask)
+        static Real[] GetWeightSparsity(NdArray<Real>[] mask)
         {
             Real[] result = new Real[mask.Length];
 
             for (int i = 0; i < mask.Length; i++)
             {
-                result[i] = 1.0f - mask[i].Sum() / mask[i].Length;
+                result[i] = 1.0f - mask[i].Data.Sum() / mask[i].Data.Length;
             }
 
             return result;
@@ -198,16 +191,15 @@ namespace KelpNet.Sample
             _initialAccScale = initialAccScale;
         }
 
-        public override void genericMaskUpdate(Real[] mask, NdArray<Real> weight)
+        public override void genericMaskUpdate(NdArray<Real> mask, NdArray<Real> weight)
         {
             Real[] scoreDrop = new Real[weight.Length];
             Real[] scoreGrow = new Real[weight.Length];
 
             for (int i = 0; i < scoreDrop.Length; i++)
             {
-                scoreDrop[i] = Math.Abs(mask[i] * weight.Data[i]);//マスク前の重みにマスクを掛ける　元の実装だとここに1e-5の正規乱数が足される
-                scoreGrow[i] = weight.Grad[i];
-                weight.Grad[i] *= mask[i];
+                scoreDrop[i] = Math.Abs(mask.Data[i] * weight.Data[i]);//マスク前の重みにマスクを掛ける　元の実装だとここに1e-5の正規乱数が足される
+                scoreGrow[i] = mask.Grad[i];
             }
 
             //マスクと重みを更新
@@ -215,17 +207,17 @@ namespace KelpNet.Sample
         }
 
         //更新のあった値のモーメンタムをリセットする
-        public override void ResetMomentum(bool[] newConnections, NdArray<Real> weight)
+        public override void ResetMomentum(bool[] newConnections, Real[] scoreGrow, string weightName)
         {
             for (int i = 0; i < _optimizer.FunctionParameters.Count; i++)
             {
-                if (_optimizer.FunctionParameters[i].Name == weight.Name)
+                if (_optimizer.FunctionParameters[i].Name == weightName)
                 {
                     for (int j = 0; j < newConnections.Length; j++)
                     {
                         if (newConnections[j])
                         {
-                            _optimizer.var[i][j] = weight.Grad[j] * _initialAccScale;
+                            _optimizer.var[i][j] = scoreGrow[j] * _initialAccScale;
                         }
                     }
                 }
@@ -288,7 +280,7 @@ namespace KelpNet.Sample
             }
         }
 
-        public void condMaskUpdate(Real[][] masks, NdArray<Real>[] weights)
+        public void condMaskUpdate(NdArray<Real>[] masks, NdArray<Real>[] weights)
         {
             long globalStep = _optimizer.UpdateCount;
 
@@ -303,30 +295,22 @@ namespace KelpNet.Sample
             }
             else
             {
-                for (int i = 0; i < masks.Length; i++)
-                {
-                    for (int j = 0; j < masks[i].Length; j++)
-                    {
-                        weights[i].Grad[j] *= masks[i][j];
-                    }
-                }
-
                 _optimizer.Update();
             }
 
         }
 
-        public virtual void genericMaskUpdate(Real[] mask, NdArray<Real> weight)
+        public virtual void genericMaskUpdate(NdArray<Real> mask, NdArray<Real> weight)
         {
         }
 
-        public void Update(Real[] scoreDrop, Real[] scoreGrow, Real[] mask, NdArray<Real> weight)
+        public void Update(Real[] scoreDrop, Real[] scoreGrow, NdArray<Real> mask, NdArray<Real> weight)
         {
-            int nOnes = (int)mask.Sum();
+            int nOnes = (int)mask.Data.Sum();
             int nPrune = (int)Math.Floor(nOnes * _dropFraction);//元実装はキャストで切り捨てしている
             int nKeep = nOnes - nPrune;
 
-            int[] keepMask = new int[mask.Length];
+            int[] keepMask = new int[mask.Data.Length];
             Real chackval = scoreDrop.OrderBy(a => -a).ElementAt(nKeep);
 
             //mask1にScoreDropの大きい順の先頭nKeep個に1を入れる
@@ -361,6 +345,7 @@ namespace KelpNet.Sample
                 }
             }
 
+#if DEBUG
             //mask1 * mask2で全て0になるか確認
             int sum = 0;
             for (int i = 0; i < keepMask.Length; i++)
@@ -369,14 +354,14 @@ namespace KelpNet.Sample
             }
 
             if (sum != 0) throw new Exception();
-
-            //int[] glowTensor = getGlowTensor() //元実装がデフォルトだと0固定なので省略
+#endif
+            //Real[] glowTensor = getGlowTensor() //元実装がデフォルトだと0固定なので省略
 
             bool[] newConnections = new bool[weight.Length];
 
             for (int i = 0; i < weight.Length; i++)
             {
-                newConnections[i] = growMask[i] == 1 && mask[i] == 0;
+                newConnections[i] = growMask[i] == 1 && mask.Data[i] == 0;
 
                 //マスクの更新があるか判定
                 if (newConnections[i])
@@ -385,48 +370,48 @@ namespace KelpNet.Sample
                 }
             }
 
-            ResetMomentum(newConnections, scoreGrow);
+            ResetMomentum(newConnections, scoreGrow, weight.Name);
 
             for (int i = 0; i < mask.Length; i++)
             {
                 //mask1 * mask2で全て0になる保証があるので
-                mask[i] = keepMask[i] + growMask[i];
+                mask.Data[i] = keepMask[i] + growMask[i];
             }
         }
 
-        public virtual void ResetMomentum(bool[] newConnections, NdArray<Real> weight)
+        public virtual void ResetMomentum(bool[] newConnections, Real[] scoreGrow, string weightName)
         {
         }
     }
 
     class SparseUtils
     {
-        public static Real CalculateSparsity(Real[][] allMasks) //allMasks内部は0または1のintだがSum関数のためにReal型
+        public static Real CalculateSparsity(NdArray<Real>[] allMasks) //allMasks内部は0または1のintだがSum関数のためにReal型
         {
             Real denseParams = 0.0f;
             Real sparseParams = 0.0f;
 
             for (int i = 0; i < allMasks.Length; i++)
             {
-                denseParams += allMasks[i].Length;
-                sparseParams += allMasks[i].Sum();
+                denseParams += allMasks[i].Data.Length;
+                sparseParams += allMasks[i].Data.Sum();
             }
 
             return 1.0f - sparseParams / denseParams;
         }
 
-        public static void MaskInit(Real[][] allMasks, int[][] Shapes, string[] Names, string method, Real defaultSparsity, Dictionary<string, Real> customSparsityMap)
+        public static void MaskInit(NdArray<Real>[] allMasks, string[] Names, string method, Real defaultSparsity, Dictionary<string, Real> customSparsityMap)
         {
             Real[] sparsities = { };
 
             if (method == "erdos_renyi")
             {
-                sparsities = GetSparsities(allMasks, Shapes, Names, method, defaultSparsity, customSparsityMap);
+                sparsities = GetSparsities(allMasks, Names, method, defaultSparsity, customSparsityMap);
             }
 
             for (int i = 0; i < allMasks.Length; i++)
             {
-                GetMaskRandom(allMasks[i], sparsities[i]);
+                GetMaskRandom(allMasks[i].Data, sparsities[i]);
             }
         }
 
@@ -454,14 +439,14 @@ namespace KelpNet.Sample
         }
 
         //各レイヤの粗度を取得する
-        public static Real[] GetSparsities(Real[][] allMasks, int[][] Shapes, string[] Names, string method, Real defaultSparsity, Dictionary<string, Real> customSparsityMap)
+        public static Real[] GetSparsities(NdArray<Real>[] allMasks, string[] Names, string method, Real defaultSparsity, Dictionary<string, Real> customSparsityMap)
         {
             //元実装だとMapに粗度を必要とするレイヤが有るかチェックが有る
 
-            return GetSparsitiesErdosRenyi(allMasks, Shapes, Names, defaultSparsity, customSparsityMap);
+            return GetSparsitiesErdosRenyi(allMasks, Names, defaultSparsity, customSparsityMap);
         }
 
-        public static Real[] GetSparsitiesErdosRenyi(Real[][] allMasks, int[][] Shapes, string[] Names, Real defaultSparsity, Dictionary<string, Real> customSparsityMap)
+        public static Real[] GetSparsitiesErdosRenyi(NdArray<Real>[] allMasks, string[] Names, Real defaultSparsity, Dictionary<string, Real> customSparsityMap)
         {
             // We have to enforce custom sparsities and then find the correct scaling factor.
 
@@ -491,7 +476,7 @@ namespace KelpNet.Sample
 
                 for (int i = 0; i < allMasks.Length; i++)
                 {
-                    int nParam = allMasks[i].Length;
+                    int nParam = allMasks[i].Data.Length;
                     int nZeros = Math.Ceiling(nParam * defaultSparsity);
 
                     if (denseLayerIndex.Contains(i))
@@ -510,7 +495,7 @@ namespace KelpNet.Sample
                         int nOnes = nParam - nZeros;
                         rhs += nOnes;
 
-                        rawProbabilities[i] = (Shapes[i][0] + Shapes[i][1]) / (Real)allMasks[i].Length;
+                        rawProbabilities[i] = (allMasks[i].Shape[0] + allMasks[i].Shape[1]) / (Real)allMasks[i].Data.Length;
                     }
 
                     divisor += rawProbabilities[i] * nParam;
@@ -543,7 +528,7 @@ namespace KelpNet.Sample
 
             Real[] sparsities = new Real[allMasks.Length];
 
-            for (int i = 0; i < allMasks.Length; i++)
+            for (int i = 0; i < sparsities.Length; i++)
             {
                 if (customSparsityMap.ContainsKey(Names[i]))
                 {

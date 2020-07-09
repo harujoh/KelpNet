@@ -90,9 +90,9 @@ namespace KelpNet.CPU
 #endif
 
 #if DOUBLE
-    public static class LinearD
+    public static partial class LinearD
 #else
-    public static class LinearF
+    public static partial class LinearF
 #endif
     {
         public static NdArray<Real> SingleInputForward(NdArray<Real> x, NdArray<Real> weight, NdArray<Real> bias, ICompressibleActivation<Real> activation, IFunction<Real> linear)
