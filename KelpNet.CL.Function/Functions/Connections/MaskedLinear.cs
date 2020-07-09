@@ -52,6 +52,22 @@ namespace KelpNet.CL
                         break;
                 }
             }
+            else
+            {
+                switch (this)
+                {
+                    case MaskedLinear<float> linearF:
+                        linearF.SingleInputForward = x => CPU.LinearF.SingleInputForward(x, linearF.Mask, linearF.Weight, linearF.Bias,linearF.Activation, linearF);
+                        linearF.SingleOutputBackward = (y, x) => CPU.LinearF.SingleOutputBackward(y, x, linearF.Mask, linearF.Weight, linearF.Bias, linearF.Activation);
+                        break;
+
+                    case MaskedLinear<double> linearD:
+                        linearD.SingleInputForward = x => CPU.LinearD.SingleInputForward(x, linearD.Mask, linearD.Weight, linearD.Bias,linearD.Activation, linearD);
+                        linearD.SingleOutputBackward = (y, x) => CPU.LinearD.SingleOutputBackward(y, x, linearD.Mask, linearD.Weight, linearD.Bias, linearD.Activation);
+                        break;
+                }
+
+            }
         }
 
         public override CPU.Convolution2D<T> AsConvolution2D()
