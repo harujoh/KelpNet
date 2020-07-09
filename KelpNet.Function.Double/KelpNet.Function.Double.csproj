@@ -55,6 +55,7 @@
     <Compile Include="..\KelpNet.Function\Functions\Connections\EmbedID.cs" Link="Functions\Connections\EmbedID.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Connections\Linear.cs" Link="Functions\Connections\Linear.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Connections\LSTM.cs" Link="Functions\Connections\LSTM.cs" />
+    <Compile Include="..\KelpNet.Function\Functions\Connections\MaskedLinear.cs" Link="Functions\Connections\MaskedLinear.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\ArcCos.cs" Link="Functions\Mathmetrics\Trigonometric\ArcCos.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\ArcSin.cs" Link="Functions\Mathmetrics\Trigonometric\ArcSin.cs" />
     <Compile Include="..\KelpNet.Function\Functions\Mathmetrics\Trigonometric\ArcTan.cs" Link="Functions\Mathmetrics\Trigonometric\ArcTan.cs" />
@@ -90,7 +91,6 @@
     <Folder Include="Common\Functions\Interface\" />
     <Folder Include="Common\Tools\" />
     <Folder Include="Common\Optimizer\" />
-    <Folder Include="Functions\Connections\" />
     <Folder Include="Functions\Mathmetrics\Trigonometric\" />
     <Folder Include="Functions\Noise\" />
     <Folder Include="Functions\Poolings\" />
