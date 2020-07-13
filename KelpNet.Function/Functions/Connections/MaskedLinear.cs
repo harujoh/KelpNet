@@ -21,15 +21,15 @@ namespace KelpNet.CPU
         {
         }
 
-        public MaskedLinear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames)
+        public MaskedLinear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, Action<NdArray<T>> weightInitializer = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(inputCount, outputCount, noBias, initialW, initialb, weightInitializer, activation, name, inputNames, outputNames)
         {
-            if (initialW == null)
-            {
-                Initializer.InitXavier(this.Weight);
-            }
-
             this.Mask = new NdArray<T>(outputCount, inputCount);
             this.Mask.InitGrad();//Maskは更新されない非パラメータなので自分で初期化する
+        }
+
+        protected override void DefaultInitWeight()
+        {
+            Initializer.InitXavier(this.Weight);
         }
 
         [OnDeserializing]

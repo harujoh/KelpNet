@@ -29,7 +29,7 @@ namespace KelpNet.CPU
             InitFunc(new StreamingContext());
         }
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, Action<NdArray<T>> weightInitializer = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
             this.Weight = new NdArray<T>(outputCount, inputCount);
             this.Weight.Name = this.Name + " Weight";
@@ -40,7 +40,14 @@ namespace KelpNet.CPU
 
             if (initialW == null)
             {
-                Initializer.InitHeNorm(this.Weight);
+                if (weightInitializer == null)
+                {
+                    DefaultInitWeight();
+                }
+                else
+                {
+                    weightInitializer(this.Weight);
+                }
             }
             else
             {
@@ -63,6 +70,11 @@ namespace KelpNet.CPU
             }
 
             InitFunc(new StreamingContext());
+        }
+
+        protected virtual void DefaultInitWeight()
+        {
+            Initializer.InitHeNorm(this.Weight);
         }
 
         [OnDeserializing]

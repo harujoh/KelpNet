@@ -18,13 +18,8 @@ namespace KelpNet.CL
         [DataMember]
         public NdArray<T> Mask { get; set; }
 
-        public MaskedLinear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, T[] initialb = null, ICompressibleActivation<T> activation = null, string name = "Linear", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames, gpuEnable)
+        public MaskedLinear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, T[] initialb = null, Action<NdArray<T>> weightInitializer = null, ICompressibleActivation<T> activation = null, string name = "Linear", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, weightInitializer, activation, name, inputNames, outputNames, gpuEnable)
         {
-            if (initialW == null)
-            {
-                Initializer.InitXavier(this.Weight);
-            }
-
             this.Mask = new NdArray<T>(outputCount, inputCount);
             this.Mask.InitGrad();//Maskは更新されない非パラメータなので自分で初期化する
         }
@@ -57,17 +52,22 @@ namespace KelpNet.CL
                 switch (this)
                 {
                     case MaskedLinear<float> linearF:
-                        linearF.SingleInputForward = x => CPU.LinearF.SingleInputForward(x, linearF.Mask, linearF.Weight, linearF.Bias,linearF.Activation, linearF);
+                        linearF.SingleInputForward = x => CPU.LinearF.SingleInputForward(x, linearF.Mask, linearF.Weight, linearF.Bias, linearF.Activation, linearF);
                         linearF.SingleOutputBackward = (y, x) => CPU.LinearF.SingleOutputBackward(y, x, linearF.Mask, linearF.Weight, linearF.Bias, linearF.Activation);
                         break;
 
                     case MaskedLinear<double> linearD:
-                        linearD.SingleInputForward = x => CPU.LinearD.SingleInputForward(x, linearD.Mask, linearD.Weight, linearD.Bias,linearD.Activation, linearD);
+                        linearD.SingleInputForward = x => CPU.LinearD.SingleInputForward(x, linearD.Mask, linearD.Weight, linearD.Bias, linearD.Activation, linearD);
                         linearD.SingleOutputBackward = (y, x) => CPU.LinearD.SingleOutputBackward(y, x, linearD.Mask, linearD.Weight, linearD.Bias, linearD.Activation);
                         break;
                 }
 
             }
+        }
+
+        protected override void DefaultInitWeight()
+        {
+            Initializer.InitXavier(this.Weight);
         }
 
         public override CPU.Convolution2D<T> AsConvolution2D()
