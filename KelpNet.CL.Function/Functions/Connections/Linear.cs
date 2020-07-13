@@ -45,7 +45,7 @@ namespace KelpNet.CL
         [DataMember]
         public new ICompressibleActivation<T> Activation { get; set; }
 
-        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, T[] initialb = null, ICompressibleActivation<T> activation = null, string name = "Linear", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, activation, name, inputNames, outputNames)
+        public Linear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, T[] initialb = null, Action<NdArray<T>> weightInitializer = null, ICompressibleActivation<T> activation = null, string name = "Linear", string[] inputNames = null, string[] outputNames = null, bool gpuEnable = false) : base(inputCount, outputCount, noBias, initialW, initialb, weightInitializer, activation, name, inputNames, outputNames)
         {
             this.SetParallel(gpuEnable);
         }
