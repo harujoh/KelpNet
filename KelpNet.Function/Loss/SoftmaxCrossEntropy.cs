@@ -90,6 +90,7 @@ namespace KelpNet
 
                 for (int i = 0; i < s.Length; i++)
                 {
+                    if (s[i] == 0) s[i] += Real.Epsilon;
                     m[i] += Math.Log(s[i]);
                 }
 
