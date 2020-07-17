@@ -11,7 +11,7 @@ using KelpNet.CL.Properties;
 using Real = System.Single;
 using Math = System.MathF;
 using Convolution2DFunc = KelpNet.CPU.Convolution2DF;
-#elif NETSTANDARD2_0
+#else
 using KelpNet.CL.Properties;
 using Real = System.Single;
 using Math = KelpNet.MathF;

@@ -7,7 +7,7 @@ using System.Text;
 #if DOUBLE
 #elif NETSTANDARD2_1
 using Math = System.MathF;
-#elif NETSTANDARD2_0
+#else
 using Math = KelpNet.MathF;
 #endif
 
@@ -255,7 +255,7 @@ namespace KelpNet
             foreach (T data in datas)
             {
                 string[] divStr = data.ToString().Split('.');
-                intMaxLength = Math.Max(intMaxLength, divStr[0].Length);
+                intMaxLength = (int)Math.Max(intMaxLength, divStr[0].Length);
 
                 if (divStr.Length > 1)
                 {
@@ -264,7 +264,7 @@ namespace KelpNet
 
                 if (realMaxLength != 8 && divStr.Length == 2)
                 {
-                    realMaxLength = Math.Max(realMaxLength, divStr[1].Length);
+                    realMaxLength = (int)Math.Max(realMaxLength, divStr[1].Length);
 
                     if (realMaxLength > 8)
                     {

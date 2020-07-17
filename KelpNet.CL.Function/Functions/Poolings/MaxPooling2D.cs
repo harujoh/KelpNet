@@ -10,7 +10,7 @@ using Real = System.Double;
 using KelpNet.CL.Properties;
 using Real = System.Single;
 using Math = System.MathF;
-#elif NETSTANDARD2_0
+#else
 using KelpNet.CL.Properties;
 using Real = System.Single;
 using Math = KelpNet.MathF;
