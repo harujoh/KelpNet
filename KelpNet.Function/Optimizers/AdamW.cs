@@ -5,7 +5,7 @@ using Real = System.Double;
 #elif NETSTANDARD2_1
 using Real = System.Single;
 using Math = System.MathF;
-#elif NETSTANDARD2_0
+#else
 using Real = System.Single;
 using Math = KelpNet.MathF;
 #endif
