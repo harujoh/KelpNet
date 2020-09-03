@@ -19,12 +19,14 @@ namespace KelpNet.CPU
 
         public MaskedLinear(string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(name, inputNames, outputNames)
         {
+            InitMaskFunc(new StreamingContext());
         }
 
         public MaskedLinear(int inputCount, int outputCount, bool noBias = false, Array initialW = null, Array initialb = null, Action<NdArray<T>> weightInitializer = null, ICompressibleActivation<T> activation = null, string name = FUNCTION_NAME, string[] inputNames = null, string[] outputNames = null) : base(inputCount, outputCount, noBias, initialW, initialb, weightInitializer, activation, name, inputNames, outputNames)
         {
             this.Mask = new NdArray<T>(outputCount, inputCount);
             this.Mask.InitGrad();//Maskは更新されない非パラメータなので自分で初期化する
+            InitMaskFunc(new StreamingContext());
         }
 
         protected override void DefaultInitWeight()
@@ -33,7 +35,7 @@ namespace KelpNet.CPU
         }
 
         [OnDeserializing]
-        protected override void InitFunc(StreamingContext sc)
+        protected void InitMaskFunc(StreamingContext sc)
         {
             switch (this)
             {
