@@ -22,15 +22,17 @@ namespace KelpNet.CL
         {
             this.Mask = new NdArray<T>(outputCount, inputCount);
             this.Mask.InitGrad();//Maskは更新されない非パラメータなので自分で初期化する
+            this.InitMaskedFunc(new StreamingContext());
         }
 
         public MaskedLinear(CPU.MaskedLinear<T> maskedLinear) : base(maskedLinear)
         {
             this.Mask = maskedLinear.Mask;
+            this.InitMaskedFunc(new StreamingContext());
         }
 
         [OnDeserializing]
-        protected override void InitFunc(StreamingContext sc)
+        protected void InitMaskedFunc(StreamingContext sc)
         {
             if (IsParallel)
             {

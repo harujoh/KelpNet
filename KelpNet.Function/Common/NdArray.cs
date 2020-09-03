@@ -84,6 +84,10 @@ namespace KelpNet
 
                 result.Shape = resultKeepDimShape;
             }
+            else if (input.Shape.Length == axis.Length)
+            {
+                result.Shape = new[] { 1 };
+            }
 
             return result;
         }

@@ -78,7 +78,7 @@ namespace KelpNet.CPU
         }
 
         [OnDeserializing]
-        protected virtual void InitFunc(StreamingContext sc)
+        protected void InitFunc(StreamingContext sc)
         {
             switch (this)
             {

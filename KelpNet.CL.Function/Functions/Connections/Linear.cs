@@ -65,12 +65,12 @@ namespace KelpNet.CL
         public bool SetParallel(bool enable)
         {
             bool result = this.SetParallel<T>(enable);
-            this.InitFunc(new StreamingContext());
+            this.InitCLFunc(new StreamingContext());
             return result;
         }
 
         [OnDeserializing]
-        protected override void InitFunc(StreamingContext sc)
+        protected void InitCLFunc(StreamingContext sc)
         {
             if (IsParallel)
             {
