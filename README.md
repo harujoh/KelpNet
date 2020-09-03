@@ -36,7 +36,7 @@ FunctionStack<float> nn = new FunctionStack<float>(
 
 ## 特徴
 - 行列演算にライブラリを使用していないため、全てのアルゴリズムが可読になっています
-- KerasやChainerに似た、関数を書き連ねるコーディングスタイルを採用しています
+- KerasやPytorchに似た、関数を書き連ねるコーディングスタイルを採用しています
 - 並列演算にOpenCLを採用しているため、GPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
 > ※OpenCLを使用するためには対応するドライバの追加インストールが必要になることがあります
 > - Intel製 CPU or GPU: https://software.intel.com/en-us/articles/opencl-drivers
@@ -46,11 +46,7 @@ FunctionStack<float> nn = new FunctionStack<float>(
 ### C#で作られているメリット
 - 開発環境の構築がカンタンで、プログラミングの初学者にも学びやすい言語です
 - .Net標準のFormやUnity等、処理結果を視覚的に表現するための選択肢が豊富です
-- PCや携帯、組み込み機器等、様々なプラットフォームに向けた開発ができます
-
-## このライブラリについて
-このライブラリの基幹部分はChainerを参考に実装されています。  
-その為、パラメータが似ており、Chainerのサンプルを参考に開発をすることができます。
+- PCやモバイル端末、組み込み機器等、様々なプラットフォームに向けた開発ができます
 
 ## 連絡方法
 ご質問、ご要望は Issues へご登録頂くか Twitter からご連絡ください。  
@@ -59,7 +55,7 @@ FunctionStack<float> nn = new FunctionStack<float>(
 Twitter: https://twitter.com/harujoh
 
 ## 動作環境
-Libraries: .NET Standard 2.0  
+Libraries: .NET Standard 2.0 or 2.1  
 Samples: .NET Framework 4.6.1  
 
 ## 実装済み関数
