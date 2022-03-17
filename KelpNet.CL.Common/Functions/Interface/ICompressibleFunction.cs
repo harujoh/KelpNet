@@ -34,6 +34,7 @@ namespace KelpNet.CL
                 if (compressibleFunction.Activation is ICompressibleActivation<T> activator)
                 {
                     //アクティベーションを活性化
+                    activator.SetParallel(compressibleFunction.IsParallel);
                     kernelSource = activator.KernelSource + kernelSource.Replace("/*ForwardActivate*/", "ForwardActivate");
                 }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace KelpNet
 {
@@ -43,6 +44,13 @@ namespace KelpNet
             {
                 this.OutputNames = outputNames.ToArray();
             }
+        }
+
+        [OnDeserializing]
+        void InitFunc(StreamingContext sc)
+        {
+            PrevInputs = new List<NdArray<T>[]>();
+            UsedPrevInputs = new List<NdArray<T>[]>();
         }
 
         //パラメータを更新する時に呼ぶ関数

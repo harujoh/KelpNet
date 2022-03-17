@@ -20,4 +20,8 @@
     <Folder Include="Functions\Container\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
+  </ItemGroup>
+
 </Project>

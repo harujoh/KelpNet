@@ -58,6 +58,8 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
+            OutputIndicesList = new List<int[]>();
+
             this.IsParallel = enable & OpenCL.Enable;
 
             if (IsParallel)

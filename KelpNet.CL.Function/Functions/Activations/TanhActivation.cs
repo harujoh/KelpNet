@@ -10,7 +10,7 @@ namespace KelpNet.CL
     public class TanhActivation<T> : CPU.TanhActivation<T>, ICompressibleActivation<T> where T : unmanaged, IComparable<T>
     {
         public string FunctionName => "TanhActivation";
-        public string KernelSource { get; set; } = OpenCL.GetKernelSource(Resources.TanhActivation);
+        public string KernelSource { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel { get; set; }
@@ -33,6 +33,7 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
+            KernelSource = OpenCL.GetKernelSource(Resources.TanhActivation);
             bool result = this.SetParallel<T>(enable);
             this.InitFunc(new StreamingContext());
             return result;

@@ -48,31 +48,7 @@ namespace KelpNet
 
         public static T Accuracy<T>(FunctionStack<T> functionStack, NdArray<T> x, NdArray<int> y) where T : unmanaged, IComparable<T>
         {
-            int matchCount = 0;
-
-            NdArray<T> forwardResult = functionStack.Predict(x)[0];
-
-            for (int b = 0; b < x.BatchCount; b++)
-            {
-                T maxval = forwardResult.Data[b * forwardResult.Length];
-                int maxindex = 0;
-
-                for (int i = 1; i < forwardResult.Length; i++)
-                {
-                    if (maxval.CompareTo(forwardResult.Data[b * forwardResult.Length + i]) < 0)
-                    {
-                        maxval = forwardResult.Data[b * forwardResult.Length + i];
-                        maxindex = i;
-                    }
-                }
-
-                if (maxindex == y.Data[b * y.Length])
-                {
-                    matchCount++;
-                }
-            }
-
-            return (TVal<T>)matchCount / (TVal<T>)x.BatchCount;
+            return Accuracy(x, y, functionStack.Predict(x)[0]);
         }
 
         //精度測定
@@ -88,26 +64,30 @@ namespace KelpNet
 
         public static T Accuracy<T>(FunctionStack<T> functionStack, NdArray<T> x, NdArray<int> y, LossFunction<T, int> lossFunction, out T loss) where T : unmanaged, IComparable<T>
         {
-            int matchCount = 0;
-
             NdArray<T> forwardResult = functionStack.Predict(x)[0];
             loss = lossFunction.Evaluate(forwardResult, y);
+            return Accuracy(x, y, forwardResult);
+        }
+
+        public static T Accuracy<T>(NdArray<T> x, NdArray<int> y, NdArray<T> forwardResult) where T : unmanaged, IComparable<T>
+        {
+            int matchCount = 0;
 
             for (int b = 0; b < x.BatchCount; b++)
             {
-                T maxval = forwardResult.Data[b * forwardResult.Length];
-                int maxindex = 0;
+                T maxVal = forwardResult.Data[b * forwardResult.Length];
+                int maxIndex = 0;
 
                 for (int i = 1; i < forwardResult.Length; i++)
                 {
-                    if (maxval.CompareTo(forwardResult.Data[b * forwardResult.Length + i]) < 0)
+                    if (maxVal.CompareTo(forwardResult.Data[b * forwardResult.Length + i]) < 0)
                     {
-                        maxval = forwardResult.Data[b * forwardResult.Length + i];
-                        maxindex = i;
+                        maxVal = forwardResult.Data[b * forwardResult.Length + i];
+                        maxIndex = i;
                     }
                 }
 
-                if (maxindex == y.Data[b * y.Length])
+                if (maxIndex == y.Data[b * y.Length])
                 {
                     matchCount++;
                 }
