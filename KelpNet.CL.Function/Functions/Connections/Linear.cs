@@ -19,7 +19,7 @@ namespace KelpNet.CL
     public class Linear<T> : CPU.Linear<T>, ICompressibleFunction<T> where T : unmanaged, IComparable<T>
     {
         public string FunctionName => "Linear";
-        public string KernelSource { get; set; } = OpenCL.GetKernelSource(Resources.Linear);
+        public string KernelSource { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel { get; set; }
@@ -64,6 +64,7 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
+            KernelSource = OpenCL.GetKernelSource(Resources.Linear);
             bool result = this.SetParallel<T>(enable);
             this.InitCLFunc(new StreamingContext());
             return result;

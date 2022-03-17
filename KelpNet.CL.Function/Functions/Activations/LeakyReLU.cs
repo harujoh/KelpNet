@@ -11,7 +11,7 @@ namespace KelpNet.CL
     public class LeakyReLU<T> : CPU.LeakyReLU<T>, ICompressibleActivation<T> where T : unmanaged, IComparable<T>
     {
         public string FunctionName => "LeakyReLU";
-        public string KernelSource { get; set; } = OpenCL.GetKernelSource(Resources.LeakyReLU);
+        public string KernelSource { get; set; }
 
         private const string PARAM_NAME = "/*slope*/";
 
@@ -36,6 +36,7 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
+            KernelSource = OpenCL.GetKernelSource(Resources.LeakyReLU);
             bool result = this.SetParallel<T>(enable, new[] { new KeyValuePair<string, string>(PARAM_NAME, this.Slope.ToString()) });
             this.InitFunc(new StreamingContext());
             return result;

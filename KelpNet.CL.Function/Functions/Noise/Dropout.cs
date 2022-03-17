@@ -19,7 +19,7 @@ namespace KelpNet.CL
     public class Dropout<T> : CPU.Dropout<T>, IParallelizable where T : unmanaged, IComparable<T>
     {
         public string FunctionName => "Dropout";
-        public string KernelSource { get; set; } = OpenCL.GetKernelSource(Resources.Dropout);
+        public string KernelSource { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel;
@@ -44,6 +44,7 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
+            KernelSource = OpenCL.GetKernelSource(Resources.Dropout);
             this.IsParallel = enable & OpenCL.Enable;
 
             if (IsParallel)

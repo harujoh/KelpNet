@@ -25,7 +25,7 @@ namespace KelpNet.CL
     public class Convolution2D<T> : CPU.Convolution2D<T>, ICompressibleFunction<T> where T : unmanaged, IComparable<T>
     {
         public string FunctionName => "Convolution2D";
-        public string KernelSource { get; set; } = OpenCL.GetKernelSource(Resources.Convolution2D);
+        public string KernelSource { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public ComputeKernel ForwardKernel { get; set; }
@@ -53,6 +53,7 @@ namespace KelpNet.CL
 
         public bool SetParallel(bool enable)
         {
+            KernelSource = OpenCL.GetKernelSource(Resources.Convolution2D);
             bool result = this.SetParallel<T>(enable);
             this.InitFunc(new StreamingContext());
             return result;
