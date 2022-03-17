@@ -36,7 +36,7 @@ FunctionStack<float> nn = new FunctionStack<float>(
 
 ## 特徴
 - 行列演算にライブラリを使用していないため、全てのアルゴリズムが可読になっています
-- KerasやPytorchに似た、関数を書き連ねるコーディングスタイルを採用しています
+- PyTorch や TensorFlow と同じ Define by Run を採用しています
 - 並列演算にOpenCLを採用しているため、GPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
 > ※OpenCLを使用するためには対応するドライバの追加インストールが必要になることがあります
 > - Intel製 CPU or GPU: https://software.intel.com/en-us/articles/opencl-drivers
@@ -49,9 +49,11 @@ FunctionStack<float> nn = new FunctionStack<float>(
 - PCやモバイル端末、組み込み機器等、様々なプラットフォームに向けた開発ができます
 
 ## 連絡方法
-ご質問、ご要望は Issues へご登録頂くか Twitter からご連絡ください。  
-細やかなことでも構いませんので、何かお気づきの点が御座いましたら、お気軽にご連絡ください。
+ご質問、ご要望は Issues へご登録をお願いします  
+細やかなことでも構いませんので、何かお気づきの点が御座いましたら、お気軽にご利用ください  
 
+手軽なやり取りをご希望の場合は Twitter からご連絡ください  
+現在の開発状況なども Twitter でご確認いただけます  
 Twitter: https://twitter.com/harujoh
 
 ## 動作環境
