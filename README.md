@@ -49,11 +49,10 @@ FunctionStack<float> nn = new FunctionStack<float>(
 - Development for various platforms such as PCs, mobile devices, and embedded devices is possible.
 
 ## How to contact us
-Please register your questions and requests with Issues  
-Please feel free to use this page if you have any questions or concerns, even if they are minor ones.   
+If you have any questions or concerns, even minor ones, please feel free to use Issue. 
 
-If you prefer a quick exchange, please contact us via Twitter  
-You can also check the current development status on Twitter  
+If you want to communicate with us easily, please contact us via Twitter.  
+You can also check the current development status on Twitter.  
 Twitter: https://twitter.com/harujoh
 
 ## System Requirements
