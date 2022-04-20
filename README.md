@@ -59,7 +59,7 @@ Twitter: https://twitter.com/harujoh
 Libraries: .NET Standard 2.0 or 2.1  
 Samples: .NET Framework 4.6.1  
 
-## mplemented Functions
+## Implemented Functions
 - Connections:
 　・Convolution2D
 　・Deconvolution2D
