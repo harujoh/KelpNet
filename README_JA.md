@@ -18,11 +18,11 @@ FunctionStack<float> nn = new FunctionStack<float>(
 ```
 
 - Samples:
-・[**XOR**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample1.cs)
-・[**CNN**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample5.cs)
-・[**AlexNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample19.cs)
-・[**VGG**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample15.cs)
-・[**ResNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Samples/Sample17.cs)
+・[**XOR**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample01.cs)
+・[**CNN**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample05.cs)
+・[**AlexNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample19.cs)
+・[**VGG**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample15.cs)
+・[**ResNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample17.cs)
 ・[**Others**](https://github.com/harujoh/KelpNet/tree/master/KelpNet.Sample)
 - SampleData:
 ・MNIST
