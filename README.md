@@ -19,7 +19,7 @@ FunctionStack<float> nn = new FunctionStack<float>(
 
 - Samples:
 ・[**XOR**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample01.cs)
-・[**CNN**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample05.cs)
+・[**CNN**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample06.cs)
 ・[**AlexNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample19.cs)
 ・[**VGG**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample15.cs)
 ・[**ResNet**](https://github.com/harujoh/KelpNet/blob/master/KelpNet.Sample/Sample/Sample17.cs)
