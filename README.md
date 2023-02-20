@@ -40,7 +40,7 @@ FunctionStack<float> nn = new FunctionStack<float>(
 - OpenCL is used for parallel processing, so processing can be parallelized not only on GPUs, but also on CPUs, FPGAs, and various other computing devices.
 > * Additional installation of the corresponding driver may be required to use OpenCL.
 > - Intel CPU or GPU: https://software.intel.com/en-us/articles/opencl-drivers
-> - AMD CPU or GPU: http://www.amd.com/ja-jp/solutions/professional/hpc/opencl
+> - AMD CPU or GPU: https://www.amd.com/en/support
 > - Nvidia GPU: https://developer.nvidia.com/opencl
 
 ### Advantages of being built in C#.
