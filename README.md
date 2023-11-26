@@ -51,9 +51,9 @@ FunctionStack<float> nn = new FunctionStack<float>(
 ## How to contact us
 If you have any questions or concerns, even minor ones, please feel free to use Issue. 
 
-If you want to communicate with us easily, please contact us via Twitter.  
-You can also check the current development status on Twitter.  
-Twitter: https://twitter.com/harujoh
+If you want to communicate with us easily, please contact us via X(Twitter).  
+You can also check the current development status on X(Twitter).  
+X(Twitter): https://twitter.com/harujoh
 
 ## System Requirements
 Libraries: .NET Standard 2.0 or 2.1  
