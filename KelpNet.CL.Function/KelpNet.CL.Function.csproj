@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net481;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net48;netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>KelpNet.CL</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
@@ -37,7 +37,7 @@
     <Folder Include="Functions\Poolings\" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
 

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net481;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFrameworks>net48;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
