@@ -34,32 +34,33 @@ FunctionStack<float> nn = new FunctionStack<float>(
 ・ONNXModel
 
 
-## Features
-- Uses the same "Define by Run" approach as PyTorch and Keras.
-- No libraries are used for matrix operations, so all algorithms are readable.
-- OpenCL is used for parallel processing, so processing can be parallelized not only on GPUs, but also on CPUs, FPGAs, and various other computing devices.
-> * Additional installation of the corresponding driver may be required to use OpenCL.
-> - Intel CPU or GPU: https://software.intel.com/en-us/articles/opencl-drivers
-> - AMD CPU or GPU: https://www.amd.com/en/support
-> - Nvidia GPU: https://developer.nvidia.com/opencl
+## 特徴
+- PyTorch や Keras と同じ Define by Run を採用しています
+- 行列演算にライブラリを使用していないため、全てのアルゴリズムが可読になっています
+- 並列演算にOpenCLを採用しているため、GPUだけでなくCPUやFPGA等の様々な演算装置で処理を並列化できます
+> ※OpenCLを使用するためには対応するドライバの追加インストールが必要になることがあります
+> - Intel製 CPU or GPU: https://software.intel.com/en-us/articles/opencl-drivers
+> - AMD製 CPU or GPU: http://www.amd.com/ja-jp/solutions/professional/hpc/opencl
+> - Nvidia製 GPU: https://developer.nvidia.com/opencl
 
-### Advantages of being built in C#.
-- Easy to set up a development environment and easy to learn for beginners in programming.
-- There are many options for visual representation of processing results, such as the .Net standard Form and Unity.
-- Development for various platforms such as PCs, mobile devices, and embedded devices is possible.
+### C#で作られているメリット
+- 開発環境の構築がカンタンで、プログラミングの初学者にも学びやすい言語です
+- .Net標準のFormやUnity等、処理結果を視覚的に表現するための選択肢が豊富です
+- PCやモバイル端末、組み込み機器等、様々なプラットフォームに向けた開発ができます
 
-## How to contact us
-If you have any questions or concerns, even minor ones, please feel free to use Issue. 
+## 連絡方法
+ご質問、ご要望は Issues へご登録をお願いします  
+細やかなことでも構いませんので、何かお気づきの点が御座いましたら、お気軽にご利用ください  
 
-If you want to communicate with us easily, please contact us via X(Twitter).  
-You can also check the current development status on X(Twitter).  
-X(Twitter): https://twitter.com/harujoh
+手軽なやり取りをご希望の場合は Twitter からご連絡ください  
+現在の開発状況なども Twitter でご確認いただけます  
+Twitter: https://twitter.com/harujoh
 
-## System Requirements
+## 動作環境
 Libraries: .NET Standard 2.0 or 2.1  
 Samples: .NET Framework 4.6.1  
 
-## Implemented Functions
+## 実装済み関数
 - Connections:
 　・Convolution2D
 　・Deconvolution2D
