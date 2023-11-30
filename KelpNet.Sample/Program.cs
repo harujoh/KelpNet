@@ -18,7 +18,7 @@ namespace KelpNet.Sample
             Console.WriteLine("Running on " + OpenCL.InfoString);
 
             //MLPによるXORの学習
-            //Sample01.Run();
+            Sample01.Run();
 
             //MLPによるXORの学習【回帰版】
             //Sample02.Run();
